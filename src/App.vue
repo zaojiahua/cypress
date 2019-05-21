@@ -11,5 +11,13 @@ export default {
 </script>
 
 <style scoped>
-
+  html,body{
+    height: 100%;
+  }
+  body{
+    margin: 0;
+  }
+  #app{
+    height: 100%;
+  }
 </style>

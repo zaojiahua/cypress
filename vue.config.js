@@ -11,6 +11,12 @@ module.exports = {
     config.resolve.alias
       .set('@', resolve('src'))
       .set('_c', resolve('src/components'))
+
+    // config.module // need installiview-loader
+    //   .rule('vue')
+    //   .use('iview')
+    //   .loader('iview-loader')
+    //   .options({ prefix: false })
   },
   productionSourceMap: false
 }

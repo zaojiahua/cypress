@@ -1,0 +1,117 @@
+<style scoped>
+  .layout{
+    background: #f5f7f9;
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .layout-logo{
+    color: #1bbc9c;
+    height: 64px;
+    width: 200px;
+    float: left;
+    position: relative;
+    top: 0;
+    left: 0;
+    text-align: center;
+    border-bottom: #5b5b5b 1px solid;
+  }
+
+  .layout-logo b{
+    color:#1bbc9c;
+    font-size:24px;
+    font-weight: 900;
+    letter-spacing: 1px;
+  }
+  .layout-logo span{
+    color:#1bbc9c;
+    position: absolute;
+    font-size: 20px;
+    font-weight: 900;
+    top:-10px;
+    right:0;
+  }
+  .layout-nav{
+    width: 420px;
+    margin: 0 auto;
+    margin-right: 20px;
+  }
+  .ivu-layout-header{
+    padding: 0;
+  }
+</style>
+<template>
+  <div class="layout">
+    <Layout  style="height: 100vh">
+      <Header>
+        <Menu mode="horizontal" theme="dark">
+          <!--<Icon @click.native="collapsedSider" :class="rotateIcon" :style="{margin: '0 20px'}" type="md-menu" size="24"></Icon>-->
+          <div class="layout-logo">
+            <b>ANGELREEF</b>
+            <span>®</span>
+          </div>
+          <div style="float: right">
+            <MenuItem name="1">
+              <Avatar>A</Avatar>
+              Admin
+            </MenuItem>
+            <MenuItem name="2" @click.native="getSysVersion">
+              关于TMach
+              <Icon type="ios-help-circle-outline" size="24"/>
+            </MenuItem>
+            <MenuItem name="3" @click.native="logout">
+              登出
+              <Icon type="ios-exit-outline" size="24">
+              </Icon>
+            </MenuItem>
+          </div>
+        </Menu>
+      </Header>
+      <Layout>
+        <Sider collapsible :collapsed-width="78" v-model="isCollapsed">
+          <Menu active-name="1-2" theme="dark" width="auto" :class="menuitemClasses">
+            <MenuItem name="1-1" style="border-top: 1px solid darkgrey">
+              <Icon type="logo-buffer"></Icon>
+              <span>用例管理</span>
+            </MenuItem>
+            <MenuItem name="1-2">
+              <Icon type="ios-create"></Icon>
+              <span>创建用例</span>
+            </MenuItem>
+          </Menu>
+        </Sider>
+          <Content :style="{padding: '15px', minHeight: '280px', background: '#fff'}">
+            Content
+          </Content>
+      </Layout>
+    </Layout>
+  </div>
+</template>
+<script>
+export default {
+  data () {
+    return {
+      isCollapsed: false
+    }
+  },
+  computed: {
+    rotateIcon () {
+      return [
+        'menu-icon',
+        this.isCollapsed ? 'rotate-icon' : ''
+      ]
+    },
+    menuitemClasses () {
+      return [
+        'menu-item',
+        this.isCollapsed ? 'collapsed-menu' : ''
+      ]
+    }
+  },
+  methods: {
+    collapsedSider () {
+      this.$refs.side1.toggleCollapse()
+    }
+  }
+}
+</script>
