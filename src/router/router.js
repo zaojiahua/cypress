@@ -7,8 +7,14 @@ export default [
     component: () => import('@/views/Home.vue'),
     children: [
       {
+        name: 'about',
         path: 'about',
         component: () => import('@/views/About.vue')
+      },
+      {
+        name: 'jobOperation',
+        path: 'jobOperation',
+        component: () => import('@/views/jobOperation.vue')
       }
     ]
   }

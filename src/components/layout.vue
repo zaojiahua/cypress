@@ -97,17 +97,17 @@
           <Menu active-name="1-2" theme="dark" width="auto" :class="menuitemClasses">
             <MenuItem name="1-1" style="border-top: 1px solid darkgrey">
               <Icon type="logo-buffer"></Icon>
-              <span>用例管理</span>
+              <span><router-link to="about">用例管理</router-link></span>
             </MenuItem>
             <MenuItem name="1-2">
               <Icon type="ios-create"></Icon>
-              <span>创建用例</span>
+              <span><router-link to="jobOperation">创建用例</router-link></span>
             </MenuItem>
           </Menu>
         </Sider>
-          <Content :style="{padding: '15px', minHeight: '280px', background: '#fff'}">
-            Content
-          </Content>
+        <Content :style="{padding: '15px', minHeight: '280px', background: '#fff'}">
+          <router-view/>
+        </Content>
       </Layout>
     </Layout>
   </div>
