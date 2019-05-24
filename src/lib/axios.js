@@ -19,13 +19,11 @@ class HttpRequest {
       if (!Object.keys(this.queue).length) {
       }
       this.queue[url] = true
-      console.log('request')
       return config
     }, error => {
       return Promise.reject(error)
     })
     instance.interceptors.response.use(res => {
-      console.log('response')
       delete this.queue[url]
       const { data, status } = res
       return { data, status }

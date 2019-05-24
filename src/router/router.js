@@ -11,10 +11,15 @@ export default [
         path: 'about',
         component: () => import('@/views/About.vue')
       },
+      // {
+      //   name: 'jobOperation',
+      //   path: 'jobOperation',
+      //   component: () => import('@/views/jobOperation.vue')
+      // },
       {
-        name: 'jobOperation',
-        path: 'jobOperation',
-        component: () => import('@/views/jobOperation.vue')
+        name: 'jobAttr',
+        path: 'jobAttr/:id',
+        component: () => import('../views/jobAttr.vue')
       }
     ]
   }
