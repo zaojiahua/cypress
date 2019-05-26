@@ -22,7 +22,8 @@ export const getJobDetail = (id) => {
       'phone_models,phone_models.phone_model_name,phone_models.id,' +
       'phone_models.manufacturer,phone_models.manufacturer.manufacturer_name,phone_models.manufacturer.id,' +
       'test_area,test_area.description,test_area.id,' +
-      'author,author.username,author.id'
+      'author,author.username,author.id' +
+      '&job_deleted=False'
   })
 }
 

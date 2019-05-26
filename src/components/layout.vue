@@ -95,9 +95,9 @@
       <Layout>
         <Sider collapsible :collapsed-width="78" v-model="isCollapsed">
           <Menu active-name="1-2" theme="dark" width="auto" :class="menuitemClasses">
-            <MenuItem name="1-1" style="border-top: 1px solid darkgrey">
+            <MenuItem name="1-1" style="border-top: 1px solid darkgrey" to="about">
               <Icon type="logo-buffer"></Icon>
-              <span><router-link to="about">用例管理</router-link></span>
+              <span>用例管理</span>
             </MenuItem>
             <MenuItem name="1-2">
               <Icon type="ios-create"></Icon>

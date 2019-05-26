@@ -18,9 +18,19 @@ export default [
       // },
       {
         name: 'jobAttr',
-        path: 'jobAttr/:id',
-        component: () => import('../views/jobAttr.vue')
+        path: 'jobMsg/:id',
+        component: () => import('../views/jobMsg.vue')
+      },
+      {
+        name: 'test',
+        path: 'test',
+        component: () => import('../views/test.vue')
       }
     ]
+  },
+  {
+    name: 'notFound',
+    path: '/notFound',
+    component: () => import('../views/notFound.vue')
   }
 ]
