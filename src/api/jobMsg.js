@@ -9,7 +9,7 @@ export const getJobList = (params) => {
 
 export const getJobDetail = (id) => {
   return axios.request({
-    url: '/api/v1/cedar/job/' + id + '/?fields=' +
+    url: `/api/v1/cedar/job/${id}/?fields=` +
       'id,' +
       'job_label,' +
       'description,' +
@@ -24,6 +24,15 @@ export const getJobDetail = (id) => {
       'test_area,test_area.description,test_area.id,' +
       'author,author.username,author.id' +
       '&job_deleted=False'
+  })
+}
+
+export const patchUpdateJob = (id, jobInfo) => {
+  return axios.request({
+    url: `/api/v1/cedar/job/${id}/`,
+    method: 'patch',
+    data: jobInfo
+
   })
 }
 

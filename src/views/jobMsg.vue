@@ -45,7 +45,7 @@
 </template>
 <script>
 import util from '../lib/util.js'
-import { getJobDetail, getManufacturerList, getAndroidVersionList, getCustomTagList, getJobTestAreaList } from '../api/jobAttr'
+import { getJobDetail, getManufacturerList, getAndroidVersionList, getCustomTagList, getJobTestAreaList, patchUpdateJob } from '../api/jobMsg'
 
 const jobSerializer = {
   android_version: [
@@ -148,6 +148,7 @@ export default {
       manufacturer_id: null,
       checkManufacturerList: {},
       disabled: true,
+      isError: false,
       jobInfo: {
         test_area: [],
         android_version: [],
@@ -156,12 +157,7 @@ export default {
         rom_version: [],
         job_label: '',
         job_name: '',
-        job_type: '',
-        description: '',
-        job_deleted: false,
-        draft: true,
-        author: 0,
-        job_assessment: 0
+        description: ''
       },
       job: util.validate(jobSerializer, {}),
       manufacturer: util.validate(manufacturerSerializer, {}),
@@ -192,6 +188,7 @@ export default {
         this._jobMsgView()
       })
         .catch(error => {
+          this.isError = true
           let errorMsg = ''
           if (error.response.status >= 500) {
             errorMsg = '服务器错误！'
@@ -206,9 +203,6 @@ export default {
       this.jobInfo.job_name = this.job.job_name
       this.jobInfo.description = this.job.description
       this.jobInfo.job_label = this.job.job_label
-      this.jobInfo.job_type = this.job.job_type
-      this.jobInfo.job_deleted = this.job.job_deleted
-      this.jobInfo.author = this.job.author
 
       this.job.test_area.forEach(item => {
         this.jobInfo.test_area.push(item.id)
@@ -231,12 +225,21 @@ export default {
       })
     },
     clear: function () {
-      console.log('jinry')
       this.jobInfo.phone_models = []
       this.jobInfo.rom_version = []
     },
-    submit (id) {
-      console.log(id, this.jobInfo)
+    submit: function (id) {
+      if (this.isError) {
+        this.$Message.error('失败操作')
+      } else {
+        patchUpdateJob(id, this.jobInfo).then(res => {
+          console.log(res)
+          this.$Message.info('ok')
+          this.$Loading.error()
+        }).catch(error => {
+          console.log(error)
+        })
+      }
     }
   },
   watch: {
@@ -245,14 +248,14 @@ export default {
       this.manufacturer.manufacturers.forEach(item => {
         if (item.id === this.manufacturer_id) {
           this.checkManufacturerList = item
-          console.log('checkManufacturerList', this.checkManufacturerList)
         }
       })
     }
   },
   mounted () {
-    this.getMsg()
-    // this.jobMsgView()
+    this.$nextTick(() => {
+      this.getMsg()
+    })
   }
 }
 </script>
