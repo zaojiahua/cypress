@@ -18,13 +18,18 @@ export default [
         name: 'jobAttr',
         path: 'jobMsg/:id',
         component: () => import('../views/jobMsg.vue')
-      },
-      {
-        name: 'test',
-        path: 'test',
-        component: () => import('../views/test.vue')
       }
+      // {
+      //   name: 'test',
+      //   path: 'test',
+      //   component: () => import('../views/test.vue')
+      // }
     ]
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('../views/login.vue')
   },
   {
     name: 'notFound',
