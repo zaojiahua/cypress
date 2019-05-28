@@ -45,7 +45,11 @@
 </template>
 <script>
 import util from '../lib/util.js'
-import { getJobDetail, getManufacturerList, getAndroidVersionList, getCustomTagList, getJobTestAreaList, patchUpdateJob } from '../api/jobMsg'
+import { getJobDetail, patchUpdateJob } from '../api/reef/job'
+import { getManufacturerList } from '../api/reef/manufacturer'
+import { getJobTestAreaList } from '../api/reef/jobTestArea'
+import { getCustomTagList } from '../api/reef/customTag'
+import { getAndroidVersionList } from '../api/reef/androidVersion'
 
 const jobSerializer = {
   android_version: [
@@ -253,9 +257,7 @@ export default {
     }
   },
   mounted () {
-    this.$nextTick(() => {
-      this.getMsg()
-    })
+    this.getMsg()
   }
 }
 </script>

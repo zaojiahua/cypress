@@ -9,11 +9,21 @@ export default [
         path: 'about',
         component: () => import('../views/About.vue')
       },
-      // {
-      //   name: 'jobOperation',
-      //   path: 'jobOperation',
-      //   component: () => import('@/views/jobOperation.vue')
-      // },
+      {
+        name: 'jobEditor',
+        path: 'jobEditor',
+        component: () => import('../views/jobEditor.vue')
+      },
+      {
+        name: 'jobEditor1',
+        path: 'jobEditor1',
+        component: () => import('../views/jobEditor1.vue')
+      },
+      {
+        name: 'jobEditorOther',
+        path: 'jobEditorOther',
+        component: () => import('../views/jobEditorOther.vue')
+      },
       {
         name: 'jobAttr',
         path: 'jobMsg/:id',

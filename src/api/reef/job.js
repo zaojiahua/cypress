@@ -1,4 +1,4 @@
-import axios from './index'
+import axios from '..'
 
 export const getJobList = (params) => {
   return axios.request({
@@ -33,29 +33,5 @@ export const patchUpdateJob = (id, jobInfo) => {
     method: 'patch',
     data: jobInfo
 
-  })
-}
-
-export const getManufacturerList = () => {
-  return axios.request({
-    url: '/api/v1/cedar/manufacturer/'
-  })
-}
-
-export const getAndroidVersionList = () => {
-  return axios.request({
-    url: '/api/v1/cedar/android_version/?fields=id,version'
-  })
-}
-
-export const getJobTestAreaList = () => {
-  return axios.request({
-    url: '/api/v1/cedar/job_test_area/?fields=id,description'
-  })
-}
-
-export const getCustomTagList = () => {
-  return axios.request({
-    url: '/api/v1/cedar/custom_tag/?fields=id,custom_tag_name'
   })
 }

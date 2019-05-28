@@ -3,7 +3,7 @@
     background: #f5f7f9;
     position: relative;
     border-radius: 4px;
-    overflow: hidden;
+    overflow: auto;
   }
   .layout-logo{
     color: #1bbc9c;
@@ -99,13 +99,13 @@
               <Icon type="logo-buffer"></Icon>
               <span>用例管理</span>
             </MenuItem>
-            <MenuItem name="1-2">
+            <MenuItem name="1-2" to="jobEditor">
               <Icon type="ios-create"></Icon>
-              <span><router-link to="jobOperation">创建用例</router-link></span>
+              <span>创建用例</span>
             </MenuItem>
           </Menu>
         </Sider>
-        <Content :style="{padding: '15px', minHeight: '280px', background: '#fff'}">
+        <Content :style="{padding: '15px', minHeight: '280px', background: '#fff' }">
           <router-view/>
         </Content>
       </Layout>
@@ -116,7 +116,7 @@
 export default {
   data () {
     return {
-      isCollapsed: false
+      isCollapsed: true
     }
   },
   computed: {
