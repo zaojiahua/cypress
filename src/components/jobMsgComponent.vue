@@ -38,8 +38,7 @@
       </Select>
     </Form-item>
     <Form-item>
-      <Button type="success" @click="submit(jobId)">提交</Button>
-      <Button type="error" style="margin-left: 8px">取消</Button>
+      <slot></slot>
     </Form-item>
   </Form>
 </template>
@@ -151,6 +150,10 @@ export default {
     jobId: {
       type: String,
       default: null
+    },
+    isSubmit: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -245,7 +248,6 @@ export default {
         patchUpdateJob(id, this.jobInfo).then(res => {
           console.log(res)
           this.$Message.info('ok')
-          this.$Loading.error()
         }).catch(error => {
           console.log(error)
         })
@@ -260,6 +262,9 @@ export default {
           this.checkManufacturerList = item
         }
       })
+    },
+    isSubmit () {
+      if (this.isSubmit) this.submit(this.jobId)
     }
   },
   mounted () {
