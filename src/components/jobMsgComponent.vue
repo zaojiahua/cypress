@@ -264,7 +264,7 @@ export default {
         }
       })
     },
-    propJobMsgLoad () {
+    propJobId () {
       if (this.propJobMsgLoad && this.propJobId) this.getMsg()
     }
   }
