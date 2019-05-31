@@ -38,7 +38,8 @@
       </Select>
     </Form-item>
     <Form-item>
-      <slot></slot>
+      <Button type="success" @click="submit(propJobId)">提交</Button>
+      <Button type="error" style="margin-left: 8px">取消</Button>
     </Form-item>
   </Form>
 </template>
@@ -147,13 +148,13 @@ const jobTestAreaSerializer = {
 export default {
   name: 'jobMsgComponent',
   props: {
-    jobId: {
-      type: String,
-      default: null
-    },
-    isSubmit: {
+    propJobMsgLoad: {
       type: Boolean,
       default: false
+    },
+    propJobId: {
+      type: Number,
+      default: 0
     }
   },
   data () {
@@ -196,7 +197,7 @@ export default {
         this.jobTestArea = util.validate(jobTestAreaSerializer, res.data)
       })
 
-      getJobDetail(this.jobId).then(res => {
+      getJobDetail(this.propJobId).then(res => {
         this.job = util.validate(jobSerializer, res.data)
         this._jobMsgView()
       })
@@ -206,7 +207,7 @@ export default {
           if (error.response.status >= 500) {
             errorMsg = '服务器错误！'
           } else {
-            errorMsg = `id 为${this.jobId}的job 不存在`
+            errorMsg = `id 为${this.propJobId}的job 不存在`
           }
           this.$Message.error(errorMsg)
           this.$Loading.error()
@@ -263,12 +264,9 @@ export default {
         }
       })
     },
-    isSubmit () {
-      if (this.isSubmit) this.submit(this.jobId)
+    propJobMsgLoad () {
+      if (this.propJobMsgLoad && this.propJobId) this.getMsg()
     }
-  },
-  mounted () {
-    this.getMsg()
   }
 }
 </script>
