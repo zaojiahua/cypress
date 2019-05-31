@@ -25,7 +25,7 @@ export default [
         component: () => import('../views/jobEditorOther.vue')
       },
       {
-        name: 'jobAttr',
+        name: 'jobMsg',
         path: 'jobMsg/:id',
         component: () => import('../views/jobMsg.vue')
       },
