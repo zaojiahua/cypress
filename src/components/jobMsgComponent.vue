@@ -44,7 +44,7 @@
   </Form>
 </template>
 <script>
-import util from '../lib/util.js'
+import util from '../lib/util/validate.js'
 import { getJobDetail, patchUpdateJob } from '../api/reef/job'
 import { getManufacturerList } from '../api/reef/manufacturer'
 import { getJobTestAreaList } from '../api/reef/jobTestArea'

@@ -1,23 +1,20 @@
 <template>
-  <job-msg-component :job-id="$route.params.id" :is-submit="submit">
-    <Button type="success" @click="submitJobMsg">提交</Button>
-    <Button type="error" style="margin-left: 8px">取消</Button>
-  </job-msg-component>
+  <div>
+    <job-msg-component :prop-job-id="id" :prop-job-msg-load="flag"></job-msg-component>
+  </div>
+
 </template>
 <script>
 import jobMsgComponent from '../components/jobMsgComponent'
 export default {
+  // parseInt($route.params.id)
   name: 'jobMsg',
   data () {
     return {
-      submit: false
+      flag: true,
+      id: 86
     }
   },
-  components: { jobMsgComponent },
-  methods: {
-    submitJobMsg () {
-      this.submit = true
-    }
-  }
+  components: { jobMsgComponent }
 }
 </script>
