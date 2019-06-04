@@ -23,6 +23,11 @@ export default [
         name: 'jobMsg',
         path: 'jobMsg/:id',
         component: () => import('../views/jobMsg.vue')
+      },
+      {
+        name: 'jobShow',
+        path: 'jobShow',
+        component: () => import('../views/jobShow.vue')
       }
     ]
   },
