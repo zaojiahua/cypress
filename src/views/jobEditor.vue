@@ -91,9 +91,9 @@ export default {
       normalBlockTemplate.doubleClick = function (e, node) {
         self.blockName = node.data.text
         self.modalShow = true
-        if (!self.BlockDiagram) blockDiagramInit()
+        if (!self.blockDiagram) blockDiagramInit()
         if (!self.blockPalette) blockPaletteInit()
-        self.BlockDiagram.model = go.Model.fromJson({
+        self.blockDiagram.model = go.Model.fromJson({
           'class': 'go.GraphLinksModel',
           'linkFromPortIdProperty': 'fromPort',
           'linkToPortIdProperty': 'toPort',
@@ -130,10 +130,13 @@ export default {
       self.myDiagram.nodeTemplateMap.add('switchBlock', switchBlockTemplate)
       self.myDiagram.nodeTemplateMap.add('Start', startNodeTemplate('#0c0bc9'))
       self.myDiagram.nodeTemplateMap.add('End', endNodeTemplate('#DC3C00'))
+
+      self.myDiagram.toolManager.linkingTool.linkValidation = myDiagramValidation
+      self.myDiagram.toolManager.relinkingTool.linkValidation = myDiagramValidation
     }
 
     function blockDiagramInit () {
-      self.BlockDiagram = MAKE(go.Diagram, 'inner-diagram', {
+      self.blockDiagram = MAKE(go.Diagram, 'inner-diagram', {
         initialContentAlignment: go.Spot.Center,
         allowDrop: true,
         'toolManager.mouseWheelBehavior': go.ToolManager.WheelZoom,
@@ -143,7 +146,27 @@ export default {
         'undoManager.isEnabled': true
       })
 
-      self.BlockDiagram.linkTemplate = linkTemplateStyle()
+      // -------------从Palette拖拽节点的触发事件，判断Unit是否被UnitList包含------------
+      self.blockDiagram.addDiagramListener('externalobjectsdropped', function (e) {
+        let flag = false
+        e.subject.each(function (n) {
+          // 得到从Palette拖过来的节点 判断节点如果没有group则删除节点
+          if (n.data.category === 'Unit') {
+            if (!n.data.group) { // 判断Unit是否被UnitList包含
+              flag = true
+            }
+          }
+        })
+
+        if (flag) {
+          self.blockDiagram.commandHandler.deleteSelection()// 删除该选中节点
+          self.$Message.error('Unit只能被包裹在UnitList中') // 错误提示
+          // self.blockDiagramHint.add('Unit只能被包裹在UnitList中')
+          // console.log('Unit只能被包裹在UnitList中！')
+        }
+      })
+
+      self.blockDiagram.linkTemplate = linkTemplateStyle()
 
       const unitTemplate = baseNodeTemplate('#c934c9', 'RoundedRectangle')
       unitTemplate.doubleClick = function (e, node) {
@@ -154,11 +177,19 @@ export default {
         console.log(self.jobName)
       }
 
-      self.BlockDiagram.nodeTemplateMap.add('Unit', unitTemplate)
-      self.BlockDiagram.nodeTemplateMap.add('Start', startNodeTemplate('#0c0bc9'))
-      self.BlockDiagram.nodeTemplateMap.add('End', endNodeTemplate('#DC3C00'))
-      self.BlockDiagram.groupTemplateMap.add('UnitList', baseGroupTemplate())
+      const unitListGroupTemplate = baseGroupTemplate()
+      unitListGroupTemplate.memberValidation = function groupValidation (group, node) {
+        if (node instanceof go.Group) return false// 不能将UnitList添加到UnitList中
+        return node.data.category === 'Unit'// 当节点的category值为Unit时
+      }
 
+      self.blockDiagram.nodeTemplateMap.add('Unit', unitTemplate)
+      self.blockDiagram.nodeTemplateMap.add('Start', startNodeTemplate('#0c0bc9'))
+      self.blockDiagram.nodeTemplateMap.add('End', endNodeTemplate('#DC3C00'))
+      self.blockDiagram.groupTemplateMap.add('UnitList', unitListGroupTemplate)
+
+      self.blockDiagram.toolManager.linkingTool.linkValidation = blockDiagramValidation
+      self.blockDiagram.toolManager.relinkingTool.linkValidation = blockDiagramValidation
       console.log('loadding')
     }
 
@@ -166,8 +197,8 @@ export default {
       self.blockPalette =
         MAKE(go.Palette, 'inner-palette',
           {
-            nodeTemplateMap: self.BlockDiagram.nodeTemplateMap,
-            groupTemplateMap: self.BlockDiagram.groupTemplateMap,
+            nodeTemplateMap: self.blockDiagram.nodeTemplateMap,
+            groupTemplateMap: self.blockDiagram.groupTemplateMap,
             layout: MAKE(go.GridLayout, { wrappingColumn: 1, alignment: go.GridLayout.Position })
           })
       let basicModule = {
@@ -181,6 +212,73 @@ export default {
       self.blockPalette.model = new go.GraphLinksModel(basicModule.nodeDataArray, basicModule.linkDataArray)
     }
 
+    function myDiagramValidation (fromnode, fromport, tonode, toport) {
+      if (fromnode.data.category === 'Start') {
+        // 1、Start只有一条指向链接
+        if (!maxLinkFrom(fromnode)) {
+          return false
+        }
+        // 2、Start只能指向Normal block
+        if (tonode.data.category !== 'normalBlock') {
+          return false
+        }
+      } else if (fromnode.data.category === 'normalBlock') {
+        // 2、Normal block只有一条指向链接
+        if (!maxLinkFrom(fromnode)) {
+          return false
+        }
+      } else if (fromnode.data.category === 'switchBlock') {
+        // 1、switchBlock是否重复指向同一模组
+        let flag = true
+        fromnode.findNodesOutOf().each(function (node) { // node为遍历的被指向节点
+          if (tonode.data.key === node.data.key) {
+            flag = false
+          }
+        })
+        return flag
+      }
+      return true
+    }
+
+    function blockDiagramValidation (fromnode, fromport, tonode, toport) {
+      if (fromnode.data.category === 'Start') { // Entry
+        // 1、Entry只有一条指向链接
+        if (!maxLinkFrom(fromnode)) {
+          return false
+        }
+        // 2、Entry不能直接指向Exit
+        if (tonode.data.category !== 'UnitList') {
+          return false
+        }
+      } else if (tonode.data.category === 'End') { // Exit
+        // 1、只有一条被指向链接
+        if (!maxLinkTo(tonode)) {
+          return false
+        }
+      } else if (fromnode.data.category === 'UnitList') { // UnitList
+        // 2、只有一条指向链接
+        if (!maxLinkFrom(fromnode)) {
+          return false
+        }
+        // 3、只有一条被指向链接
+        if (tonode.data.category === 'UnitList') {
+          var num = tonode.findLinksInto()
+          if (num.count > 0) {
+            return false
+          }
+        }
+      }
+      return true
+    }
+
+    function maxLinkFrom (node) {
+      return !(node.findNodesOutOf().count > 0)
+    }
+
+    // 节点只有一条被指向链接
+    function maxLinkTo (node) {
+      return !(node.findNodesInto().count > 0)
+    }
     this.init()
   },
   methods: {
@@ -207,7 +305,94 @@ export default {
 
     blockChartInit () {
     //
-    }
+    }/*,
+    saveBlock () { // block点击确定进行校验
+      const self = this
+      var blockDiagramData = JSON.parse(self.blockDiagram.model.toJson())
+      if (blockDiagramData.linkDataArray.length === 0) {
+        console.log('缺少链接关系')
+      }
+
+      if(blockDiagramData.nodeDataArray.length ===0){
+        console.log("还未对流程图进行编辑！");
+      }else{
+        var entryAll = self.blockDiagram.findNodesByExample({'category': "Start"})
+        var exitAll = self.blockDiagram.findNodesByExample({"category":"End"})
+        var unitListAll = self.blockDiagram.findNodesByExample({"category":"UnitList"})
+        var unitAll = self.blockDiagram.findNodesByExample({"category":"Unit"})
+
+        //Entry
+        if(entryAll.count !== 1){
+          console.log("有且只有一个Entry")
+        }else{
+          entryAll.iterator.each(function (node) {
+            var entryLinksOutOf = node.findLinksOutOf();
+            if(entryLinksOutOf.count <1){
+              console.log("Entry缺少指向链接");
+            }
+          })
+        }
+        //Exit
+        if(exitAll.count !==1){
+          blockDiagramHint.add("有且只有一个Exit");
+        }else{
+          exitAll.iterator.each(function (node) {
+            var exitLinksInto = node.findLinksInto();
+            if(exitLinksInto.count !== 1){
+              blockDiagramHint.add("Exit缺少被指向链接");
+            }
+          })
+        }
+        //UnitList
+        if(unitListAll.count <1){
+          blockDiagramHint.add("缺少UnitList");
+        }else{
+          unitListAll.iterator.each(function (node) {
+            var unitListLinksInto = node.findLinksInto();
+            var unitListLinksOutOf = node.findLinksOutOf();
+            if(unitListLinksInto.count !== 1){
+              blockDiagramHint.add("UnitList有且只有一条被指向链接");
+            }
+            if(unitListLinksOutOf.count !==1){
+              blockDiagramHint.add("UnitList有且只有一条指向链接");
+            }
+          })
+          for (var i = 0; i <blockDiagramData.nodeDataArray.length ; i++) {
+            if(blockDiagramData.nodeDataArray[i].category === "UnitList"){
+              var groupNum = 0;
+              for (var j = 0; j <blockDiagramData.nodeDataArray.length ; j++) {
+                if(blockDiagramData.nodeDataArray[j].group === blockDiagramData.nodeDataArray[i].key && blockDiagramData.nodeDataArray[j].category==="Unit"){
+                  groupNum++;
+                }
+              }
+              if(groupNum === 0){
+                blockDiagramHint.add("UnitList中至少包含一个Unit");
+              }
+            }
+          }
+        }
+        //Unit
+        if(unitAll.count ===0){
+          blockDiagramHint.add("缺少Unit");
+        }else{
+          unitAll.iterator.each(function (node) {
+            if(!node.data.unitMsg){
+              blockDiagramHint.add("Unit信息没有编辑");
+            }
+          })
+        }
+      }
+      if(blockDiagramHint.size !== 0 || $('#NormalBlockNameCheck').is(':visible')){
+        $(".errInfo").show();
+        $(".errInfo p").remove();
+
+        var errorNum = 1;
+        blockDiagramHint.forEach(function (element) {
+          $(".errInfo").append("<p>" + errorNum + "." + element +"</p>");
+          errorNum++;
+        });
+      }
+    } */
   }
 }
 </script>

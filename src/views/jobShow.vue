@@ -114,7 +114,7 @@
 </template>
 
 <script>
-import util from '../lib/util.js'
+import util from '../lib/util/validate.js'
 import { getJobList } from '../api/reef/job'
 import jobMsgComponent from '../components/jobMsgComponent'
 
