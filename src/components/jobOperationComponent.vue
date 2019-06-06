@@ -1,56 +1,42 @@
 <template>
-    <Modal
-      :title="unitName"
-      v-model="showModal"
-      width="95"
-      :styles="{top: '20px'}"
-      :mask-closable="false">
-      <div class="unitView">
-        <div class="unitContent">
-          <Input v-model="unitContent" type="textarea" :autosize="{minRows: 10,maxRows: 31}" placeholder="Enter something..." />
+  <Tabs type="card">
+    <TabPane label="图片截取">
+      <Card style="float: left; width: 40%">
+        <Divider orientation="left">获取图片</Divider>
+        <Table border size="small"
+               :loading="loading"
+               @on-row-click="onDeviceRowClick"
+               highlight-row max-height="200"
+               :columns="deviceColumn"
+               :data="deviceData">
+        </Table>
+        <div style="margin: 16px">
+          <Input v-model.trim="imgName" placeholder="Enter something..." clearable style="width: 72%" />
+          <Button type="primary" :loading="loading" @click="getImg">
+            <span v-if="!loading">Commit</span>
+            <span v-else>Loading...</span>
+          </Button>
         </div>
-        <div class="unitOperation">
-          <Tabs type="card">
-            <TabPane label="图片截取">
-              <Card style="float: left; width: 40%">
-                <Divider orientation="left">获取图片</Divider>
-                <Table border size="small"
-                       :loading="loading"
-                       @on-row-click="onDeviceRowClick"
-                       highlight-row max-height="200"
-                       :columns="deviceColumn"
-                       :data="deviceData">
-                </Table>
-                <div style="margin: 16px">
-                  <Input v-model.trim="imgName" placeholder="Enter something..." clearable style="width: 72%" />
-                  <Button type="primary" :loading="loading" @click="getImg">
-                    <span v-if="!loading">Commit</span>
-                    <span v-else>Loading...</span>
-                  </Button>
-                </div>
-                <template v-show="featurePointShow">
-                  <Divider orientation="left">特征点选取</Divider>
-                  <Table border size="small"
-                         :columns="coordinateColumn"
-                         :data="coordinateData"
-                         @on-row-click="onCoordinateRowClick"
-                         highlight-row max-height="220">
-                    <template slot-scope="{ row, index }" slot="action">
-                      <Button type="primary" size="small" style="margin-right: 5px" @click="add()">Add</Button>
-                      <Button type="error" size="small" @click="remove(index)">Delete</Button>
-                    </template>
-                  </Table>
-                </template>
-              </Card>
-              <div style="margin-left:42%;width: 58%;height: 68vh">
-                <img ref="ImgRef" :src="imgUrl" :style="style" @click="getCoordinate">
-              </div>
-            </TabPane>
-            <TabPane label="文件上传">标签二的内容</TabPane>
-          </Tabs>
-        </div>
+        <template v-show="featurePointShow">
+          <Divider orientation="left">特征点选取</Divider>
+          <Table border size="small"
+                 :columns="coordinateColumn"
+                 :data="coordinateData"
+                 @on-row-click="onCoordinateRowClick"
+                 highlight-row max-height="220">
+            <template slot-scope="{ row, index }" slot="action">
+              <Button type="primary" size="small" style="margin-right: 5px" @click="add()">Add</Button>
+              <Button type="error" size="small" @click="remove(index)">Delete</Button>
+            </template>
+          </Table>
+        </template>
+      </Card>
+      <div style="margin-left:42%;width: 58%;height: 68vh">
+        <img ref="ImgRef" :src="imgUrl" :style="style" @click="getCoordinate">
       </div>
-    </Modal>
+    </TabPane>
+    <TabPane label="文件上传">标签二的内容</TabPane>
+  </Tabs>
 </template>
 
 <script>
@@ -76,18 +62,6 @@ const deviceSerializer = [
 export default {
   name: 'jobOperationComponent',
   props: {
-    showModal: {
-      type: Boolean,
-      default: false
-    },
-    unitName: {
-      type: String,
-      default: null
-    },
-    unitContent: {
-      type: String,
-      default: null
-    },
     deviceAutoLoad: {
       type: Boolean,
       default: true
@@ -209,6 +183,7 @@ export default {
     },
 
     _callEblockExceResponseHandle (res) {
+      console.log(res.data)
       if (res.data.state === true) {
         let timer = setInterval(function () {
           getImgStatus(timer)
@@ -227,11 +202,15 @@ export default {
               }
             })
           } else {
+            this._loading(false)
             this.$Message.error('请求超时，请换一个device')
             clearInterval(timer)
           }
         }
-      } else { this.$Message.error('当前device被使用，请换一个device') }
+      } else {
+        this._loading(false)
+        this.$Message.error('当前device被使用，请换一个device')
+      }
       // this._loading(false)
     },
 

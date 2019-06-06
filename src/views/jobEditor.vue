@@ -6,13 +6,28 @@
       <div id="chart-palette"></div>
       <div id="chart-diagram"></div>
     </div>
-    <Modal v-model="modalShow" fullscreen :title="blockName">
+    <Modal v-model="blockModalShow" fullscreen :title="blockName">
       <div id="inner-wrap">
         <div id="inner-palette"></div>
         <div id="inner-diagram"></div>
       </div>
     </Modal>
-    <job-operation-component :show-modal="jobOperationComponentShow" :unit-name="unitName" :stage-job-label="stageJobLabel" :unit-content="unitContent"></job-operation-component>
+    <Modal
+      :title="unitName"
+      v-model="unitModalShow"
+      width="95"
+      :styles="{top: '20px'}"
+      :mask-closable="false">
+      <div class="unitView">
+        <div class="unitContent">
+          <Input v-model="unitContent" type="textarea" :autosize="{minRows: 10,maxRows: 31}" placeholder="Enter something..." />
+        </div>
+        <div class="unitOperation">
+          <job-operation-component :stage-job-label="stageJobLabel"></job-operation-component>
+        </div>
+      </div>
+    </Modal>
+
   </div>
 </template>
 <script>
@@ -36,7 +51,8 @@ export default {
   data () {
     return {
       jobName: 'zzz',
-      modalShow: false,
+      blockModalShow: false,
+      unitModalShow: false,
       jobOperationComponentShow: false,
       unitName: null,
       unitContent: null,
@@ -90,7 +106,7 @@ export default {
 
       normalBlockTemplate.doubleClick = function (e, node) {
         self.blockName = node.data.text
-        self.modalShow = true
+        self.blockModalShow = true
         if (!self.blockDiagram) blockDiagramInit()
         if (!self.blockPalette) blockPaletteInit()
         self.blockDiagram.model = go.Model.fromJson({
@@ -170,7 +186,7 @@ export default {
 
       const unitTemplate = baseNodeTemplate('#c934c9', 'RoundedRectangle')
       unitTemplate.doubleClick = function (e, node) {
-        self.jobOperationComponentShow = true
+        self.unitModalShow = true
         self.unitName = node.data.text
         self.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
 
@@ -282,9 +298,6 @@ export default {
     this.init()
   },
   methods: {
-    onSubmit () {
-
-    },
     init () {
       const self = this
       self.myPalette = MAKE(
@@ -438,6 +451,28 @@ export default {
       }
 
       #inner-diagram{
+        flex-grow: 1;
+        background-color: white;
+        border: solid 1px rgb(244, 244, 244);
+      }
+    }
+
+    .unitView{
+      width: 100%;
+      display: flex;
+      height: 74vh;
+      justify-content: space-between;
+      margin-bottom: 22px;
+
+      .unitContent {
+        width: 20%;
+        margin-right: 16px;
+        background-color: white;
+        border: solid 1px rgb(244, 244, 244);
+      }
+
+      .unitOperation{
+        width: 80%;
         flex-grow: 1;
         background-color: white;
         border: solid 1px rgb(244, 244, 244);
