@@ -1,5 +1,5 @@
 import axios from '../index'
-import { CoralIp } from '../../config'
+import { jobLibSvcURL } from '../../config'
 
 export const callEblockExce = (data) => {
   /*
@@ -13,7 +13,7 @@ export const callEblockExce = (data) => {
       }
   * */
   return axios.request({
-    url: CoralIp,
+    url: jobLibSvcURL,
     method: 'post',
     data: data
   })
@@ -23,7 +23,7 @@ export const deviceOperationStatus = (deviceLabel) => {
   /*
   * */
   return axios.request({
-    url: `${CoralIp}/deviceOperationStatus?deviceLabel=${deviceLabel}`
+    url: `${jobLibSvcURL}/deviceOperationStatus?deviceLabel=${deviceLabel}`
   })
 }
 
@@ -31,7 +31,7 @@ export const getTemporarySpace = () => {
   /*
   * */
   return axios.request({
-    url: CoralIp,
+    url: jobLibSvcURL,
     method: 'post',
     data: { requestName: 'getTemporarySpace' }
   })
@@ -39,7 +39,7 @@ export const getTemporarySpace = () => {
 
 export const getBlockFlowDict4Font = (deviceId) => {
   return axios.request({
-    url: CoralIp,
+    url: jobLibSvcURL,
     method: 'post',
     data: {
       requestName: 'getBlockFlowDict4Font',
