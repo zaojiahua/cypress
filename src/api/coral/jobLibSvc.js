@@ -38,8 +38,6 @@ export const getTemporarySpace = () => {
 }
 
 export const getBlockFlowDict4Font = (deviceId) => {
-  console.log(deviceId)
-
   return axios.request({
     url: CoralIp,
     method: 'post',

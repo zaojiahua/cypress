@@ -7,15 +7,18 @@ const router = new Router({
   routes
 })
 
-// router.beforeEach((to, from, next) => {
-//   console.log(to.path)
-//   if (to.path === '/jobMsg/86') {
-//     console.log('gzj')
-//     next(false)
-//   } else {
-//     console.log('gzj   pig')
-//     next()
-//   }
-// })
+router.beforeEach((to, from, next) => {
+  if (to.path === '/login') {
+    next()
+  } else {
+    if (localStorage.getItem('token')) sessionStorage.setItem('token', localStorage.getItem('token'))
+    let token = sessionStorage.getItem('token')
+    if (token === null || token === '') {
+      next({ path: '/login', query: { redirect: to.fullPath } })
+    } else {
+      next()
+    }
+  }
+})
 
 export default router

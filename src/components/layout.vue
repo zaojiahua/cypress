@@ -77,8 +77,8 @@
           </div>
           <div style="float: right">
             <MenuItem name="1">
-              <Avatar>A</Avatar>
-              Admin
+              <Avatar>{{ username.substr(0,1).toUpperCase() }}</Avatar>
+              {{ username }}
             </MenuItem>
             <MenuItem name="2" @click.native="getSysVersion">
               关于TMach
@@ -116,7 +116,8 @@
 export default {
   data () {
     return {
-      isCollapsed: true
+      isCollapsed: true,
+      username: localStorage.username
     }
   },
   computed: {
@@ -136,6 +137,22 @@ export default {
   methods: {
     collapsedSider () {
       this.$refs.side1.toggleCollapse()
+    },
+    logout () {
+      const self = this
+      this.$Modal.confirm({
+        title: '您确定要登出?',
+        onOk () {
+          this.$Loading.start()
+          self.$router.push({ name: 'login', query: { redirect: self.$route.fullPath } }
+          )
+          this.$Message.success('登出成功!')
+          this.$Loading.finish()
+        },
+        onCancel () {
+          this.$Modal.remove()
+        }
+      })
     }
   }
 }
