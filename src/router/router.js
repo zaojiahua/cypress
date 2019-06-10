@@ -11,11 +11,6 @@ export default [
       },
       {
         name: 'jobEditor',
-        path: 'jobEditor/:jobLabel',
-        component: () => import('../views/jobEditor.vue')
-      },
-      {
-        name: 'jobEditor',
         path: 'jobEditor',
         component: () => import('../views/jobEditor.vue')
       },
