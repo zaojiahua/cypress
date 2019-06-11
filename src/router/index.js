@@ -8,16 +8,12 @@ const router = new Router({
 })
 
 router.beforeEach((to, from, next) => {
-  if (to.path === '/login') {
-    next()
-  } else {
+  if (to.name === 'login') next()
+  else {
     if (localStorage.getItem('token')) sessionStorage.setItem('token', localStorage.getItem('token'))
     let token = sessionStorage.getItem('token')
-    if (token === null || token === '') {
-      next({ path: '/login', query: { redirect: to.fullPath } })
-    } else {
-      next()
-    }
+    if (token === null || token === '') next({ name: 'login', query: { redirect: to.fullPath } })
+    else next()
   }
 })
 

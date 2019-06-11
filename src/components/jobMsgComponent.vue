@@ -1,38 +1,38 @@
 <template>
-  <Form :label-width="80">
-    <Form-item label="用例名称:">
+  <Form ref="jobInfoForm" :label-width="80" :model="jobInfo" :rules="jobInfoRules">
+    <Form-item label="用例名称:" prop="job_name">
       <Input v-model="jobInfo.job_name" placeholder="请输入"/>
     </Form-item>
-    <Form-item label="测试用途:">
+    <Form-item label="测试用途:" prop="test_area">
       <Select v-model="jobInfo.test_area" multiple placeholder="请选择" filterable>
         <Option v-for="item in jobTestArea.jobtestareas" :value="item.id" :key="item.id">{{ item.description }}</Option>
       </Select>
     </Form-item>
-    <Form-item label="自定义标签:">
+    <Form-item label="自定义标签:" prop="custom_tag">
       <Select v-model="jobInfo.custom_tag" multiple placeholder="请选择" filterable>
         <Option v-for="item in customTag.customtags" :value="item.id" :key="item.id">{{ item.custom_tag_name }}</Option>
       </Select>
     </Form-item>
-    <Form-item label="用例说明:">
+    <Form-item label="用例说明:" prop="description">
       <Input v-model="jobInfo.description" placeholder="请输入"/>
     </Form-item>
-    <Form-item label="厂商信息:">
+    <Form-item label="厂商信息:" prop="manufacturers">
       <div>
-      <Select v-model="manufacturer_id" placeholder="请选择" @on-change="clear" filterable>
+      <Select v-model="jobInfo.manufacturer" placeholder="请选择" @on-change="clear" filterable>
         <Option v-for="item in manufacturer.manufacturers" :value="item.id" :key="item.id">{{ item.manufacturer_name }}</Option>
       </Select></div>
     </Form-item>
-    <Form-item label="适配机型:">
+    <Form-item label="适配机型:" prop="phone_models">
       <Select v-model="jobInfo.phone_models" multiple :disabled="disabled" placeholder="请选择" filterable>
           <Option v-for="item in checkManufacturerList.phonemodel" :value="item.id" :key="item.id">{{ item.phone_model_name }}</Option>
       </Select>
     </Form-item>
-    <Form-item label="ROM版本:">
+    <Form-item label="ROM版本:" prop="rom_version">
       <Select v-model="jobInfo.rom_version" multiple :disabled="disabled" placeholder="请选择" filterable>
         <Option v-for="item in checkManufacturerList.romversion" :value="item.id" :key="item.id">{{ item.version }}</Option>
       </Select>
     </Form-item>
-    <Form-item label="适配系统:">
+    <Form-item label="适配系统:" prop="android_version">
       <Select v-model="jobInfo.android_version" multiple placeholder="请选择">
         <Option v-for="item in androidVersion.androidversions" :value="item.id" :key="item.id">{{ item.version }}</Option>
       </Select>
@@ -164,6 +164,7 @@ export default {
       disabled: true,
       isError: false,
       jobInfo: {
+        manufacturer: '',
         test_area: [],
         android_version: [],
         custom_tag: [],
@@ -172,6 +173,32 @@ export default {
         job_label: '',
         job_name: '',
         description: ''
+      },
+      jobInfoRules: {
+        job_name: [
+          { required: true, message: '请输入用例名称', trigger: 'blur' }
+        ],
+        test_area: [
+          { required: true, type: 'array', min: 1, message: '请输入测试用途', trigger: 'change' }
+        ],
+        custom_tag: [
+          { required: true, type: 'array', min: 1, message: '请输入自定义标签', trigger: 'change' }
+        ],
+        description: [
+          { required: true, message: '请输入用例说明', trigger: 'blur' }
+        ],
+        manufacturer: [
+          { required: true, message: '请输入厂商信息', trigger: 'change' }
+        ],
+        phone_models: [
+          { required: true, type: 'array', min: 1, message: '请输入适配机型', trigger: 'change' }
+        ],
+        rom_version: [
+          { required: true, type: 'array', min: 1, message: '请输入ROM版本', trigger: 'change' }
+        ],
+        android_version: [
+          { required: true, type: 'array', min: 1, message: '请输入适配系统', trigger: 'change' }
+        ]
       },
       job: util.validate(jobSerializer, {}),
       manufacturer: util.validate(manufacturerSerializer, {}),
@@ -246,11 +273,17 @@ export default {
       if (this.isError) {
         this.$Message.error('失败操作')
       } else {
-        patchUpdateJob(id, this.jobInfo).then(res => {
-          console.log(res)
-          this.$Message.info('ok')
-        }).catch(error => {
-          console.log(error)
+        this.$refs.jobInfoForm.validate((valid) => {
+          if (valid) {
+            patchUpdateJob(id, this.jobInfo).then(res => {
+              console.log(res)
+              this.$Message.info('ok')
+            }).catch(error => {
+              console.log(error)
+            })
+          } else {
+            this.$Message.warning('请输入完整信息')
+          }
         })
       }
     }
@@ -258,6 +291,7 @@ export default {
   watch: {
     manufacturer_id () {
       this.disabled = false
+      this.jobInfo.manufacturer = this.manufacturer_id
       this.manufacturer.manufacturers.forEach(item => {
         if (item.id === this.manufacturer_id) {
           this.checkManufacturerList = item

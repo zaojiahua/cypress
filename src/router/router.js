@@ -33,7 +33,7 @@ export default [
   },
   {
     name: 'notFound',
-    path: '/notFound',
+    path: '*',
     component: () => import('../views/notFound.vue')
   }
 ]
