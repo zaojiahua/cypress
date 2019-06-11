@@ -1,4 +1,5 @@
-const BASE_URL = process.env.NODE_ENV === 'production' ? '/production/' : '/'
+// const BASE_URL = process.env.NODE_ENV === 'production' ? '/production/' : '/'
+const BASE_URL = '/'
 
 const path = require('path')
 
@@ -11,12 +12,6 @@ module.exports = {
     config.resolve.alias
       .set('@', resolve('src'))
       .set('_c', resolve('src/components'))
-
-    // config.module // need installiview-loader
-    //   .rule('vue')
-    //   .use('iview')
-    //   .loader('iview-loader')
-    //   .options({ prefix: false })
   },
   productionSourceMap: false
 }
