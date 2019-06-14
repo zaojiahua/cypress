@@ -25,7 +25,8 @@
       v-model="unitModalShow"
       width="95"
       :styles="{top: '20px'}"
-      :mask-closable="false">
+      :mask-closable="false"
+      :closable="false">
       <!--unit编辑页面-->
       <div slot="footer">
         <Button type="text" size="large" @click="unitModalShow=false">取消</Button>
@@ -40,6 +41,12 @@
         </div>
       </div>
     </Modal>
+    <switch-block-detail-component
+      :switch-block-info="switchBlockInfo"
+      v-model="switchBlockModalShow"
+      @save="switchBlockSave"
+      @clear="switchBlockInfo = {}">
+    </switch-block-detail-component>
   </div>
 </template>
 <script>
@@ -58,20 +65,25 @@ import {
 } from './jobEditorCommon'
 import JobOperationComponent from '../components/jobOperationComponent'
 import { getBlockFlowDict4Font, getTemporarySpace } from '../api/coral/jobLibSvc'
+import SwitchBlockDetailComponent from '../components/SwitchBlockDetailComponent'
 export default {
-  components: { JobOperationComponent },
+  components: { SwitchBlockDetailComponent, JobOperationComponent },
   data () {
     return {
       jobName: 'zzz',
       blockModalShow: false,
       unitModalShow: false,
       jobOperationComponentShow: false,
+      switchBlockModalShow: false,
+      currentSwitchBlockKey: null,
       unitName: null,
       unitContent: null,
       blockName: '',
       stageJobLabel: null,
       errorMessage: '',
-      unitNodeByKey: null
+      unitNodeByKey: null,
+      switchBlockInfo: {}
+
     }
   },
   mounted () {
@@ -117,6 +129,20 @@ export default {
       }
 
       const switchBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: 'yellow', 1.0: 'black' }), 'Diamond')
+      switchBlockTemplate.doubleClick = function (e, node) {
+        if (e.diagram instanceof go.Palette) return
+
+        self.switchBlockInfo = {
+          switchBlockName: node.data.text,
+          fileName: node.data.fileName,
+          explain: node.data.explain
+        }
+        self.currentSwitchBlockKey = node.data.key
+        console.log(self.currentSwitchBlockKey)
+
+        self.switchBlockModalShow = true
+      }
+
       const normalBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: 'blue', 1.0: 'red' }), 'RoundedRectangle')
 
       normalBlockTemplate.doubleClick = function (e, node) {
@@ -332,6 +358,13 @@ export default {
         { category: 'normalBlock', text: 'Normal block' },
         { category: 'End', text: 'End' }
       ])
+    },
+
+    switchBlockSave (msg) {
+      let node = this.myDiagram.model.findNodeDataForKey(this.currentSwitchBlockKey)
+      this.myDiagram.model.setDataProperty(node, 'text', msg.switchBlockName)
+      this.myDiagram.model.setDataProperty(node, 'fileName', msg.fileName)
+      this.myDiagram.model.setDataProperty(node, 'explain', msg.explain)
     },
 
     blockChartInit () {
