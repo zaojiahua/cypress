@@ -1,12 +1,20 @@
 <template>
   <div id="wrap">
-    <p class="jobName">jobName: {{jobName}}</p>
+      <div class="jobName">jobName: {{jobName}}
+        <Button type="text" size="large">取消</Button>
+        <Button type="primary" size="large" @click="saveBlock" style="margin-right: 10px">确定</Button>
+      </div>
 
-    <div id="chart-wrap">
-      <div id="chart-palette"></div>
-      <div id="chart-diagram"></div>
-    </div>
+      <div id="chart-wrap">
+        <div id="chart-palette"></div>
+        <div id="chart-diagram"></div>
+      </div>
+
     <Modal v-model="blockModalShow" fullscreen :title="blockName">
+      <div slot="footer">
+        <Button type="text" size="large" @click="blockModalShow=false">取消</Button>
+        <Button type="primary" size="large" @click="saveNormalBlock">确定</Button>
+      </div>
       <div id="inner-wrap">
         <div id="inner-palette"></div>
         <div id="inner-diagram"></div>
@@ -18,6 +26,11 @@
       width="95"
       :styles="{top: '20px'}"
       :mask-closable="false">
+      <!--unit编辑页面-->
+      <div slot="footer">
+        <Button type="text" size="large" @click="unitModalShow=false">取消</Button>
+        <Button type="primary" size="large" @click="saveUnit">确定</Button>
+      </div>
       <div class="unitView">
         <div class="unitContent">
           <Input v-model="unitContent" type="textarea" :autosize="{minRows: 10,maxRows: 31}" placeholder="Enter something..." />
@@ -27,7 +40,6 @@
         </div>
       </div>
     </Modal>
-
   </div>
 </template>
 <script>
@@ -57,15 +69,17 @@ export default {
       unitName: null,
       unitContent: null,
       blockName: '',
-      stageJobLabel: null
+      stageJobLabel: null,
+      errorMessage: '',
+      unitNodeByKey: null
     }
   },
   mounted () {
     const self = this
 
     myDiagramInit()
-    if (this.$route.params.jobLabel) {
-      getBlockFlowDict4Font(this.$route.params.jobLabel).then(res => {
+    if (this.$route.query.jobLabel) {
+      getBlockFlowDict4Font(this.$route.query.jobLabel).then(res => {
         if (res.data.error) return this.$router.push({ path: '/' })
         this.stageJobLabel = res.data.stageJobLabel
         self.myDiagram.model = go.Model.fromJson(res.data.jobBody)
@@ -93,6 +107,7 @@ export default {
       self.myDiagram.linkTemplate = linkTemplateStyle()
 
       self.myDiagram.linkTemplate.doubleClick = function (e, node) {
+        if (e.diagram instanceof go.Palette) return
         let block = self.myDiagram.findNodeForKey(node.data.from).data
 
         if (block.category === 'normalBlock') {
@@ -105,6 +120,7 @@ export default {
       const normalBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: 'blue', 1.0: 'red' }), 'RoundedRectangle')
 
       normalBlockTemplate.doubleClick = function (e, node) {
+        if (e.diagram instanceof go.Palette) return
         self.blockName = node.data.text
         self.blockModalShow = true
         if (!self.blockDiagram) blockDiagramInit()
@@ -186,7 +202,9 @@ export default {
 
       const unitTemplate = baseNodeTemplate('#c934c9', 'RoundedRectangle')
       unitTemplate.doubleClick = function (e, node) {
+        if (e.diagram instanceof go.Palette) return
         self.unitModalShow = true
+        self.unitNodeByKey = node.data.key
         self.unitName = node.data.text
         self.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
 
@@ -318,101 +336,263 @@ export default {
 
     blockChartInit () {
     //
-    }/*,
-    saveBlock () { // block点击确定进行校验
+    },
+    saveNormalBlock () { // normalBlock点击确定进行校验
       const self = this
+      var blockDiagramHint = new Set()
       var blockDiagramData = JSON.parse(self.blockDiagram.model.toJson())
       if (blockDiagramData.linkDataArray.length === 0) {
-        console.log('缺少链接关系')
+        blockDiagramHint.add('缺少链接关系')
       }
 
-      if(blockDiagramData.nodeDataArray.length ===0){
-        console.log("还未对流程图进行编辑！");
-      }else{
-        var entryAll = self.blockDiagram.findNodesByExample({'category': "Start"})
-        var exitAll = self.blockDiagram.findNodesByExample({"category":"End"})
-        var unitListAll = self.blockDiagram.findNodesByExample({"category":"UnitList"})
-        var unitAll = self.blockDiagram.findNodesByExample({"category":"Unit"})
+      if (blockDiagramData.nodeDataArray.length === 0) {
+        blockDiagramHint.add('还未对流程图进行编辑！')
+      } else {
+        var entryAll = self.blockDiagram.findNodesByExample({ 'category': 'Start' })
+        var exitAll = self.blockDiagram.findNodesByExample({ 'category': 'End' })
+        var unitListAll = self.blockDiagram.findNodesByExample({ 'category': 'UnitList' })
+        var unitAll = self.blockDiagram.findNodesByExample({ 'category': 'Unit' })
 
-        //Entry
-        if(entryAll.count !== 1){
-          console.log("有且只有一个Entry")
-        }else{
+        // Entry
+        if (entryAll.count !== 1) {
+          blockDiagramHint.add('有且只有一个Entry')
+        } else {
           entryAll.iterator.each(function (node) {
-            var entryLinksOutOf = node.findLinksOutOf();
-            if(entryLinksOutOf.count <1){
-              console.log("Entry缺少指向链接");
+            var entryLinksOutOf = node.findLinksOutOf()
+            if (entryLinksOutOf.count < 1) {
+              blockDiagramHint.add('Entry缺少指向链接')
             }
           })
         }
-        //Exit
-        if(exitAll.count !==1){
-          blockDiagramHint.add("有且只有一个Exit");
-        }else{
+        // Exit
+        if (exitAll.count !== 1) {
+          blockDiagramHint.add('有且只有一个Exit')
+        } else {
           exitAll.iterator.each(function (node) {
-            var exitLinksInto = node.findLinksInto();
-            if(exitLinksInto.count !== 1){
-              blockDiagramHint.add("Exit缺少被指向链接");
+            var exitLinksInto = node.findLinksInto()
+            if (exitLinksInto.count !== 1) {
+              blockDiagramHint.add('Exit缺少被指向链接')
             }
           })
         }
-        //UnitList
-        if(unitListAll.count <1){
-          blockDiagramHint.add("缺少UnitList");
-        }else{
+        // UnitList
+        if (unitListAll.count < 1) {
+          blockDiagramHint.add('缺少UnitList')
+        } else {
           unitListAll.iterator.each(function (node) {
-            var unitListLinksInto = node.findLinksInto();
-            var unitListLinksOutOf = node.findLinksOutOf();
-            if(unitListLinksInto.count !== 1){
-              blockDiagramHint.add("UnitList有且只有一条被指向链接");
+            var unitListLinksInto = node.findLinksInto()
+            var unitListLinksOutOf = node.findLinksOutOf()
+            if (unitListLinksInto.count !== 1) {
+              blockDiagramHint.add('UnitList有且只有一条被指向链接')
             }
-            if(unitListLinksOutOf.count !==1){
-              blockDiagramHint.add("UnitList有且只有一条指向链接");
+            if (unitListLinksOutOf.count !== 1) {
+              blockDiagramHint.add('UnitList有且只有一条指向链接')
             }
           })
-          for (var i = 0; i <blockDiagramData.nodeDataArray.length ; i++) {
-            if(blockDiagramData.nodeDataArray[i].category === "UnitList"){
-              var groupNum = 0;
-              for (var j = 0; j <blockDiagramData.nodeDataArray.length ; j++) {
-                if(blockDiagramData.nodeDataArray[j].group === blockDiagramData.nodeDataArray[i].key && blockDiagramData.nodeDataArray[j].category==="Unit"){
-                  groupNum++;
+          for (var i = 0; i < blockDiagramData.nodeDataArray.length; i++) {
+            if (blockDiagramData.nodeDataArray[i].category === 'UnitList') {
+              var groupNum = 0
+              for (var j = 0; j < blockDiagramData.nodeDataArray.length; j++) {
+                if (blockDiagramData.nodeDataArray[j].group === blockDiagramData.nodeDataArray[i].key && blockDiagramData.nodeDataArray[j].category === 'Unit') {
+                  groupNum++
                 }
               }
-              if(groupNum === 0){
-                blockDiagramHint.add("UnitList中至少包含一个Unit");
+              if (groupNum === 0) {
+                blockDiagramHint.add('UnitList中至少包含一个Unit')
               }
             }
           }
         }
-        //Unit
-        if(unitAll.count ===0){
-          blockDiagramHint.add("缺少Unit");
-        }else{
+        // Unit
+        if (unitAll.count === 0) {
+          blockDiagramHint.add('缺少Unit')
+        } else {
           unitAll.iterator.each(function (node) {
-            if(!node.data.unitMsg){
-              blockDiagramHint.add("Unit信息没有编辑");
+            if (!node.data.unitMsg) {
+              blockDiagramHint.add('Unit信息没有编辑')
             }
           })
         }
       }
-      if(blockDiagramHint.size !== 0 || $('#NormalBlockNameCheck').is(':visible')){
-        $(".errInfo").show();
-        $(".errInfo p").remove();
 
-        var errorNum = 1;
+      this.$Message.destroy()
+
+      if (blockDiagramHint.size !== 0) {
+        self.blockModalShow = true
+        var errorNum = 1
+        self.errorMessage = ''
         blockDiagramHint.forEach(function (element) {
-          $(".errInfo").append("<p>" + errorNum + "." + element +"</p>");
-          errorNum++;
-        });
+          self.errorMessage = self.errorMessage + errorNum + '.' + element + '<br/>'
+          errorNum++
+        })
+        // message提示
+        this.$Message.info({
+          content: self.errorMessage, // 提示内容
+          duration: 0,
+          closable: false
+        })
+      } else {
+        self.blockModalShow = false
+        var myDiagramDataInBlock = JSON.parse(self.myDiagram.model.toJson())
+        myDiagramDataInBlock.nodeDataArray.unitLists = blockDiagramData
+        // 缺少流程图的保存
+
+        /* console.log('normal block编辑完成')
+        console.log(myDiagramDataInBlock) */
       }
-    } */
+    },
+    saveBlock () {
+      // 事件校验提示
+      const self = this
+      var myDiagramEventValidationHint = new Set()// 错误提示 set类型去重
+      var myDiagramData = JSON.parse(self.myDiagram.model.toJson())// 获取数据 将json字符串转换成json对象
+      if (myDiagramData.linkDataArray.length === 0) {
+        myDiagramEventValidationHint.add('缺少链接关系')
+      }
+      if (myDiagramData.nodeDataArray.length === 0) {
+        myDiagramEventValidationHint.add('还未对流程图进行编辑！')
+      } else {
+        var startAll = self.myDiagram.findNodesByExample({ 'category': 'Start' })
+        var endAll = self.myDiagram.findNodesByExample({ 'category': 'End' })
+        var switchBlockAll = self.myDiagram.findNodesByExample({ 'category': 'switchBlock' })
+        var normalBlockAll = self.myDiagram.findNodesByExample({ 'category': 'normalBlock' })
+
+        if (startAll.count !== 1) {
+          myDiagramEventValidationHint.add('有且只有一个Start')
+        } else {
+          startAll.iterator.each(function (node) {
+            var startLinksOutOf = node.findLinksOutOf()
+            if (startLinksOutOf.count <= 0) {
+              myDiagramEventValidationHint.add('Start缺少指向链接')
+            }
+          })
+        }
+
+        if (endAll.count <= 0) {
+          myDiagramEventValidationHint.add('缺少End')
+        } else {
+          endAll.iterator.each(function (node) { // 遍历所有的end节点
+            var endLinksInto = node.findLinksInto()
+            if (endLinksInto.count <= 0) {
+              myDiagramEventValidationHint.add('End至少有一条被指向链接')
+            }
+          })
+        }
+
+        if (switchBlockAll.count !== 0) {
+          switchBlockAll.iterator.each(function (node) {
+            var switchBlockLinksInto = node.findLinksInto()
+            var switchBlockLinksOutOf = node.findLinksOutOf()
+            if (switchBlockLinksInto.count < 1) {
+              myDiagramEventValidationHint.add('Switch block至少有一条被指向链接')
+            }
+            if (switchBlockLinksOutOf.count < 2) {
+              myDiagramEventValidationHint.add('Switch block至少有两条指向链接')
+            }
+          })
+          var elseNum = 0
+          for (var i = 0; i < myDiagramData.nodeDataArray.length; i++) {
+            if (myDiagramData.nodeDataArray[i].category === 'switchBlock') {
+              for (var j = 0; j < myDiagramData.linkDataArray.length; j++) {
+                if (myDiagramData.linkDataArray[j].from === myDiagramData.nodeDataArray[i].key) {
+                  if (!myDiagramData.linkDataArray[j].text) {
+                    elseNum++
+                  } else if (myDiagramData.linkDataArray[j].text.replace(/^\s+|\s+$/g, '') === 'else') {
+                    elseNum++
+                  }
+                }
+              }
+              if (elseNum !== 1) {
+                myDiagramEventValidationHint.add('Switch block有且只有一条包含else的指向链接,其他链接需要写入相应token值')
+              }
+            }
+          }
+        }
+
+        if (normalBlockAll.count === 0) {
+          myDiagramEventValidationHint.add('缺少Normal block')
+        } else {
+          normalBlockAll.iterator.each(function (node) {
+            var normalBlockLinksInto = node.findLinksInto()
+            var normalBlockLinksOutOf = node.findLinksOutOf()
+            if (normalBlockLinksInto.count < 1) {
+              myDiagramEventValidationHint.add('Normal block至少有一条被指向链接')
+            }
+            if (normalBlockLinksOutOf.count < 1) {
+              myDiagramEventValidationHint.add('Normal block缺少指向链接')
+            }
+            if (!node.unitLists) {
+              myDiagramEventValidationHint.add('Normal block未编辑')
+            }
+          })
+        }
+      }
+
+      this.$Message.destroy()
+
+      // 错误提示
+      if (myDiagramEventValidationHint.size !== 0) {
+        var errorNum = 1
+        self.errorMessage = ''
+        myDiagramEventValidationHint.forEach(function (element) {
+          self.errorMessage = self.errorMessage + errorNum + '.' + element + '<br/>'
+          errorNum++
+        })
+
+        // message提示
+        this.$Message.info({
+          content: self.errorMessage, // 提示内容
+          duration: 0,
+          closable: false
+        })
+      } else {
+        this.$router.push({ path: '/jobShow' })
+        // 保存数据 并调用success的api
+      }
+    },
+    saveUnit () { // unit保存数据+判断
+      const self = this
+      var unitListData = JSON.parse(self.blockDiagram.model.toJson())
+      for (var i = 0; i < unitListData.nodeDataArray.length; i++) {
+        if (unitListData.nodeDataArray[i].key === self.unitNodeByKey) { // 获取了当前unit保存值
+          if (!self.unitContent) { // 左侧的json数据
+            self.$Message.error('unit信息不能为空！')
+          } else if (!isJson(self.unitContent)) {
+            self.$Message.error('不是json')
+          } else {
+            // unitListData.nodeDataArray[i].unitMsg = JSON.parse(self.unitContent)
+            // self.unitModalShow = false
+          }
+        }
+      }
+      console.log(unitListData)
+      function isJson (str) {
+        if (typeof str === 'string') {
+          try {
+            var obj = JSON.parse(str)
+            if (typeof obj === 'object') {
+              return true
+            } else {
+              return false
+            }
+          } catch (e) {
+            return false
+          }
+        }
+      }
+    }
   }
 }
 </script>
 <style lang="less" scoped>
-    .jobName {
+  .jobName {
     font-size: 18px;
     padding: 5px 20px
+  }
+
+  .jobName Button{
+    float: right;
+    margin-bottom: 5px;
   }
 
   #chart-wrap {
