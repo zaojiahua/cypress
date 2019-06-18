@@ -1,3 +1,5 @@
-// export const baseURL = process.env.NODE_ENV === 'production' ? '/production/' : `http://${process.env.VUE_APP_REEF_HOST}:${process.env.VUE_APP_REEF_PORT}`
-export const baseURL = `http://${process.env.VUE_APP_REEF_HOST}:${process.env.VUE_APP_REEF_PORT}`
-export const jobLibSvcURL = `http://${process.env.VUE_APP_CORAL_HOST}:${process.env.VUE_APP_JOBSVC_PORT}`
+import base from './base'
+import prodEnv from './prod.env'
+
+export const baseURL = process.env.NODE_ENV === 'production' ? `http://${devEnv.REEF_HOST}:${base.REEF_PORT}` : `http://${prodEnv.REEF_HOST}:${base.REEF_PORT}`
+export const jobLibSvcURL = process.env.NODE_ENV === 'production' ? `http://${devEnv.CORAL_HOST}:${base.JOBSVC_PORT}` : `http://${prodEnv.CORAL_HOST}:${base.JOBSVC_PORT}`

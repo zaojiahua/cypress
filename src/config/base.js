@@ -1,0 +1,8 @@
+export default {
+  'REEF_PORT': '8000',
+  'ADMIN_PORT': '10803',
+  'CONFIG_PORT': '10808',
+  'DEVINDOOR_PORT': '10802',
+  'CREATETBOARD_PORT': '10811',
+  'JOBSVC_PORT': '10801'
+}
