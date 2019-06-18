@@ -89,6 +89,8 @@ export default {
   mounted () {
     const self = this
 
+    console.log(process.env.NODE_ENV)
+
     myDiagramInit()
     if (this.$route.query.jobLabel) {
       getBlockFlowDict4Font(this.$route.query.jobLabel).then(res => {
