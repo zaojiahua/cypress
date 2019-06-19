@@ -1,9 +1,10 @@
 <template>
   <div id="wrap">
-      <div class="jobName">jobName: {{jobName}}
-        <Button type="text" size="large">取消</Button>
-        <Button type="primary" size="large" @click="saveBlock" style="margin-right: 10px">确定</Button>
-      </div>
+    <p class="jobName">jobName: {{jobName}}
+
+      <Button size="large" style="width: 200px">取消</Button>
+      <Button type="primary" size="large" @click="saveBlock" style="margin-right: 10px; width: 200px">确定</Button>
+    </p>
 
       <div id="chart-wrap">
         <div id="chart-palette"></div>
