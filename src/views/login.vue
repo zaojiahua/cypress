@@ -56,7 +56,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
   html,body,#login-page{
     height: 100vh;
   }
