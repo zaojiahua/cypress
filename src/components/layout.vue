@@ -77,7 +77,6 @@
           </div>
           <div style="float: right">
             <MenuItem name="1">
-              <Avatar>{{ username.substr(0,1).toUpperCase() }}</Avatar>
               {{ username }}
             </MenuItem>
             <MenuItem name="2" @click.native="getSysVersion">
@@ -135,6 +134,7 @@ export default {
     }
   },
   methods: {
+    getSysVersion () {},
     collapsedSider () {
       this.$refs.side1.toggleCollapse()
     },
