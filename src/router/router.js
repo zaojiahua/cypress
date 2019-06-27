@@ -2,6 +2,7 @@ export default [
   {
     path: '/',
     name: 'home',
+    redirect: { name: 'jobShow' },
     component: () => import('../views/Home.vue'),
     children: [
       {
