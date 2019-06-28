@@ -2,6 +2,7 @@
   <Tabs type="card">
     <TabPane label="图片截取">
       <Card style="float: left; width: 40%">
+        <Button type="primary" @click="refreshData" :disabled="selected" style="float: right;margin-right: 10px">Refresh</Button>
         <Divider orientation="left">获取图片</Divider>
         <Table border size="small"
                :loading="loading"
@@ -12,7 +13,7 @@
         </Table>
         <div style="margin: 16px">
           <Input v-model.trim="imgName" placeholder="Enter something..." clearable style="width: 72%" />
-          <Button type="primary" :loading="loading" @click="getImg">
+          <Button type="primary" :loading="loading" @click="getImg" style="margin-left:6px" >
             <span v-if="!loading">Commit</span>
             <span v-else>Loading...</span>
           </Button>
@@ -29,6 +30,10 @@
               <Button type="error" size="small" @click="remove(index)">Delete</Button>
             </template>
           </Table>
+          <div style="margin: 16px">
+            <Input v-model="imgThreshold" placeholder="识别率标准..." clearable style="width: 72%" type="number"/>
+            <Button type="primary" @click="getFeaturePointFileName()" style="margin-left:6px">Commit</Button>
+          </div>
         </template>
       </Card>
       <div style="margin-left:42%;width: 58%;height: 68vh">
@@ -43,7 +48,7 @@
 import { toDecimal } from '../lib/tools'
 import util from '../lib/util/validate.js'
 import { getUsableDeviceList } from '../api/reef/device'
-import { callEblockExce, deviceOperationStatus } from '../api/coral/jobLibSvc'
+import { callEblockExce, deviceOperationStatus, getFeaturePointIntoJob } from '../api/coral/jobLibSvc'//, getFeaturePointFile
 const deviceSerializer = [
   {
     android_version: {
@@ -76,11 +81,15 @@ export default {
       currentDeviceRowIndex: null,
       currentCoordinateRowIndex: null,
       featurePointShow: false,
+      flag: false,
       imgUrl: '',
       loading: false,
       style: {},
       imgName: '',
       switchValue: true,
+      imgThreshold: null,
+      selected: false,
+
       deviceColumn: [
         {
           title: '名称',
@@ -129,11 +138,14 @@ export default {
       this.currentDeviceRowIndex = index
       console.log(index)
     },
-    onCoordinateRowClick (row, index) {
+    onCoordinateRowClick (row, index) { // 点击table的某一行
       this.currentCoordinateRowIndex = index
+      this.coordinateData[index] = row
+      this.flag = true
     },
     deviceRefresh () {
       getUsableDeviceList().then(res => {
+        console.log(res)
         // debugger
         this.deviceData = util.validate(deviceSerializer, res.data['devices'])
         this.deviceData.forEach(device => {
@@ -147,24 +159,25 @@ export default {
     },
     add () {
       this.coordinateData.push(
-        { name: '',
-          age: '',
-          address: ''
+        {
+          coordinate_a: '',
+          coordinate_b: ''
         }
       )
     },
     _loading (flag = true) {
       this.loading = flag
       this.featurePointShow = flag
+      this.selected = flag
     },
     getImg () {
       this._loading()
       let error = []
       if (this.currentDeviceRowIndex === null) error.push('未选择device')
       if (!this.imgName || !new RegExp('(.jpg|.png|.JPG|.PNG)$').test(this.imgName)) error.push('图片名称错误')
-
       if (error.length) {
         this.$Message.error(error.toString())
+        this._loading(false)
         return
       }
       const currentDevice = this.deviceData[this.currentDeviceRowIndex]
@@ -177,7 +190,7 @@ export default {
         stageJobLabel: this.stageJobLabel
       }
 
-      callEblockExce(callEblockExceData).then(res => {
+      callEblockExce(callEblockExceData).then(res => { // device
         this._callEblockExceResponseHandle(res)
       })
     },
@@ -194,10 +207,12 @@ export default {
           if (wrapCount !== 10) {
             wrapCount++
 
-            deviceOperationStatus(this.deviceData[this.currentDeviceRowIndex].device_label).then(res => {
+            deviceOperationStatus(this.deviceData[this.currentDeviceRowIndex].device_label).then(res => { // 获取到图片
               if (res.data.state) {
-                this.viewImg(`${res.data.file}?t=${(new Date()).toString()}`)
+                // this.viewImg(`${res.data.file}?t=${(new Date()).toString()}`)
+                this.viewImg(res.data.file)
                 this._loading(false)
+                this.$emit('getImageName', this.imgName)
                 clearInterval(timer)
               }
             })
@@ -219,7 +234,6 @@ export default {
       this.coordinateData.length <= 1 ? this.$Message.error("can't deleted") : this.coordinateData.splice(index, 1)
     },
     viewImg (imgUrl) {
-      debugger
       const self = this
       const image = new Image()
       image.src = imgUrl
@@ -237,9 +251,64 @@ export default {
 
       let x = toDecimal((mouseLeft - imgLeft) / this.$refs.ImgRef.width)
       let y = toDecimal((mouseTop - imgTop) / this.$refs.ImgRef.height)
+      if (!this.flag) {
+        this.$Message.error('特征点选取未选择')
+        return
+      }
 
+      // 坐标添加进table中
+      if (this.coordinateData[this.currentCoordinateRowIndex].coordinate_a !== '' && this.coordinateData[this.currentCoordinateRowIndex].coordinate_b !== '') {
+        this.$Message.error('已有数据存在！')
+      }
+      if (this.coordinateData[this.currentCoordinateRowIndex].coordinate_a === '' && this.coordinateData[this.currentCoordinateRowIndex].coordinate_b === '') {
+        this.coordinateData.splice(this.currentCoordinateRowIndex, 1, {
+          coordinate_a: `${x}, ${y}`,
+          coordinate_b: ''
+        })
+      } else if (this.coordinateData[this.currentCoordinateRowIndex].coordinate_a !== '' && this.coordinateData[this.currentCoordinateRowIndex].coordinate_b === '') {
+        this.coordinateData.splice(this.currentCoordinateRowIndex, 1, {
+          coordinate_a: this.coordinateData[this.currentCoordinateRowIndex].coordinate_a,
+          coordinate_b: `${x},${y}`
+        })
+      }
+      console.log(this.coordinateData)
       console.log({ x, y })
-      console.log(scroll())
+      // console.log(scroll())`
+    },
+
+    getFeaturePointFileName () { // 获取坐标数据 get fileName
+      let coordinateNum = 1
+      let coordinateDataList = {}
+      if (!this.imgThreshold) {
+        this.$Message.error('识别率未输入')
+        return
+      } else {
+        coordinateDataList.threshold = this.imgThreshold
+      }
+      let getCoordinateFileData = {
+        requestName: 'getFeaturePointIntoJob',
+        featurePointDict: coordinateDataList,
+        stageJobLabel: this.stageJobLabel
+      }
+      for (let i = 0; i < this.coordinateData.length; i++) {
+        if (this.coordinateData[i].coordinate_a !== '' && this.coordinateData[i].coordinate_b !== '') {
+          let area = 'area' + coordinateNum
+          let coordinateRowList = this.coordinateData[i].coordinate_a + ',' + this.coordinateData[i].coordinate_b
+          coordinateDataList[area] = coordinateRowList
+          coordinateNum++
+          console.log(coordinateRowList)
+        }
+      }
+      getFeaturePointIntoJob(getCoordinateFileData).then(res => {
+        this.$emit('getFileName', res.data.fileName) // 请求成功 向父组件传值 左侧添加数据
+      }).catch(error => {
+        console.log(error)
+      })
+    },
+    refreshData () {
+      this._loading(false)
+      this.deviceRefresh()
+      this.currentDeviceRowIndex = null
     }
   },
   mounted () {

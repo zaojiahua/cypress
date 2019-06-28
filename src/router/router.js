@@ -2,7 +2,7 @@ export default [
   {
     path: '/',
     name: 'home',
-    redirect: { name: 'jobShow' },
+    redirect: { name: 'jobList' },
     component: () => import('../views/Home.vue'),
     children: [
       {
@@ -21,9 +21,9 @@ export default [
         component: () => import('../views/jobMsg.vue')
       },
       {
-        name: 'jobShow',
-        path: 'jobShow',
-        component: () => import('../views/jobShow.vue')
+        name: 'jobList',
+        path: 'jobList',
+        component: () => import('../views/jobList.vue')
       }
     ]
   },

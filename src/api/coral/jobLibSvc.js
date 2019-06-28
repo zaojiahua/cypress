@@ -47,3 +47,11 @@ export const getBlockFlowDict4Font = (deviceId) => {
     }
   })
 }
+
+export const getFeaturePointIntoJob = (data) => {
+  return axios.request({
+    url: jobLibSvcURL,
+    method: 'post',
+    data: data
+  })
+}

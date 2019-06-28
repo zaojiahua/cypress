@@ -1,7 +1,6 @@
 <template>
   <div id="wrap">
     <p class="jobName">jobName: {{jobName}}
-
       <Button size="large" style="width: 200px">取消</Button>
       <Button type="primary" size="large" @click="saveBlock" style="margin-right: 10px; width: 200px">确定</Button>
     </p>
@@ -38,7 +37,7 @@
           <Input v-model="unitContent" type="textarea" :autosize="{minRows: 10,maxRows: 31}" placeholder="Enter something..." />
         </div>
         <div class="unitOperation">
-          <job-operation-component :stage-job-label="stageJobLabel"></job-operation-component>
+          <job-operation-component :stage-job-label="stageJobLabel"  @getImageName="getImageNames" @getFileName="getFileNames"></job-operation-component>
         </div>
       </div>
     </Modal>
@@ -101,6 +100,7 @@ export default {
       })
     } else {
       getTemporarySpace().then(res => {
+        console.log(res)
         this.stageJobLabel = res.data.stageJobLabel
         self.myDiagram.model = basicModel()
       })
@@ -236,7 +236,6 @@ export default {
         self.unitNodeByKey = node.data.key
         self.unitName = node.data.text
         self.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
-
         console.log(self.jobName)
       }
 
@@ -362,6 +361,30 @@ export default {
         { category: 'End', text: 'End' }
       ])
     },
+    getImageNames (res) { // add imageName
+      const self = this
+      if (res !== '') {
+        if (!self.unitContent) {
+          self.unitContent = {}
+        }
+        if (!self.unitContent.execCmdDict) {
+          self.unitContent.execCmdDict = {}
+        }
+        self.unitContent.execCmdDict.referImgFile = '<1ijobFile>' + res // 图片展示成功左侧json自动添加图片信息
+        self.unitContent = JSON.stringify(self.unitContent, null, 2)
+      }
+    },
+    getFileNames (res) { // add fileName
+      const self = this
+      if (res !== '') {
+        if (!self.unitContent) {
+          self.unitContent = {}
+        }
+        let unitContentData = JSON.parse(self.unitContent)
+        unitContentData.execCmdDict.configFile = '<1ijobFile>' + res
+        self.unitContent = JSON.stringify(unitContentData, null, 2)
+      }
+    },
 
     switchBlockSave (msg) {
       let node = this.myDiagram.model.findNodeDataForKey(this.currentSwitchBlockKey)
@@ -471,7 +494,6 @@ export default {
         self.blockModalShow = false
         var myDiagramDataInBlock = JSON.parse(self.myDiagram.model.toJson())
         myDiagramDataInBlock.nodeDataArray.unitLists = blockDiagramData
-        // 缺少流程图的保存
 
         /* console.log('normal block编辑完成')
         console.log(myDiagramDataInBlock) */
@@ -586,22 +608,20 @@ export default {
         // 保存数据 并调用success的api
       }
     },
-    saveUnit () { // unit保存数据+判断
+    saveUnit () { // unit保存数据
+      // debugger
       const self = this
-      var unitListData = JSON.parse(self.blockDiagram.model.toJson())
-      for (var i = 0; i < unitListData.nodeDataArray.length; i++) {
-        if (unitListData.nodeDataArray[i].key === self.unitNodeByKey) { // 获取了当前unit保存值
-          if (!self.unitContent) { // 左侧的json数据
-            self.$Message.error('unit信息不能为空！')
-          } else if (!isJson(self.unitContent)) {
-            self.$Message.error('不是json')
-          } else {
-            // unitListData.nodeDataArray[i].unitMsg = JSON.parse(self.unitContent)
-            // self.unitModalShow = false
-          }
-        }
+      let currentUnitData = self.blockDiagram.findNodeForKey(self.unitNodeByKey).data // 获取当前unit的data
+      if (!self.unitContent) {
+        this.$Message.error('unit信息不能为空！')
+      } else if (!isJson(self.unitContent)) {
+        this.$Message.error('不是json')
+      } else {
+        currentUnitData.unitMsg = self.unitContent
+        console.log(currentUnitData)
+        self.unitModalShow = false
       }
-      console.log(unitListData)
+
       function isJson (str) {
         if (typeof str === 'string') {
           try {

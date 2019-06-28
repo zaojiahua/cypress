@@ -138,7 +138,7 @@ const jobSerializer = [
 ]
 
 export default {
-  name: 'jobShow',
+  name: 'jobList',
   components: {
     jobMsgComponent
   },
