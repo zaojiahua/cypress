@@ -60,51 +60,6 @@ export const getUsableDeviceList = (options) => {
         rom_version: {
           version: '4.7.23'
         }
-      },
-      {
-        'android_version': {
-          'version': '8.1.0'
-        },
-        'device_label': 'cactus---mt6765---65a4066f7d29',
-        'device_name': '6a_2',
-        'id': 4,
-        'ip_address': '10.80.2.12',
-        'phone_model': {
-          'phone_model_name': 'cactus'
-        },
-        'rom_version': {
-          'version': '9.5.23'
-        }
-      },
-      {
-        'android_version': {
-          'version': '8.1.0'
-        },
-        'device_label': 'cactus---mt6765---34ade4017d29',
-        'device_name': '6a_3',
-        'id': 5,
-        'ip_address': '10.80.2.253',
-        'phone_model': {
-          'phone_model_name': 'cactus'
-        },
-        'rom_version': {
-          'version': '9.5.23'
-        }
-      },
-      {
-        'android_version': {
-          'version': '8.1.0'
-        },
-        'device_label': 'cactus---mt6765---34a2dea47d29',
-        'device_name': '6a_1',
-        'id': 8,
-        'ip_address': '10.80.2.117',
-        'phone_model': {
-          'phone_model_name': 'cactus'
-        },
-        'rom_version': {
-          'version': '9.4.25'
-        }
       }
     ]
   }

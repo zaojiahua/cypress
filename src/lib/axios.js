@@ -6,6 +6,7 @@ class HttpRequest {
     this.baseUrl = baseUrl
     this.queue = {}
   }
+
   getInsideConfig () {
     return {
       baseURL: this.baseUrl,
@@ -14,6 +15,7 @@ class HttpRequest {
       }
     }
   }
+
   interceptors (instance, url) {
     instance.interceptors.request.use(config => {
       // 在请求头中加token
@@ -29,13 +31,14 @@ class HttpRequest {
     })
     instance.interceptors.response.use(res => {
       delete this.queue[url]
-      const { data, status } = res
-      return { data, status }
+      const { data, headers, status } = res
+      return { data, headers, status }
     }, error => {
       delete this.queue[url]
       return Promise.reject(error)
     })
   }
+
   request (options) {
     const instance = axios.create()
     options = Object.assign(this.getInsideConfig(), options)
@@ -43,4 +46,5 @@ class HttpRequest {
     return instance(options)
   }
 }
+
 export default HttpRequest

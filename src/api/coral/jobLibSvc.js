@@ -37,13 +37,13 @@ export const getTemporarySpace = () => {
   })
 }
 
-export const getBlockFlowDict4Font = (deviceId) => {
+export const getBlockFlowDict4Font = (jobLabel) => {
   return axios.request({
     url: jobLibSvcURL,
     method: 'post',
     data: {
       requestName: 'getBlockFlowDict4Font',
-      jobID: deviceId
+      jobID: jobLabel
     }
   })
 }

@@ -93,8 +93,12 @@ export default {
 
     myDiagramInit()
     if (this.$route.query.jobLabel) {
+      console.log(this.$route.query.jobLabel)
       getBlockFlowDict4Font(this.$route.query.jobLabel).then(res => {
-        if (res.data.error) return this.$router.push({ path: '/' })
+        if (res.data.error) {
+          this.$Message.warning('这个job不存在')
+          return this.$router.push({ path: '/' })
+        }
         this.stageJobLabel = res.data.stageJobLabel
         self.myDiagram.model = go.Model.fromJson(res.data.jobBody)
       })
@@ -609,7 +613,6 @@ export default {
       }
     },
     saveUnit () { // unit保存数据
-      // debugger
       const self = this
       let currentUnitData = self.blockDiagram.findNodeForKey(self.unitNodeByKey).data // 获取当前unit的data
       if (!self.unitContent) {

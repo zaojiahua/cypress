@@ -38,8 +38,8 @@
       </Select>
     </Form-item>
     <Form-item>
-      <Button type="success" @click="submit(propJobId)">提交</Button>
-      <Button type="error" style="margin-left: 8px">取消</Button>
+      <Button type="success" @click="submit(currentJobId)">提交</Button>
+      <Button type="success" @click="routerTo">进入</Button>
     </Form-item>
   </Form>
 </template>
@@ -147,19 +147,10 @@ const jobTestAreaSerializer = {
 
 export default {
   name: 'jobMsgComponent',
-  props: {
-    propJobMsgLoad: {
-      type: Boolean,
-      default: false
-    },
-    propJobId: {
-      type: Number,
-      default: 0
-    }
-  },
   data () {
     return {
-      manufacturer_id: null,
+      router: '',
+      currentJobId: null,
       checkManufacturerList: {},
       disabled: true,
       isError: false,
@@ -208,7 +199,11 @@ export default {
     }
   },
   methods: {
-    getMsg () {
+    routerTo () {
+      this.$router.push({ name: 'jobEditor', query: { jobLabel: this.job.job_label } })
+    },
+    getMsg (jobId) {
+      this.currentJobId = jobId
       getManufacturerList().then(res => {
         this.manufacturer = util.validate(manufacturerSerializer, res.data)
       })
@@ -224,8 +219,9 @@ export default {
         this.jobTestArea = util.validate(jobTestAreaSerializer, res.data)
       })
 
-      getJobDetail(this.propJobId).then(res => {
+      getJobDetail(jobId).then(res => {
         this.job = util.validate(jobSerializer, res.data)
+        this.router = `/jobEditor?jobLabel=${this.job.job_label}`
         this._jobMsgView()
       })
         .catch(error => {
@@ -234,7 +230,7 @@ export default {
           if (error.response.status >= 500) {
             errorMsg = '服务器错误！'
           } else {
-            errorMsg = `id 为${this.propJobId}的job 不存在`
+            errorMsg = `id 为${this.currentJobId}的job 不存在`
           }
           this.$Message.error(errorMsg)
           this.$Loading.error()
@@ -256,7 +252,10 @@ export default {
       this.job.custom_tag.forEach(item => {
         this.jobInfo.custom_tag.push(item.id)
       })
-      this.manufacturer_id = this.job.phone_models[0].manufacturer.id
+      if (this.job.phone_models.length !== 0) {
+        this.jobInfo.manufacturer = this.job.phone_models[0].manufacturer.id
+        this.refreshManufacturer()
+      }
       this.job.phone_models.forEach(item => {
         this.jobInfo.phone_models.push(item.id)
       })
@@ -268,6 +267,15 @@ export default {
     clear: function () {
       this.jobInfo.phone_models = []
       this.jobInfo.rom_version = []
+      this.refreshManufacturer()
+    },
+    refreshManufacturer () {
+      this.disabled = false
+      this.manufacturer.manufacturers.forEach(item => {
+        if (item.id === this.jobInfo.manufacturer) {
+          this.checkManufacturerList = item
+        }
+      })
     },
     submit: function (id) {
       if (this.isError) {
@@ -286,20 +294,6 @@ export default {
           }
         })
       }
-    }
-  },
-  watch: {
-    manufacturer_id () {
-      this.disabled = false
-      this.jobInfo.manufacturer = this.manufacturer_id
-      this.manufacturer.manufacturers.forEach(item => {
-        if (item.id === this.manufacturer_id) {
-          this.checkManufacturerList = item
-        }
-      })
-    },
-    propJobId () {
-      if (this.propJobMsgLoad && this.propJobId) this.getMsg()
     }
   }
 }

@@ -108,7 +108,7 @@
 
     <Page simple :page-size="pageSize" :total="dataCount" @on-change="jobPageChange" style="text-align: center;margin-top: 20px"></Page>
     <Drawer title="用例详细信息" :closable="false" v-model="showDrawer" width="50">
-      <job-msg-component :prop-job-id="jobCurrentId" :prop-job-msg-load="jobMsgLoad"></job-msg-component>
+      <job-msg-component ref="jobDetail"></job-msg-component>
     </Drawer>
   </div>
 </template>
@@ -148,7 +148,7 @@ export default {
       pageSize: 10, // 每页条数
       currentPage: 1, // 当前页数
       dataCount: 0,
-      jobCurrentId: 0,
+      jobCurrentId: null,
       jobMsgLoad: false,
       columns: [
         {
@@ -177,8 +177,11 @@ export default {
       getJobList({// 向路径后拼接参数
         fields: 'id,job_name,test_area,custom_tag,custom_tag.custom_tag_name,custom_tag.id,test_area.description,test_area.id',
         offset: this.offset,
-        limit: this.pageSize
+        limit: this.pageSize,
+        job_deleted: 'False'
       }).then(res => { // 一次只获取10条数据
+        this.dataCount = parseInt(res.headers['total-count'])
+
         this.jobData = util.validate(jobSerializer, res.data.jobs)
         this.jobData.forEach(job => { // 遍历后返回返回的值
           let jobTextAreas = []
@@ -198,15 +201,6 @@ export default {
         console.log(error)
       })
     },
-    getJobTotal () { // 获取数据总条数total
-      getJobList({
-        fields: 'id'
-      }).then(res => {
-        this.dataCount = res.data.jobs.length
-      }).catch(error => {
-        console.log(error)
-      })
-    },
     jobPageChange (page) {
       this.currentPage = page
       this.getMsg()
@@ -215,7 +209,9 @@ export default {
       this.$emit('on-row-click', currentData, index)
       this.showDrawer = true
       this.jobMsgLoad = true
-      this.jobCurrentId = currentData.id
+      // this.jobCurrentId = currentData.id
+      // this.jobCurrentId = currentData.id
+      this.$refs.jobDetail.getMsg(currentData.id)
     }
   },
   computed: {
@@ -225,7 +221,6 @@ export default {
   },
   mounted () {
     this.getMsg()
-    this.getJobTotal()
   }
 }
 </script>
