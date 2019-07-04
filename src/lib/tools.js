@@ -1,16 +1,11 @@
-export default {
-  // 纯粹的方法
-
-  isJsonString (str) {
-    try {
-      if (Object.prototype.toString.call(JSON.parse(str)) === '[object Object]') {
-        return true
-      }
-    } catch (e) {
+export function isJsonString (str) {
+  try {
+    if (Object.prototype.toString.call(JSON.parse(str)) === '[object Object]') {
+      return true
     }
-    return false
+  } catch (e) {
   }
-
+  return false
 }
 
 export function toDecimal (x) {

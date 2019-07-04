@@ -66,6 +66,7 @@ import {
 import JobOperationComponent from '../components/jobOperationComponent'
 import { getBlockFlowDict4Font, getTemporarySpace } from '../api/coral/jobLibSvc'
 import SwitchBlockDetailComponent from '../components/SwitchBlockDetailComponent'
+import { isJsonString } from '../lib/tools'
 export default {
   components: { SwitchBlockDetailComponent, JobOperationComponent },
   data () {
@@ -605,32 +606,13 @@ export default {
         // 保存数据 并调用success的api
       }
     },
-    saveUnit () { // unit保存数据
-      const self = this
-      let currentUnitData = self.blockDiagram.findNodeForKey(self.unitNodeByKey).data // 获取当前unit的data
-      if (!self.unitContent) {
-        this.$Message.error('unit信息不能为空！')
-      } else if (!isJson(self.unitContent)) {
-        this.$Message.error('不是json')
-      } else {
-        currentUnitData.unitMsg = self.unitContent
-        console.log(currentUnitData)
-        self.unitModalShow = false
-      }
-
-      function isJson (str) {
-        if (typeof str === 'string') {
-          try {
-            var obj = JSON.parse(str)
-            if (typeof obj === 'object') {
-              return true
-            } else {
-              return false
-            }
-          } catch (e) {
-            return false
-          }
-        }
+    saveUnit () {
+      let currentUnitNode = this.blockDiagram.findNodeForKey(this.unitNodeByKey).data
+      if (!this.unitContent) this.$Message.error('unit信息不能为空！')
+      else if (!isJsonString(this.unitContent)) this.$Message.error('不是json')
+      else {
+        this.myDiagram.model.setDataProperty(currentUnitNode, 'unitMsg', JSON.parse(this.unitContent))
+        this.unitModalShow = false
       }
     }
   }
