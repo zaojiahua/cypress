@@ -70,7 +70,7 @@ export default {
   components: { SwitchBlockDetailComponent, JobOperationComponent },
   data () {
     return {
-      jobName: 'zzz',
+      jobName: '',
       blockModalShow: false,
       unitModalShow: false,
       jobOperationComponentShow: false,
@@ -100,6 +100,7 @@ export default {
           return this.$router.push({ path: '/' })
         }
         this.stageJobLabel = res.data.stageJobLabel
+        this.jobName = res.data.jobAttribute.job_name
         self.myDiagram.model = go.Model.fromJson(res.data.jobBody)
       })
     } else {
@@ -240,7 +241,6 @@ export default {
         self.unitNodeByKey = node.data.key
         self.unitName = node.data.text
         self.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
-        console.log(self.jobName)
       }
 
       const unitListGroupTemplate = baseGroupTemplate()
@@ -365,29 +365,22 @@ export default {
         { category: 'End', text: 'End' }
       ])
     },
-    getImageNames (res) { // add imageName
-      const self = this
-      if (res !== '') {
-        if (!self.unitContent) {
-          self.unitContent = {}
-        }
-        if (!self.unitContent.execCmdDict) {
-          self.unitContent.execCmdDict = {}
-        }
-        self.unitContent.execCmdDict.referImgFile = '<1ijobFile>' + res // 图片展示成功左侧json自动添加图片信息
-        self.unitContent = JSON.stringify(self.unitContent, null, 2)
+    _sendContextIntoUnit (key, res) {
+      let unitMsgObj = {
+        execCmdDict: {}
       }
+      if (this.unitContent) {
+        unitMsgObj = JSON.parse(this.unitContent)
+        if (!unitMsgObj.execCmdDict) unitMsgObj.execCmdDict = {}
+      }
+      unitMsgObj.execCmdDict[key] = '<1ijobFile>' + res
+      this.unitContent = JSON.stringify(unitMsgObj, null, 2)
     },
-    getFileNames (res) { // add fileName
-      const self = this
-      if (res !== '') {
-        if (!self.unitContent) {
-          self.unitContent = {}
-        }
-        let unitContentData = JSON.parse(self.unitContent)
-        unitContentData.execCmdDict.configFile = '<1ijobFile>' + res
-        self.unitContent = JSON.stringify(unitContentData, null, 2)
-      }
+    getImageNames (res) {
+      this._sendContextIntoUnit('referImgFile', res)
+    },
+    getFileNames (res) {
+      this._sendContextIntoUnit('configFile', res)
     },
 
     switchBlockSave (msg) {
