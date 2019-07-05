@@ -76,11 +76,12 @@ import {
 import JobOperationComponent from '../components/jobOperationComponent'
 import { getBlockFlowDict4Font, getTemporarySpace, setjobInfoAndFlowDict, getJobUnitsBodyDict } from '../api/coral/jobLibSvc'
 import SwitchBlockDetailComponent from '../components/SwitchBlockDetailComponent'
+import { isJsonString } from '../lib/tools'
 export default {
   components: { SwitchBlockDetailComponent, JobOperationComponent },
   data () {
     return {
-      jobName: 'zzz',
+      jobName: '',
       blockModalShow: false,
       unitModalShow: false,
       jobOperationComponentShow: false,
@@ -113,6 +114,7 @@ export default {
           return this.$router.push({ path: '/' })
         }
         this.stageJobLabel = res.data.stageJobLabel
+        this.jobName = res.data.jobAttribute.job_name
         self.myDiagram.model = go.Model.fromJson(res.data.jobBody)
       })
     } else {
@@ -255,7 +257,6 @@ export default {
         self.unitNodeByKey = node.data.key
         self.unitName = node.data.text
         self.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
-        console.log(self.jobName)
       }
 
       const unitListGroupTemplate = baseGroupTemplate()
@@ -385,29 +386,22 @@ export default {
         { category: 'End', text: 'End' }
       ])
     },
-    getImageNames (res) { // add imageName
-      const self = this
-      if (res !== '') {
-        if (!self.unitContent) {
-          self.unitContent = {}
-        }
-        if (!self.unitContent.execCmdDict) {
-          self.unitContent.execCmdDict = {}
-        }
-        self.unitContent.execCmdDict.referImgFile = '<1ijobFile>' + res // 图片展示成功左侧json自动添加图片信息
-        self.unitContent = JSON.stringify(self.unitContent, null, 2)
+    _sendContextIntoUnit (key, res) {
+      let unitMsgObj = {
+        execCmdDict: {}
       }
+      if (this.unitContent) {
+        unitMsgObj = JSON.parse(this.unitContent)
+        if (!unitMsgObj.execCmdDict) unitMsgObj.execCmdDict = {}
+      }
+      unitMsgObj.execCmdDict[key] = '<1ijobFile>' + res
+      this.unitContent = JSON.stringify(unitMsgObj, null, 2)
     },
-    getFileNames (res) { // add fileName
-      const self = this
-      if (res !== '') {
-        if (!self.unitContent) {
-          self.unitContent = {}
-        }
-        let unitContentData = JSON.parse(self.unitContent)
-        unitContentData.execCmdDict.configFile = '<1ijobFile>' + res
-        self.unitContent = JSON.stringify(unitContentData, null, 2)
-      }
+    getImageNames (res) {
+      this._sendContextIntoUnit('referImgFile', res)
+    },
+    getFileNames (res) {
+      this._sendContextIntoUnit('configFile', res)
     },
 
     switchBlockSave (msg) {
@@ -657,32 +651,13 @@ export default {
         })
       }
     },
-    saveUnit () { // unit保存数据
-      const self = this
-      let currentUnitData = self.blockDiagram.findNodeForKey(self.unitNodeByKey).data // 获取当前unit的data
-      if (!self.unitContent) {
-        this.$Message.error('unit信息不能为空！')
-      } else if (!isJson(self.unitContent)) {
-        this.$Message.error('不是json')
-      } else {
-        currentUnitData.unitMsg = self.unitContent
-        console.log(currentUnitData)
-        self.unitModalShow = false
-      }
-
-      function isJson (str) {
-        if (typeof str === 'string') {
-          try {
-            var obj = JSON.parse(str)
-            if (typeof obj === 'object') {
-              return true
-            } else {
-              return false
-            }
-          } catch (e) {
-            return false
-          }
-        }
+    saveUnit () {
+      let currentUnitNode = this.blockDiagram.findNodeForKey(this.unitNodeByKey).data
+      if (!this.unitContent) this.$Message.error('unit信息不能为空！')
+      else if (!isJsonString(this.unitContent)) this.$Message.error('不是json')
+      else {
+        this.myDiagram.model.setDataProperty(currentUnitNode, 'unitMsg', JSON.parse(this.unitContent))
+        this.unitModalShow = false
       }
     },
     getAllJobUnit () { // unit动态展示

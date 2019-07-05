@@ -194,41 +194,18 @@ export default {
         this._callEblockExceResponseHandle(res)
       })
     },
-
     _callEblockExceResponseHandle (res) {
-      console.log(res.data)
-      if (res.data.state === true) {
-        let timer = setInterval(function () {
-          getImgStatus(timer)
-        }, 2000)
-
-        let wrapCount = 1
-        let getImgStatus = (timer) => { // 请求后端获取图片，成功则展示
-          if (wrapCount !== 10) {
-            wrapCount++
-
-            deviceOperationStatus(this.deviceData[this.currentDeviceRowIndex].device_label).then(res => { // 获取到图片
-              if (res.data.state) {
-                // this.viewImg(`${res.data.file}?t=${(new Date()).toString()}`)
-                this.viewImg(res.data.file)
-                this._loading(false)
-                this.$emit('getImageName', this.imgName)
-                clearInterval(timer)
-              }
-            })
-          } else {
-            this._loading(false)
-            this.$Message.error('请求超时，请换一个device')
-            clearInterval(timer)
-          }
-        }
+      if (res.data.state) {
+        this.viewImg(`${res.data.file}?t=${(new Date()).toString()}`)
+        // this.viewImg(res.data.file)
+        this._loading(false)
+        this.$emit('getImageName', this.imgName)
       } else {
         this._loading(false)
         this.$Message.error('当前device被使用，请换一个device')
+        console.log(res)
       }
-      // this._loading(false)
     },
-
     remove (index) {
       this.viewImg(require('../assets/image/404.jpg'))
       this.coordinateData.length <= 1 ? this.$Message.error("can't deleted") : this.coordinateData.splice(index, 1)
