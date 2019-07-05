@@ -16,7 +16,17 @@
         <Button type="primary" size="large" @click="saveNormalBlock">确定</Button>
       </div>
       <div id="inner-wrap">
-        <div id="inner-palette"></div>
+        <div id="chart-left">
+          <div id="dropdown-div" align="center"><!--下拉动态unit-->
+            <Dropdown trigger="click" @on-click="getSelectedUnit">
+              <Button id="dropdown-btn" type="primary" @click="getAllJobUnit">{{unitType}}</Button><!--:model="unitType"-->
+              <DropdownMenu slot="list" style="width: 150px">
+                <DropdownItem v-for="currentUnit in unitAllList" :name="currentUnit.key">{{currentUnit.key}}</DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+          </div>
+          <div id="inner-palette"></div>
+        </div>
         <div id="inner-diagram"></div>
       </div>
     </Modal>
@@ -64,7 +74,7 @@ import {
   basicModel
 } from './jobEditorCommon'
 import JobOperationComponent from '../components/jobOperationComponent'
-import { getBlockFlowDict4Font, getTemporarySpace } from '../api/coral/jobLibSvc'
+import { getBlockFlowDict4Font, getTemporarySpace, setjobInfoAndFlowDict, getJobUnitsBodyDict } from '../api/coral/jobLibSvc'
 import SwitchBlockDetailComponent from '../components/SwitchBlockDetailComponent'
 export default {
   components: { SwitchBlockDetailComponent, JobOperationComponent },
@@ -82,8 +92,11 @@ export default {
       stageJobLabel: null,
       errorMessage: '',
       unitNodeByKey: null,
-      switchBlockInfo: {}
-
+      getCurrentNormalBlockByKey: null,
+      unitType: '请选择组件类型',
+      switchBlockInfo: {},
+      unitAllList: [],
+      basicModuleShow: {}
     }
   },
   mounted () {
@@ -154,41 +167,45 @@ export default {
 
       normalBlockTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
+        self.unitType = '请选择组件类型'
         self.blockName = node.data.text
+        self.getCurrentNormalBlockByKey = node.data.key
         self.blockModalShow = true
         if (!self.blockDiagram) blockDiagramInit()
         if (!self.blockPalette) blockPaletteInit()
-        self.blockDiagram.model = go.Model.fromJson({
-          'class': 'go.GraphLinksModel',
-          'linkFromPortIdProperty': 'fromPort',
-          'linkToPortIdProperty': 'toPort',
-          'nodeDataArray': [
-            {
-              category: 'Unit',
-              text: 'Unit',
-              loc: '1359.6937815372394 884.1991480533534',
-              unitMsg: {
-                'execCmdDict': {
-                  'bkupCmdList': [],
-                  'execCmdList': [
-                    '<3adbcTool> shell input keyevent 4',
-                    '<3adbcTool> shell input keyevent 4',
-                    '<3adbcTool> shell input keyevent 4',
-                    '<3adbcTool> shell input keyevent 4',
-                    '<3adbcTool> shell input keyevent 4',
-                    '<3adbcTool> shell input keyevent 3',
-                    '<3adbcTool> shell input keyevent 3',
-                    '<3adbcTool> shell input keyevent 3'
-                  ],
-                  'exptResList': []
-                },
-                'execModName': 'ADBC',
-                'jobUnitName': '2JunitBackToHome'
+        if (!node.data.unitLists) { // unitList存在则展示
+          self.blockDiagram.model = go.Model.fromJson({
+            'class': 'go.GraphLinksModel',
+            'linkFromPortIdProperty': 'fromPort',
+            'linkToPortIdProperty': 'toPort',
+            'nodeDataArray': [
+              {
+                category: 'Unit',
+                text: 'Unit',
+                loc: '1359.6937815372394 884.1991480533534',
+                unitMsg: {
+                  'execCmdDict': {
+                    'bkupCmdList': [],
+                    'execCmdList': [
+                      '<3adbcTool> shell input keyevent 4',
+                      '<3adbcTool> shell input keyevent 4',
+                      '<3adbcTool> shell input keyevent 4',
+                      '<3adbcTool> shell input keyevent 4',
+                      '<3adbcTool> shell input keyevent 4',
+                      '<3adbcTool> shell input keyevent 3',
+                      '<3adbcTool> shell input keyevent 3',
+                      '<3adbcTool> shell input keyevent 3'
+                    ],
+                    'exptResList': []
+                  },
+                  'execModName': 'ADBC',
+                  'jobUnitName': '2JunitBackToHome'
+                }
               }
-            }
-          ],
-          'linkDataArray': []
-        })
+            ],
+            'linkDataArray': []
+          })
+        }
       }
 
       self.myDiagram.nodeTemplateMap.add('normalBlock', normalBlockTemplate)
@@ -226,8 +243,6 @@ export default {
         if (flag) {
           self.blockDiagram.commandHandler.deleteSelection()// 删除该选中节点
           self.$Message.error('Unit只能被包裹在UnitList中') // 错误提示
-          // self.blockDiagramHint.add('Unit只能被包裹在UnitList中')
-          // console.log('Unit只能被包裹在UnitList中！')
         }
       })
 
@@ -274,6 +289,11 @@ export default {
           { category: 'UnitList', text: 'UnitList', isGroup: true },
           { category: 'End', text: 'Exit' }
         ]
+      }
+
+      self.basicModuleShow = {
+        key: 'basicModule',
+        value: basicModule
       }
       self.blockPalette.model = new go.GraphLinksModel(basicModule.nodeDataArray, basicModule.linkDataArray)
     }
@@ -402,6 +422,7 @@ export default {
     },
     saveNormalBlock () { // normalBlock点击确定进行校验
       const self = this
+      let currentNormalBlockData = self.myDiagram.findNodeForKey(self.getCurrentNormalBlockByKey).data // 获取当前unit的data
       var blockDiagramHint = new Set()
       var blockDiagramData = JSON.parse(self.blockDiagram.model.toJson())
       if (blockDiagramData.linkDataArray.length === 0) {
@@ -496,11 +517,8 @@ export default {
         })
       } else {
         self.blockModalShow = false
-        var myDiagramDataInBlock = JSON.parse(self.myDiagram.model.toJson())
-        myDiagramDataInBlock.nodeDataArray.unitLists = blockDiagramData
-
-        /* console.log('normal block编辑完成')
-        console.log(myDiagramDataInBlock) */
+        currentNormalBlockData.unitLists = blockDiagramData
+        console.log(currentNormalBlockData)
       }
     },
     saveBlock () {
@@ -583,7 +601,7 @@ export default {
             if (normalBlockLinksOutOf.count < 1) {
               myDiagramEventValidationHint.add('Normal block缺少指向链接')
             }
-            if (!node.unitLists) {
+            if (!node.data.unitLists) {
               myDiagramEventValidationHint.add('Normal block未编辑')
             }
           })
@@ -608,8 +626,35 @@ export default {
           closable: false
         })
       } else {
-        this.$router.push({ path: '/jobShow' })
-        // 保存数据 并调用success的api
+        let jobEditorData = JSON.parse(self.myDiagram.model.toJson())
+        let jobRequestParameter = {
+          requestName: 'setjobInfoAndFlowDict',
+          stageJobLabel: self.stageJobLabel,
+          jobLabel: this.$route.query.jobLabel,
+          blockData: jobEditorData,
+          attribute: {
+            job_name: 'test1111111',
+            manufacturers: [{
+              manufacturer_name: 'test1111111',
+              phone_models: ['test1111111']
+            }],
+            test_areas: ['test1111111'],
+            description: 'test1111111',
+            author: 'tingting',
+            android_versions: ['test1111111'],
+            rom_versions: ['test1111111'],
+            custom_tags: ['test1111111'],
+            job_deleted: false,
+            job_type: 'Joblib'
+          }
+        }
+
+        setjobInfoAndFlowDict(jobRequestParameter).then(res => { // 保存成功后跳转回jobList页面
+          if (res.data.state) {
+            this.$router.push({ path: '/jobList' })
+            this.$Message.info('操作完成')
+          }
+        })
       }
     },
     saveUnit () { // unit保存数据
@@ -638,6 +683,44 @@ export default {
             return false
           }
         }
+      }
+    },
+    getAllJobUnit () { // unit动态展示
+      const self = this
+      self.unitAllList = [] // 清空
+      let getAllUnitRequestParameter = {
+        requestName: 'getJobUnitsBodyDict'
+      }
+      getJobUnitsBodyDict(getAllUnitRequestParameter).then(res => {
+        for (let i in res.data) {
+          let one = { key: i, value: res.data[i] }
+          self.unitAllList.push(one)
+        }
+        self.unitAllList.push(self.basicModuleShow)
+      })
+      console.log(self.unitAllList)
+    },
+    getSelectedUnit (name) {
+      const self = this
+      let unitCategoryData = {}
+      unitCategoryData.nodeDataArray = []
+      self.unitType = name
+      if (name !== 'basicModule') {
+        for (let i = 0; i < self.unitAllList.length; i++) {
+          if (name === self.unitAllList[i].key) {
+            for (let j in self.unitAllList[i].value) {
+              unitCategoryData.nodeDataArray.push({
+                category: 'Unit',
+                text: j,
+                unitMsg: self.unitAllList[i].value[j]
+              })
+            }
+          }
+        }
+        console.log(unitCategoryData)
+        self.blockPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
+      } else {
+        self.blockPalette.model = new go.GraphLinksModel(self.basicModuleShow.value.nodeDataArray, self.basicModuleShow.value.linkDataArray)
       }
     }
   }
@@ -675,20 +758,36 @@ export default {
     }
   }
 
-    #inner-wrap{
+    #inner-wrap {
       width: 100%;
       display: flex;
       height: 78vh;
       justify-content: space-between;
       margin-bottom: 22px;
 
-      #inner-palette {
-        width: 20%;
+      #chart-left{
+        width: 15%;
         margin-right: 30px;
         background-color: white;
         border: solid 1px rgb(244, 244, 244);
-      }
 
+        #dropdown-div{
+          width: 100%;
+          height: 10%;
+
+          #dropdown-btn{
+            width: 100%;
+            margin-top: 10px;
+            letter-spacing: 2px;
+            font-size: 14px;
+          }
+        }
+        #inner-palette {
+          width: 100%;
+          height: 90%;
+          background-color: white;
+        }
+      }
       #inner-diagram{
         flex-grow: 1;
         background-color: white;
@@ -717,5 +816,4 @@ export default {
         border: solid 1px rgb(244, 244, 244);
       }
     }
-
 </style>

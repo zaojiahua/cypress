@@ -55,3 +55,19 @@ export const getFeaturePointIntoJob = (data) => {
     data: data
   })
 }
+
+export const setjobInfoAndFlowDict = (data) => {
+  return axios.request({
+    url: jobLibSvcURL,
+    method: 'post',
+    data: data
+  })
+}
+
+export const getJobUnitsBodyDict = (data) => {
+  return axios.request({
+    url: jobLibSvcURL,
+    method: 'post',
+    data: data
+  })
+}
