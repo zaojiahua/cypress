@@ -47,7 +47,7 @@
           <Input v-model="unitContent" type="textarea" :autosize="{minRows: 10,maxRows: 31}" placeholder="Enter something..." />
         </div>
         <div class="unitOperation">
-          <job-operation-component :stage-job-label="stageJobLabel"  @getImageName="getImageNames" @getFileName="getFileNames"></job-operation-component>
+          <job-operation-component :stage-job-label="stageJobLabel" ref="emptyOperation" @getImageName="getImageNames" @getFileName="getFileNames"></job-operation-component>
         </div>
       </div>
     </Modal>
@@ -103,11 +103,8 @@ export default {
   mounted () {
     const self = this
 
-    console.log(process.env.NODE_ENV)
-
     myDiagramInit()
     if (this.$route.query.jobLabel) {
-      console.log(this.$route.query.jobLabel)
       getBlockFlowDict4Font(this.$route.query.jobLabel).then(res => {
         if (res.data.error) {
           this.$Message.warning('这个job不存在')
@@ -119,7 +116,6 @@ export default {
       })
     } else {
       getTemporarySpace().then(res => {
-        console.log(res)
         this.stageJobLabel = res.data.stageJobLabel
         self.myDiagram.model = basicModel()
       })
@@ -160,7 +156,6 @@ export default {
           explain: node.data.explain
         }
         self.currentSwitchBlockKey = node.data.key
-        console.log(self.currentSwitchBlockKey)
 
         self.switchBlockModalShow = true
       }
@@ -253,7 +248,8 @@ export default {
       const unitTemplate = baseNodeTemplate('#c934c9', 'RoundedRectangle')
       unitTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
-        if (!node.data.unitMsg) self.unitContent = null
+
+        self.$refs.emptyOperation.emptyData()
         self.unitModalShow = true
         self.unitNodeByKey = node.data.key
         self.unitName = node.data.text
@@ -273,7 +269,6 @@ export default {
 
       self.blockDiagram.toolManager.linkingTool.linkValidation = blockDiagramValidation
       self.blockDiagram.toolManager.relinkingTool.linkValidation = blockDiagramValidation
-      console.log('loadding')
     }
 
     function blockPaletteInit () {
@@ -511,6 +506,7 @@ export default {
           closable: false
         })
       } else {
+        debugger
         self.blockModalShow = false
         this.myDiagram.model.setDataProperty(currentNormalBlockData, 'unitLists', blockDiagramData)
       }
@@ -673,7 +669,6 @@ export default {
         }
         self.unitAllList.push(self.basicModuleShow)
       })
-      console.log(self.unitAllList)
     },
     getSelectedUnit (name) {
       const self = this
@@ -692,7 +687,6 @@ export default {
             }
           }
         }
-        console.log(unitCategoryData)
         self.blockPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
       } else {
         self.blockPalette.model = new go.GraphLinksModel(self.basicModuleShow.value.nodeDataArray, self.basicModuleShow.value.linkDataArray)

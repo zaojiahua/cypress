@@ -74,6 +74,10 @@ export default {
     stageJobLabel: {
       type: String,
       default: null
+    },
+    unitMsg: {
+      type: Boolean,
+      default: null
     }
   },
   data () {
@@ -136,7 +140,6 @@ export default {
   methods: {
     onDeviceRowClick (row, index) {
       this.currentDeviceRowIndex = index
-      console.log(index)
     },
     onCoordinateRowClick (row, index) { // 点击table的某一行
       this.currentCoordinateRowIndex = index
@@ -145,17 +148,13 @@ export default {
     },
     deviceRefresh () {
       getUsableDeviceList().then(res => {
-        console.log(res)
-        // debugger
         this.deviceData = util.validate(deviceSerializer, res.data['devices'])
         this.deviceData.forEach(device => {
           device.phone_model = device.phone_model.phone_model_name
           device.rom_version = device.rom_version.version
           device.android_version = device.android_version.version
         })
-        console.log(this.deviceData)
       })
-      console.log(this.deviceData)
     },
     add () {
       this.coordinateData.push(
@@ -203,11 +202,9 @@ export default {
       } else {
         this._loading(false)
         this.$Message.error('当前device被使用，请换一个device')
-        console.log(res)
       }
     },
     remove (index) {
-      this.viewImg(require('../assets/image/404.jpg'))
       this.coordinateData.length <= 1 ? this.$Message.error("can't deleted") : this.coordinateData.splice(index, 1)
     },
     viewImg (imgUrl) {
@@ -224,7 +221,6 @@ export default {
     getCoordinate (e) {
       let [mouseLeft, mouseTop] = [e.clientX, e.clientY]
       let [imgLeft, imgTop] = [this.$refs.ImgRef.getBoundingClientRect().left, this.$refs.ImgRef.getBoundingClientRect().top]
-      console.log(this.$refs.ImgRef.height)
 
       let x = toDecimal((mouseLeft - imgLeft) / this.$refs.ImgRef.width)
       let y = toDecimal((mouseTop - imgTop) / this.$refs.ImgRef.height)
@@ -248,9 +244,6 @@ export default {
           coordinate_b: `${x},${y}`
         })
       }
-      console.log(this.coordinateData)
-      console.log({ x, y })
-      // console.log(scroll())`
     },
 
     getFeaturePointFileName () { // 获取坐标数据 get fileName
@@ -273,7 +266,6 @@ export default {
           let coordinateRowList = this.coordinateData[i].coordinate_a + ',' + this.coordinateData[i].coordinate_b
           coordinateDataList[area] = coordinateRowList
           coordinateNum++
-          console.log(coordinateRowList)
         }
       }
       getFeaturePointIntoJob(getCoordinateFileData).then(res => {
@@ -286,6 +278,17 @@ export default {
       this._loading(false)
       this.deviceRefresh()
       this.currentDeviceRowIndex = null
+    },
+    emptyData () {
+      this.imgName = ''
+      this.imgThreshold = null
+      this.coordinateData = [
+        {
+          coordinate_a: '',
+          coordinate_b: ''
+        }
+      ]
+      this.imgUrl = ''
     }
   },
   mounted () {
