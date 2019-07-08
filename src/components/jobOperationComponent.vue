@@ -48,7 +48,7 @@
 import { toDecimal } from '../lib/tools'
 import util from '../lib/util/validate.js'
 import { getUsableDeviceList } from '../api/reef/device'
-import { callEblockExce, deviceOperationStatus, getFeaturePointIntoJob } from '../api/coral/jobLibSvc'//, getFeaturePointFile
+import { callEblockExce, getFeaturePointIntoJob } from '../api/coral/jobLibSvc' // deviceOperationStatus
 const deviceSerializer = [
   {
     android_version: {

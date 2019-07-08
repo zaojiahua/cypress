@@ -21,7 +21,7 @@
             <Dropdown trigger="click" @on-click="getSelectedUnit">
               <Button id="dropdown-btn" type="primary" @click="getAllJobUnit">{{unitType}}</Button><!--:model="unitType"-->
               <DropdownMenu slot="list" style="width: 150px">
-                <DropdownItem v-for="currentUnit in unitAllList" :name="currentUnit.key">{{currentUnit.key}}</DropdownItem>
+                <DropdownItem v-for="currentUnit in unitAllList" :name="currentUnit.key" :key="currentUnit.key">{{currentUnit.key}}</DropdownItem>
               </DropdownMenu>
             </Dropdown>
           </div>
@@ -253,6 +253,7 @@ export default {
       const unitTemplate = baseNodeTemplate('#c934c9', 'RoundedRectangle')
       unitTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
+        if (!node.data.unitMsg) self.unitContent = null
         self.unitModalShow = true
         self.unitNodeByKey = node.data.key
         self.unitName = node.data.text
@@ -511,8 +512,7 @@ export default {
         })
       } else {
         self.blockModalShow = false
-        currentNormalBlockData.unitLists = blockDiagramData
-        console.log(currentNormalBlockData)
+        this.myDiagram.model.setDataProperty(currentNormalBlockData, 'unitLists', blockDiagramData)
       }
     },
     saveBlock () {
