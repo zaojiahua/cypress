@@ -366,16 +366,15 @@ export default {
   },
   methods: {
     init () {
-      const self = this
-      self.myPalette = MAKE(
+      this.myPalette = MAKE(
         go.Palette, 'chart-palette', {
           scrollsPageOnFocus: false,
-          nodeTemplateMap: self.myDiagram.nodeTemplateMap,
+          nodeTemplateMap: this.myDiagram.nodeTemplateMap,
           layout: MAKE(go.GridLayout, { wrappingColumn: 1, alignment: go.GridLayout.Position })
         }
       )
 
-      self.myPalette.model = new go.GraphLinksModel([
+      this.myPalette.model = new go.GraphLinksModel([
         { category: 'Start', text: 'Start' },
         { category: 'switchBlock', text: 'Switch block' },
         { category: 'normalBlock', text: 'Normal block' },
@@ -411,10 +410,9 @@ export default {
     //
     },
     saveNormalBlock () { // normalBlock点击确定进行校验
-      const self = this
-      let currentNormalBlockData = self.myDiagram.findNodeForKey(self.getCurrentNormalBlockByKey).data // 获取当前unit的data
+      let currentNormalBlockData = this.myDiagram.findNodeForKey(this.getCurrentNormalBlockByKey).data // 获取当前unit的data
       var blockDiagramHint = new Set()
-      var blockDiagramData = JSON.parse(self.blockDiagram.model.toJson())
+      var blockDiagramData = JSON.parse(this.blockDiagram.model.toJson())
       if (blockDiagramData.linkDataArray.length === 0) {
         blockDiagramHint.add('缺少链接关系')
       }
@@ -422,10 +420,10 @@ export default {
       if (blockDiagramData.nodeDataArray.length === 0) {
         blockDiagramHint.add('还未对流程图进行编辑！')
       } else {
-        var entryAll = self.blockDiagram.findNodesByExample({ 'category': 'Start' })
-        var exitAll = self.blockDiagram.findNodesByExample({ 'category': 'End' })
-        var unitListAll = self.blockDiagram.findNodesByExample({ 'category': 'UnitList' })
-        var unitAll = self.blockDiagram.findNodesByExample({ 'category': 'Unit' })
+        var entryAll = this.blockDiagram.findNodesByExample({ 'category': 'Start' })
+        var exitAll = this.blockDiagram.findNodesByExample({ 'category': 'End' })
+        var unitListAll = this.blockDiagram.findNodesByExample({ 'category': 'UnitList' })
+        var unitAll = this.blockDiagram.findNodesByExample({ 'category': 'Unit' })
 
         // Entry
         if (entryAll.count !== 1) {
@@ -492,40 +490,38 @@ export default {
       this.$Message.destroy()
 
       if (blockDiagramHint.size !== 0) {
-        self.blockModalShow = true
+        this.blockModalShow = true
         var errorNum = 1
-        self.errorMessage = ''
+        this.errorMessage = ''
         blockDiagramHint.forEach(function (element) {
-          self.errorMessage = self.errorMessage + errorNum + '.' + element + '<br/>'
+          this.errorMessage = this.errorMessage + errorNum + '.' + element + '<br/>'
           errorNum++
         })
         // message提示
         this.$Message.info({
-          content: self.errorMessage, // 提示内容
+          content: this.errorMessage, // 提示内容
           duration: 0,
           closable: false
         })
       } else {
-        debugger
-        self.blockModalShow = false
+        this.blockModalShow = false
         this.myDiagram.model.setDataProperty(currentNormalBlockData, 'unitLists', blockDiagramData)
       }
     },
     saveBlock () {
       // 事件校验提示
-      const self = this
       var myDiagramEventValidationHint = new Set()// 错误提示 set类型去重
-      var myDiagramData = JSON.parse(self.myDiagram.model.toJson())// 获取数据 将json字符串转换成json对象
+      var myDiagramData = JSON.parse(this.myDiagram.model.toJson())// 获取数据 将json字符串转换成json对象
       if (myDiagramData.linkDataArray.length === 0) {
         myDiagramEventValidationHint.add('缺少链接关系')
       }
       if (myDiagramData.nodeDataArray.length === 0) {
         myDiagramEventValidationHint.add('还未对流程图进行编辑！')
       } else {
-        var startAll = self.myDiagram.findNodesByExample({ 'category': 'Start' })
-        var endAll = self.myDiagram.findNodesByExample({ 'category': 'End' })
-        var switchBlockAll = self.myDiagram.findNodesByExample({ 'category': 'switchBlock' })
-        var normalBlockAll = self.myDiagram.findNodesByExample({ 'category': 'normalBlock' })
+        var startAll = this.myDiagram.findNodesByExample({ 'category': 'Start' })
+        var endAll = this.myDiagram.findNodesByExample({ 'category': 'End' })
+        var switchBlockAll = this.myDiagram.findNodesByExample({ 'category': 'switchBlock' })
+        var normalBlockAll = this.myDiagram.findNodesByExample({ 'category': 'normalBlock' })
 
         if (startAll.count !== 1) {
           myDiagramEventValidationHint.add('有且只有一个Start')
@@ -603,23 +599,23 @@ export default {
       // 错误提示
       if (myDiagramEventValidationHint.size !== 0) {
         var errorNum = 1
-        self.errorMessage = ''
+        this.errorMessage = ''
         myDiagramEventValidationHint.forEach(function (element) {
-          self.errorMessage = self.errorMessage + errorNum + '.' + element + '<br/>'
+          this.errorMessage = this.errorMessage + errorNum + '.' + element + '<br/>'
           errorNum++
         })
 
         // message提示
         this.$Message.info({
-          content: self.errorMessage, // 提示内容
+          content: this.errorMessage, // 提示内容
           duration: 0,
           closable: false
         })
       } else {
-        let jobEditorData = JSON.parse(self.myDiagram.model.toJson())
+        let jobEditorData = JSON.parse(this.myDiagram.model.toJson())
         let jobRequestParameter = {
           requestName: 'setjobInfoAndFlowDict',
-          stageJobLabel: self.stageJobLabel,
+          stageJobLabel: this.stageJobLabel,
           jobLabel: this.$route.query.jobLabel,
           blockData: jobEditorData,
           attribute: {
@@ -657,39 +653,37 @@ export default {
       }
     },
     getAllJobUnit () { // unit动态展示
-      const self = this
-      self.unitAllList = [] // 清空
+      this.unitAllList = [] // 清空
       let getAllUnitRequestParameter = {
         requestName: 'getJobUnitsBodyDict'
       }
       getJobUnitsBodyDict(getAllUnitRequestParameter).then(res => {
         for (let i in res.data) {
           let one = { key: i, value: res.data[i] }
-          self.unitAllList.push(one)
+          this.unitAllList.push(one)
         }
-        self.unitAllList.push(self.basicModuleShow)
+        this.unitAllList.push(this.basicModuleShow)
       })
     },
     getSelectedUnit (name) {
-      const self = this
       let unitCategoryData = {}
       unitCategoryData.nodeDataArray = []
-      self.unitType = name
+      this.unitType = name
       if (name !== 'basicModule') {
-        for (let i = 0; i < self.unitAllList.length; i++) {
-          if (name === self.unitAllList[i].key) {
-            for (let j in self.unitAllList[i].value) {
+        for (let i = 0; i < this.unitAllList.length; i++) {
+          if (name === this.unitAllList[i].key) {
+            for (let j in this.unitAllList[i].value) {
               unitCategoryData.nodeDataArray.push({
                 category: 'Unit',
                 text: j,
-                unitMsg: self.unitAllList[i].value[j]
+                unitMsg: this.unitAllList[i].value[j]
               })
             }
           }
         }
-        self.blockPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
+        this.blockPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
       } else {
-        self.blockPalette.model = new go.GraphLinksModel(self.basicModuleShow.value.nodeDataArray, self.basicModuleShow.value.linkDataArray)
+        this.blockPalette.model = new go.GraphLinksModel(this.basicModuleShow.value.nodeDataArray, this.basicModuleShow.value.linkDataArray)
       }
     }
   }
