@@ -38,8 +38,8 @@
       </Select>
     </Form-item>
     <Form-item>
-      <Button type="success" @click="submit(currentJobId)">提交</Button>
-      <Button type="success" @click="routerTo">进入</Button>
+      <Button type="success" @click="submit(currentJobId)" style="float: right;margin-right: 20px">提交</Button>
+      <Button type="info" @click="routerTo" style="float: right;margin-right: 20px">进入</Button>
     </Form-item>
   </Form>
 </template>
