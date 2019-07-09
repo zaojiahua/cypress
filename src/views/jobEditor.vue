@@ -653,11 +653,11 @@ export default {
       }
     },
     getAllJobUnit () { // unit动态展示
-      this.unitAllList = [] // 清空
       let getAllUnitRequestParameter = {
         requestName: 'getJobUnitsBodyDict'
       }
       getJobUnitsBodyDict(getAllUnitRequestParameter).then(res => {
+        this.unitAllList = [] // 清空
         for (let i in res.data) {
           let one = { key: i, value: res.data[i] }
           this.unitAllList.push(one)
