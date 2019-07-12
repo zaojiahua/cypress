@@ -64,6 +64,14 @@ export const setjobInfoAndFlowDict = (data) => {
   })
 }
 
+export const jobFlowAndMsgSave = (data) => {
+  return axios.request({
+    url: `${jobLibSvcURL}/jobFlowAndMsgSave/`,
+    method: 'post',
+    data: data
+  })
+}
+
 export const getJobUnitsBodyDict = (data) => {
   return axios.request({
     url: jobLibSvcURL,

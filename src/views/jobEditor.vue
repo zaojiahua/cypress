@@ -1,8 +1,12 @@
 <template>
   <div id="wrap">
+    <Drawer title="用例详细信息" :closable="false" v-model="showDrawer" width="50">
+      <job-msg-component ref="jobDetail" :prop-confirm-btn="false" :prop-enter-btn="false"></job-msg-component>
+    </Drawer>
     <p class="jobName">jobName: {{jobName}}
-      <Button size="large" style="width: 200px">取消</Button>
-      <Button type="primary" size="large" @click="saveBlock" style="margin-right: 10px; width: 200px">确定</Button>
+      <Button size="large" style="float: right" to="/jobList">取消</Button>
+      <Button type="primary" size="large" @click="saveJob" style="margin-right: 10px">确定</Button>
+      <Button type="info" size="large" @click="showDrawer=true" style="margin-right: 10px">详情</Button>
     </p>
 
       <div id="chart-wrap">
@@ -73,12 +77,13 @@ import {
   baseGroupTemplate,
   basicModel
 } from './jobEditorCommon'
+import jobMsgComponent from '../components/jobMsgComponent'
 import JobOperationComponent from '../components/jobOperationComponent'
-import { getBlockFlowDict4Font, getTemporarySpace, setjobInfoAndFlowDict, getJobUnitsBodyDict } from '../api/coral/jobLibSvc'
+import { getBlockFlowDict4Font, getTemporarySpace, jobFlowAndMsgSave, getJobUnitsBodyDict } from '../api/coral/jobLibSvc'
 import SwitchBlockDetailComponent from '../components/SwitchBlockDetailComponent'
 import { isJsonString } from '../lib/tools'
 export default {
-  components: { SwitchBlockDetailComponent, JobOperationComponent },
+  components: { SwitchBlockDetailComponent, JobOperationComponent, jobMsgComponent },
   data () {
     return {
       jobName: '',
@@ -91,36 +96,19 @@ export default {
       unitContent: null,
       blockName: '',
       stageJobLabel: null,
-      errorMessage: '',
       unitNodeByKey: null,
       getCurrentNormalBlockByKey: null,
       unitType: '请选择组件类型',
       switchBlockInfo: {},
       unitAllList: [],
-      basicModuleShow: {}
+      basicModuleShow: {},
+      showDrawer: false
     }
   },
   mounted () {
     const self = this
 
     myDiagramInit()
-    if (this.$route.query.jobLabel) {
-      getBlockFlowDict4Font(this.$route.query.jobLabel).then(res => {
-        if (res.data.error) {
-          this.$Message.warning('这个job不存在')
-          return this.$router.push({ path: '/' })
-        }
-        this.stageJobLabel = res.data.stageJobLabel
-        this.jobName = res.data.jobAttribute.job_name
-        self.myDiagram.model = go.Model.fromJson(res.data.jobBody)
-      })
-    } else {
-      getTemporarySpace().then(res => {
-        this.stageJobLabel = res.data.stageJobLabel
-        self.myDiagram.model = basicModel()
-      })
-    }
-
     function myDiagramInit () {
       self.myDiagram = MAKE(go.Diagram, 'chart-diagram', {
         initialContentAlignment: go.Spot.Center,
@@ -175,33 +163,11 @@ export default {
             'class': 'go.GraphLinksModel',
             'linkFromPortIdProperty': 'fromPort',
             'linkToPortIdProperty': 'toPort',
-            'nodeDataArray': [
-              {
-                category: 'Unit',
-                text: 'Unit',
-                loc: '1359.6937815372394 884.1991480533534',
-                unitMsg: {
-                  'execCmdDict': {
-                    'bkupCmdList': [],
-                    'execCmdList': [
-                      '<3adbcTool> shell input keyevent 4',
-                      '<3adbcTool> shell input keyevent 4',
-                      '<3adbcTool> shell input keyevent 4',
-                      '<3adbcTool> shell input keyevent 4',
-                      '<3adbcTool> shell input keyevent 4',
-                      '<3adbcTool> shell input keyevent 3',
-                      '<3adbcTool> shell input keyevent 3',
-                      '<3adbcTool> shell input keyevent 3'
-                    ],
-                    'exptResList': []
-                  },
-                  'execModName': 'ADBC',
-                  'jobUnitName': '2JunitBackToHome'
-                }
-              }
-            ],
+            'nodeDataArray': [],
             'linkDataArray': []
           })
+        }else {
+          self.blockDiagram.model = go.Model.fromJson(node.data.unitLists)
         }
       }
 
@@ -345,7 +311,7 @@ export default {
         }
         // 3、只有一条被指向链接
         if (tonode.data.category === 'UnitList') {
-          var num = tonode.findLinksInto()
+          let num = tonode.findLinksInto()
           if (num.count > 0) {
             return false
           }
@@ -380,6 +346,25 @@ export default {
         { category: 'normalBlock', text: 'Normal block' },
         { category: 'End', text: 'End' }
       ])
+
+      if (this.$route.query.jobLabel) {
+        getBlockFlowDict4Font(this.$route.query.jobLabel).then(res => {
+          if (res.data.error) {
+            this.$Message.warning('这个job不存在')
+            return this.$router.push({ path: '/' })
+          }
+          this.stageJobLabel = res.data.stageJobLabel
+          this.jobName = res.data.jobAttribute.job_name
+          this.$refs.jobDetail.getMsg(res.data.jobAttribute.id)
+          this.myDiagram.model = go.Model.fromJson(res.data.jobBody)
+        })
+      } else {
+        getTemporarySpace().then(res => {
+          this.stageJobLabel = res.data.stageJobLabel
+          this.$refs.jobDetail.getMsg()
+          this.myDiagram.model = basicModel()
+        })
+      }
     },
     _sendContextIntoUnit (key, res) {
       let unitMsgObj = {
@@ -398,21 +383,16 @@ export default {
     getFileNames (res) {
       this._sendContextIntoUnit('configFile', res)
     },
-
     switchBlockSave (msg) {
       let node = this.myDiagram.model.findNodeDataForKey(this.currentSwitchBlockKey)
       this.myDiagram.model.setDataProperty(node, 'text', msg.switchBlockName)
       this.myDiagram.model.setDataProperty(node, 'fileName', msg.fileName)
       this.myDiagram.model.setDataProperty(node, 'explain', msg.explain)
     },
-
-    blockChartInit () {
-    //
-    },
     saveNormalBlock () { // normalBlock点击确定进行校验
       let currentNormalBlockData = this.myDiagram.findNodeForKey(this.getCurrentNormalBlockByKey).data // 获取当前unit的data
-      var blockDiagramHint = new Set()
-      var blockDiagramData = JSON.parse(this.blockDiagram.model.toJson())
+      let blockDiagramHint = new Set()
+      let blockDiagramData = JSON.parse(this.blockDiagram.model.toJson())
       if (blockDiagramData.linkDataArray.length === 0) {
         blockDiagramHint.add('缺少链接关系')
       }
@@ -420,17 +400,17 @@ export default {
       if (blockDiagramData.nodeDataArray.length === 0) {
         blockDiagramHint.add('还未对流程图进行编辑！')
       } else {
-        var entryAll = this.blockDiagram.findNodesByExample({ 'category': 'Start' })
-        var exitAll = this.blockDiagram.findNodesByExample({ 'category': 'End' })
-        var unitListAll = this.blockDiagram.findNodesByExample({ 'category': 'UnitList' })
-        var unitAll = this.blockDiagram.findNodesByExample({ 'category': 'Unit' })
+        let entryAll = this.blockDiagram.findNodesByExample({ 'category': 'Start' })
+        let exitAll = this.blockDiagram.findNodesByExample({ 'category': 'End' })
+        let unitListAll = this.blockDiagram.findNodesByExample({ 'category': 'UnitList' })
+        let unitAll = this.blockDiagram.findNodesByExample({ 'category': 'Unit' })
 
         // Entry
         if (entryAll.count !== 1) {
           blockDiagramHint.add('有且只有一个Entry')
         } else {
           entryAll.iterator.each(function (node) {
-            var entryLinksOutOf = node.findLinksOutOf()
+            let entryLinksOutOf = node.findLinksOutOf()
             if (entryLinksOutOf.count < 1) {
               blockDiagramHint.add('Entry缺少指向链接')
             }
@@ -441,7 +421,7 @@ export default {
           blockDiagramHint.add('有且只有一个Exit')
         } else {
           exitAll.iterator.each(function (node) {
-            var exitLinksInto = node.findLinksInto()
+            let exitLinksInto = node.findLinksInto()
             if (exitLinksInto.count !== 1) {
               blockDiagramHint.add('Exit缺少被指向链接')
             }
@@ -452,8 +432,8 @@ export default {
           blockDiagramHint.add('缺少UnitList')
         } else {
           unitListAll.iterator.each(function (node) {
-            var unitListLinksInto = node.findLinksInto()
-            var unitListLinksOutOf = node.findLinksOutOf()
+            let unitListLinksInto = node.findLinksInto()
+            let unitListLinksOutOf = node.findLinksOutOf()
             if (unitListLinksInto.count !== 1) {
               blockDiagramHint.add('UnitList有且只有一条被指向链接')
             }
@@ -461,10 +441,10 @@ export default {
               blockDiagramHint.add('UnitList有且只有一条指向链接')
             }
           })
-          for (var i = 0; i < blockDiagramData.nodeDataArray.length; i++) {
+          for (let i = 0; i < blockDiagramData.nodeDataArray.length; i++) {
             if (blockDiagramData.nodeDataArray[i].category === 'UnitList') {
-              var groupNum = 0
-              for (var j = 0; j < blockDiagramData.nodeDataArray.length; j++) {
+              let groupNum = 0
+              for (let j = 0; j < blockDiagramData.nodeDataArray.length; j++) {
                 if (blockDiagramData.nodeDataArray[j].group === blockDiagramData.nodeDataArray[i].key && blockDiagramData.nodeDataArray[j].category === 'Unit') {
                   groupNum++
                 }
@@ -491,15 +471,15 @@ export default {
 
       if (blockDiagramHint.size !== 0) {
         this.blockModalShow = true
-        var errorNum = 1
-        this.errorMessage = ''
+        let errorNum = 1
+        let errorMessage = ''
         blockDiagramHint.forEach(function (element) {
-          this.errorMessage = this.errorMessage + errorNum + '.' + element + '<br/>'
+          errorMessage += errorNum + '.' + element + '<br/>'
           errorNum++
         })
         // message提示
         this.$Message.info({
-          content: this.errorMessage, // 提示内容
+          content: errorMessage, // 提示内容
           duration: 0,
           closable: false
         })
@@ -508,26 +488,26 @@ export default {
         this.myDiagram.model.setDataProperty(currentNormalBlockData, 'unitLists', blockDiagramData)
       }
     },
-    saveBlock () {
+    _jobFlowRules () {
       // 事件校验提示
-      var myDiagramEventValidationHint = new Set()// 错误提示 set类型去重
-      var myDiagramData = JSON.parse(this.myDiagram.model.toJson())// 获取数据 将json字符串转换成json对象
+      let myDiagramEventValidationHint = new Set()// 错误提示 set类型去重
+      let myDiagramData = JSON.parse(this.myDiagram.model.toJson())
       if (myDiagramData.linkDataArray.length === 0) {
         myDiagramEventValidationHint.add('缺少链接关系')
       }
       if (myDiagramData.nodeDataArray.length === 0) {
         myDiagramEventValidationHint.add('还未对流程图进行编辑！')
       } else {
-        var startAll = this.myDiagram.findNodesByExample({ 'category': 'Start' })
-        var endAll = this.myDiagram.findNodesByExample({ 'category': 'End' })
-        var switchBlockAll = this.myDiagram.findNodesByExample({ 'category': 'switchBlock' })
-        var normalBlockAll = this.myDiagram.findNodesByExample({ 'category': 'normalBlock' })
+        let startAll = this.myDiagram.findNodesByExample({ 'category': 'Start' })
+        let endAll = this.myDiagram.findNodesByExample({ 'category': 'End' })
+        let switchBlockAll = this.myDiagram.findNodesByExample({ 'category': 'switchBlock' })
+        let normalBlockAll = this.myDiagram.findNodesByExample({ 'category': 'normalBlock' })
 
         if (startAll.count !== 1) {
           myDiagramEventValidationHint.add('有且只有一个Start')
         } else {
           startAll.iterator.each(function (node) {
-            var startLinksOutOf = node.findLinksOutOf()
+            let startLinksOutOf = node.findLinksOutOf()
             if (startLinksOutOf.count <= 0) {
               myDiagramEventValidationHint.add('Start缺少指向链接')
             }
@@ -538,7 +518,7 @@ export default {
           myDiagramEventValidationHint.add('缺少End')
         } else {
           endAll.iterator.each(function (node) { // 遍历所有的end节点
-            var endLinksInto = node.findLinksInto()
+            let endLinksInto = node.findLinksInto()
             if (endLinksInto.count <= 0) {
               myDiagramEventValidationHint.add('End至少有一条被指向链接')
             }
@@ -547,8 +527,8 @@ export default {
 
         if (switchBlockAll.count !== 0) {
           switchBlockAll.iterator.each(function (node) {
-            var switchBlockLinksInto = node.findLinksInto()
-            var switchBlockLinksOutOf = node.findLinksOutOf()
+            let switchBlockLinksInto = node.findLinksInto()
+            let switchBlockLinksOutOf = node.findLinksOutOf()
             if (switchBlockLinksInto.count < 1) {
               myDiagramEventValidationHint.add('Switch block至少有一条被指向链接')
             }
@@ -556,10 +536,10 @@ export default {
               myDiagramEventValidationHint.add('Switch block至少有两条指向链接')
             }
           })
-          var elseNum = 0
-          for (var i = 0; i < myDiagramData.nodeDataArray.length; i++) {
+          let elseNum = 0
+          for (let i = 0; i < myDiagramData.nodeDataArray.length; i++) {
             if (myDiagramData.nodeDataArray[i].category === 'switchBlock') {
-              for (var j = 0; j < myDiagramData.linkDataArray.length; j++) {
+              for (let j = 0; j < myDiagramData.linkDataArray.length; j++) {
                 if (myDiagramData.linkDataArray[j].from === myDiagramData.nodeDataArray[i].key) {
                   if (!myDiagramData.linkDataArray[j].text) {
                     elseNum++
@@ -579,8 +559,8 @@ export default {
           myDiagramEventValidationHint.add('缺少Normal block')
         } else {
           normalBlockAll.iterator.each(function (node) {
-            var normalBlockLinksInto = node.findLinksInto()
-            var normalBlockLinksOutOf = node.findLinksOutOf()
+            let normalBlockLinksInto = node.findLinksInto()
+            let normalBlockLinksOutOf = node.findLinksOutOf()
             if (normalBlockLinksInto.count < 1) {
               myDiagramEventValidationHint.add('Normal block至少有一条被指向链接')
             }
@@ -598,47 +578,46 @@ export default {
 
       // 错误提示
       if (myDiagramEventValidationHint.size !== 0) {
-        var errorNum = 1
-        this.errorMessage = ''
+        let errorNum = 1
+        let errorMessage = ''
         myDiagramEventValidationHint.forEach(function (element) {
-          this.errorMessage = this.errorMessage + errorNum + '.' + element + '<br/>'
+          errorMessage += errorNum + '.' + element + '<br/>'
           errorNum++
         })
 
         // message提示
         this.$Message.info({
-          content: this.errorMessage, // 提示内容
+          content: errorMessage, // 提示内容
           duration: 0,
           closable: false
         })
-      } else {
-        let jobEditorData = JSON.parse(this.myDiagram.model.toJson())
-        let jobRequestParameter = {
-          requestName: 'setjobInfoAndFlowDict',
+        return false
+      } else return true
+    },
+    _jobMsgRules () {
+      let flag = true
+      this.$refs.jobDetail.$refs.jobInfoForm.validate((valid) => {
+        if (!valid) {
+          this.showDrawer = true
+          flag = false
+        }
+      })
+      return flag
+    },
+    saveJob () {
+      if (this._jobFlowRules() & this._jobMsgRules()) {
+        jobFlowAndMsgSave({
           stageJobLabel: this.stageJobLabel,
           jobLabel: this.$route.query.jobLabel,
-          blockData: jobEditorData,
-          attribute: {
-            job_name: 'test1111111',
-            manufacturers: [{
-              manufacturer_name: 'test1111111',
-              phone_models: ['test1111111']
-            }],
-            test_areas: ['test1111111'],
-            description: 'test1111111',
-            author: 'tingting',
-            android_versions: ['test1111111'],
-            rom_versions: ['test1111111'],
-            custom_tags: ['test1111111'],
-            job_deleted: false,
-            job_type: 'Joblib'
-          }
-        }
-
-        setjobInfoAndFlowDict(jobRequestParameter).then(res => { // 保存成功后跳转回jobList页面
+          flow: JSON.parse(this.myDiagram.model.toJson()),
+          attribute: this.$refs.jobDetail.jobInfo,
+          id: this.$refs.jobDetail.currentJobId
+        }).then(res => { // 保存成功后跳转回jobList页面
           if (res.data.state) {
             this.$router.push({ path: '/jobList' })
             this.$Message.info('操作完成')
+          } else {
+            console.log(res.data)
           }
         })
       }

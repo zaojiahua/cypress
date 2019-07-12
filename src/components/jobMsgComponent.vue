@@ -1,5 +1,5 @@
 <template>
-  <Form ref="jobInfoForm" :label-width="80" :model="jobInfo" :rules="jobInfoRules">
+  <Form ref="jobInfoForm" :label-width="100" :model="jobInfo" :rules="jobInfoRules">
     <Form-item label="用例名称:" prop="job_name">
       <Input v-model="jobInfo.job_name" placeholder="请输入"/>
     </Form-item>
@@ -38,8 +38,8 @@
       </Select>
     </Form-item>
     <Form-item>
-      <Button type="success" @click="submit(currentJobId)" style="float: right;margin-right: 20px">提交</Button>
-      <Button type="info" @click="routerTo" style="float: right;margin-right: 20px">进入</Button>
+      <Button v-show="propConfirmBtn" type="success" @click="submit(currentJobId)" style="float: right;margin-right: 20px">提交</Button>
+      <Button v-show="propEnterBtn" type="info" @click="routerTo" style="float: right;margin-right: 20px">进入</Button>
     </Form-item>
   </Form>
 </template>
@@ -147,9 +147,19 @@ const jobTestAreaSerializer = {
 
 export default {
   name: 'jobMsgComponent',
+  props: {
+    propEnterBtn: { // Show delete button
+      type: Boolean,
+      default: true
+    },
+    propConfirmBtn: {
+      type: Boolean,
+      default: true
+    }
+  },
   data () {
     return {
-      router: '',
+      // router: '',
       currentJobId: null,
       checkManufacturerList: {},
       disabled: true,
@@ -157,6 +167,7 @@ export default {
       jobInfo: {
         manufacturer: '',
         test_area: [],
+        job_type: 'Joblib',
         android_version: [],
         custom_tag: [],
         phone_models: [],
@@ -202,7 +213,7 @@ export default {
     routerTo () {
       this.$router.push({ name: 'jobEditor', query: { jobLabel: this.job.job_label } })
     },
-    getMsg (jobId) {
+    getMsg (jobId = null) {
       this.currentJobId = jobId
       getManufacturerList().then(res => {
         this.manufacturer = util.validate(manufacturerSerializer, res.data)
@@ -218,10 +229,10 @@ export default {
       getJobTestAreaList().then(res => {
         this.jobTestArea = util.validate(jobTestAreaSerializer, res.data)
       })
-
+      if (jobId === null) return
       getJobDetail(jobId).then(res => {
         this.job = util.validate(jobSerializer, res.data)
-        this.router = `/jobEditor?jobLabel=${this.job.job_label}`
+        // this.router = `/jobEditor?jobLabel=${this.job.job_label}`
         this._jobMsgView()
       })
         .catch(error => {
@@ -240,6 +251,8 @@ export default {
       this.jobInfo.job_name = this.job.job_name
       this.jobInfo.description = this.job.description
       this.jobInfo.job_label = this.job.job_label
+      this.jobInfo.job_type = this.job.job_type
+      this.jobInfo.author = localStorage.id
 
       this.job.test_area.forEach(item => {
         this.jobInfo.test_area.push(item.id)
