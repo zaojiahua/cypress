@@ -253,7 +253,7 @@ export default {
         this.$Message.error('识别率未输入')
         return
       } else {
-        coordinateDataList.threshold = this.imgThreshold
+        coordinateDataList.threshold = parseFloat(this.imgThreshold)
       }
       let getCoordinateFileData = {
         requestName: 'getFeaturePointIntoJob',
@@ -263,7 +263,7 @@ export default {
       for (let i = 0; i < this.coordinateData.length; i++) {
         if (this.coordinateData[i].coordinate_a !== '' && this.coordinateData[i].coordinate_b !== '') {
           let area = 'area' + coordinateNum
-          let coordinateRowList = this.coordinateData[i].coordinate_a + ',' + this.coordinateData[i].coordinate_b
+          let coordinateRowList = this.coordinateData[i].coordinate_a.split(',').concat(this.coordinateData[i].coordinate_b.split(',')).map(parseFloat)
           coordinateDataList[area] = coordinateRowList
           coordinateNum++
         }
