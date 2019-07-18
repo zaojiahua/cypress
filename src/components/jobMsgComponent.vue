@@ -266,6 +266,7 @@ export default {
         this.jobInfo.custom_tag.push(item.id)
       })
       if (this.job.phone_models.length !== 0) {
+        // 获取Manufacturer保证phone_models romverison来自于同一个manufacturer
         this.jobInfo.manufacturer = this.job.phone_models[0].manufacturer.id
         this.refreshManufacturer()
       }
