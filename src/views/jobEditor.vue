@@ -627,7 +627,11 @@ export default {
       if (!this.unitContent) this.$Message.error('unit信息不能为空！')
       else if (!isJsonString(this.unitContent)) this.$Message.error('不是json')
       else {
-        this.myDiagram.model.setDataProperty(currentUnitNode, 'unitMsg', JSON.parse(this.unitContent))
+        // TODO: 这个有一个问题,blockDiagram.model的改变直接会影响到myDiagram.model
+        // TODO:解决方案: 先将yDiagram.model内容copy一份,点击取消使用copy的原有数据覆盖已改变数据
+        this.blockDiagram.model.setDataProperty(currentUnitNode, 'unitMsg', JSON.parse(this.unitContent))
+        this.blockDiagram.model.setDataProperty(currentUnitNode, 'text', this.unitName)
+        console.log(this.myDiagram.model.nodeDataArray)
         this.unitModalShow = false
       }
     },
