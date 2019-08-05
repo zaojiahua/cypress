@@ -14,7 +14,10 @@
         <div id="chart-diagram"></div>
       </div>
 
-    <Modal v-model="blockModalShow" fullscreen :title="blockName">
+    <Modal v-model="blockModalShow" fullscreen>
+      <div slot="header">
+        <Input v-model="blockName" size="large" placeholder="large size" />
+      </div>
       <div slot="footer">
         <Button type="text" size="large" @click="blockModalShow=false">取消</Button>
         <Button type="primary" size="large" @click="saveNormalBlock">确定</Button>
@@ -35,12 +38,14 @@
       </div>
     </Modal>
     <Modal
-      :title="unitName"
       v-model="unitModalShow"
       width="95"
       :styles="{top: '20px'}"
       :mask-closable="false"
       :closable="false">
+      <div slot="header">
+        <Input v-model="unitName" size="large" placeholder="large size" />
+      </div>
       <!--unit编辑页面-->
       <div slot="footer">
         <Button type="text" size="large" @click="unitModalShow=false">取消</Button>
@@ -102,6 +107,8 @@ export default {
       switchBlockInfo: {},
       unitAllList: [],
       basicModuleShow: {},
+      // TODO: 当前被操控的unitLists内容的copy, 但是依旧不生效
+      currentUnitListsCopy: null,
       showDrawer: false
     }
   },
@@ -166,8 +173,9 @@ export default {
             'nodeDataArray': [],
             'linkDataArray': []
           })
-        }else {
-          self.blockDiagram.model = go.Model.fromJson(node.data.unitLists)
+        } else {
+          self.currentUnitListsCopy = Object.assign({}, node.data.unitLists)
+          self.blockDiagram.model = go.Model.fromJson(self.currentUnitListsCopy)
         }
       }
 
@@ -486,6 +494,7 @@ export default {
       } else {
         this.blockModalShow = false
         this.myDiagram.model.setDataProperty(currentNormalBlockData, 'unitLists', blockDiagramData)
+        this.myDiagram.model.setDataProperty(currentNormalBlockData, 'text', this.blockName)
       }
     },
     _jobFlowRules () {
@@ -627,7 +636,11 @@ export default {
       if (!this.unitContent) this.$Message.error('unit信息不能为空！')
       else if (!isJsonString(this.unitContent)) this.$Message.error('不是json')
       else {
-        this.myDiagram.model.setDataProperty(currentUnitNode, 'unitMsg', JSON.parse(this.unitContent))
+        // TODO: 这个有一个问题,blockDiagram.model的改变直接会影响到myDiagram.model
+        // TODO:解决方案: 先将yDiagram.model内容copy一份,点击取消使用copy的原有数据覆盖已改变数据
+        this.blockDiagram.model.setDataProperty(currentUnitNode, 'unitMsg', JSON.parse(this.unitContent))
+        this.blockDiagram.model.setDataProperty(currentUnitNode, 'text', this.unitName)
+        console.log(this.myDiagram.model.nodeDataArray)
         this.unitModalShow = false
       }
     },
