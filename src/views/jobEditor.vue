@@ -3,11 +3,16 @@
     <Drawer title="用例详细信息" :closable="false" v-model="showDrawer" width="50">
       <job-msg-component ref="jobDetail" :prop-confirm-btn="false" :prop-enter-btn="false"></job-msg-component>
     </Drawer>
-    <p class="jobName">jobName: {{jobName}}
+    <div class="jobName">
+      jobName: {{jobName}}
       <Button size="large" style="float: right" to="/jobList">取消</Button>
       <Button type="primary" size="large" @click="saveJob" style="margin-right: 10px">确定</Button>
       <Button type="info" size="large" @click="showDrawer=true" style="margin-right: 10px">详情</Button>
-    </p>
+      <i-switch size="large" v-show="switchButtonShow" v-model="switchButton">
+        <span slot="open">另存</span>
+        <span slot="close">更新</span>
+      </i-switch>
+    </div>
 
       <div id="chart-wrap">
         <div id="chart-palette"></div>
@@ -107,8 +112,8 @@ export default {
       switchBlockInfo: {},
       unitAllList: [],
       basicModuleShow: {},
-      // TODO: 当前被操控的unitLists内容的copy, 但是依旧不生效
-      currentUnitListsCopy: null,
+      switchButtonShow: false,
+      switchButton: false,
       showDrawer: false
     }
   },
@@ -174,8 +179,8 @@ export default {
             'linkDataArray': []
           })
         } else {
-          self.currentUnitListsCopy = Object.assign({}, node.data.unitLists)
-          self.blockDiagram.model = go.Model.fromJson(self.currentUnitListsCopy)
+          // 通过 lodbash deepCopy 一份数据并传递给 self.blockDiagram.model
+          self.blockDiagram.model = go.Model.fromJson(self._.cloneDeep(node.data.unitLists))
         }
       }
 
@@ -365,6 +370,7 @@ export default {
           this.jobName = res.data.jobAttribute.job_name
           this.$refs.jobDetail.getMsg(res.data.jobAttribute.id)
           this.myDiagram.model = go.Model.fromJson(res.data.jobBody)
+          this.switchButtonShow = true
         })
       } else {
         getTemporarySpace().then(res => {
@@ -614,10 +620,12 @@ export default {
       return flag
     },
     saveJob () {
+      // 使用 & 保证都运行
       if (this._jobFlowRules() & this._jobMsgRules()) {
         jobFlowAndMsgSave({
           stageJobLabel: this.stageJobLabel,
-          jobLabel: this.$route.query.jobLabel,
+          // this.switchButton 为true 设置为另存为 jobLabel为null
+          jobLabel: (this.switchButton) ? null : this.$route.query.jobLabel,
           flow: JSON.parse(this.myDiagram.model.toJson()),
           attribute: this.$refs.jobDetail.jobInfo,
           id: this.$refs.jobDetail.currentJobId
@@ -636,11 +644,8 @@ export default {
       if (!this.unitContent) this.$Message.error('unit信息不能为空！')
       else if (!isJsonString(this.unitContent)) this.$Message.error('不是json')
       else {
-        // TODO: 这个有一个问题,blockDiagram.model的改变直接会影响到myDiagram.model
-        // TODO:解决方案: 先将yDiagram.model内容copy一份,点击取消使用copy的原有数据覆盖已改变数据
         this.blockDiagram.model.setDataProperty(currentUnitNode, 'unitMsg', JSON.parse(this.unitContent))
         this.blockDiagram.model.setDataProperty(currentUnitNode, 'text', this.unitName)
-        console.log(this.myDiagram.model.nodeDataArray)
         this.unitModalShow = false
       }
     },
