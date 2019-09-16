@@ -277,7 +277,7 @@ export default {
     function myDiagramValidation (fromnode, fromport, tonode, toport) {
       if (fromnode.data.category === 'Start') {
         // 1、Start只有一条指向链接
-        if (!maxLinkFrom(fromnode)) {
+        if (maxLinkFrom(fromnode)) {
           return false
         }
         // 2、Start只能指向Normal block
@@ -286,7 +286,7 @@ export default {
         }
       } else if (fromnode.data.category === 'normalBlock') {
         // 2、Normal block只有一条指向链接
-        if (!maxLinkFrom(fromnode)) {
+        if (maxLinkFrom(fromnode)) {
           return false
         }
       } else if (fromnode.data.category === 'switchBlock') {
@@ -305,7 +305,7 @@ export default {
     function blockDiagramValidation (fromnode, fromport, tonode, toport) {
       if (fromnode.data.category === 'Start') { // Entry
         // 1、Entry只有一条指向链接
-        if (!maxLinkFrom(fromnode)) {
+        if (maxLinkFrom(fromnode)) {
           return false
         }
         // 2、Entry不能直接指向Exit
@@ -314,12 +314,12 @@ export default {
         }
       } else if (tonode.data.category === 'End') { // Exit
         // 1、只有一条被指向链接
-        if (!maxLinkTo(tonode)) {
+        if (maxLinkTo(tonode)) {
           return false
         }
       } else if (fromnode.data.category === 'UnitList') { // UnitList
         // 2、只有一条指向链接
-        if (!maxLinkFrom(fromnode)) {
+        if (maxLinkFrom(fromnode)) {
           return false
         }
         // 3、只有一条被指向链接
@@ -332,14 +332,14 @@ export default {
       }
       return true
     }
-
-    function maxLinkFrom (node) {
-      return !(node.findNodesOutOf().count > 0)
+    // 连接的时候保证指向链接的最大连接数,默认最多只有一条
+    function maxLinkFrom (node, num = 0) {
+      return node.findNodesOutOf().count > num
     }
 
-    // 节点只有一条被指向链接
-    function maxLinkTo (node) {
-      return !(node.findNodesInto().count > 0)
+    // 连接的时候保证被指向链接的最大连接数,默认最多只有一条
+    function maxLinkTo (node, num = 0) {
+      return node.findNodesInto().count > num
     }
     this.init()
   },
@@ -504,13 +504,13 @@ export default {
       }
     },
     _jobFlowRules () {
+      const self = this
       // 事件校验提示
       let myDiagramEventValidationHint = new Set()// 错误提示 set类型去重
-      let myDiagramData = JSON.parse(this.myDiagram.model.toJson())
-      if (myDiagramData.linkDataArray.length === 0) {
+      if (self.myDiagram.links.count === 0) {
         myDiagramEventValidationHint.add('缺少链接关系')
       }
-      if (myDiagramData.nodeDataArray.length === 0) {
+      if (self.myDiagram.nodes.count === 0) {
         myDiagramEventValidationHint.add('还未对流程图进行编辑！')
       } else {
         let startAll = this.myDiagram.findNodesByExample({ 'category': 'Start' })
@@ -523,7 +523,7 @@ export default {
         } else {
           startAll.iterator.each(function (node) {
             let startLinksOutOf = node.findLinksOutOf()
-            if (startLinksOutOf.count <= 0) {
+            if (startLinksOutOf.count !== 1) {
               myDiagramEventValidationHint.add('Start缺少指向链接')
             }
           })
@@ -550,24 +550,19 @@ export default {
             if (switchBlockLinksOutOf.count < 2) {
               myDiagramEventValidationHint.add('Switch block至少有两条指向链接')
             }
+
+            let elseNum = 0
+
+            self.myDiagram.links.iterator.each(function (link) {
+              let linkVal = link.data
+              if (link.fromNode === node) {
+                if (linkVal.visible && !linkVal.text) elseNum++
+                else if (linkVal.visible && link.data.text.replace(/^\s+|\s+$/g, '') === 'else') elseNum++
+              }
+            })
+
+            if (elseNum !== 1) myDiagramEventValidationHint.add('Switch block有且只有一条包含else的指向链接,其他链接需要写入相应token值')
           })
-          let elseNum = 0
-          for (let i = 0; i < myDiagramData.nodeDataArray.length; i++) {
-            if (myDiagramData.nodeDataArray[i].category === 'switchBlock') {
-              for (let j = 0; j < myDiagramData.linkDataArray.length; j++) {
-                if (myDiagramData.linkDataArray[j].from === myDiagramData.nodeDataArray[i].key) {
-                  if (!myDiagramData.linkDataArray[j].text) {
-                    elseNum++
-                  } else if (myDiagramData.linkDataArray[j].text.replace(/^\s+|\s+$/g, '') === 'else') {
-                    elseNum++
-                  }
-                }
-              }
-              if (elseNum !== 1) {
-                myDiagramEventValidationHint.add('Switch block有且只有一条包含else的指向链接,其他链接需要写入相应token值')
-              }
-            }
-          }
         }
 
         if (normalBlockAll.count === 0) {
@@ -579,8 +574,8 @@ export default {
             if (normalBlockLinksInto.count < 1) {
               myDiagramEventValidationHint.add('Normal block至少有一条被指向链接')
             }
-            if (normalBlockLinksOutOf.count < 1) {
-              myDiagramEventValidationHint.add('Normal block缺少指向链接')
+            if (normalBlockLinksOutOf.count !== 1) {
+              myDiagramEventValidationHint.add('Normal block有且只有一条指向链接')
             }
             if (!node.data.unitLists) {
               myDiagramEventValidationHint.add('Normal block未编辑')
