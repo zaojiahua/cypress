@@ -200,9 +200,9 @@ function makePort (name, spot, output, input) {
   * */
   return MAKE(go.Shape, 'Circle',
     {
-      fill: 'transparent',
+      fill: 'gray',
       stroke: null, // this is changed to "white" in the showPorts function
-      desiredSize: new go.Size(8, 8),
+      desiredSize: new go.Size(10, 10),
       alignment: spot,
       alignmentFocus: spot, // align the port on the main Shape
       portId: name, // declare this object to be a "port"
