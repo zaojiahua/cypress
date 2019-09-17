@@ -19,7 +19,7 @@
         <div id="chart-diagram"></div>
       </div>
 
-    <Modal v-model="blockModalShow" fullscreen>
+    <Modal v-model="blockModalShow" :closable="false" fullscreen>
       <div slot="header">
         <Input v-model="blockName" size="large" placeholder="large size" />
       </div>
