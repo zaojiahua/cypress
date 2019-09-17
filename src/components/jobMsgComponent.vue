@@ -251,9 +251,8 @@ export default {
       this.jobInfo.job_name = this.job.job_name
       this.jobInfo.description = this.job.description
       this.jobInfo.job_label = this.job.job_label
-      this.jobInfo.job_type = this.job.job_type
-      this.jobInfo.author = localStorage.id
-
+      if (!this.jobInfo.job_type) this.jobInfo.job_type = this.job.job_type
+      this.jobInfo.author = parseInt(localStorage.id)
       // // 清空操作,避免重复
       this.jobInfo.test_area = []
       this.jobInfo.android_version = []
