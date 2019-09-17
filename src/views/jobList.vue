@@ -206,7 +206,7 @@ export default {
       this.getMsg()
     },
     onRowClick (currentData, index) { // 单击表格某一行
-      this.$emit('on-row-click', currentData, index)
+      // this.$emit('on-row-click', currentData, index)
       this.showDrawer = true
       this.jobMsgLoad = true
       // this.jobCurrentId = currentData.id

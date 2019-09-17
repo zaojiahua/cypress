@@ -92,6 +92,14 @@ import JobOperationComponent from '../components/jobOperationComponent'
 import { getBlockFlowDict4Font, getTemporarySpace, jobFlowAndMsgSave, getJobUnitsBodyDict } from '../api/coral/jobLibSvc'
 import SwitchBlockDetailComponent from '../components/SwitchBlockDetailComponent'
 import { isJsonString } from '../lib/tools'
+import { commonValidation } from '../core/validation/common'
+import {
+  normalBlockValidation,
+  startValidation
+} from '../core/validation/operationValidation/job'
+import { unitListValidation } from '../core/validation/operationValidation/block'
+import { jobFlowValidation } from '../core/validation/finalValidation/job'
+import { blockFlowValidation } from '../core/validation/finalValidation/block'
 export default {
   components: { SwitchBlockDetailComponent, JobOperationComponent, jobMsgComponent },
   data () {
@@ -120,6 +128,11 @@ export default {
   mounted () {
     const self = this
 
+    self.$Notice.config({
+      top: 150,
+      duration: 10
+    })
+
     myDiagramInit()
     function myDiagramInit () {
       self.myDiagram = MAKE(go.Diagram, 'chart-diagram', {
@@ -146,8 +159,14 @@ export default {
         }
       }
 
+      const startTemplate = startNodeTemplate('#0c0bc9')
+      startTemplate.linkValidation = startValidation
+
+      const endTemplate = endNodeTemplate('#DC3C00')
+
       const switchBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: 'yellow', 1.0: 'black' }), 'Diamond')
       switchBlockTemplate.doubleClick = function (e, node) {
+        self.$Notice.destroy()
         if (e.diagram instanceof go.Palette) return
 
         self.switchBlockInfo = {
@@ -160,9 +179,12 @@ export default {
         self.switchBlockModalShow = true
       }
 
+
       const normalBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: 'blue', 1.0: 'red' }), 'RoundedRectangle')
+      normalBlockTemplate.linkValidation = normalBlockValidation
 
       normalBlockTemplate.doubleClick = function (e, node) {
+        self.$Notice.destroy()
         if (e.diagram instanceof go.Palette) return
         self.unitType = '请选择组件类型'
         self.blockName = node.data.text
@@ -186,11 +208,11 @@ export default {
 
       self.myDiagram.nodeTemplateMap.add('normalBlock', normalBlockTemplate)
       self.myDiagram.nodeTemplateMap.add('switchBlock', switchBlockTemplate)
-      self.myDiagram.nodeTemplateMap.add('Start', startNodeTemplate('#0c0bc9'))
-      self.myDiagram.nodeTemplateMap.add('End', endNodeTemplate('#DC3C00'))
+      self.myDiagram.nodeTemplateMap.add('Start', startTemplate)
+      self.myDiagram.nodeTemplateMap.add('End', endTemplate)
 
-      self.myDiagram.toolManager.linkingTool.linkValidation = myDiagramValidation
-      self.myDiagram.toolManager.relinkingTool.linkValidation = myDiagramValidation
+      self.myDiagram.toolManager.linkingTool.linkValidation = commonValidation
+      self.myDiagram.toolManager.relinkingTool.linkValidation = commonValidation
     }
 
     function blockDiagramInit () {
@@ -206,20 +228,15 @@ export default {
 
       // -------------从Palette拖拽节点的触发事件，判断Unit是否被UnitList包含------------
       self.blockDiagram.addDiagramListener('externalobjectsdropped', function (e) {
-        let flag = false
         e.subject.each(function (n) {
           // 得到从Palette拖过来的节点 判断节点如果没有group则删除节点
           if (n.data.category === 'Unit') {
             if (!n.data.group) { // 判断Unit是否被UnitList包含
-              flag = true
+              self.blockDiagram.commandHandler.deleteSelection()// 删除该选中节点
+              self.$Message.error('Unit只能被包裹在UnitList中') // 错误提示
             }
           }
         })
-
-        if (flag) {
-          self.blockDiagram.commandHandler.deleteSelection()// 删除该选中节点
-          self.$Message.error('Unit只能被包裹在UnitList中') // 错误提示
-        }
       })
 
       self.blockDiagram.linkTemplate = linkTemplateStyle()
@@ -227,6 +244,8 @@ export default {
       const unitTemplate = baseNodeTemplate('#c934c9', 'RoundedRectangle')
       unitTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
+
+        self.$Notice.destroy()
 
         self.$refs.emptyOperation.emptyData()
         self.unitModalShow = true
@@ -237,17 +256,18 @@ export default {
 
       const unitListGroupTemplate = baseGroupTemplate()
       unitListGroupTemplate.memberValidation = function groupValidation (group, node) {
-        if (node instanceof go.Group) return false// 不能将UnitList添加到UnitList中
         return node.data.category === 'Unit'// 当节点的category值为Unit时
       }
+
+      unitListGroupTemplate.linkValidation = unitListValidation
 
       self.blockDiagram.nodeTemplateMap.add('Unit', unitTemplate)
       self.blockDiagram.nodeTemplateMap.add('Start', startNodeTemplate('#0c0bc9'))
       self.blockDiagram.nodeTemplateMap.add('End', endNodeTemplate('#DC3C00'))
       self.blockDiagram.groupTemplateMap.add('UnitList', unitListGroupTemplate)
 
-      self.blockDiagram.toolManager.linkingTool.linkValidation = blockDiagramValidation
-      self.blockDiagram.toolManager.relinkingTool.linkValidation = blockDiagramValidation
+      self.blockDiagram.toolManager.linkingTool.linkValidation = commonValidation
+      self.blockDiagram.toolManager.relinkingTool.linkValidation = commonValidation
     }
 
     function blockPaletteInit () {
@@ -274,73 +294,6 @@ export default {
       self.blockPalette.model = new go.GraphLinksModel(basicModule.nodeDataArray, basicModule.linkDataArray)
     }
 
-    function myDiagramValidation (fromnode, fromport, tonode, toport) {
-      if (fromnode.data.category === 'Start') {
-        // 1、Start只有一条指向链接
-        if (maxLinkFrom(fromnode)) {
-          return false
-        }
-        // 2、Start只能指向Normal block
-        if (tonode.data.category !== 'normalBlock') {
-          return false
-        }
-      } else if (fromnode.data.category === 'normalBlock') {
-        // 2、Normal block只有一条指向链接
-        if (maxLinkFrom(fromnode)) {
-          return false
-        }
-      } else if (fromnode.data.category === 'switchBlock') {
-        // 1、switchBlock是否重复指向同一模组
-        let flag = true
-        fromnode.findNodesOutOf().each(function (node) { // node为遍历的被指向节点
-          if (tonode.data.key === node.data.key) {
-            flag = false
-          }
-        })
-        return flag
-      }
-      return true
-    }
-
-    function blockDiagramValidation (fromnode, fromport, tonode, toport) {
-      if (fromnode.data.category === 'Start') { // Entry
-        // 1、Entry只有一条指向链接
-        if (maxLinkFrom(fromnode)) {
-          return false
-        }
-        // 2、Entry不能直接指向Exit
-        if (tonode.data.category !== 'UnitList') {
-          return false
-        }
-      } else if (tonode.data.category === 'End') { // Exit
-        // 1、只有一条被指向链接
-        if (maxLinkTo(tonode)) {
-          return false
-        }
-      } else if (fromnode.data.category === 'UnitList') { // UnitList
-        // 2、只有一条指向链接
-        if (maxLinkFrom(fromnode)) {
-          return false
-        }
-        // 3、只有一条被指向链接
-        if (tonode.data.category === 'UnitList') {
-          let num = tonode.findLinksInto()
-          if (num.count > 0) {
-            return false
-          }
-        }
-      }
-      return true
-    }
-    // 连接的时候保证指向链接的最大连接数,默认最多只有一条
-    function maxLinkFrom (node, num = 0) {
-      return node.findNodesOutOf().count > num
-    }
-
-    // 连接的时候保证被指向链接的最大连接数,默认最多只有一条
-    function maxLinkTo (node, num = 0) {
-      return node.findNodesInto().count > num
-    }
     this.init()
   },
   methods: {
@@ -404,99 +357,29 @@ export default {
       this.myDiagram.model.setDataProperty(node, 'explain', msg.explain)
     },
     saveNormalBlock () { // normalBlock点击确定进行校验
-      let currentNormalBlockData = this.myDiagram.findNodeForKey(this.getCurrentNormalBlockByKey).data // 获取当前unit的data
-      let blockDiagramHint = new Set()
+      let currentNormalBlockData = this.myDiagram.findNodeForKey(this.getCurrentNormalBlockByKey).data
+
       let blockDiagramData = JSON.parse(this.blockDiagram.model.toJson())
-      if (blockDiagramData.linkDataArray.length === 0) {
-        blockDiagramHint.add('缺少链接关系')
-      }
 
-      if (blockDiagramData.nodeDataArray.length === 0) {
-        blockDiagramHint.add('还未对流程图进行编辑！')
-      } else {
-        let entryAll = this.blockDiagram.findNodesByExample({ 'category': 'Start' })
-        let exitAll = this.blockDiagram.findNodesByExample({ 'category': 'End' })
-        let unitListAll = this.blockDiagram.findNodesByExample({ 'category': 'UnitList' })
-        let unitAll = this.blockDiagram.findNodesByExample({ 'category': 'Unit' })
+      const blockDiagramHint = blockFlowValidation(this)
 
-        // Entry
-        if (entryAll.count !== 1) {
-          blockDiagramHint.add('有且只有一个Entry')
-        } else {
-          entryAll.iterator.each(function (node) {
-            let entryLinksOutOf = node.findLinksOutOf()
-            if (entryLinksOutOf.count < 1) {
-              blockDiagramHint.add('Entry缺少指向链接')
-            }
-          })
-        }
-        // Exit
-        if (exitAll.count !== 1) {
-          blockDiagramHint.add('有且只有一个Exit')
-        } else {
-          exitAll.iterator.each(function (node) {
-            let exitLinksInto = node.findLinksInto()
-            if (exitLinksInto.count !== 1) {
-              blockDiagramHint.add('Exit缺少被指向链接')
-            }
-          })
-        }
-        // UnitList
-        if (unitListAll.count < 1) {
-          blockDiagramHint.add('缺少UnitList')
-        } else {
-          unitListAll.iterator.each(function (node) {
-            let unitListLinksInto = node.findLinksInto()
-            let unitListLinksOutOf = node.findLinksOutOf()
-            if (unitListLinksInto.count !== 1) {
-              blockDiagramHint.add('UnitList有且只有一条被指向链接')
-            }
-            if (unitListLinksOutOf.count !== 1) {
-              blockDiagramHint.add('UnitList有且只有一条指向链接')
-            }
-          })
-          for (let i = 0; i < blockDiagramData.nodeDataArray.length; i++) {
-            if (blockDiagramData.nodeDataArray[i].category === 'UnitList') {
-              let groupNum = 0
-              for (let j = 0; j < blockDiagramData.nodeDataArray.length; j++) {
-                if (blockDiagramData.nodeDataArray[j].group === blockDiagramData.nodeDataArray[i].key && blockDiagramData.nodeDataArray[j].category === 'Unit') {
-                  groupNum++
-                }
-              }
-              if (groupNum === 0) {
-                blockDiagramHint.add('UnitList中至少包含一个Unit')
-              }
-            }
-          }
-        }
-        // Unit
-        if (unitAll.count === 0) {
-          blockDiagramHint.add('缺少Unit')
-        } else {
-          unitAll.iterator.each(function (node) {
-            if (!node.data.unitMsg) {
-              blockDiagramHint.add('Unit信息没有编辑')
-            }
-          })
-        }
-      }
-
-      this.$Message.destroy()
+      this.$Notice.destroy()
 
       if (blockDiagramHint.size !== 0) {
         this.blockModalShow = true
         let errorNum = 1
         let errorMessage = ''
-        blockDiagramHint.forEach(function (element) {
+        blockDiagramHint.forEach(element => {
           errorMessage += errorNum + '.' + element + '<br/>'
           errorNum++
         })
         // message提示
-        this.$Message.info({
-          content: errorMessage, // 提示内容
-          duration: 0,
-          closable: false
+
+        this.$Notice.error({
+          title: '当前block出现以下错误',
+          desc: errorMessage
         })
+
       } else {
         this.blockModalShow = false
         this.myDiagram.model.setDataProperty(currentNormalBlockData, 'unitLists', blockDiagramData)
@@ -504,102 +387,23 @@ export default {
       }
     },
     _jobFlowRules () {
-      const self = this
-      // 事件校验提示
-      let myDiagramEventValidationHint = new Set()// 错误提示 set类型去重
-      if (self.myDiagram.links.count === 0) {
-        myDiagramEventValidationHint.add('缺少链接关系')
-      }
-      if (self.myDiagram.nodes.count === 0) {
-        myDiagramEventValidationHint.add('还未对流程图进行编辑！')
-      } else {
-        let startAll = this.myDiagram.findNodesByExample({ 'category': 'Start' })
-        let endAll = this.myDiagram.findNodesByExample({ 'category': 'End' })
-        let switchBlockAll = this.myDiagram.findNodesByExample({ 'category': 'switchBlock' })
-        let normalBlockAll = this.myDiagram.findNodesByExample({ 'category': 'normalBlock' })
+      const myDiagramEventValidationHint = jobFlowValidation(this)
 
-        if (startAll.count !== 1) {
-          myDiagramEventValidationHint.add('有且只有一个Start')
-        } else {
-          startAll.iterator.each(function (node) {
-            let startLinksOutOf = node.findLinksOutOf()
-            if (startLinksOutOf.count !== 1) {
-              myDiagramEventValidationHint.add('Start缺少指向链接')
-            }
-          })
-        }
-
-        if (endAll.count <= 0) {
-          myDiagramEventValidationHint.add('缺少End')
-        } else {
-          endAll.iterator.each(function (node) { // 遍历所有的end节点
-            let endLinksInto = node.findLinksInto()
-            if (endLinksInto.count <= 0) {
-              myDiagramEventValidationHint.add('End至少有一条被指向链接')
-            }
-          })
-        }
-
-        if (switchBlockAll.count !== 0) {
-          switchBlockAll.iterator.each(function (node) {
-            let switchBlockLinksInto = node.findLinksInto()
-            let switchBlockLinksOutOf = node.findLinksOutOf()
-            if (switchBlockLinksInto.count < 1) {
-              myDiagramEventValidationHint.add('Switch block至少有一条被指向链接')
-            }
-            if (switchBlockLinksOutOf.count < 2) {
-              myDiagramEventValidationHint.add('Switch block至少有两条指向链接')
-            }
-
-            let elseNum = 0
-
-            self.myDiagram.links.iterator.each(function (link) {
-              let linkVal = link.data
-              if (link.fromNode === node) {
-                if (linkVal.visible && !linkVal.text) elseNum++
-                else if (linkVal.visible && link.data.text.replace(/^\s+|\s+$/g, '') === 'else') elseNum++
-              }
-            })
-
-            if (elseNum !== 1) myDiagramEventValidationHint.add('Switch block有且只有一条包含else的指向链接,其他链接需要写入相应token值')
-          })
-        }
-
-        if (normalBlockAll.count === 0) {
-          myDiagramEventValidationHint.add('缺少Normal block')
-        } else {
-          normalBlockAll.iterator.each(function (node) {
-            let normalBlockLinksInto = node.findLinksInto()
-            let normalBlockLinksOutOf = node.findLinksOutOf()
-            if (normalBlockLinksInto.count < 1) {
-              myDiagramEventValidationHint.add('Normal block至少有一条被指向链接')
-            }
-            if (normalBlockLinksOutOf.count !== 1) {
-              myDiagramEventValidationHint.add('Normal block有且只有一条指向链接')
-            }
-            if (!node.data.unitLists) {
-              myDiagramEventValidationHint.add('Normal block未编辑')
-            }
-          })
-        }
-      }
-
-      this.$Message.destroy()
+      this.$Notice.destroy()
 
       // 错误提示
       if (myDiagramEventValidationHint.size !== 0) {
         let errorNum = 1
         let errorMessage = ''
-        myDiagramEventValidationHint.forEach(function (element) {
+        myDiagramEventValidationHint.forEach(element => {
           errorMessage += errorNum + '.' + element + '<br/>'
           errorNum++
         })
 
         // message提示
-        this.$Message.info({
-          content: errorMessage, // 提示内容
-          duration: 0,
-          closable: false
+        this.$Notice.error({
+          title: '当前用例出现以下错误',
+          desc: errorMessage // 提示内容
         })
         return false
       } else return true
