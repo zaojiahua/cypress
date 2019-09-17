@@ -254,6 +254,13 @@ export default {
       this.jobInfo.job_type = this.job.job_type
       this.jobInfo.author = localStorage.id
 
+      // // 清空操作,避免重复
+      this.jobInfo.test_area = []
+      this.jobInfo.android_version = []
+      this.jobInfo.custom_tag = []
+      this.jobInfo.phone_models = []
+      this.jobInfo.rom_version = []
+
       this.job.test_area.forEach(item => {
         this.jobInfo.test_area.push(item.id)
       })
