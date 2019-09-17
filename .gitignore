@@ -20,4 +20,4 @@ yarn-error.log*
 *.sln
 *.sw?
 
-/config/dev*
+/src/config/dev*
