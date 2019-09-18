@@ -89,7 +89,8 @@ export function baseNodeTemplate (fill, shape) {
     // the main object is a Panel that surrounds a TextBlock with a rectangular Shape
     MAKE(go.Panel, 'Auto',
       MAKE(go.Shape, shape,
-        { fill: fill, stroke: null }
+        { fill: fill, stroke: null },
+        new go.Binding('fill', 'color')
       ),
       MAKE(go.TextBlock,
         {

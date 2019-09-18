@@ -164,6 +164,18 @@ export default {
 
       const endTemplate = endNodeTemplate('#DC3C00')
 
+      endTemplate.doubleClick = (e, node) => {
+        if (node.data.text === 'End') {
+          self.myDiagram.model.setDataProperty(node.data, 'text', 'Fail')
+          self.myDiagram.model.setDataProperty(node.data, 'color', '#A9A9A9')
+        } else {
+          self.myDiagram.model.setDataProperty(node.data, 'text', 'End')
+          self.myDiagram.model.setDataProperty(node.data, 'color', '#DC3C00')
+        }
+
+        debugger
+      }
+
       const switchBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: 'yellow', 1.0: 'black' }), 'Diamond')
       switchBlockTemplate.doubleClick = function (e, node) {
         self.$Notice.destroy()
