@@ -8,7 +8,7 @@ export function commonValidation (fromnode, fromport, tonode, toport) {
 
   // 保证所有节点不可以重复指向
   let flag = true
-  fromnode.findNodesOutOf().each(function (node) {
+  fromnode.findNodesOutOf().each(node => {
     if (tonode.data.key === node.data.key) {
       flag = false
     }

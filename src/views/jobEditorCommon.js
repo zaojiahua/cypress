@@ -50,7 +50,7 @@ export function linkTemplateStyle () {
       MAKE(go.TextBlock, 'else', // the label
         {
           textAlign: 'center',
-          font: '10pt helvetica, arial, sans-serif',
+          font: '18pt helvetica, arial, sans-serif',
           stroke: '#56d8e4',
           editable: true
         },

@@ -179,9 +179,7 @@ export default {
         self.switchBlockModalShow = true
       }
 
-
       const normalBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: 'blue', 1.0: 'red' }), 'RoundedRectangle')
-      normalBlockTemplate.linkValidation = normalBlockValidation
 
       normalBlockTemplate.doubleClick = function (e, node) {
         self.$Notice.destroy()
