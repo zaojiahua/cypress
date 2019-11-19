@@ -117,6 +117,7 @@
 import util from '../lib/util/validate.js'
 import { getJobList } from '../api/reef/job'
 import jobMsgComponent from '../components/jobMsgComponent'
+import store from '../store';
 
 const jobSerializer = [
   {

@@ -105,7 +105,10 @@
           </Menu>
         </Sider>
         <Content :style="{padding: '15px', minHeight: '280px', background: '#fff' }">
-          <router-view/>
+          <!-- 将需要被缓存的组件的name传入 -->
+          <keep-alive :include="$store.state.keepAliveComponents">
+            <router-view/>
+          </keep-alive>
         </Content>
       </Layout>
     </Layout>

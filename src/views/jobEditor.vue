@@ -5,9 +5,10 @@
     </Drawer>
     <div class="jobName">
       jobName: {{jobName}}
-      <Button size="large" style="float: right" to="/jobList">取消</Button>
+      <Button size="large" style="float: right" @click="$store.commit('noKeepAlive', 'jobEditor')" to="/jobList">取消</Button>
       <Button type="primary" size="large" @click="saveJob" style="margin-right: 10px">确定</Button>
       <Button type="info" size="large" @click="showDrawer=true" style="margin-right: 10px">详情</Button>
+      <Button :type="$store.state.keepAliveComponents.length === 2 ? 'success' : 'warning'" size="large" @click="$store.commit('keepAlive', 'jobEditor')" style="margin-right: 10px">{{ this.$store.state.keepAliveComponents.length === 2 ? "已存" : "暂存" }}</Button>
       <i-switch size="large" v-show="switchButtonShow" v-model="switchButton">
         <span slot="open">另存</span>
         <span slot="close">更新</span>
@@ -74,6 +75,7 @@
   </div>
 </template>
 <script>
+import store from '../store';
 import go from 'gojs'
 import {
   MAKE,
@@ -101,6 +103,7 @@ import { unitListValidation } from '../core/validation/operationValidation/block
 import { jobFlowValidation } from '../core/validation/finalValidation/job'
 import { blockFlowValidation } from '../core/validation/finalValidation/block'
 export default {
+  name: 'jobEditor',
   components: { SwitchBlockDetailComponent, JobOperationComponent, jobMsgComponent },
   data () {
     return {
@@ -305,6 +308,26 @@ export default {
     }
 
     this.init()
+  },
+  // 提醒用户暂存已编辑的内容
+  beforeRouteLeave(to, from, next) {
+    let self = this;
+    if(this.$store.state.keepAliveComponents.length !== 2 && this.myDiagram.model.nodeDataArray.length !== 0) {
+      this.$Modal.confirm({
+        title: 'WARNING',
+        content: '此操作会丢失已编辑的内容，确定要继续吗？',
+        closable: false,
+        onOk() {
+          next();
+        },
+        onCancel() {
+          self.$store.commit('keepAlive', 'jobEditor');
+          next(false);
+        }
+      })
+    } else {
+      next();
+    }
   },
   methods: {
     init () {
