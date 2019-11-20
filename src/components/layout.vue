@@ -151,6 +151,9 @@ export default {
           )
           this.$Message.success('登出成功!')
           this.$Loading.finish()
+          // 登出后不能通过后退键回到TMach操作页面中
+          sessionStorage.removeItem('token');
+          localStorage.removeItem('token');
         },
         onCancel () {
           this.$Modal.remove()

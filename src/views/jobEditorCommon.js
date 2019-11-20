@@ -84,8 +84,27 @@ export function baseNodeTemplateForPort (color, shape) {
   return baseNodeTemplateForPort
 }
 
+// 选取baseNode/baseGroup时的装饰模板
+var nodeSelectionAdornmentTemplate =
+MAKE(go.Adornment, "Auto",
+  MAKE(go.Shape, {
+    fill: null,
+    stroke: "deepskyblue",
+    strokeWidth: 1.5,
+    // 选取节点时，strokeDashArray为空数组时选择框为实线，设置形如[x,y]的格式时，将创建x个像素的虚线和y个像素的空格
+    strokeDashArray: [4, 2]
+  }),
+  // 占位符，用于装饰对象（Adornment）时，表示装饰对象的区域
+  MAKE(go.Placeholder)
+);
+
+
 export function baseNodeTemplate (fill, shape) {
   const baseNodeTemplate = MAKE(go.Node, 'Spot', nodeStyle(),
+    {
+      selectable: true,
+      selectionAdornmentTemplate: nodeSelectionAdornmentTemplate,
+    },
     // the main object is a Panel that surrounds a TextBlock with a rectangular Shape
     MAKE(go.Panel, 'Auto',
       MAKE(go.Shape, shape,
@@ -111,6 +130,8 @@ export function baseNodeTemplate (fill, shape) {
 export function baseGroupTemplate () {
   return MAKE(go.Group, 'Auto', nodeStyle(),
     {
+      selectable: true,
+      selectionAdornmentTemplate: nodeSelectionAdornmentTemplate,
       background: 'transparent',
       // isSubGraphExpanded: false,// only show the Group itself, not any of its members
       ungroupable: true,
@@ -203,7 +224,7 @@ function makePort (name, spot, output, input) {
     {
       fill: 'gray',
       stroke: null, // this is changed to "white" in the showPorts function
-      desiredSize: new go.Size(10, 10),
+      desiredSize: new go.Size(6, 6),
       alignment: spot,
       alignmentFocus: spot, // align the port on the main Shape
       portId: name, // declare this object to be a "port"

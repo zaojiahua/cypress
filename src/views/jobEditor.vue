@@ -125,7 +125,8 @@ export default {
       basicModuleShow: {},
       switchButtonShow: false,
       switchButton: false,
-      showDrawer: false
+      showDrawer: false,
+      isCertain: false, // 是否是通过点击确定按钮离开jobEditor页面
     }
   },
   mounted () {
@@ -141,6 +142,33 @@ export default {
       self.myDiagram = MAKE(go.Diagram, 'chart-diagram', {
         initialContentAlignment: go.Spot.Center,
         allowDrop: true,
+        // 设置网格
+        grid: MAKE(go.Panel, "Grid",
+          MAKE(go.Shape, "LineH", {
+            stroke: "lightgray",
+            strokeWidth: 0.5
+          }),
+          MAKE(go.Shape, "LineH", {
+            stroke: "gray",
+            strokeWidth: 0.5,
+            interval: 10
+          }),
+          MAKE(go.Shape, "LineV", {
+            stroke: "lightgray",
+            strokeWidth: 0.5
+          }),
+          MAKE(go.Shape, "LineV", {
+            stroke: "gray",
+            strokeWidth: 0.5,
+            interval: 10
+          })
+        ),
+        // 拖动时是否捕捉网格点
+        "draggingTool.isGridSnapEnabled": true,
+        // 初次链接时，以链接（link）头部距离目标节点的某个Port的距离小于linkingTool.portGravity时，链接会自动吸附到目标节点的Port上
+        "linkingTool.portGravity": 40,
+        // 修改链接时，以链接（link）头部距离目标节点的某个Port的距离小于linkingTool.portGravity时，链接会自动吸附到目标节点的Port上
+        "relinkingTool.portGravity": 40,
         'toolManager.mouseWheelBehavior': go.ToolManager.WheelZoom,
         'LinkDrawn': showLinkLabel,
         'LinkRelinked': showLinkLabel,
@@ -162,10 +190,10 @@ export default {
         }
       }
 
-      const startTemplate = startNodeTemplate('#0c0bc9')
+      const startTemplate = startNodeTemplate('#00AD5F')
       startTemplate.linkValidation = startValidation
 
-      const endTemplate = endNodeTemplate('#DC3C00')
+      const endTemplate = endNodeTemplate('tomato')
 
       endTemplate.doubleClick = (e, node) => {
         if (node.data.text === 'End') {
@@ -179,7 +207,7 @@ export default {
         debugger
       }
 
-      const switchBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: 'yellow', 1.0: 'black' }), 'Diamond')
+      const switchBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: '#74ebd5', 1.0: '#9face6' }), 'Diamond')
       switchBlockTemplate.doubleClick = function (e, node) {
         self.$Notice.destroy()
         if (e.diagram instanceof go.Palette) return
@@ -194,7 +222,7 @@ export default {
         self.switchBlockModalShow = true
       }
 
-      const normalBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: 'blue', 1.0: 'red' }), 'RoundedRectangle')
+      const normalBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: '#30cfd0', 1.0: '#330867' }), 'RoundedRectangle')
 
       normalBlockTemplate.doubleClick = function (e, node) {
         self.$Notice.destroy()
@@ -254,7 +282,7 @@ export default {
 
       self.blockDiagram.linkTemplate = linkTemplateStyle()
 
-      const unitTemplate = baseNodeTemplate('#c934c9', 'RoundedRectangle')
+      const unitTemplate = baseNodeTemplate('#c924c9', 'RoundedRectangle')
       unitTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
 
@@ -275,8 +303,8 @@ export default {
       unitListGroupTemplate.linkValidation = unitListValidation
 
       self.blockDiagram.nodeTemplateMap.add('Unit', unitTemplate)
-      self.blockDiagram.nodeTemplateMap.add('Start', startNodeTemplate('#0c0bc9'))
-      self.blockDiagram.nodeTemplateMap.add('End', endNodeTemplate('#DC3C00'))
+      self.blockDiagram.nodeTemplateMap.add('Start', startNodeTemplate('#00AD5F'))
+      self.blockDiagram.nodeTemplateMap.add('End', endNodeTemplate('tomato'))
       self.blockDiagram.groupTemplateMap.add('UnitList', unitListGroupTemplate)
 
       self.blockDiagram.toolManager.linkingTool.linkValidation = commonValidation
@@ -309,20 +337,29 @@ export default {
 
     this.init()
   },
+  beforUpdate() {
+    this.isCertain = false;
+  },
   // 提醒用户暂存已编辑的内容
   beforeRouteLeave(to, from, next) {
     let self = this;
-    if(this.$store.state.keepAliveComponents.length !== 2 && this.myDiagram.model.nodeDataArray.length !== 0) {
+    let toFullPath = to.fullPath;
+    if(this.$store.state.keepAliveComponents.length !== 2 && this.myDiagram.model.nodeDataArray.length !== 0 && !this.isCertain) {
       this.$Modal.confirm({
         title: 'WARNING',
         content: '此操作会丢失已编辑的内容，确定要继续吗？',
         closable: false,
+        okText: '保存并退出',
+        cancelText: '退出',
         onOk() {
-          next();
-        },
-        onCancel() {
           self.$store.commit('keepAlive', 'jobEditor');
           next(false);
+          setTimeout(function() {
+            self.$router.push({ path: toFullPath });
+          }, 100)
+        },
+        onCancel() {
+          next();
         }
       })
     } else {
@@ -335,7 +372,7 @@ export default {
         go.Palette, 'chart-palette', {
           scrollsPageOnFocus: false,
           nodeTemplateMap: this.myDiagram.nodeTemplateMap,
-          layout: MAKE(go.GridLayout, { wrappingColumn: 1, alignment: go.GridLayout.Position })
+          layout: MAKE(go.GridLayout, { wrappingColumn: 1, alignment: go.GridLayout.Location })
         }
       )
 
@@ -463,6 +500,7 @@ export default {
           id: this.$refs.jobDetail.currentJobId
         }).then(res => { // 保存成功后跳转回jobList页面
           if (res.data.state) {
+            this.isCertain = true;
             this.$router.push({ path: '/jobList' })
             this.$Message.info('操作完成')
           } else {
