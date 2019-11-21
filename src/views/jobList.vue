@@ -91,7 +91,7 @@
 
     <!--少了中间选中的展示-->
     <Button style="margin: 30px 0px;">清空</Button>
-    <Divider style="margin-top: -6px"/>
+    <Divider style="margin-top: -6px">已选用例</Divider>
     <Row>
       <Button icon="ios-cloud-upload-outline">导入用例</Button>
       <!--<Upload action="//jsonplaceholder.typicode.com/posts/">
@@ -99,11 +99,19 @@
       </Upload>-->
       <Button type="error" style="float: right;margin-right: 20px">批量删除</Button>
       <Button type="success" style="float: right;margin-right: 20px">导出用例</Button>
+      <div class="job-label-set">
+        <div v-for="(job, index) in selectedJob" :key="index" class="job-label" @click="openDetail(job.id)">
+          <Badge :count="job.page" type="info" class="badge"></Badge>
+          <span >{{ job.job_name }}</span>
+          <span class="close" @click.stop="close(index)"></span>
+        </div>
+      </div>
+      
     </Row>
     <Divider  style="margin-top: 40px"/>
 
     <div>
-      <Table ref="selection" :columns="columns" :data="jobData" @on-row-click="onRowClick"></Table>
+      <Table :loading="loading" ref="selection" :columns="columns" :data="jobData" @on-row-click="onRowClick" @on-select="selectJob" @on-select-all="selectAllJob"></Table>
     </div>
 
     <Page simple :page-size="pageSize" :total="dataCount" @on-change="jobPageChange" style="text-align: center;margin-top: 20px"></Page>
@@ -170,7 +178,9 @@ export default {
           key: 'custom_tag'
         }
       ],
-      jobData: util.validate(jobSerializer, [])
+      jobData: util.validate(jobSerializer, []),
+      selectedJob: [],
+      loading: false
     }
   },
   methods: {
@@ -197,14 +207,27 @@ export default {
 
           job.text_area = jobTextAreas.join(',')
           job.custom_tag = jobCustomTags.join(',')
+          
+          this.selectedJob.forEach((value) => {
+            if(value.page === this.currentPage) {
+              if(value.id === job.id) {
+                job._checked = true;
+              }
+            }
+          })
         })
       }).catch(error => {
         console.log(error)
       })
     },
     jobPageChange (page) {
+      this.loading = true;
+      setTimeout(() => {
+        this.loading = false;
+      }, 400);
       this.currentPage = page
       this.getMsg()
+
     },
     onRowClick (currentData, index) { // 单击表格某一行
       // this.$emit('on-row-click', currentData, index)
@@ -213,6 +236,37 @@ export default {
       // this.jobCurrentId = currentData.id
       // this.jobCurrentId = currentData.id
       this.$refs.jobDetail.getMsg(currentData.id)
+    },
+    selectJob(selection, row) {
+      if (!this.selectedJob.some(function(value, index, array) { return value.id === row.id; })) {
+        row.page = this.currentPage;
+        this.selectedJob.push(row);
+      }
+    },
+    selectAllJob(selection) {
+      selection.forEach((srcValue, srcIndex, srcArray) => {
+        if (!this.selectedJob.some(function(tarValue, tarIndex, tarArray) { return srcValue.id === tarValue.id; })) {
+          srcValue.page = this.currentPage;
+          this.selectedJob.push(srcValue);
+        }
+      })
+    },
+    close(index) {
+      if(this.selectedJob[index].page === this.currentPage) {
+        this.jobData.forEach((value, dex) => {
+          if(value.id === this.selectedJob[index].id) {
+            this.$refs.selection.toggleSelect(dex);
+          }
+        });
+      }
+      this.selectedJob.splice(index, 1);
+    },
+    openDetail(id) {
+      this.showDrawer = true
+      this.jobMsgLoad = true
+      // this.jobCurrentId = currentData.id
+      // this.jobCurrentId = currentData.id
+      this.$refs.jobDetail.getMsg(id);
     }
   },
   computed: {
@@ -227,5 +281,48 @@ export default {
 </script>
 
 <style scoped>
+.job-label-set {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  justify-content: flex-start;
+  align-content: flex-start;
+  min-height: 160px;
+}
+.job-label {
+  position: relative;
+  display: inline-block;
+  padding: 8px 48px 8px 16px;
+  border-radius: 4px;
+  color: #515a6e;
+  font-size: 12px;
+  line-height: 16px;
+  margin-right: 16px;
+  margin-bottom: 16px;
+  border: 1px solid #abdcff;
+  background-color: #f0faff;
 
+}
+.job-label:hover {
+  box-shadow: 6px 6px 2px #f0faff;
+}
+.close {
+  position: absolute;
+  right: 8px;
+  font-size: 22px;
+  color: #cccccc;
+  font-family: Ionicons;
+}
+.close:hover {
+  color: #2e3546;
+}
+.close::after {
+  content: '\F178'
+}
+.badge {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
+}
 </style>
