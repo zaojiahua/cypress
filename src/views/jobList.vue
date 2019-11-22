@@ -3,77 +3,42 @@
     <Tabs type="card" class="tabs">
       <!--可以循环遍历数据 -->
       <TabPane label="适用机型">
-        <CheckboxGroup>
+        <CheckboxGroup v-model="checkedAdaptors">
           <Row type="flex">
-            <Col span="4"><Checkbox label="aaa"></Checkbox></Col>
-            <Col span="4"><Checkbox>sdj</Checkbox></Col>
-            <Col span="4"><Checkbox>sfa</Checkbox></Col>
-            <Col span="4"><Checkbox>aeaw</Checkbox></Col>
-            <Col span="4"><Checkbox>adf</Checkbox></Col>
-            <Col span="4"><Checkbox>SDF</Checkbox></Col>
-            <Col span="4"><Checkbox>aaa</Checkbox></Col>
+            <Col span="4" v-for="(adaptor, index) in adaptorsForMatch" :key="index">
+              <Checkbox :label="adaptor"></Checkbox>
+            </Col>
+            {{ checkedAdaptors }}
           </Row>
         </CheckboxGroup>
       </TabPane>
       <TabPane label="测试用例">
-        <CheckboxGroup>
+        <CheckboxGroup v-model="checkedJobs">
           <Row type="flex">
-            <Col span="4"><Checkbox label="aaa"></Checkbox></Col>
-            <Col span="4"><Checkbox label="aaa">sdj</Checkbox></Col>
-            <Col span="4"><Checkbox>sfa</Checkbox></Col>
-            <Col span="4"><Checkbox>aeaw</Checkbox></Col>
-            <Col span="4"><Checkbox>adf</Checkbox></Col>
-            <Col span="4"><Checkbox>SDF</Checkbox></Col>
-            <Col span="4"><Checkbox label="a567a">aaa</Checkbox></Col>
+            <Col span="4" v-for="(job, index) in jobsForMatch" :key="index">
+              <Checkbox :label="job"></Checkbox>
+            </Col>
+            {{ checkedJobs }}
           </Row>
         </CheckboxGroup>
       </TabPane>
       <TabPane label="安卓版本">
-        <CheckboxGroup>
+        <CheckboxGroup v-model="checkedAndroidVersion">
           <Row type="flex">
-            <Col span="4"><Checkbox label="aaa"></Checkbox></Col>
-            <Col span="4"><Checkbox label="aaa">sdj</Checkbox></Col>
-            <Col span="4"><Checkbox>sfa</Checkbox></Col>
-            <Col span="4"><Checkbox>aeaw</Checkbox></Col>
-            <Col span="4"><Checkbox>adf</Checkbox></Col>
-            <Col span="4"><Checkbox>adf</Checkbox></Col>
-            <Col span="4"><Checkbox>aeaw</Checkbox></Col>
-            <Col span="4"><Checkbox>adf</Checkbox></Col>
-            <Col span="4"><Checkbox>SDF</Checkbox></Col>
-            <Col span="4"><Checkbox label="a567a">aaa</Checkbox></Col>
+            <Col span="4" v-for="(androidVersion, index) in androidVersionForMatch" :key="index">
+              <Checkbox :label="androidVersion"></Checkbox>
+            </Col>
+            {{ checkedAndroidVersion }}
           </Row>
         </CheckboxGroup>
       </TabPane>
       <TabPane label="Rom版本">
-        <CheckboxGroup>
+        <CheckboxGroup v-model="checkedRomVersion">
           <Row type="flex">
-            <Col span="4"><Checkbox label="aaa"></Checkbox></Col>
-            <Col span="4"><Checkbox label="aaa">sdj</Checkbox></Col>
-            <Col span="4"><Checkbox>sfa</Checkbox></Col>
-            <Col span="4"><Checkbox>aeaw</Checkbox></Col>
-            <Col span="4"><Checkbox>adf</Checkbox></Col>
-            <Col span="4"><Checkbox>adf</Checkbox></Col>
-            <Col span="4"><Checkbox>aeaw</Checkbox></Col>
-            <Col span="4"><Checkbox>adf</Checkbox></Col>
-            <Col span="4"><Checkbox>SDF</Checkbox></Col>
-            <Col span="4"><Checkbox label="a567a">aaa</Checkbox></Col>
-          </Row>
-        </CheckboxGroup>
-      </TabPane>
-      <TabPane label="安卓版本">
-        <CheckboxGroup>
-          <!-- justify="space-between"-->
-          <Row type="flex">
-            <Col span="4"><Checkbox label="aaa"></Checkbox></Col>
-            <Col span="4"><Checkbox label="aaa">sdj</Checkbox></Col>
-            <Col span="4" ><Checkbox>sfa</Checkbox></Col>
-            <Col span="4"><Checkbox>aeaw</Checkbox></Col>
-            <Col span="4"><Checkbox>adf</Checkbox></Col>
-            <Col span="4"><Checkbox>adf</Checkbox></Col>
-            <Col span="4"><Checkbox>aeaw</Checkbox></Col>
-            <Col span="4"><Checkbox>adf</Checkbox></Col>
-            <Col span="4"><Checkbox>SDF</Checkbox></Col>
-            <Col span="4"><Checkbox label="a567a">aaa</Checkbox></Col>
+            <Col span="4" v-for="(romVersion, index) in romVersionForMatch" :key="index">
+              <Checkbox :label="romVersion"></Checkbox>
+            </Col>
+            {{ checkedRomVersion }}
           </Row>
         </CheckboxGroup>
       </TabPane>
@@ -100,8 +65,8 @@
       <Button type="error" style="float: right;margin-right: 20px">批量删除</Button>
       <Button type="success" style="float: right;margin-right: 20px">导出用例</Button>
       <div class="job-label-set">
-        <div v-for="(job, index) in selectedJob" :key="index" class="job-label" @click="openDetail(job.id)">
-          <Badge :count="job.page" type="info" class="badge"></Badge>
+        <div v-for="(job, index) in selectedJobs" :key="index" class="job-label" @click="openDetail(job.id)">
+          <span class="badge"  @click.stop="jumpToPage(job.page)">{{ job.page }}</span>
           <span >{{ job.job_name }}</span>
           <span class="close" @click.stop="close(index)"></span>
         </div>
@@ -111,10 +76,10 @@
     <Divider  style="margin-top: 40px"/>
 
     <div>
-      <Table :loading="loading" ref="selection" :columns="columns" :data="jobData" @on-row-click="onRowClick" @on-select="selectJob" @on-select-all="selectAllJob"></Table>
+      <Table :loading="loading" ref="selection" :columns="columns" :data="jobData" @on-row-click="onRowClick"@on-selection-change="changeJob"></Table>
     </div>
 
-    <Page simple :page-size="pageSize" :total="dataCount" @on-change="jobPageChange" style="text-align: center;margin-top: 20px"></Page>
+    <Page simple :page-size="pageSize" :total="dataCount" :current="this.currentPage" @on-change="jobPageChange" style="text-align: center;margin-top: 20px"></Page>
     <Drawer title="用例详细信息" :closable="false" v-model="showDrawer" width="50">
       <job-msg-component ref="jobDetail"></job-msg-component>
     </Drawer>
@@ -153,6 +118,14 @@ export default {
   },
   data () {
     return {
+      adaptorsForMatch: ['aaa', 'bbb', 'ccc', 'ddd', 'eee', 'fff', 'ggg'], // 适用机型
+      checkedAdaptors: [], // 勾选的机型
+      jobsForMatch: [], // 测试用例
+      checkedJobs: [], // 勾选的用例
+      androidVersionForMatch: [], // 安卓版本
+      checkedAndroidVersion: [], // 勾选的安卓版本
+      romVersionForMatch: [], // Rom版本
+      checkedRomVersion: [], // 勾选的Rom版本
       showDrawer: false, // 侧滑栏是否打开
       pageSize: 10, // 每页条数
       currentPage: 1, // 当前页数
@@ -179,8 +152,9 @@ export default {
         }
       ],
       jobData: util.validate(jobSerializer, []),
-      selectedJob: [],
-      loading: false
+      selectedJobs: [], // 已选的
+      loading: false,
+      isClose: false // 是否点击了.job-label的close按钮
     }
   },
   methods: {
@@ -208,7 +182,7 @@ export default {
           job.text_area = jobTextAreas.join(',')
           job.custom_tag = jobCustomTags.join(',')
           
-          this.selectedJob.forEach((value) => {
+          this.selectedJobs.forEach((value) => {
             if(value.page === this.currentPage) {
               if(value.id === job.id) {
                 job._checked = true;
@@ -224,10 +198,9 @@ export default {
       this.loading = true;
       setTimeout(() => {
         this.loading = false;
-      }, 400);
+      }, 100);
       this.currentPage = page
-      this.getMsg()
-
+      this.getMsg();
     },
     onRowClick (currentData, index) { // 单击表格某一行
       // this.$emit('on-row-click', currentData, index)
@@ -237,29 +210,45 @@ export default {
       // this.jobCurrentId = currentData.id
       this.$refs.jobDetail.getMsg(currentData.id)
     },
-    selectJob(selection, row) {
-      if (!this.selectedJob.some(function(value, index, array) { return value.id === row.id; })) {
-        row.page = this.currentPage;
-        this.selectedJob.push(row);
-      }
-    },
-    selectAllJob(selection) {
-      selection.forEach((srcValue, srcIndex, srcArray) => {
-        if (!this.selectedJob.some(function(tarValue, tarIndex, tarArray) { return srcValue.id === tarValue.id; })) {
-          srcValue.page = this.currentPage;
-          this.selectedJob.push(srcValue);
+    changeJob(selection) {
+      if(!this.isClose) {
+        let currentPageJobsCount = 0;
+        for(let i = 0, j = 0; i < this.selectedJobs.length; i++) {
+          if(currentPageJobsCount === this.pageSize) {
+            break;
+          }
+          if(this.selectedJobs[i].page === this.currentPage) {
+            currentPageJobsCount++;
+            for(; j < selection.length; j++) {
+              if(this.selectedJobs[i].id === selection[j].id) {
+                break;
+              }
+            }
+            if(j === selection.length) {
+              this.selectedJobs.splice(i, 1);
+              i--;
+            }
+          }
         }
-      })
+        selection.forEach((srcValue, srcIndex, srcArray) => {
+          if (!this.selectedJobs.some(function(tarValue, tarIndex, tarArray) { return srcValue.id === tarValue.id; })) {
+            srcValue.page = this.currentPage;
+            this.selectedJobs.push(srcValue);
+          }
+        })
+      }
+      this.isClose = false;
     },
     close(index) {
-      if(this.selectedJob[index].page === this.currentPage) {
+      this.isClose = true;
+      if(this.selectedJobs[index].page === this.currentPage) {
         this.jobData.forEach((value, dex) => {
-          if(value.id === this.selectedJob[index].id) {
+          if(value.id === this.selectedJobs[index].id) {
             this.$refs.selection.toggleSelect(dex);
           }
         });
       }
-      this.selectedJob.splice(index, 1);
+      this.selectedJobs.splice(index, 1);
     },
     openDetail(id) {
       this.showDrawer = true
@@ -267,6 +256,17 @@ export default {
       // this.jobCurrentId = currentData.id
       // this.jobCurrentId = currentData.id
       this.$refs.jobDetail.getMsg(id);
+    },
+    // 点击.job-label左上角的数字时，selection列表跳转到相应的页数
+    jumpToPage(page) {
+      if(this.currentPage !== page) {
+        this.loading = true;
+        setTimeout(() => {
+          this.loading = false;
+        }, 100);
+        this.currentPage = page;
+        this.getMsg();
+      }
     }
   },
   computed: {
@@ -324,5 +324,14 @@ export default {
   left: 0;
   top: 0;
   transform: translate(-50%, -50%);
+  background-color: #2db7f5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  color: white;
+  font-size: 12px;
 }
 </style>
