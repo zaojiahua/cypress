@@ -75,7 +75,6 @@
   </div>
 </template>
 <script>
-import store from '../store';
 import go from 'gojs'
 import {
   MAKE,
@@ -96,7 +95,6 @@ import SwitchBlockDetailComponent from '../components/SwitchBlockDetailComponent
 import { isJsonString } from '../lib/tools'
 import { commonValidation } from '../core/validation/common'
 import {
-  normalBlockValidation,
   startValidation
 } from '../core/validation/operationValidation/job'
 import { unitListValidation } from '../core/validation/operationValidation/block'
@@ -126,7 +124,7 @@ export default {
       switchButtonShow: false,
       switchButton: false,
       showDrawer: false,
-      isCertain: false, // 是否是通过点击确定按钮离开jobEditor页面
+      isCertain: false // 是否是通过点击确定按钮离开jobEditor页面
     }
   },
   mounted () {
@@ -143,32 +141,32 @@ export default {
         initialContentAlignment: go.Spot.Center,
         allowDrop: true,
         // 设置网格
-        grid: MAKE(go.Panel, "Grid",
-          MAKE(go.Shape, "LineH", {
-            stroke: "lightgray",
+        grid: MAKE(go.Panel, 'Grid',
+          MAKE(go.Shape, 'LineH', {
+            stroke: 'lightgray',
             strokeWidth: 0.5
           }),
-          MAKE(go.Shape, "LineH", {
-            stroke: "gray",
+          MAKE(go.Shape, 'LineH', {
+            stroke: 'gray',
             strokeWidth: 0.5,
             interval: 10
           }),
-          MAKE(go.Shape, "LineV", {
-            stroke: "lightgray",
+          MAKE(go.Shape, 'LineV', {
+            stroke: 'lightgray',
             strokeWidth: 0.5
           }),
-          MAKE(go.Shape, "LineV", {
-            stroke: "gray",
+          MAKE(go.Shape, 'LineV', {
+            stroke: 'gray',
             strokeWidth: 0.5,
             interval: 10
           })
         ),
         // 拖动时是否捕捉网格点
-        "draggingTool.isGridSnapEnabled": true,
+        'draggingTool.isGridSnapEnabled': true,
         // 初次链接时，以链接（link）头部距离目标节点的某个Port的距离小于linkingTool.portGravity时，链接会自动吸附到目标节点的Port上
-        "linkingTool.portGravity": 40,
+        'linkingTool.portGravity': 40,
         // 修改链接时，以链接（link）头部距离目标节点的某个Port的距离小于linkingTool.portGravity时，链接会自动吸附到目标节点的Port上
-        "relinkingTool.portGravity": 40,
+        'relinkingTool.portGravity': 40,
         'toolManager.mouseWheelBehavior': go.ToolManager.WheelZoom,
         'LinkDrawn': showLinkLabel,
         'LinkRelinked': showLinkLabel,
@@ -337,33 +335,33 @@ export default {
 
     this.init()
   },
-  beforUpdate() {
-    this.isCertain = false;
+  beforUpdate () {
+    this.isCertain = false
   },
   // 提醒用户暂存已编辑的内容
-  beforeRouteLeave(to, from, next) {
-    let self = this;
-    let toFullPath = to.fullPath;
-    if(this.$store.state.keepAliveComponents.length !== 2 && this.myDiagram.model.nodeDataArray.length !== 0 && !this.isCertain) {
+  beforeRouteLeave (to, from, next) {
+    let self = this
+    let toFullPath = to.fullPath
+    if (this.$store.state.keepAliveComponents.length !== 2 && this.myDiagram.model.nodeDataArray.length !== 0 && !this.isCertain) {
       this.$Modal.confirm({
         title: 'WARNING',
         content: '此操作会丢失已编辑的内容，确定要继续吗？',
         closable: false,
         okText: '保存并退出',
         cancelText: '退出',
-        onOk() {
-          self.$store.commit('keepAlive', 'jobEditor');
-          next(false);
-          setTimeout(function() {
-            self.$router.push({ path: toFullPath });
+        onOk () {
+          self.$store.commit('keepAlive', 'jobEditor')
+          next(false)
+          setTimeout(function () {
+            self.$router.push({ path: toFullPath })
           }, 100)
         },
-        onCancel() {
-          next();
+        onCancel () {
+          next()
         }
       })
     } else {
-      next();
+      next()
     }
   },
   methods: {
@@ -449,7 +447,6 @@ export default {
           title: '当前block出现以下错误',
           desc: errorMessage
         })
-
       } else {
         this.blockModalShow = false
         this.myDiagram.model.setDataProperty(currentNormalBlockData, 'unitLists', blockDiagramData)
@@ -500,7 +497,7 @@ export default {
           id: this.$refs.jobDetail.currentJobId
         }).then(res => { // 保存成功后跳转回jobList页面
           if (res.data.state) {
-            this.isCertain = true;
+            this.isCertain = true
             this.$router.push({ path: '/jobList' })
             this.$Message.info('操作完成')
           } else {

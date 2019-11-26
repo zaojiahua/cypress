@@ -1,51 +1,20 @@
 <template>
   <div>
+    <Divider>用例筛选</Divider>
     <Tabs type="card" class="tabs">
       <!--可以循环遍历数据 -->
-      <TabPane label="适用机型">
-        <CheckboxGroup v-model="checkedAdaptors">
+      <TabPane v-for="column in filterColumn" :key="column.title" :label="column.title" :class="column.key">
+        <CheckboxGroup v-model="filterRules" @on-change="onJobFilterChange">
           <Row type="flex">
-            <Col span="4" v-for="(adaptor, index) in adaptorsForMatch" :key="index">
-              <Checkbox :label="adaptor"></Checkbox>
+            <Col span="4" v-for="(item, index) in filterData[column.key]" :key="index">
+              <Checkbox :label="column.key + ':' + index + ':' + item[column.item_key]"><span>{{ item[column.item_key] }}</span></Checkbox>
             </Col>
-            {{ checkedAdaptors }}
-          </Row>
-        </CheckboxGroup>
-      </TabPane>
-      <TabPane label="测试用例">
-        <CheckboxGroup v-model="checkedJobs">
-          <Row type="flex">
-            <Col span="4" v-for="(job, index) in jobsForMatch" :key="index">
-              <Checkbox :label="job"></Checkbox>
-            </Col>
-            {{ checkedJobs }}
-          </Row>
-        </CheckboxGroup>
-      </TabPane>
-      <TabPane label="安卓版本">
-        <CheckboxGroup v-model="checkedAndroidVersion">
-          <Row type="flex">
-            <Col span="4" v-for="(androidVersion, index) in androidVersionForMatch" :key="index">
-              <Checkbox :label="androidVersion"></Checkbox>
-            </Col>
-            {{ checkedAndroidVersion }}
-          </Row>
-        </CheckboxGroup>
-      </TabPane>
-      <TabPane label="Rom版本">
-        <CheckboxGroup v-model="checkedRomVersion">
-          <Row type="flex">
-            <Col span="4" v-for="(romVersion, index) in romVersionForMatch" :key="index">
-              <Checkbox :label="romVersion"></Checkbox>
-            </Col>
-            {{ checkedRomVersion }}
           </Row>
         </CheckboxGroup>
       </TabPane>
     </Tabs>
-
     <!--6个标签的颜色 可循环遍历设置-->
-    <div style="margin-top: 60px; border-bottom: 1px solid #dcdee2;">
+    <div style="margin-top: 50px; border-bottom: 1px solid #dcdee2;">
       <Tag color="default">适用机型</Tag>
       <Tag color="red">测试用途</Tag>
       <Tag color="orange">安卓版本</Tag>
@@ -54,29 +23,28 @@
       <Tag color="purple">自定义标签</Tag>
     </div>
 
-    <!--少了中间选中的展示-->
-    <Button style="margin: 30px 0px;">清空</Button>
+    <!--中间选中的展示-->
+    <Row style="margin-top: 20px; min-height: 30px;">
+      <Tag v-for="(label, index) in filterRules" :key="index" :color="colors[label.split(':')[0]]" closable @on-close="close('filterRules', index)">{{ label.split(':')[2] }}</Tag>
+    </Row>
+    <Button style="margin: 30px 0px;" @click="clearTags('filterRules')">清空</Button>
     <Divider style="margin-top: -6px">已选用例</Divider>
     <Row>
       <Button icon="ios-cloud-upload-outline">导入用例</Button>
       <!--<Upload action="//jsonplaceholder.typicode.com/posts/">
         <Button icon="ios-cloud-upload-outline">导入用例</Button>
       </Upload>-->
-      <Button type="error" style="float: right;margin-right: 20px">批量删除</Button>
+      <Button type="error" style="float: right;margin-right: 20px" @click="clearTags('selectedJobs')">批量删除</Button>
       <Button type="success" style="float: right;margin-right: 20px">导出用例</Button>
-      <div class="job-label-set">
-        <div v-for="(job, index) in selectedJobs" :key="index" class="job-label" @click="openDetail(job.id)">
-          <span class="badge"  @click.stop="jumpToPage(job.page)">{{ job.page }}</span>
-          <span >{{ job.job_name }}</span>
-          <span class="close" @click.stop="close(index)"></span>
-        </div>
-      </div>
-      
+
+      <Row  style="margin-top: 20px; min-height: 30px;">
+        <Tag v-for="job in selectedJobs" :key="job.id" @click.native="openDetail(job.id)" closable @on-close="close('selectedJobs', job.id)">{{ job.job_name }}</Tag>
+      </Row>
     </Row>
-    <Divider  style="margin-top: 40px"/>
+    <Divider  style="margin-top: 40px">用例列表</Divider>
 
     <div>
-      <Table :loading="loading" ref="selection" :columns="columns" :data="jobData" @on-row-click="onRowClick"@on-selection-change="changeJob"></Table>
+      <Table :loading="loading" ref="jobList" :columns="columns" :data="jobData" @on-row-click="onRowClick" @on-selection-change="selectedJobsChange"></Table>
     </div>
 
     <Page simple :page-size="pageSize" :total="dataCount" :current="this.currentPage" @on-change="jobPageChange" style="text-align: center;margin-top: 20px"></Page>
@@ -88,9 +56,64 @@
 
 <script>
 import util from '../lib/util/validate.js'
-import { getJobList } from '../api/reef/job'
+import { getPhoneModelList } from '../api/reef/phoneModel'
+import { getJobTestAreaList } from '../api/reef/jobTestArea'
+import { getAndroidVersionList } from '../api/reef/androidVersion'
+import { getRomVersionList } from '../api/reef/romVersion'
+import { getReefUserList } from '../api/reef/reefUser'
+import { getCustomTagList } from '../api/reef/customTag'
 import jobMsgComponent from '../components/jobMsgComponent'
-import store from '../store';
+import axios from '../api/index'
+
+const getPhoneModelSerializer = {
+  phonemodels: [
+    {
+      id: 'number',
+      phone_model_name: 'string'
+    }
+  ]
+}
+const getJobTestAreaSerializer = {
+  jobtestareas: [
+    {
+      id: 'number',
+      description: 'string'
+    }
+  ]
+}
+const getAndroidVersionSerializer = {
+  androidversions: [
+    {
+      id: 'number',
+      version: 'string'
+    }
+  ]
+}
+const getRomVersionSerializer = {
+  romversions: [
+    {
+      id: 'number',
+      version: 'string'
+    }
+  ]
+}
+const getReefUserSerializer = {
+  reefusers: [
+    {
+      id: 'number',
+      username: 'string',
+      last_name: 'string'
+    }
+  ]
+}
+const getCustomTagSerializer = {
+  customtags: [
+    {
+      id: 'number',
+      custom_tag_name: 'string'
+    }
+  ]
+}
 
 const jobSerializer = [
   {
@@ -118,14 +141,44 @@ export default {
   },
   data () {
     return {
-      adaptorsForMatch: ['aaa', 'bbb', 'ccc', 'ddd', 'eee', 'fff', 'ggg'], // 适用机型
-      checkedAdaptors: [], // 勾选的机型
-      jobsForMatch: [], // 测试用例
-      checkedJobs: [], // 勾选的用例
-      androidVersionForMatch: [], // 安卓版本
-      checkedAndroidVersion: [], // 勾选的安卓版本
-      romVersionForMatch: [], // Rom版本
-      checkedRomVersion: [], // 勾选的Rom版本
+      filterColumn: [
+        {
+          title: '适用机型',
+          key: 'phone_model',
+          item_key: 'phone_model_name'
+        }, {
+          title: '测试用途',
+          key: 'job_test_area',
+          item_key: 'description'
+        }, {
+          title: '安卓版本',
+          key: 'android_version',
+          item_key: 'version'
+        }, {
+          title: 'ROM版本',
+          key: 'rom_version',
+          item_key: 'version'
+        }, {
+          title: '维护人员',
+          key: 'reefuser',
+          item_key: 'username'
+        }, {
+          title: '自定义标签',
+          key: 'custom_tag',
+          item_key: 'custom_tag_name'
+        }
+      ],
+      filterData: {},
+      filterRules: [],
+      colors: {
+        phone_model: 'default',
+        job_test_area: 'red',
+        android_version: 'orange',
+        rom_version: 'cyan',
+        reefuser: 'blue',
+        custom_tag: 'purple'
+      },
+      urlParam: '', // 存放筛选用的url params
       showDrawer: false, // 侧滑栏是否打开
       pageSize: 10, // 每页条数
       currentPage: 1, // 当前页数
@@ -152,55 +205,68 @@ export default {
         }
       ],
       jobData: util.validate(jobSerializer, []),
-      selectedJobs: [], // 已选的
+      selectedJobs: {}, // 已选的job
       loading: false,
-      isClose: false // 是否点击了.job-label的close按钮
+      currentPageJobs: {} // 当前页面的已选job
     }
   },
   methods: {
     getMsg () { // 每个页面的请求数据
-      getJobList({// 向路径后拼接参数
-        fields: 'id,job_name,test_area,custom_tag,custom_tag.custom_tag_name,custom_tag.id,test_area.description,test_area.id',
-        offset: this.offset,
-        limit: this.pageSize,
-        job_deleted: 'False'
-      }).then(res => { // 一次只获取10条数据
-        this.dataCount = parseInt(res.headers['total-count'])
+      let url =
+        'api/v1/cedar/job/?fields=' +
+        'id,' +
+        'job_label,' +
+        'job_name,' +
+        'test_area,' +
+        'test_area.id,' +
+        'test_area.description,' +
+        'custom_tag,' +
+        'custom_tag.id,' +
+        'custom_tag.custom_tag_name' +
+        '&limit=' + this.pageSize +
+        '&offset=' + this.offset +
+        '&job_deleted=False' +
+        '&ordering=id' +
+        this.urlParam
 
-        this.jobData = util.validate(jobSerializer, res.data.jobs)
-        this.jobData.forEach(job => { // 遍历后返回返回的值
-          let jobTextAreas = []
-          job.test_area.forEach(jobTextArea => {
-            jobTextAreas.push(jobTextArea.description)
+      axios.request({ url })
+        .then(res => {
+          this.currentPageJobs = {}
+          this.dataCount = parseInt(res.headers['total-count'])
+
+          this.jobData = util.validate(jobSerializer, res.data.jobs)
+          this.jobData.forEach(job => { // 遍历后返回返回的值
+            let jobTextAreas = []
+            job.test_area.forEach(jobTextArea => {
+              jobTextAreas.push(jobTextArea.description)
+            })
+
+            let jobCustomTags = []
+            job.custom_tag.forEach(jobCustomTag => {
+              jobCustomTags.push(jobCustomTag.custom_tag_name)
+            })
+
+            job.text_area = jobTextAreas.join(',')
+            job.custom_tag = jobCustomTags.join(',')
           })
 
-          let jobCustomTags = []
-          job.custom_tag.forEach(jobCustomTag => {
-            jobCustomTags.push(jobCustomTag.custom_tag_name)
-          })
-
-          job.text_area = jobTextAreas.join(',')
-          job.custom_tag = jobCustomTags.join(',')
-          
-          this.selectedJobs.forEach((value) => {
-            if(value.page === this.currentPage) {
-              if(value.id === job.id) {
-                job._checked = true;
-              }
+          // 勾选已选的选项
+          this.jobData.forEach((value) => {
+            if (this.selectedJobs[value.id] !== undefined) {
+              value._checked = true
+              this.$set(this.currentPageJobs, value.id, 'exist')
             }
           })
         })
-      }).catch(error => {
-        console.log(error)
-      })
+        .catch(err => {
+          console.log(err)
+        })
     },
-    jobPageChange (page) {
-      this.loading = true;
-      setTimeout(() => {
-        this.loading = false;
-      }, 100);
+    jobPageChange (page) { // 切换页面
+      this.loading = true
       this.currentPage = page
-      this.getMsg();
+      this.getMsg()
+      this.loading = false
     },
     onRowClick (currentData, index) { // 单击表格某一行
       // this.$emit('on-row-click', currentData, index)
@@ -210,69 +276,146 @@ export default {
       // this.jobCurrentId = currentData.id
       this.$refs.jobDetail.getMsg(currentData.id)
     },
-    changeJob(selection) {
-      if(!this.isClose) {
-        let currentPageJobsCount = 0;
-        for(let i = 0, j = 0; i < this.selectedJobs.length; i++) {
-          if(currentPageJobsCount === this.pageSize) {
-            break;
-          }
-          if(this.selectedJobs[i].page === this.currentPage) {
-            currentPageJobsCount++;
-            for(; j < selection.length; j++) {
-              if(this.selectedJobs[i].id === selection[j].id) {
-                break;
-              }
-            }
-            if(j === selection.length) {
-              this.selectedJobs.splice(i, 1);
-              i--;
-            }
+    selectedJobsChange (selection) {
+      selection.forEach((value) => {
+        if (this.selectedJobs[value.id] === undefined) {
+          console.log('勾选了id为' + value.id + '的job')
+          this.$set(this.selectedJobs, value.id, value)
+          this.$set(this.currentPageJobs, value.id, 'exist')
+        }
+      })
+      for (let item in this.currentPageJobs) {
+        let i = 0
+        for (i; i < selection.length; i++) {
+          if (parseInt(item) === selection[i].id) {
+            break
           }
         }
-        selection.forEach((srcValue, srcIndex, srcArray) => {
-          if (!this.selectedJobs.some(function(tarValue, tarIndex, tarArray) { return srcValue.id === tarValue.id; })) {
-            srcValue.page = this.currentPage;
-            this.selectedJobs.push(srcValue);
-          }
-        })
+        if (i === selection.length) {
+          console.log('不再勾选id为' + item + '的job')
+          this.$delete(this.selectedJobs, item)
+          this.$delete(this.currentPageJobs, item)
+        }
       }
-      this.isClose = false;
     },
-    close(index) {
-      this.isClose = true;
-      if(this.selectedJobs[index].page === this.currentPage) {
-        this.jobData.forEach((value, dex) => {
-          if(value.id === this.selectedJobs[index].id) {
-            this.$refs.selection.toggleSelect(dex);
+    close (target, key) {
+      switch (target) {
+        case 'filterRules':
+          this.filterRules.splice(key, 1)
+          this.onJobFilterChange()
+          break
+        case 'selectedJobs':
+          try {
+            this.jobData.forEach((value, index) => {
+              if (key === value.id) {
+                this.$refs.jobList.toggleSelect(index)
+                throw Error('已找到目标')
+              }
+            })
+          } catch (e) {
+
           }
-        });
+          this.$delete(this.selectedJobs, key)
       }
-      this.selectedJobs.splice(index, 1);
     },
-    openDetail(id) {
+    clearTags (target) {
+      switch (target) {
+        case 'filterRules':
+          this.filterRules = []
+          this.onJobFilterChange()
+          break
+        case 'selectedJobs':
+          while (this.selectedJobs.length) {
+            this.close(target, 0)
+          }
+          break
+      }
+      this.filterRules = []
+    },
+    openDetail (id) {
       this.showDrawer = true
       this.jobMsgLoad = true
       // this.jobCurrentId = currentData.id
       // this.jobCurrentId = currentData.id
-      this.$refs.jobDetail.getMsg(id);
+      this.$refs.jobDetail.getMsg(id)
     },
-    // 点击.job-label左上角的数字时，selection列表跳转到相应的页数
-    jumpToPage(page) {
-      if(this.currentPage !== page) {
-        this.loading = true;
-        setTimeout(() => {
-          this.loading = false;
-        }, 100);
-        this.currentPage = page;
-        this.getMsg();
-      }
+
+    _jobRender () { // 将filterRules数组整理为筛选条件
+      let selectedData = {}
+      this.filterRules.forEach(item => {
+        let info = item.split(':')
+        let type = info[0]
+        let index = info[1]
+        if (selectedData[type] === undefined) selectedData[type] = []
+        selectedData[type].push(this.filterData[type][index])
+      })
+      return selectedData
+    },
+
+    selectedDetail (selectedData) { // 将筛选条件整理为符合格式的url参数
+      let conditions = []
+      Object.keys(selectedData).forEach(key => {
+        let condition = []
+        selectedData[key].forEach(item => {
+          condition.push(item.id)
+        })
+
+        if (key === 'job_test_area') key = 'test_area' // 使命名一致
+        else if (key === 'phone_model') key = 'phone_models'
+
+        condition.forEach(item => {
+          item = key + '__id=' + item
+        })
+
+        let conditionStr = key + '__id__in=' + 'ReefList[' + condition.join('{%,%}') + ']'
+        conditions.push(conditionStr)
+      })
+
+      return conditions.join('&')
+    },
+    onJobFilterChange () { // 筛选条件改变时触发该函数，获取符合条件的job
+      let selectedData = this._jobRender()
+      this.urlParam = '&' + this.selectedDetail(selectedData)
+      this.getMsg()
     }
   },
   computed: {
     offset () { // 从某位置开始 返回当前下标
       return (this.currentPage - 1) * this.pageSize
     }
+  },
+  beforeCreate () {
+    getPhoneModelList().then(res => {
+      this.filterData.phone_model = util.validate(getPhoneModelSerializer, res.data).phonemodels
+    }).catch(error => {
+      console.log(error)
+    })
+    getJobTestAreaList().then(res => {
+      this.filterData.job_test_area = util.validate(getJobTestAreaSerializer, res.data).jobtestareas
+    }).catch(error => {
+      console.log(error)
+    })
+    getAndroidVersionList().then(res => {
+      this.filterData.android_version = util.validate(getAndroidVersionSerializer, res.data).androidversions
+    }).catch(error => {
+      console.log(error)
+    })
+    getRomVersionList().then(res => {
+      this.filterData.rom_version = util.validate(getRomVersionSerializer, res.data).romversions
+    }).catch(error => {
+      console.log(error)
+    })
+    getReefUserList().then(res => {
+      this.filterData.reefuser = util.validate(getReefUserSerializer, res.data).reefusers
+      this.filterData.reefuser = res.data.reefusers
+    }).catch(error => {
+      console.log(error)
+    })
+    getCustomTagList().then(res => {
+      this.filterData.custom_tag = util.validate(getCustomTagSerializer, res.data).customtags
+    }).catch(error => {
+      console.log(error)
+    })
   },
   mounted () {
     this.getMsg()
@@ -287,7 +430,7 @@ export default {
   margin-top: 20px;
   justify-content: flex-start;
   align-content: flex-start;
-  min-height: 160px;
+  min-height: 60px;
 }
 .job-label {
   position: relative;
@@ -318,20 +461,5 @@ export default {
 }
 .close::after {
   content: '\F178'
-}
-.badge {
-  position: absolute;
-  left: 0;
-  top: 0;
-  transform: translate(-50%, -50%);
-  background-color: #2db7f5;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  color: white;
-  font-size: 12px;
 }
 </style>

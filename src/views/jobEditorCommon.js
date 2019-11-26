@@ -86,24 +86,23 @@ export function baseNodeTemplateForPort (color, shape) {
 
 // 选取baseNode/baseGroup时的装饰模板
 var nodeSelectionAdornmentTemplate =
-MAKE(go.Adornment, "Auto",
+MAKE(go.Adornment, 'Auto',
   MAKE(go.Shape, {
     fill: null,
-    stroke: "deepskyblue",
+    stroke: 'deepskyblue',
     strokeWidth: 1.5,
     // 选取节点时，strokeDashArray为空数组时选择框为实线，设置形如[x,y]的格式时，将创建x个像素的虚线和y个像素的空格
     strokeDashArray: [4, 2]
   }),
   // 占位符，用于装饰对象（Adornment）时，表示装饰对象的区域
   MAKE(go.Placeholder)
-);
-
+)
 
 export function baseNodeTemplate (fill, shape) {
   const baseNodeTemplate = MAKE(go.Node, 'Spot', nodeStyle(),
     {
       selectable: true,
-      selectionAdornmentTemplate: nodeSelectionAdornmentTemplate,
+      selectionAdornmentTemplate: nodeSelectionAdornmentTemplate
     },
     // the main object is a Panel that surrounds a TextBlock with a rectangular Shape
     MAKE(go.Panel, 'Auto',
