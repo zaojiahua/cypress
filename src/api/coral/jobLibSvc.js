@@ -79,3 +79,11 @@ export const getJobUnitsBodyDict = (data) => {
     data: data
   })
 }
+
+export const getSelectedJobs = (data) => {
+  return axios.request({
+    url: jobLibSvcURL,
+    method: 'post',
+    data: data
+  })
+}

@@ -35,10 +35,10 @@
         <Button icon="ios-cloud-upload-outline">导入用例</Button>
       </Upload>-->
       <Button type="error" style="float: right;margin-right: 20px" @click="clearTags('selectedJobs')">批量删除</Button>
-      <Button type="success" style="float: right;margin-right: 20px">导出用例</Button>
+      <Button type="success" style="float: right;margin-right: 20px" @click="exportJobs">导出用例</Button>
 
       <Row  style="margin-top: 20px; min-height: 30px;">
-        <Tag v-for="job in selectedJobs" :key="job.id" @click.native="openDetail(job.id)" closable @on-close="close('selectedJobs', job.id)">{{ job.job_name }}</Tag>
+        <Tag v-for="job in selectedJobs" :key="job.id" @click.native="openDetail(job.id)" closable @on-close="close('selectedJobs', job.id)">{{ job.name }}</Tag>
       </Row>
     </Row>
     <Divider  style="margin-top: 40px">用例列表</Divider>
@@ -64,6 +64,7 @@ import { getReefUserList } from '../api/reef/reefUser'
 import { getCustomTagList } from '../api/reef/customTag'
 import jobMsgComponent from '../components/jobMsgComponent'
 import axios from '../api/index'
+import { getSelectedJobs } from '../api/coral/jobLibSvc'
 
 const getPhoneModelSerializer = {
   phonemodels: [
@@ -178,7 +179,7 @@ export default {
         reefuser: 'blue',
         custom_tag: 'purple'
       },
-      urlParam: '', // 存放筛选用的url params
+      filterUrlParam: '', // 存放筛选用的url params
       showDrawer: false, // 侧滑栏是否打开
       pageSize: 10, // 每页条数
       currentPage: 1, // 当前页数
@@ -227,7 +228,7 @@ export default {
         '&offset=' + this.offset +
         '&job_deleted=False' +
         '&ordering=id' +
-        this.urlParam
+        this.filterUrlParam
 
       axios.request({ url })
         .then(res => {
@@ -280,7 +281,7 @@ export default {
       selection.forEach((value) => {
         if (this.selectedJobs[value.id] === undefined) {
           console.log('勾选了id为' + value.id + '的job')
-          this.$set(this.selectedJobs, value.id, value)
+          this.$set(this.selectedJobs, value.id, { id: value.id, name: value.job_name })
           this.$set(this.currentPageJobs, value.id, 'exist')
         }
       })
@@ -325,9 +326,13 @@ export default {
           this.onJobFilterChange()
           break
         case 'selectedJobs':
-          while (this.selectedJobs.length) {
-            this.close(target, 0)
+          for (let i = 0; i < this.jobData.length; i++) {
+            if (this.selectedJobs[this.jobData[i].id] !== undefined) {
+              this.$refs.jobList.toggleSelect(i)
+            }
           }
+          this.selectedJobs = {}
+          this.currentPageJobs = {}
           break
       }
       this.filterRules = []
@@ -375,8 +380,38 @@ export default {
     },
     onJobFilterChange () { // 筛选条件改变时触发该函数，获取符合条件的job
       let selectedData = this._jobRender()
-      this.urlParam = '&' + this.selectedDetail(selectedData)
+      this.filterUrlParam = '&' + this.selectedDetail(selectedData)
       this.getMsg()
+    },
+    // 导出用例
+    exportJobs () {
+      if (Object.keys(this.selectedJobs).length === 0) {
+        this.$Modal.error({
+          title: '错误',
+          content: '请先选择要导出的用例'
+        })
+      } else {
+        let self = this
+        this.$Modal.confirm({
+          title: '提示',
+          content: '您确定要导出这些用例吗？',
+          closable: false,
+          onOk () {
+            getSelectedJobs({
+              requestName: 'exportJob',
+              jobIdList: Object.keys(self.selectedJobs)
+            }).then(res => {
+              if (res.data.file) {
+                window.location.href = res.data.file
+              } else {
+                this.$Message.error('导出用例失败！')
+              }
+            }).catch(err => {
+              console.log(err)
+            })
+          }
+        })
+      }
     }
   },
   computed: {
@@ -424,42 +459,5 @@ export default {
 </script>
 
 <style scoped>
-.job-label-set {
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 20px;
-  justify-content: flex-start;
-  align-content: flex-start;
-  min-height: 60px;
-}
-.job-label {
-  position: relative;
-  display: inline-block;
-  padding: 8px 48px 8px 16px;
-  border-radius: 4px;
-  color: #515a6e;
-  font-size: 12px;
-  line-height: 16px;
-  margin-right: 16px;
-  margin-bottom: 16px;
-  border: 1px solid #abdcff;
-  background-color: #f0faff;
 
-}
-.job-label:hover {
-  box-shadow: 6px 6px 2px #f0faff;
-}
-.close {
-  position: absolute;
-  right: 8px;
-  font-size: 22px;
-  color: #cccccc;
-  font-family: Ionicons;
-}
-.close:hover {
-  color: #2e3546;
-}
-.close::after {
-  content: '\F178'
-}
 </style>
