@@ -30,14 +30,17 @@
     <Button style="margin: 30px 0px;" @click="clearTags('filterRules')">清空</Button>
     <Divider style="margin-top: -6px">已选用例</Divider>
     <Row>
-      <Button icon="ios-cloud-upload-outline">导入用例</Button>
-      <!--<Upload action="//jsonplaceholder.typicode.com/posts/">
-        <Button icon="ios-cloud-upload-outline">导入用例</Button>
-      </Upload>-->
-      <Button type="error" style="float: right;margin-right: 20px" @click="clearTags('selectedJobs')">批量删除</Button>
-      <Button type="success" style="float: right;margin-right: 20px" @click="exportJobs">导出用例</Button>
-
-      <Row  style="margin-top: 20px; min-height: 30px;">
+      <Col span="12" style="margin-bottom: 20px;">
+        <Upload style="float:left;height: 31px;" ref="upload" :action="uploadUrl" :data="uploadData" :on-error="handleUploadError" :on-success="handleUploadSuccess">
+          <Button icon="ios-cloud-upload-outline">导入用例</Button>
+        </Upload>
+      </Col>
+      <Col span="12" style="text-align: right; margin-bottom: 20px;">
+        <Button type="error" style="margin-right: 20px;">批量删除</Button>
+        <Button type="warning" style="margin-right: 20px;" @click="clearTags('selectedJobs')">清除已选</Button>
+        <Button type="success" @click="exportJobs">导出用例</Button>
+      </Col>
+      <Row span="24"  style="margin-top: 20px; min-height: 60px;">
         <Tag v-for="job in selectedJobs" :key="job.id" @click.native="openDetail(job.id)" closable @on-close="close('selectedJobs', job.id)">{{ job.name }}</Tag>
       </Row>
     </Row>
@@ -65,75 +68,8 @@ import { getCustomTagList } from '../api/reef/customTag'
 import jobMsgComponent from '../components/jobMsgComponent'
 import axios from '../api/index'
 import { getSelectedJobs } from '../api/coral/jobLibSvc'
-
-const getPhoneModelSerializer = {
-  phonemodels: [
-    {
-      id: 'number',
-      phone_model_name: 'string'
-    }
-  ]
-}
-const getJobTestAreaSerializer = {
-  jobtestareas: [
-    {
-      id: 'number',
-      description: 'string'
-    }
-  ]
-}
-const getAndroidVersionSerializer = {
-  androidversions: [
-    {
-      id: 'number',
-      version: 'string'
-    }
-  ]
-}
-const getRomVersionSerializer = {
-  romversions: [
-    {
-      id: 'number',
-      version: 'string'
-    }
-  ]
-}
-const getReefUserSerializer = {
-  reefusers: [
-    {
-      id: 'number',
-      username: 'string',
-      last_name: 'string'
-    }
-  ]
-}
-const getCustomTagSerializer = {
-  customtags: [
-    {
-      id: 'number',
-      custom_tag_name: 'string'
-    }
-  ]
-}
-
-const jobSerializer = [
-  {
-    custom_tag: [
-      {
-        id: 'number',
-        custom_tag_name: 'string'
-      }
-    ],
-    id: 'number',
-    job_name: 'string',
-    test_area: [
-      {
-        id: 'number',
-        description: 'string'
-      }
-    ]
-  }
-]
+import { jobLibSvcURL } from '../config/index'
+import serializer from '../lib/util/jobListSerializer'
 
 export default {
   name: 'jobList',
@@ -169,9 +105,9 @@ export default {
           item_key: 'custom_tag_name'
         }
       ],
-      filterData: {},
-      filterRules: [],
-      colors: {
+      filterData: {}, // 提供的筛选条件
+      filterRules: [], // 已选的筛选条件
+      colors: { // Tag的颜色
         phone_model: 'default',
         job_test_area: 'red',
         android_version: 'orange',
@@ -205,10 +141,13 @@ export default {
           key: 'custom_tag'
         }
       ],
-      jobData: util.validate(jobSerializer, []),
+      jobData: util.validate(serializer.jobSerializer, []),
       selectedJobs: {}, // 已选的job
-      loading: false,
-      currentPageJobs: {} // 当前页面的已选job
+      currentPageJobs: {}, // 当前页面的已选job
+      uploadData: { // 上传时附带的额外参数
+        requestName: 'importJob'
+      },
+      loading: false
     }
   },
   methods: {
@@ -235,7 +174,7 @@ export default {
           this.currentPageJobs = {}
           this.dataCount = parseInt(res.headers['total-count'])
 
-          this.jobData = util.validate(jobSerializer, res.data.jobs)
+          this.jobData = util.validate(serializer.jobSerializer, res.data.jobs)
           this.jobData.forEach(job => { // 遍历后返回返回的值
             let jobTextAreas = []
             job.test_area.forEach(jobTextArea => {
@@ -344,7 +283,11 @@ export default {
       // this.jobCurrentId = currentData.id
       this.$refs.jobDetail.getMsg(id)
     },
-
+    /**
+     * 用例筛选模块
+     * author lc
+     * lastEditTime 2019年11月26日11:40:30
+     */
     _jobRender () { // 将filterRules数组整理为筛选条件
       let selectedData = {}
       this.filterRules.forEach(item => {
@@ -356,7 +299,6 @@ export default {
       })
       return selectedData
     },
-
     selectedDetail (selectedData) { // 将筛选条件整理为符合格式的url参数
       let conditions = []
       Object.keys(selectedData).forEach(key => {
@@ -383,7 +325,34 @@ export default {
       this.filterUrlParam = '&' + this.selectedDetail(selectedData)
       this.getMsg()
     },
-    // 导出用例
+    /**
+     * 导入用例模块
+     * author: lc
+     * lastEditTime: 2019年11月27日10:56:50
+     */
+    handleUploadError (error) {
+      console.log(error)
+      this.$Message.error('文件上传失败！')
+    },
+    handleUploadSuccess (res) {
+      if (res.state === 'OK') {
+        this.$Message.success('文件上传成功！')
+        this.$refs.upload.clearFiles()
+      } else {
+        this.$Notice.error({
+          title: '文件上传失败',
+          desc: '请使用正确的压缩包文件！'
+        })
+        setTimeout(() => {
+          this.$refs.upload.clearFiles()
+        }, 500)
+      }
+    },
+    /**
+     * 导出用例
+     * author lc
+     * lastEditTime 2019年11月26日18:56:24
+     */
     exportJobs () {
       if (Object.keys(this.selectedJobs).length === 0) {
         this.$Modal.error({
@@ -417,37 +386,40 @@ export default {
   computed: {
     offset () { // 从某位置开始 返回当前下标
       return (this.currentPage - 1) * this.pageSize
+    },
+    uploadUrl () {
+      return jobLibSvcURL + '/form/'
     }
   },
   beforeCreate () {
     getPhoneModelList().then(res => {
-      this.filterData.phone_model = util.validate(getPhoneModelSerializer, res.data).phonemodels
+      this.filterData.phone_model = util.validate(serializer.getPhoneModelSerializer, res.data).phonemodels
     }).catch(error => {
       console.log(error)
     })
     getJobTestAreaList().then(res => {
-      this.filterData.job_test_area = util.validate(getJobTestAreaSerializer, res.data).jobtestareas
+      this.filterData.job_test_area = util.validate(serializer.getJobTestAreaSerializer, res.data).jobtestareas
     }).catch(error => {
       console.log(error)
     })
     getAndroidVersionList().then(res => {
-      this.filterData.android_version = util.validate(getAndroidVersionSerializer, res.data).androidversions
+      this.filterData.android_version = util.validate(serializer.getAndroidVersionSerializer, res.data).androidversions
     }).catch(error => {
       console.log(error)
     })
     getRomVersionList().then(res => {
-      this.filterData.rom_version = util.validate(getRomVersionSerializer, res.data).romversions
+      this.filterData.rom_version = util.validate(serializer.getRomVersionSerializer, res.data).romversions
     }).catch(error => {
       console.log(error)
     })
     getReefUserList().then(res => {
-      this.filterData.reefuser = util.validate(getReefUserSerializer, res.data).reefusers
+      this.filterData.reefuser = util.validate(serializer.getReefUserSerializer, res.data).reefusers
       this.filterData.reefuser = res.data.reefusers
     }).catch(error => {
       console.log(error)
     })
     getCustomTagList().then(res => {
-      this.filterData.custom_tag = util.validate(getCustomTagSerializer, res.data).customtags
+      this.filterData.custom_tag = util.validate(serializer.getCustomTagSerializer, res.data).customtags
     }).catch(error => {
       console.log(error)
     })
