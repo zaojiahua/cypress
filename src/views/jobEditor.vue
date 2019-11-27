@@ -45,7 +45,7 @@
     </Modal>
     <Modal
       v-model="unitModalShow"
-      width="95"
+      :width="this.screenWidth > 1366 ? '95' : '1290px'"
       :styles="{top: '20px'}"
       :mask-closable="false"
       :closable="false">
@@ -124,11 +124,19 @@ export default {
       switchButtonShow: false,
       switchButton: false,
       showDrawer: false,
-      isCertain: false // 是否是通过点击确定按钮离开jobEditor页面
+      isCertain: false, // 是否是通过点击确定按钮离开jobEditor页面
+      screenWidth: 0
     }
   },
   mounted () {
     const self = this
+
+    window.onresize = () => {
+      return (() => {
+        window.screenWidth = document.body.clientWidth
+        self.screenWidth = window.screenWidth
+      })()
+    }
 
     self.$Notice.config({
       top: 150,

@@ -306,9 +306,9 @@ export default {
         selectedData[key].forEach(item => {
           condition.push(item.id)
         })
-
         if (key === 'job_test_area') key = 'test_area' // 使命名一致
         else if (key === 'phone_model') key = 'phone_models'
+        else if (key === 'reefuser') key = 'author'
 
         condition.forEach(item => {
           item = key + '__id=' + item
@@ -395,7 +395,6 @@ export default {
         })
       } else {
         let self = this
-        console.log(this.jobIdList)
         this.$Modal.confirm({
           title: '提示',
           content: '您真的要删除这些用例吗？',
@@ -410,6 +409,7 @@ export default {
             }
             Promise.all(delUrlList).then(res => {
               this.$Message.success('用例删除成功')
+              self.selectedJobs = {}
               self.getMsg()
             }).catch(err => {
               console.log(err)

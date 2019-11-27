@@ -299,7 +299,7 @@ export default {
 
 <style scoped lang="less">
   .unitView{
-    width: 100%;
+    min-width: 100%;
     display: flex;
     height: 74vh;
     justify-content: space-between;
