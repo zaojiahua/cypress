@@ -36,7 +36,7 @@
         </Upload>
       </Col>
       <Col span="12" style="text-align: right; margin-bottom: 20px;">
-        <Button type="error" style="margin-right: 20px;">批量删除</Button>
+        <Button type="error" style="margin-right: 20px;" @click="delSelectedJobs">批量删除</Button>
         <Button type="warning" style="margin-right: 20px;" @click="clearTags('selectedJobs')">清除已选</Button>
         <Button type="success" @click="exportJobs">导出用例</Button>
       </Col>
@@ -354,7 +354,7 @@ export default {
      * lastEditTime 2019年11月26日18:56:24
      */
     exportJobs () {
-      if (Object.keys(this.selectedJobs).length === 0) {
+      if (this.jobIdList.length === 0) {
         this.$Modal.error({
           title: '错误',
           content: '请先选择要导出的用例'
@@ -368,7 +368,7 @@ export default {
           onOk () {
             getSelectedJobs({
               requestName: 'exportJob',
-              jobIdList: Object.keys(self.selectedJobs)
+              jobIdList: self.jobIdList
             }).then(res => {
               if (res.data.file) {
                 window.location.href = res.data.file
@@ -381,6 +381,43 @@ export default {
           }
         })
       }
+    },
+    /**
+     * 删除用例
+     * author lc
+     * lastEditTime 2019年11月27日14:28:36
+     */
+    delSelectedJobs () {
+      if (this.jobIdList.length === 0) {
+        this.$Modal.error({
+          title: '错误',
+          content: '请先选择要删除的用例！'
+        })
+      } else {
+        let self = this
+        console.log(this.jobIdList)
+        this.$Modal.confirm({
+          title: '提示',
+          content: '您真的要删除这些用例吗？',
+          onOk () {
+            let delUrlList = []
+            for (let i = 0; i < self.jobIdList.length; i++) {
+              delUrlList.push(axios.request({
+                url: 'api/v1/cedar/job/' + self.jobIdList[i] + '/',
+                method: 'patch',
+                data: { job_deleted: true }
+              }))
+            }
+            Promise.all(delUrlList).then(res => {
+              this.$Message.success('用例删除成功')
+              self.getMsg()
+            }).catch(err => {
+              console.log(err)
+              this.$Message.error('用例删除失败')
+            })
+          }
+        })
+      }
     }
   },
   computed: {
@@ -389,6 +426,9 @@ export default {
     },
     uploadUrl () {
       return jobLibSvcURL + '/form/'
+    },
+    jobIdList () {
+      return Object.keys(this.selectedJobs)
     }
   },
   beforeCreate () {
