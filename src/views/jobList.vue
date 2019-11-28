@@ -30,16 +30,24 @@
     <Button style="margin: 30px 0px;" @click="clearTags('filterRules')">清空</Button>
     <Divider style="margin-top: -6px">已选用例</Divider>
     <Row>
-      <Col span="12" style="margin-bottom: 20px;">
-        <Upload style="float:left;height: 31px;" ref="upload" :action="uploadUrl" :data="uploadData" :on-error="handleUploadError" :on-success="handleUploadSuccess">
-          <Button icon="ios-cloud-upload-outline">导入用例</Button>
-        </Upload>
-      </Col>
-      <Col span="12" style="text-align: right; margin-bottom: 20px;">
-        <Button type="error" style="margin-right: 20px;" @click="delSelectedJobs">批量删除</Button>
-        <Button type="warning" style="margin-right: 20px;" @click="clearTags('selectedJobs')">清除已选</Button>
-        <Button type="success" @click="exportJobs">导出用例</Button>
-      </Col>
+      <Row>
+        <Col span="12" style="height: 40px;">
+          <Upload ref="upload"
+            :show-upload-list="false"
+            :format="['zip']"
+            :on-format-error="handleFormatError"
+            :action="uploadUrl"
+            :data="uploadData"
+            :on-success="handleUploadSuccess">
+            <Button icon="ios-cloud-upload-outline">导入用例</Button>
+          </Upload>
+        </Col>
+        <Col span="12" style="text-align: right; height: 40px;">
+          <Button type="error" style="margin-right: 20px;" @click="delSelectedJobs">批量删除</Button>
+          <Button type="warning" style="margin-right: 20px;" @click="clearTags('selectedJobs')">清除已选</Button>
+          <Button type="success" @click="exportJobs">导出用例</Button>
+        </Col>
+      </Row>
       <Row span="24"  style="margin-top: 20px; min-height: 60px;">
         <Tag v-for="job in selectedJobs" :key="job.id" @click.native="openDetail(job.id)" closable @on-close="close('selectedJobs', job.id)">{{ job.name }}</Tag>
       </Row>
@@ -330,22 +338,16 @@ export default {
      * author: lc
      * lastEditTime: 2019年11月27日10:56:50
      */
-    handleUploadError (error) {
-      console.log(error)
-      this.$Message.error('文件上传失败！')
+    handleFormatError () {
+      this.$Notice.error({
+        title: '文件上传失败',
+        desc: '请使用ZIP格式的压缩包！'
+      })
+      this.$refs.upload.clearFiles()
     },
     handleUploadSuccess (res) {
       if (res.state === 'OK') {
         this.$Message.success('文件上传成功！')
-        this.$refs.upload.clearFiles()
-      } else {
-        this.$Notice.error({
-          title: '文件上传失败',
-          desc: '请使用正确的压缩包文件！'
-        })
-        setTimeout(() => {
-          this.$refs.upload.clearFiles()
-        }, 500)
       }
     },
     /**
