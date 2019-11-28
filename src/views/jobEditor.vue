@@ -125,7 +125,8 @@ export default {
       switchButton: false,
       showDrawer: false,
       isCertain: false, // 是否是通过点击确定按钮离开jobEditor页面
-      screenWidth: 0
+      screenWidth: 0,
+      ingroneList: ['login']
     }
   },
   mounted () {
@@ -350,7 +351,7 @@ export default {
   beforeRouteLeave (to, from, next) {
     let self = this
     let toFullPath = to.fullPath
-    if (this.$store.state.keepAliveComponents.length !== 2 && this.myDiagram.model.nodeDataArray.length !== 0 && !this.isCertain) {
+    if (this.$store.state.keepAliveComponents.length !== 2 && this.myDiagram.model.nodeDataArray.length !== 0 && !this.isCertain && this.ingroneList.indexOf(to.name) === -1) {
       this.$Modal.confirm({
         title: 'WARNING',
         content: '此操作会丢失已编辑的内容，确定要继续吗？',

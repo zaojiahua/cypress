@@ -2,19 +2,19 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 
 const state = {
-  keepAliveComponents: ['jobList'], // 需要被缓存的组件
+  keepAliveComponents: ['jobList'] // 需要被缓存的组件
 }
 
 const mutations = {
-  keepAlive(state, component) {
-    if(!state.keepAliveComponents.includes(component)) {
-      state.keepAliveComponents.push(component);
+  keepAlive (state, component) {
+    if (!state.keepAliveComponents.includes(component)) {
+      state.keepAliveComponents.push(component)
     }
   },
-  noKeepAlive(state, component) {
-    let index = state.keepAliveComponents.indexOf(component);
-    if(index !== -1) {
-      state.keepAliveComponents.splice(index, 1);
+  noKeepAlive (state, component) {
+    let index = state.keepAliveComponents.indexOf(component)
+    if (index !== -1) {
+      state.keepAliveComponents.splice(index, 1)
     }
   }
 }
