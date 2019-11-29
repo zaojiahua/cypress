@@ -11,9 +11,9 @@
                :columns="deviceColumn"
                :data="deviceData">
         </Table>
-        <div style="margin: 16px">
-          <Input v-model.trim="imgName" placeholder="Enter something..." clearable style="width: 72%" />
-          <Button type="primary" :loading="loading" @click="getImg" style="margin-left:6px" >
+        <div style="margin: 16px; display: flex; justify-content: space-around;">
+          <AutoComplete v-model="imgName" :data="suffixs" @on-search="handleSearch" placeholder="Enter something..." clearable style="width: 66%" />
+          <Button type="primary" :loading="loading" @click="getImg" style="margin-left:6px">
             <span v-if="!loading">Commit</span>
             <span v-else>Loading...</span>
           </Button>
@@ -30,13 +30,13 @@
               <Button type="error" size="small" @click="remove(index)">Delete</Button>
             </template>
           </Table>
-          <div style="margin: 16px">
+          <div style="margin: 16px; display: flex; justify-content: space-around;">
             <Input v-model="imgThreshold" placeholder="识别率标准..." clearable style="width: 72%" type="number"/>
             <Button type="primary" @click="getFeaturePointFileName()" style="margin-left:6px">Commit</Button>
           </div>
         </template>
       </Card>
-      <div style="margin-left:42%;width: 58%;height: 68vh">
+      <div style="margin-left:42%;width: 58%;height: 68vh; display: flex; justify-content: center; align-items: center;">
         <img ref="ImgRef" :src="imgUrl" :style="style" @click="getCoordinate">
       </div>
     </TabPane>
@@ -49,6 +49,8 @@ import { toDecimal } from '../lib/tools'
 import util from '../lib/util/validate.js'
 import { getUsableDeviceList } from '../api/reef/device'
 import { callEblockExce, getFeaturePointIntoJob } from '../api/coral/jobLibSvc' // deviceOperationStatus
+// import { deviceOperationStatus } from '../mock/coral/jobLibSvc'
+
 const deviceSerializer = [
   {
     android_version: {
@@ -90,6 +92,7 @@ export default {
       loading: false,
       style: {},
       imgName: '',
+      suffixs: [],
       switchValue: true,
       imgThreshold: null,
       selected: false,
@@ -138,6 +141,12 @@ export default {
     }
   },
   methods: {
+    handleSearch (value) {
+      this.suffixs = !value || value.indexOf('.') >= 0 ? [] : [
+        value + '.jpg',
+        value + '.png'
+      ]
+    },
     onDeviceRowClick (row, index) {
       this.currentDeviceRowIndex = index
     },
@@ -195,8 +204,8 @@ export default {
     },
     _callEblockExceResponseHandle (res) {
       if (res.data.state) {
-        this.viewImg(`${res.data.file}?t=${(new Date()).toString()}`)
-        // this.viewImg(res.data.file)
+        // this.viewImg(`${res.data.file}?t=${(new Date()).toString()}`)
+        this.viewImg(res.data.file)
         this._loading(false)
         this.$emit('getImageName', this.imgName)
       } else {

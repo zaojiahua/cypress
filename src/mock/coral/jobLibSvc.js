@@ -10,8 +10,8 @@ function jobLibSvcExecuteFunction (requestName) {
   switch (requestName) {
     case 'callEblockExce' :
       return {
-        stageJobLabel: 'job-92348cd3-3512-4488-842d-36dc631a9083',
-        state: true
+        state: true,
+        file: Mock.Random.dataImage()
       }
     case 'getTemporarySpace' :
       return {
@@ -334,12 +334,5 @@ function jobLibSvcExecuteFunction (requestName) {
         },
         'SCRIPTEXEC': {}
       }
-  }
-}
-
-export const deviceOperationStatus = (options) => {
-  return {
-    state: true,
-    file: Mock.Random.dataImage()
   }
 }

@@ -131,7 +131,9 @@ export default {
   },
   mounted () {
     const self = this
-
+    window.onload = () => {
+      self.screenWidth = document.body.clientWidth
+    }
     window.onresize = () => {
       return (() => {
         window.screenWidth = document.body.clientWidth
