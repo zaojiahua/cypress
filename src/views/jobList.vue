@@ -34,7 +34,7 @@
 
     <Page simple :page-size="pageSize" :total="dataCount" :current="this.currentPage" @on-change="jobPageChange" style="text-align: center;margin-top: 20px"></Page>
     <Drawer title="用例详细信息" :closable="false" v-model="showDrawer" width="50">
-      <job-msg-component ref="jobDetail"></job-msg-component>
+      <job-msg-component ref="jobDetail" @closeDrawer="closeDrawer"></job-msg-component>
     </Drawer>
   </div>
 </template>
@@ -294,6 +294,9 @@ export default {
           }
         })
       }
+    },
+    closeDrawer () { // 路由切换后关闭drawer
+      this.showDrawer = false
     }
   },
   computed: {
