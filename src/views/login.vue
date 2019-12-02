@@ -7,7 +7,7 @@
       <Divider/>
       <div id="login-input">
         <Input prefix="ios-person-outline" v-model="username" placeholder="请输入账户" style="width: auto"/>
-        <Input id="password" prefix="ios-lock-outline" type="password" v-model="password" placeholder="请输入密码" style="width: auto"/>
+        <Input id="password" prefix="ios-lock-outline" type="password" password v-model="password" placeholder="请输入密码" style="width: auto"/>
         <Checkbox id="remember-pwd" v-model="keepLogin">保持登入</Checkbox>
         <div>
           <Button type="success" @click="login">登入</Button>
