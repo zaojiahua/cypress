@@ -296,7 +296,7 @@ export default {
         if (e.diagram instanceof go.Palette) return
 
         self.$Notice.destroy()
-
+        self.$refs.emptyOperation.deviceRefresh() // 双击unit时刷新device列表
         self.$refs.emptyOperation.emptyData()
         self.unitModalShow = true
         self.unitNodeByKey = node.data.key
@@ -306,6 +306,7 @@ export default {
 
       const unitListGroupTemplate = baseGroupTemplate()
       unitListGroupTemplate.memberValidation = function groupValidation (group, node) {
+        console.log(node)
         return node.data.category === 'Unit'// 当节点的category值为Unit时
       }
 

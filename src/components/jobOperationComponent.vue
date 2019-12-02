@@ -69,10 +69,10 @@ const deviceSerializer = [
 export default {
   name: 'jobOperationComponent',
   props: {
-    deviceAutoLoad: {
-      type: Boolean,
-      default: true
-    },
+    // deviceAutoLoad: {
+    //   type: Boolean,
+    //   default: true
+    // },
     stageJobLabel: {
       type: String,
       default: null
@@ -299,10 +299,10 @@ export default {
       ]
       this.imgUrl = ''
     }
-  },
-  mounted () {
-    if (this.deviceAutoLoad) this.deviceRefresh()
   }
+//   mounted () {
+//     if (this.deviceAutoLoad) this.deviceRefresh()
+//   }
 }
 </script>
 
