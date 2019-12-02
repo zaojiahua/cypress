@@ -12,6 +12,7 @@ export function showLinkLabel (e) {
 }
 
 export function finishDrop (e, grp) {
+  if (e.targetDiagram.Ia.id === 'inner-palette') return // unit不能放置在palette内的unitList中
   let ok = (grp !== null
     ? grp.addMembers(grp.diagram.selection, true)
     : e.diagram.commandHandler.addTopLevelParts(e.diagram.selection, true))

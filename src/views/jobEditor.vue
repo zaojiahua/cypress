@@ -306,7 +306,6 @@ export default {
 
       const unitListGroupTemplate = baseGroupTemplate()
       unitListGroupTemplate.memberValidation = function groupValidation (group, node) {
-        console.log(node)
         return node.data.category === 'Unit'// 当节点的category值为Unit时
       }
 
