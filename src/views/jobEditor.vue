@@ -100,6 +100,9 @@ import {
 import { unitListValidation } from '../core/validation/operationValidation/block'
 import { jobFlowValidation } from '../core/validation/finalValidation/job'
 import { blockFlowValidation } from '../core/validation/finalValidation/block'
+import axios from '../api'
+import { baseURL } from '../config'
+
 export default {
   name: 'jobEditor',
   components: { SwitchBlockDetailComponent, JobOperationComponent, jobMsgComponent },
@@ -499,6 +502,41 @@ export default {
     saveJob () {
       // 使用 & 保证都运行
       if (this._jobFlowRules() & this._jobMsgRules()) {
+        this.$refs.jobDetail.jobInfo.test_area.forEach((item, index, array) => { // 添加新的条目
+          if (typeof item !== 'number') {
+            axios.request({
+              url: `${baseURL}/api/v1/cedar/job_test_area/`,
+              method: 'post',
+              data: {
+                description: item
+              }
+            }).then(res => {
+              if (res.status === 201) {
+                array.splice(index, 1, res.data.id)
+              } else {
+                this.$Message.error(item + '创建失败')
+              }
+            })
+          }
+        })
+        this.$refs.jobDetail.jobInfo.custom_tag.forEach((item, index, array) => {
+          if (typeof item !== 'number') {
+            axios.request({
+              url: `${baseURL}/api/v1/cedar/custom_tag/`,
+              method: 'post',
+              data: {
+                custom_tag_name: item
+              }
+            }).then(res => {
+              console.log(res)
+              if (res.status === 201) {
+                array.splice(index, 1, res.data.id)
+              } else {
+                this.$Message.error(item + '创建失败')
+              }
+            })
+          }
+        })
         jobFlowAndMsgSave({
           stageJobLabel: this.stageJobLabel,
           // this.switchButton 为true 设置为另存为 jobLabel为null

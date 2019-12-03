@@ -4,12 +4,12 @@
       <Input v-model="jobInfo.job_name" placeholder="请输入"/>
     </Form-item>
     <Form-item label="测试用途:" prop="test_area">
-      <Select v-model="jobInfo.test_area" multiple placeholder="请选择" filterable>
+      <Select v-model="jobInfo.test_area" multiple placeholder="请选择" filterable allow-create>
         <Option v-for="item in jobTestArea.jobtestareas" :value="item.id" :key="item.id">{{ item.description }}</Option>
       </Select>
     </Form-item>
     <Form-item label="自定义标签:" prop="custom_tag">
-      <Select v-model="jobInfo.custom_tag" multiple placeholder="请选择" filterable>
+      <Select v-model="jobInfo.custom_tag" multiple placeholder="请选择" filterable allow-create>
         <Option v-for="item in customTag.customtags" :value="item.id" :key="item.id">{{ item.custom_tag_name }}</Option>
       </Select>
     </Form-item>
