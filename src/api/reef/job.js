@@ -35,3 +35,10 @@ export const patchUpdateJob = (id, jobInfo) => {
 
   })
 }
+
+export const getJobUnitsBodyDict = () => {
+  return axios.request({
+    url: '/api/v1/cedar/unit_lib/',
+    method: 'get'
+  })
+}

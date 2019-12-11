@@ -79,7 +79,7 @@
             <MenuItem name="1">
               {{ username }}
             </MenuItem>
-            <MenuItem name="2" @click.native="getSysVersion">
+            <MenuItem name="2" @click.native="getSysVersion" to="about">
               关于TMach
               <Icon type="ios-help-circle-outline" size="24"/>
             </MenuItem>
