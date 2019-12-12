@@ -90,8 +90,9 @@ import {
 } from './jobEditorCommon'
 import jobMsgComponent from '../components/jobMsgComponent'
 import JobOperationComponent from '../components/jobOperationComponent'
-import { getBlockFlowDict4Font, getTemporarySpace, jobFlowAndMsgSave } from '../api/coral/jobLibSvc'
+import { getTemporarySpace, jobFlowAndMsgSave } from '../api/coral/jobLibSvc'
 import { getJobUnitsBodyDict } from '../api/reef/unit'
+import { getBlockFlowDict4Font } from '../api/reef/jobFlow'
 import SwitchBlockDetailComponent from '../components/SwitchBlockDetailComponent'
 import { isJsonString } from '../lib/tools'
 import { commonValidation } from '../core/validation/common'
@@ -133,17 +134,18 @@ export default {
       ingroneList: ['login']
     }
   },
-  beforeCreate () {
-    let _this = this
+  mounted () {
+    const self = this
+    window.onload = () => {
+      self.screenWidth = document.body.clientWidth
+    }
     window.onresize = () => {
       return (() => {
         window.screenWidth = document.body.clientWidth
-        _this.screenWidth = window.screenWidth
+        self.screenWidth = window.screenWidth
       })()
     }
-  },
-  mounted () {
-    const self = this
+
     self.$Notice.config({
       top: 150,
       duration: 10
@@ -192,15 +194,15 @@ export default {
 
       self.myDiagram.linkTemplate = linkTemplateStyle()
 
-      // self.myDiagram.linkTemplate.doubleClick = function (e, node) {
-      //   if (e.diagram instanceof go.Palette) return
-      //   let block = self.myDiagram.findNodeForKey(node.data.from).data
+      self.myDiagram.linkTemplate.doubleClick = function (e, node) {
+        if (e.diagram instanceof go.Palette) return
+        let block = self.myDiagram.findNodeForKey(node.data.from).data
 
-      //   if (block.category === 'normalBlock') {
-      //     // vm.showDrawerOperation('linkOperation')
-      //     // currentLinkObj = node
-      //   }
-      // }
+        if (block.category === 'normalBlock') {
+          // vm.showDrawerOperation('linkOperation')
+          // currentLinkObj = node
+        }
+      }
 
       const startTemplate = startNodeTemplate('#00AD5F')
       startTemplate.linkValidation = startValidation
@@ -403,16 +405,16 @@ export default {
         { category: 'End', text: 'End' }
       ])
 
-      if (this.$route.query.jobLabel) {
-        getBlockFlowDict4Font(this.$route.query.jobLabel).then(res => {
-          if (res.data.error) {
+      if (this.$route.query.jobFlow) {
+        getBlockFlowDict4Font(this.$route.query.jobFlow).then(res => {
+          if (JSON.stringify(res.data) === '{}') {
             this.$Message.warning('这个job不存在')
             return this.$router.push({ path: '/' })
           }
-          this.stageJobLabel = res.data.stageJobLabel
-          this.jobName = res.data.jobAttribute.job_name
-          this.$refs.jobDetail.getMsg(res.data.jobAttribute.id)
-          this.myDiagram.model = go.Model.fromJson(res.data.jobBody)
+          this.stageJobLabel = this.$route.query.jobLabel
+          this.jobName = this.$route.query.jobName
+          this.$refs.jobDetail.getMsg(this.$route.query.jobId)
+          this.myDiagram.model = go.Model.fromJson(res.data)
           this.switchButtonShow = true
         })
       } else {

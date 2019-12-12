@@ -98,7 +98,8 @@ const jobSerializer = {
       id: 'number',
       description: 'string'
     }
-  ]
+  ],
+  ui_json_file: 'string'
 }
 
 const manufacturerSerializer = {
@@ -213,7 +214,16 @@ export default {
     routerTo () {
       this.$emit('closeDrawer')
       this.$store.commit('noKeepAlive', 'jobEditor')
-      this.$router.push({ name: 'jobEditor', query: { jobLabel: this.job.job_label } })
+      this.$router.push(
+        {
+          name: 'jobEditor',
+          query: {
+            jobFlow: this.job.ui_json_file,
+            jobId: this.job.id,
+            jobName: this.job.job_name,
+            jobLabel: this.job.job_label
+          }
+        })
     },
     getMsg (jobId = null) {
       this.currentJobId = jobId
