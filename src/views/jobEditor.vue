@@ -32,9 +32,9 @@
         <div id="chart-left">
           <div id="dropdown-div" align="center"><!--下拉动态unit-->
             <Dropdown trigger="click" @on-click="getSelectedUnit">
-              <Button id="dropdown-btn" type="primary" @click="getAllJobUnit">{{unitType}}</Button><!--:model="unitType"-->
+              <Button id="dropdown-btn" type="primary">{{unitType}}</Button><!--:model="unitType"-->
               <DropdownMenu slot="list" style="width: 150px">
-                <DropdownItem v-for="currentUnit in unitAllList" :name="currentUnit.key" :key="currentUnit.key">{{currentUnit.key}}</DropdownItem>
+                <DropdownItem v-for="(currentUnit, key) in unitAllList" :name="key" :key="key">{{key}}</DropdownItem>
               </DropdownMenu>
             </Dropdown>
           </div>
@@ -90,7 +90,8 @@ import {
 } from './jobEditorCommon'
 import jobMsgComponent from '../components/jobMsgComponent'
 import JobOperationComponent from '../components/jobOperationComponent'
-import { getBlockFlowDict4Font, getTemporarySpace, jobFlowAndMsgSave, getJobUnitsBodyDict } from '../api/coral/jobLibSvc'
+import { getBlockFlowDict4Font, getTemporarySpace, jobFlowAndMsgSave } from '../api/coral/jobLibSvc'
+import { getJobUnitsBodyDict } from '../api/reef/unit'
 import SwitchBlockDetailComponent from '../components/SwitchBlockDetailComponent'
 import { isJsonString } from '../lib/tools'
 import { commonValidation } from '../core/validation/common'
@@ -122,7 +123,7 @@ export default {
       getCurrentNormalBlockByKey: null,
       unitType: '请选择组件类型',
       switchBlockInfo: {},
-      unitAllList: [],
+      unitAllList: {},
       basicModuleShow: {},
       switchButtonShow: false,
       switchButton: false,
@@ -346,7 +347,15 @@ export default {
       }
       self.blockPalette.model = new go.GraphLinksModel(basicModule.nodeDataArray, basicModule.linkDataArray)
     }
-
+    getJobUnitsBodyDict().then(res => {
+      res.data.unit.forEach((unit, index) => {
+        if (!(unit.type in this.unitAllList)) {
+          this.$set(this.unitAllList, unit.type, {})
+        }
+        this.$set(this.unitAllList[unit.type], unit.unit_name, unit.unit_content)
+      })
+      this.$set(this.unitAllList, 'Basic Module', this.basicModuleShow)
+    })
     this.init()
   },
   beforUpdate () {
@@ -565,35 +574,18 @@ export default {
         this.unitModalShow = false
       }
     },
-    getAllJobUnit () { // unit动态展示
-      let getAllUnitRequestParameter = {
-        requestName: 'getJobUnitsBodyDict'
-      }
-      getJobUnitsBodyDict(getAllUnitRequestParameter).then(res => {
-        this.unitAllList = [] // 清空
-        for (let i in res.data) {
-          let one = { key: i, value: res.data[i] }
-          this.unitAllList.push(one)
-        }
-        this.unitAllList.push(this.basicModuleShow)
-      })
-    },
     getSelectedUnit (name) {
       let unitCategoryData = {}
       unitCategoryData.nodeDataArray = []
       this.unitType = name
-      if (name !== 'basicModule') {
-        for (let i = 0; i < this.unitAllList.length; i++) {
-          if (name === this.unitAllList[i].key) {
-            for (let j in this.unitAllList[i].value) {
-              unitCategoryData.nodeDataArray.push({
-                category: 'Unit',
-                text: j,
-                unitMsg: this.unitAllList[i].value[j]
-              })
-            }
-          }
-        }
+      if (name !== 'Basic Module') {
+        Object.entries(this.unitAllList[name]).forEach((unit) => {
+          unitCategoryData.nodeDataArray.push({
+            category: 'Unit',
+            text: unit[0],
+            unitMsg: unit[1]
+          })
+        })
         this.blockPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
       } else {
         this.blockPalette.model = new go.GraphLinksModel(this.basicModuleShow.value.nodeDataArray, this.basicModuleShow.value.linkDataArray)
