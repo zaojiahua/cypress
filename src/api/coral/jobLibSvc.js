@@ -72,14 +72,6 @@ export const jobFlowAndMsgSave = (data) => {
   })
 }
 
-export const getJobUnitsBodyDict = (data) => {
-  return axios.request({
-    url: jobLibSvcURL,
-    method: 'post',
-    data: data
-  })
-}
-
 export const getSelectedJobs = (data) => {
   return axios.request({
     url: jobLibSvcURL,

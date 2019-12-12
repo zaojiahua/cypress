@@ -12,7 +12,8 @@ export function showLinkLabel (e) {
 }
 
 export function finishDrop (e, grp) {
-  if (e.targetDiagram.Ia.id === 'inner-palette') return // unit不能放置在palette内的unitList中
+  if (e.diagram instanceof go.Palette) return // unit不能放置在palette内的unitList中
+  // if (e.targetDiagram.Ia.id === 'inner-palette') return
   let ok = (grp !== null
     ? grp.addMembers(grp.diagram.selection, true)
     : e.diagram.commandHandler.addTopLevelParts(e.diagram.selection, true))
@@ -29,7 +30,7 @@ export function linkTemplateStyle () {
       relinkableFrom: true,
       relinkableTo: true,
       reshapable: true,
-      resegmentable: true,
+      resegmentable: false, // 用户是否可以更改链接中的段数，默认为false
       // mouse-overs subtly highlight links:
       mouseEnter: function (e, link) { link.findObject('HIGHLIGHT').stroke = 'rgba(30,144,255,0.2)' },
       mouseLeave: function (e, link) { link.findObject('HIGHLIGHT').stroke = 'transparent' },
@@ -44,7 +45,7 @@ export function linkTemplateStyle () {
     MAKE(go.Shape, // the arrowhead
       { toArrow: 'standard', strokeWidth: 0, fill: 'gray' }),
     MAKE(go.Panel, 'Auto', // the link label, normally not visible
-      { visible: false, name: 'LABEL', segmentIndex: 2, segmentFraction: 0.5 },
+      { visible: false, name: 'LABEL', segmentIndex: 1, segmentFraction: 0.5 },
       new go.Binding('visible', 'visible').makeTwoWay(),
       MAKE(go.Shape, 'RoundedRectangle', // the label shape
         { fill: '#F8F8F8', strokeWidth: 0 }),

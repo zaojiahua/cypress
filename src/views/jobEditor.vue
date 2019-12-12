@@ -133,18 +133,17 @@ export default {
       ingroneList: ['login']
     }
   },
-  mounted () {
-    const self = this
-    window.onload = () => {
-      self.screenWidth = document.body.clientWidth
-    }
+  beforeCreate () {
+    let _this = this
     window.onresize = () => {
       return (() => {
         window.screenWidth = document.body.clientWidth
-        self.screenWidth = window.screenWidth
+        _this.screenWidth = window.screenWidth
       })()
     }
-
+  },
+  mounted () {
+    const self = this
     self.$Notice.config({
       top: 150,
       duration: 10
@@ -193,15 +192,15 @@ export default {
 
       self.myDiagram.linkTemplate = linkTemplateStyle()
 
-      self.myDiagram.linkTemplate.doubleClick = function (e, node) {
-        if (e.diagram instanceof go.Palette) return
-        let block = self.myDiagram.findNodeForKey(node.data.from).data
+      // self.myDiagram.linkTemplate.doubleClick = function (e, node) {
+      //   if (e.diagram instanceof go.Palette) return
+      //   let block = self.myDiagram.findNodeForKey(node.data.from).data
 
-        if (block.category === 'normalBlock') {
-          // vm.showDrawerOperation('linkOperation')
-          // currentLinkObj = node
-        }
-      }
+      //   if (block.category === 'normalBlock') {
+      //     // vm.showDrawerOperation('linkOperation')
+      //     // currentLinkObj = node
+      //   }
+      // }
 
       const startTemplate = startNodeTemplate('#00AD5F')
       startTemplate.linkValidation = startValidation
