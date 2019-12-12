@@ -90,9 +90,9 @@ import {
 } from './jobEditorCommon'
 import jobMsgComponent from '../components/jobMsgComponent'
 import JobOperationComponent from '../components/jobOperationComponent'
-import { getTemporarySpace, jobFlowAndMsgSave } from '../api/coral/jobLibSvc'
+import { getTemporarySpace } from '../api/coral/jobLibSvc'
 import { getJobUnitsBodyDict } from '../api/reef/unit'
-import { getBlockFlowDict4Font } from '../api/reef/jobFlow'
+import { getBlockFlowDict4Font, jobFlowAndMsgSave, jobFlowAndMsgUpdate } from '../api/reef/jobFlow'
 import SwitchBlockDetailComponent from '../components/SwitchBlockDetailComponent'
 import { isJsonString } from '../lib/tools'
 import { commonValidation } from '../core/validation/common'
@@ -509,6 +509,12 @@ export default {
       })
       return flag
     },
+    // 生成 jobLabel
+    _createJobLabel (src) {
+      let jobLabel = this.md5(this.myDiagram.model.toJson())
+      jobLabel = 'job-' + jobLabel.substr(0, 8) + '-' + jobLabel.substr(8, 4) + '-' + jobLabel.substr(12, 4) + '-' + jobLabel.substr(16, 4) + '-' + jobLabel.substr(20)
+      return jobLabel
+    },
     saveJob () {
       // 使用 & 保证都运行
       if (this._jobFlowRules() & this._jobMsgRules()) {
@@ -547,22 +553,33 @@ export default {
             })
           }
         })
-        jobFlowAndMsgSave({
-          stageJobLabel: this.stageJobLabel,
-          // this.switchButton 为true 设置为另存为 jobLabel为null
-          jobLabel: (this.switchButton) ? null : this.$route.query.jobLabel,
-          flow: JSON.parse(this.myDiagram.model.toJson()),
-          attribute: this.$refs.jobDetail.jobInfo,
-          id: this.$refs.jobDetail.currentJobId
-        }).then(res => { // 保存成功后跳转回jobList页面
-          if (res.data.state) {
-            this.isCertain = true
-            this.$router.push({ path: '/jobList' })
-            this.$Message.info('操作完成')
-          } else {
-            console.log(res.data)
-          }
-        })
+        this.$refs.jobDetail.jobInfo.ui_json_file = JSON.parse(this.myDiagram.model.toJson())
+        if (!this.$route.query.jobId) { // 新建job
+          this.$refs.jobDetail.jobInfo.job_label = this._createJobLabel(this.myDiagram.model.toJson())
+          jobFlowAndMsgSave(this.$refs.jobDetail.jobInfo).then(res => {
+            // 保存成功后跳转回jobList页面
+            if (res.data.state) {
+              this.isCertain = true
+              this.$router.push({ path: '/jobList' })
+              this.$Message.info('操作完成')
+            } else {
+              console.log(res.data)
+            }
+          }).catch(res => {
+            debugger
+          })
+        } else { // 更新job
+          jobFlowAndMsgUpdate(this.$route.query.jobId, this.$refs.jobDetail.jobInfo).then(res => {
+            if (res.status === 200) {
+              this.isCertain = true
+              console.log('更新成功')
+              this.$router.push({ path: '/jobList' })
+              this.$Message.info('操作完成')
+            } else {
+              console.log(res.data)
+            }
+          })
+        }
       }
     },
     saveUnit () {
