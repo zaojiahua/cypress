@@ -515,73 +515,131 @@ export default {
       jobLabel = 'job-' + jobLabel.substr(0, 8) + '-' + jobLabel.substr(8, 4) + '-' + jobLabel.substr(12, 4) + '-' + jobLabel.substr(16, 4) + '-' + jobLabel.substr(20)
       return jobLabel
     },
+    _createNewTag (tagType) { // 生成新的测试用途、自定义标签条目
+      let requests = []
+      let targetName = tagType === 'test_area' ? 'job_test_area' : 'custom_tag'
+      let target = this.$refs.jobDetail.jobInfo[tagType]
+      for (let i = target.length - 1; i > 0; i--) {
+        if (typeof target[i] !== 'number') {
+          requests.push(
+            axios.request({
+              url: `${baseURL}/api/v1/cedar/${targetName}/`,
+              method: 'post',
+              data: tagType === 'test_area' ? { description: target[i] } : { custom_tag_name: target[i] }
+            }).then(res => {
+              target[i] = res.data.id
+            })
+          )
+        }
+      }
+      return Promise.all(requests)
+    },
     saveJob () {
       // 使用 & 保证都运行
       if (this._jobFlowRules() & this._jobMsgRules()) {
-        this.$refs.jobDetail.jobInfo.test_area.forEach((item, index, array) => { // 添加新的条目
-          if (typeof item !== 'number') {
-            axios.request({
-              url: `${baseURL}/api/v1/cedar/job_test_area/`,
-              method: 'post',
-              data: {
-                description: item
-              }
-            }).then(res => {
-              if (res.status === 201) {
-                array.splice(index, 1, res.data.id)
-              } else {
-                this.$Message.error(item + '创建失败')
-              }
-            })
-          }
-        })
-        this.$refs.jobDetail.jobInfo.custom_tag.forEach((item, index, array) => {
-          if (typeof item !== 'number') {
-            axios.request({
-              url: `${baseURL}/api/v1/cedar/custom_tag/`,
-              method: 'post',
-              data: {
-                custom_tag_name: item
-              }
-            }).then(res => {
-              console.log(res)
-              if (res.status === 201) {
-                array.splice(index, 1, res.data.id)
-              } else {
-                this.$Message.error(item + '创建失败')
-              }
-            })
-          }
-        })
-        this.$refs.jobDetail.jobInfo.ui_json_file = JSON.parse(this.myDiagram.model.toJson())
-        if (!this.$route.query.jobId) { // 新建job
-          this.$refs.jobDetail.jobInfo.job_label = this._createJobLabel(this.myDiagram.model.toJson())
-          jobFlowAndMsgSave(this.$refs.jobDetail.jobInfo).then(res => {
+        let info = this.$refs.jobDetail.jobInfo
+        let jobFlow = this.myDiagram.model.toJson()
+        Promise.all([this._createNewTag('test_area')]).then(() => { // this._createNewTag('custom_tag') API暂时不能用
+          console.log(this.$refs.jobDetail.jobInfo.test_area)
+          info.ui_json_file = JSON.parse(jobFlow)
+          if (!this.$route.query.jobId) { // 新建job
+            info.job_label = this._createJobLabel(jobFlow)
+            jobFlowAndMsgSave(info).then(res => {
             // 保存成功后跳转回jobList页面
-            if (res.data.state) {
-              this.isCertain = true
-              this.$router.push({ path: '/jobList' })
-              this.$Message.info('操作完成')
-            } else {
-              console.log(res.data)
-            }
-          }).catch(res => {
-            debugger
-          })
-        } else { // 更新job
-          jobFlowAndMsgUpdate(this.$route.query.jobId, this.$refs.jobDetail.jobInfo).then(res => {
-            if (res.status === 200) {
-              this.isCertain = true
-              console.log('更新成功')
-              this.$router.push({ path: '/jobList' })
-              this.$Message.info('操作完成')
-            } else {
-              console.log(res.data)
-            }
-          })
-        }
+              if (res.data.state) {
+                this.isCertain = true
+                this.$router.push({ path: '/jobList' })
+                this.$Message.info('操作完成')
+              } else {
+                console.log(res.data)
+              }
+            }).catch(res => {
+              debugger
+            })
+          } else { // 更新job
+            jobFlowAndMsgUpdate(this.$route.query.jobId, info).then(res => {
+              if (res.status === 200) {
+                this.isCertain = true
+                console.log('更新成功')
+                this.$router.push({ path: '/jobList' })
+                this.$Message.info('操作完成')
+              } else {
+                console.log(res.data)
+              }
+            })
+          }
+        })
       }
     },
+    // saveJob () {
+    //   // 使用 & 保证都运行
+    //   if (this._jobFlowRules() & this._jobMsgRules()) {
+    //     let info = this.$refs.jobDetail.jobInfo
+    //     let jobFlow = this.myDiagram.model.toJson()
+    //     info.test_area.forEach((item, index, array) => { // 添加新的条目
+    //       if (typeof item !== 'number') {
+    //         axios.request({
+    //           url: `${baseURL}/api/v1/cedar/job_test_area/`,
+    //           method: 'post',
+    //           data: {
+    //             description: item
+    //           }
+    //         }).then(res => {
+    //           if (res.status === 201) {
+    //             array.splice(index, 1, res.data.id)
+    //           } else {
+    //             this.$Message.error(item + '创建失败')
+    //           }
+    //         })
+    //       }
+    //     })
+    //     // info.custom_tag.forEach((item, index, array) => {
+    //     //   if (typeof item !== 'number') {
+    //     //     axios.request({
+    //     //       url: `${baseURL}/api/v1/cedar/custom_tag/`,
+    //     //       method: 'post',
+    //     //       data: {
+    //     //         custom_tag_name: item
+    //     //       }
+    //     //     }).then(res => {
+    //     //       console.log(res)
+    //     //       if (res.status === 201) {
+    //     //         array.splice(index, 1, res.data.id)
+    //     //       } else {
+    //     //         this.$Message.error(item + '创建失败')
+    //     //       }
+    //     //     })
+    //     //   }
+    //     // })
+    //     info.ui_json_file = JSON.parse(jobFlow)
+    //     if (!this.$route.query.jobId) { // 新建job
+    //       info.job_label = this._createJobLabel(jobFlow)
+    //       jobFlowAndMsgSave(info).then(res => {
+    //         // 保存成功后跳转回jobList页面
+    //         if (res.data.state) {
+    //           this.isCertain = true
+    //           this.$router.push({ path: '/jobList' })
+    //           this.$Message.info('操作完成')
+    //         } else {
+    //           console.log(res.data)
+    //         }
+    //       }).catch(res => {
+    //         debugger
+    //       })
+    //     } else { // 更新job
+    //       jobFlowAndMsgUpdate(this.$route.query.jobId, info).then(res => {
+    //         if (res.status === 200) {
+    //           this.isCertain = true
+    //           console.log('更新成功')
+    //           this.$router.push({ path: '/jobList' })
+    //           this.$Message.info('操作完成')
+    //         } else {
+    //           console.log(res.data)
+    //         }
+    //       })
+    //     }
+    //   }
+    // },
     saveUnit () {
       let currentUnitNode = this.blockDiagram.findNodeForKey(this.unitNodeByKey).data
       if (!this.unitContent) this.$Message.error('unit信息不能为空！')
