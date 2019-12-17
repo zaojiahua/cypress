@@ -93,6 +93,7 @@ import JobOperationComponent from '../components/jobOperationComponent'
 import { getTemporarySpace } from '../api/coral/jobLibSvc'
 import { getJobUnitsBodyDict } from '../api/reef/unit'
 import { getBlockFlowDict4Font, jobFlowAndMsgSave, jobFlowAndMsgUpdate } from '../api/reef/jobFlow'
+import { jobResFilesSave } from '../api/reef/jobResFileSave'
 import SwitchBlockDetailComponent from '../components/SwitchBlockDetailComponent'
 import { isJsonString } from '../lib/tools'
 import { commonValidation } from '../core/validation/common'
@@ -358,6 +359,8 @@ export default {
       this.$set(this.unitAllList, 'Basic Module', this.basicModuleShow)
     })
     this.init()
+
+    this._getResFile(this.$route.query.jobId)
   },
   beforUpdate () {
     this.isCertain = false
@@ -534,112 +537,67 @@ export default {
       }
       return Promise.all(requests)
     },
+    _blobToFile (blob, name) {
+      return new File([blob], name, { type: blob.type }) // 参数是数组!
+    },
+    _getData () {
+      let filesData = this.$refs.emptyOperation.filesData
+      let data = new FormData()
+      data.append('job', this.$route.query.jobId)
+      for (let i = 0; i < filesData.length; i++) {
+        let file = this._blobToFile(filesData[i].file, filesData[i].name)
+        data.append('file', file)
+      }
+      return data
+    },
     saveJob () {
       // 使用 & 保证都运行
       if (this._jobFlowRules() & this._jobMsgRules()) {
         let info = this.$refs.jobDetail.jobInfo
         let jobFlow = this.myDiagram.model.toJson()
         Promise.all([this._createNewTag('test_area')]).then(() => { // this._createNewTag('custom_tag') API暂时不能用
-          console.log(this.$refs.jobDetail.jobInfo.test_area)
+          // console.log(this.$refs.jobDetail.jobInfo.test_area)
+          let id = this.$route.query.jobId
           info.ui_json_file = JSON.parse(jobFlow)
-          if (!this.$route.query.jobId) { // 新建job
+          if (!id) { // 新建job
             info.job_label = this._createJobLabel(jobFlow)
             jobFlowAndMsgSave(info).then(res => {
             // 保存成功后跳转回jobList页面
-              if (res.data.state) {
+              if (res.status === 200) {
                 this.isCertain = true
                 this.$router.push({ path: '/jobList' })
                 this.$Message.info('操作完成')
               } else {
-                console.log(res.data)
+                console.log(res)
               }
             }).catch(res => {
               debugger
             })
           } else { // 更新job
-            jobFlowAndMsgUpdate(this.$route.query.jobId, info).then(res => {
+            let data = this._getData() // 准备要上传的依赖文件
+
+            jobFlowAndMsgUpdate(id, info).then(res => { // 保存job
               if (res.status === 200) {
-                this.isCertain = true
-                console.log('更新成功')
-                this.$router.push({ path: '/jobList' })
-                this.$Message.info('操作完成')
+                this.$Message.info('Job 保存成功')
+
+                jobResFilesSave(data).then(res => { // 上传依赖文件
+                  if (res.status === 201) {
+                    this.isCertain = true
+                    this.$Message.info('Job 依赖文件保存成功')
+                    console.log('更新成功')
+                    this.$router.push({ path: '/jobList' })
+                  } else {
+                    console.log(res)
+                  }
+                })
               } else {
-                console.log(res.data)
+                console.log(res)
               }
             })
           }
         })
       }
     },
-    // saveJob () {
-    //   // 使用 & 保证都运行
-    //   if (this._jobFlowRules() & this._jobMsgRules()) {
-    //     let info = this.$refs.jobDetail.jobInfo
-    //     let jobFlow = this.myDiagram.model.toJson()
-    //     info.test_area.forEach((item, index, array) => { // 添加新的条目
-    //       if (typeof item !== 'number') {
-    //         axios.request({
-    //           url: `${baseURL}/api/v1/cedar/job_test_area/`,
-    //           method: 'post',
-    //           data: {
-    //             description: item
-    //           }
-    //         }).then(res => {
-    //           if (res.status === 201) {
-    //             array.splice(index, 1, res.data.id)
-    //           } else {
-    //             this.$Message.error(item + '创建失败')
-    //           }
-    //         })
-    //       }
-    //     })
-    //     // info.custom_tag.forEach((item, index, array) => {
-    //     //   if (typeof item !== 'number') {
-    //     //     axios.request({
-    //     //       url: `${baseURL}/api/v1/cedar/custom_tag/`,
-    //     //       method: 'post',
-    //     //       data: {
-    //     //         custom_tag_name: item
-    //     //       }
-    //     //     }).then(res => {
-    //     //       console.log(res)
-    //     //       if (res.status === 201) {
-    //     //         array.splice(index, 1, res.data.id)
-    //     //       } else {
-    //     //         this.$Message.error(item + '创建失败')
-    //     //       }
-    //     //     })
-    //     //   }
-    //     // })
-    //     info.ui_json_file = JSON.parse(jobFlow)
-    //     if (!this.$route.query.jobId) { // 新建job
-    //       info.job_label = this._createJobLabel(jobFlow)
-    //       jobFlowAndMsgSave(info).then(res => {
-    //         // 保存成功后跳转回jobList页面
-    //         if (res.data.state) {
-    //           this.isCertain = true
-    //           this.$router.push({ path: '/jobList' })
-    //           this.$Message.info('操作完成')
-    //         } else {
-    //           console.log(res.data)
-    //         }
-    //       }).catch(res => {
-    //         debugger
-    //       })
-    //     } else { // 更新job
-    //       jobFlowAndMsgUpdate(this.$route.query.jobId, info).then(res => {
-    //         if (res.status === 200) {
-    //           this.isCertain = true
-    //           console.log('更新成功')
-    //           this.$router.push({ path: '/jobList' })
-    //           this.$Message.info('操作完成')
-    //         } else {
-    //           console.log(res.data)
-    //         }
-    //       })
-    //     }
-    //   }
-    // },
     saveUnit () {
       let currentUnitNode = this.blockDiagram.findNodeForKey(this.unitNodeByKey).data
       if (!this.unitContent) this.$Message.error('unit信息不能为空！')
@@ -666,6 +624,27 @@ export default {
       } else {
         this.blockPalette.model = new go.GraphLinksModel(this.basicModuleShow.value.nodeDataArray, this.basicModuleShow.value.linkDataArray)
       }
+    },
+    _getResFile (id) {
+      if (!id) return
+      axios.request({
+        url: `api/v1/cedar/job/${id}/?fields=job_res_file,job_res_file.name,job_res_file.file,job_res_file.type`
+      }).then(res => {
+        this.$refs.emptyOperation.filesData = res.data.job_res_file
+        this.$refs.emptyOperation.filesData.forEach(item => {
+          item.fileUrl = item.file
+          item.file = null
+        })
+
+        for (let i = 0; i < this.$refs.emptyOperation.filesData.length; i++) {
+          axios.request({
+            url: `${baseURL}/${this.$refs.emptyOperation.filesData[i].fileUrl}`,
+            responseType: 'blob'
+          }).then(res => {
+            this.$refs.emptyOperation.filesData[i].file = res.data
+          })
+        }
+      })
     }
   }
 }
