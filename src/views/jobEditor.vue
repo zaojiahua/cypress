@@ -57,7 +57,7 @@
         <Button type="text" size="large" @click="unitModalShow=false">取消</Button>
         <Button type="primary" size="large" @click="saveUnit">确定</Button>
       </div>
-      <div class="unitView">
+      <div class="unitView" @keydown="keydownHandler">
         <div class="unitContent">
           <Input v-model="unitContent" type="textarea" :autosize="{minRows: 10,maxRows: 31}" placeholder="Enter something..." />
         </div>
@@ -95,7 +95,7 @@ import { getJobUnitsBodyDict } from '../api/reef/unit'
 import { getBlockFlowDict4Font, jobFlowAndMsgSave, jobFlowAndMsgUpdate } from '../api/reef/jobFlow'
 import { jobResFilesSave } from '../api/reef/jobResFileSave'
 import SwitchBlockDetailComponent from '../components/SwitchBlockDetailComponent'
-import { isJsonString } from '../lib/tools'
+import { isJsonString, insertAfterCursor } from '../lib/tools'
 import { commonValidation } from '../core/validation/common'
 import {
   startValidation
@@ -647,6 +647,13 @@ export default {
           })
         }
       })
+    },
+    keydownHandler () {
+      let insertStr = '  '
+      if (event.keyCode === 9) {
+        event.preventDefault()
+        insertAfterCursor(event.target, insertStr)
+      }
     }
   }
 }
