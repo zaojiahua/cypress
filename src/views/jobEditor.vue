@@ -131,22 +131,12 @@ export default {
       switchButton: false,
       showDrawer: false,
       isCertain: false, // 是否是通过点击确定按钮离开jobEditor页面
-      screenWidth: 0,
+      screenWidth: 1366,
       ingroneList: ['login']
     }
   },
   mounted () {
     const self = this
-    window.onload = () => {
-      self.screenWidth = document.body.clientWidth
-    }
-    window.onresize = () => {
-      return (() => {
-        window.screenWidth = document.body.clientWidth
-        self.screenWidth = window.screenWidth
-      })()
-    }
-
     self.$Notice.config({
       top: 150,
       duration: 10
@@ -361,6 +351,18 @@ export default {
     this.init()
 
     this._getResFile(this.$route.query.jobId)
+  },
+  beforeCreate () {
+    const self = this
+    window.onload = () => {
+      self.screenWidth = document.body.clientWidth
+    }
+    window.onresize = () => {
+      return (() => {
+        window.screenWidth = document.body.clientWidth
+        self.screenWidth = window.screenWidth
+      })()
+    }
   },
   beforUpdate () {
     this.isCertain = false

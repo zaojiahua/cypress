@@ -53,7 +53,7 @@
           <div v-if="fileType === 'image'" class="img">
             <img :src="fileContent">
           </div>
-          <div v-else-if="fileType === 'text'" class="text">
+          <div v-else-if="fileType === 'text'" class="text" @keydown="keydownHandler">
             <Input type="textarea" :autosize="{minRows: 40, maxRows: 40}" v-model="fileContent" style="height: 100%;" />
             <Button type="primary" @click="saveChange">保存更改</Button>
           </div>
@@ -199,7 +199,37 @@ export default {
     }
   },
   methods: {
-    saveChange () {
+    insertAfterCursor (textDom, value) {
+      var selectRange
+      if (document.selection) {
+        // IE Support
+        textDom.focus()
+        selectRange = document.selection.createRange()
+        selectRange.text = value
+        textDom.focus()
+      } else if (textDom.selectionStart || textDom.selectionStart == '0') {
+        // Firefox support
+        var startPos = textDom.selectionStart
+        var endPos = textDom.selectionEnd
+        var scrollTop = textDom.scrollTop
+        textDom.value = textDom.value.substring(0, startPos) + value + textDom.value.substring(endPos, textDom.value.length)
+        textDom.focus()
+        textDom.selectionStart = startPos + value.length
+        textDom.selectionEnd = startPos + value.length
+        textDom.scrollTop = scrollTop
+      } else {
+        textDom.value += value
+        textDom.focus()
+      }
+    },
+    keydownHandler (event) {
+      let insertStr = '    '
+      if (event.keyCode === 9) {
+        event.preventDefault()
+        this.insertAfterCursor(event.target, insertStr)
+      }
+    },
+    saveChange () { // 保存对依赖文件的修改
       if (isJsonString(this.fileContent)) {
         console.log(this.filesData, this.currentFile)
         let type = this.filesData[this.currentFile].file.type
@@ -218,7 +248,7 @@ export default {
         })
       }
     },
-    showFile (data, index) {
+    showFile (data, index) { // 展示依赖文件的内容
       data = this.filesData[index]
       this.currentFile = index
       if (data.type === 'jpg' || data.type === 'png') {
@@ -240,7 +270,7 @@ export default {
         }
       }
     },
-    removeFile (index) {
+    removeFile (index) { // 删除依赖文件
       this.filesData.splice(index, 1)
       this.currentFile = undefined
       this.fileType = 'default'
@@ -437,7 +467,6 @@ export default {
     justify-content: center;
     align-items: center;
     height: 100%;
-    background-color: aquamarine;
     border: 1px solid #2d8cf0;
     border-radius: 6px;
 
