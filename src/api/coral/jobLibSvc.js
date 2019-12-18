@@ -19,14 +19,6 @@ export const callEblockExce = (data) => {
   })
 }
 
-export const deviceOperationStatus = (deviceLabel) => {
-  /*
-  * */
-  return axios.request({
-    url: `${jobLibSvcURL}/deviceOperationStatus?deviceLabel=${deviceLabel}`
-  })
-}
-
 export const getTemporarySpace = () => {
   /*
   * */
@@ -34,17 +26,6 @@ export const getTemporarySpace = () => {
     url: jobLibSvcURL,
     method: 'post',
     data: { requestName: 'getTemporarySpace' }
-  })
-}
-
-export const getBlockFlowDict4Font = (jobLabel) => {
-  return axios.request({
-    url: jobLibSvcURL,
-    method: 'post',
-    data: {
-      requestName: 'getBlockFlowDict4Font',
-      jobID: jobLabel
-    }
   })
 }
 
@@ -56,23 +37,7 @@ export const getFeaturePointIntoJob = (data) => {
   })
 }
 
-export const setjobInfoAndFlowDict = (data) => {
-  return axios.request({
-    url: jobLibSvcURL,
-    method: 'post',
-    data: data
-  })
-}
-
-export const jobFlowAndMsgSave = (data) => {
-  return axios.request({
-    url: `${jobLibSvcURL}/jobFlowAndMsgSave/`,
-    method: 'post',
-    data: data
-  })
-}
-
-export const getSelectedJobs = (data) => {
+export const getSelectedJobs = (data) => { // 导出已选用例，暂时保留
   return axios.request({
     url: jobLibSvcURL,
     method: 'post',

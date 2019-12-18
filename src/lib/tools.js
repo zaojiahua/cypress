@@ -28,7 +28,7 @@ export function insertAfterCursor (textDom, value) {
     selectRange = document.selection.createRange()
     selectRange.text = value
     textDom.focus()
-  } else if (textDom.selectionStart || textDom.selectionStart == '0') {
+  } else if (textDom.selectionStart || textDom.selectionStart === '0') {
     // Firefox support
     var startPos = textDom.selectionStart
     var endPos = textDom.selectionEnd

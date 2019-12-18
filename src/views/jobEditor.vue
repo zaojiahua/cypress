@@ -424,8 +424,8 @@ export default {
         })
       } else {
         getTemporarySpace().then(res => {
-          this.stageJobLabel = res.data.stageJobLabel
-          this.$refs.jobDetail.getMsg()
+          // this.stageJobLabel = res.data.stageJobLabel
+          // this.$refs.jobDetail.getMsg()
           this.myDiagram.model = basicModel()
         })
       }
@@ -539,18 +539,31 @@ export default {
       }
       return Promise.all(requests)
     },
-    _blobToFile (blob, name) {
-      return new File([blob], name, { type: blob.type }) // 参数是数组!
-    },
     _getData () {
       let filesData = this.$refs.emptyOperation.filesData
       let data = new FormData()
       data.append('job', this.$route.query.jobId)
       for (let i = 0; i < filesData.length; i++) {
-        let file = this._blobToFile(filesData[i].file, filesData[i].name)
+        let file = null
+        if (filesData[i].type === 'jpg' || filesData[i].type === 'png') {
+          file = this._dataURLtoFile(filesData[i].file, filesData[i].name)
+        } else {
+          file = new File([filesData[i].file], filesData[i].name, { type: filesData[i].type })
+        }
         data.append('file', file)
       }
       return data
+    },
+    _dataURLtoFile (dataurl, filename) {
+      var arr = dataurl.split(',')
+      var mime = arr[0].match(/:(.*?);/)[1]
+      var dec = atob(arr[1]) // window atob() 方法用于解码使用 base-64 编码的字符串，base-64 编码使用的是 btoa，该方法使用 "A-Z", "a-z", "0-9", "+", "/" 和 "=" 字符来编码字符串。
+      var n = dec.length
+      var u8arr = new Uint8Array(n) // 8位无符号整数数组 0~255
+      while (n--) {
+        u8arr[n] = dec.charCodeAt(n) // charCodeAt() 方法可返回指定位置的字符的 Unicode 编码
+      }
+      return new File([u8arr], filename, { type: mime })
     },
     saveJob () {
       // 使用 & 保证都运行
@@ -638,12 +651,21 @@ export default {
           item.file = null
         })
 
+        this.$refs.emptyOperation.filesData[0]._highlight = true
         for (let i = 0; i < this.$refs.emptyOperation.filesData.length; i++) {
           axios.request({
             url: `${baseURL}/${this.$refs.emptyOperation.filesData[i].fileUrl}`,
             responseType: 'blob'
           }).then(res => {
-            this.$refs.emptyOperation.filesData[i].file = res.data
+            let reader = new FileReader()
+            if (res.data.type.split('/')[0] !== 'image') { // 图片则存放 dataURL
+              reader.readAsText(res.data)
+            } else { // json 则存放 text
+              reader.readAsDataURL(res.data)
+            }
+            reader.onload = () => {
+              this.$refs.emptyOperation.filesData[i].file = reader.result
+            }
           })
         }
       })

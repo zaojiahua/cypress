@@ -43,26 +43,10 @@
     <TabPane label="文件上传">
       <Row style="height: 100%;">
         <Col span="12" style="padding: 0 30px;">
-          <Table border :columns="filesColumn" :data="filesData" @on-row-click="showFile">
-            <template slot-scope="{ row, index }" slot="action">
-              <Button type="error" size="small" @click="removeFile(index)">Delete</Button>
-            </template>
-          </Table>
+          <job-res-file-table :columns="filesColumn" :data="filesData" :currentFile="currentFile" @removeFile="removeFile" @showFile="showFile"></job-res-file-table>
         </Col>
-        <Col span="12" style="padding: 0 30px; height: 100%;">
-          <div v-if="fileType === 'image'" class="img">
-            <img :src="fileContent">
-          </div>
-          <div v-else-if="fileType === 'text'" class="text" @keydown="keydownHandler">
-            <Input type="textarea" :autosize="{minRows: 40, maxRows: 40}" v-model="fileContent" style="height: 100%;" />
-            <Button type="primary" @click="saveChange">保存更改</Button>
-          </div>
-          <div v-else class="default">
-            <div class="tip">
-              点击左侧列表项预览
-              <!-- {{ filesData }} -->
-            </div>
-          </div>
+        <Col span="12" style="padding: 0 30px;">
+          <job-res-file-show :filesData="filesData" :currentFile="currentFile" @saveChange="saveChange"></job-res-file-show>
         </Col>
       </Row>
     </TabPane>
@@ -70,11 +54,13 @@
 </template>
 
 <script>
-import { toDecimal, isJsonString, insertAfterCursor } from '../lib/tools'
+import { toDecimal } from '../lib/tools'
 import util from '../lib/util/validate.js'
 import { getUsableDeviceList } from '../api/reef/device'
-import { callEblockExce, getFeaturePointIntoJob } from '../api/coral/jobLibSvc' // deviceOperationStatus
-// import { deviceOperationStatus } from '../mock/coral/jobLibSvc'
+import { callEblockExce, getFeaturePointIntoJob } from '../api/coral/jobLibSvc'
+
+import jobResFileShow from '../components/jobResFileShow'
+import jobResFileTable from '../components/jobResFileTable'
 
 const deviceSerializer = [
   {
@@ -106,6 +92,10 @@ export default {
       type: Boolean,
       default: null
     }
+  },
+  components: {
+    jobResFileShow,
+    jobResFileTable
   },
   data () {
     return {
@@ -180,11 +170,6 @@ export default {
           width: 100,
           align: 'center'
         },
-        // {
-        //   title: '最后修改时间/生成时间',
-        //   key: 'lastModified',
-        //   align: 'center'
-        // },
         {
           title: 'Action',
           slot: 'action',
@@ -193,64 +178,23 @@ export default {
         }
       ],
       filesData: [],
-      fileType: 'default',
       fileContent: '',
-      currentFile: undefined
+      currentFile: 0
     }
   },
   methods: {
-    keydownHandler (event) {
-      let insertStr = '    '
-      if (event.keyCode === 9) {
-        event.preventDefault()
-        insertAfterCursor(event.target, insertStr)
-      }
+    saveChange (file) { // 保存对依赖文件的修改
+      this.filesData[this.currentFile].file = file
+      this.$Message.success({
+        background: true,
+        content: '修改成功'
+      })
     },
-    saveChange () { // 保存对依赖文件的修改
-      if (isJsonString(this.fileContent)) {
-        console.log(this.filesData, this.currentFile)
-        let type = this.filesData[this.currentFile].file.type
-        this.filesData[this.currentFile].file = new Blob([JSON.stringify(JSON.parse(this.fileContent), null, 4)], {
-          type
-        })
-        this.fileType = 'default'
-        this.$Message.success({
-          background: true,
-          content: '修改成功'
-        })
-      } else {
-        this.$Message.error({
-          background: true,
-          content: '不是JSON格式，请检查您的内容'
-        })
-      }
-    },
-    showFile (data, index) { // 展示依赖文件的内容
-      data = this.filesData[index]
+    showFile (index) { // 展示依赖文件的内容
       this.currentFile = index
-      if (data.type === 'jpg' || data.type === 'png') {
-        this.fileType = 'image'
-      } else {
-        this.fileType = 'text'
-      }
-      let reader = new FileReader()
-      console.log('yes')
-      if (this.fileType === 'text') {
-        reader.readAsText(data.file)
-        reader.onload = () => {
-          this.fileContent = reader.result
-        }
-      } else {
-        reader.readAsDataURL(data.file)
-        reader.onload = () => {
-          this.fileContent = reader.result
-        }
-      }
     },
     removeFile (index) { // 删除依赖文件
       this.filesData.splice(index, 1)
-      this.currentFile = undefined
-      this.fileType = 'default'
     },
     handleSearch (value) {
       this.suffixs = !value || value.indexOf('.') >= 0 ? [] : [
@@ -411,9 +355,9 @@ export default {
       this.imgUrl = ''
     }
   }
-//   mounted () {
-//     if (this.deviceAutoLoad) this.deviceRefresh()
-//   }
+  // mounted () {
+  //   if (this.deviceAutoLoad) this.deviceRefresh()
+  // }
 }
 </script>
 
@@ -437,45 +381,6 @@ export default {
       flex-grow: 1;
       background-color: white;
       border: solid 1px rgb(244, 244, 244);
-    }
-  }
-  .img {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    border: 1px solid #2d8cf0;
-    border-radius: 6px;
-
-    img {
-      width: 100%;
-    }
-  }
-  .text {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    width: 100%;
-    height: 100%;
-  }
-  .default {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    border: 1px solid #2d8cf0;
-    border-radius: 6px;
-
-    .tip {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      user-select: none;
-
-      width: 300px;
-      height: 200px;
-      border: 2px dashed #2d8cf0;
-      border-radius: 6px;
     }
   }
 </style>
