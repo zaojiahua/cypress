@@ -9,6 +9,9 @@
             <Button type="primary" long @click="saveChange(file.file)" style="margin-top: 20px;">保存更改</Button>
         </div>
     </div>
+    <div v-show="filesData.length === 0" style="text-align: center;font-size: 20px;height: 900px;display:flex;justify-content: center;align-items: center;">
+      <strong style="border: 2px dashed skyblue;border-radius:6px;padding:30px;">这里空空如也</strong>
+    </div>
   </div>
 </template>
 
@@ -50,9 +53,6 @@ export default {
 
 <style lang="less" scoped>
 .file-container {
-    // height: 900px;
-
-    box-sizing: border-box;
 
     .img{
         text-align: center;

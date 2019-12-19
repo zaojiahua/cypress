@@ -8,7 +8,12 @@
       <Button size="large" style="float: right" @click="$store.commit('noKeepAlive', 'jobEditor')" to="/jobList">取消</Button>
       <Button type="primary" size="large" @click="saveJob" style="margin-right: 10px">确定</Button>
       <Button type="info" size="large" @click="showDrawer=true" style="margin-right: 10px">详情</Button>
-      <Button :type="$store.state.keepAliveComponents.length === 2 ? 'success' : 'warning'" size="large" @click="$store.commit('keepAlive', 'jobEditor')" style="margin-right: 10px">{{ this.$store.state.keepAliveComponents.length === 2 ? "已存" : "暂存" }}</Button>
+      <Button :type="$store.state.keepAliveComponents.length === 2 ? 'success' : 'warning'"
+        size="large"
+        @click="$store.commit('keepAlive', 'jobEditor')"
+        style="margin-right: 10px">
+        {{ this.$store.state.keepAliveComponents.length === 2 ? "已存" : "暂存" }}
+      </Button>
       <i-switch size="large" v-show="switchButtonShow" v-model="switchButton">
         <span slot="open">另存</span>
         <span slot="close">更新</span>
@@ -30,9 +35,9 @@
       </div>
       <div id="inner-wrap">
         <div id="chart-left">
-          <div id="dropdown-div" align="center"><!--下拉动态unit-->
+          <div id="dropdown-div" align="center">
             <Dropdown trigger="click" @on-click="getSelectedUnit">
-              <Button id="dropdown-btn" type="primary">{{unitType}}</Button><!--:model="unitType"-->
+              <Button id="dropdown-btn" type="primary">{{unitType}}</Button>
               <DropdownMenu slot="list" style="width: 150px">
                 <DropdownItem v-for="(currentUnit, key) in unitAllList" :name="key" :key="key">{{key}}</DropdownItem>
               </DropdownMenu>

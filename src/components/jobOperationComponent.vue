@@ -155,26 +155,16 @@ export default {
       ],
       filesColumn: [
         {
-          type: 'index',
-          width: 50,
-          align: 'center'
+
         },
         {
-          title: '文件名称',
-          key: 'name',
-          align: 'center'
+          title: '文件名称'
         },
         {
-          title: '文件类型',
-          key: 'type',
-          width: 100,
-          align: 'center'
+          title: '文件类型'
         },
         {
-          title: 'Action',
-          slot: 'action',
-          width: 100,
-          align: 'center'
+          title: 'Action'
         }
       ],
       filesData: [],

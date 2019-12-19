@@ -9,6 +9,9 @@
                 <Button type="error" @click.stop="removeFile(trIndex)">删除</Button>
             </td>
         </tr>
+        <tr v-show="data.length === 0">
+          <td colspan="4">没有更多数据了</td>
+        </tr>
     </table>
 </template>
 
@@ -72,8 +75,12 @@ table td, table th {
     border: 1px solid #e9e9e9;
     text-align: center;
 }
+tr:hover {
+  background-color: #82b3db;
+  color: white;
+}
 .active {
-    background-color: #8fac9e;
+    background-color: #82b3db;
     color: #fff;
 }
 </style>
