@@ -168,7 +168,6 @@ export default {
         }
       ],
       filesData: [],
-      fileContent: '',
       currentFile: 0
     }
   },

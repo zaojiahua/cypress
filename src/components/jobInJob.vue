@@ -12,7 +12,6 @@
       <Button type="primary" size="large" @click="confirm">确定</Button>
     </div>
   </Modal>
-  <!-- <div>sadfsadf</div> -->
 </template>
 
 <script>

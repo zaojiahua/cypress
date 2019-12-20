@@ -7,6 +7,7 @@
       jobName: {{jobName}}<job-in-job :jobModalShow="jobModalShow"></job-in-job>
       <Button size="large" style="float: right" to="/jobList">取消</Button> <!-- @click="$store.commit('noKeepAlive', 'jobEditor')"-->
       <Button type="primary" size="large" @click="saveJob" style="margin-right: 10px">确定</Button>
+      <Button type="primary" size="large" @click="viewResFile" style="margin-right: 10px">查看依赖文件</Button>
       <Button type="info" size="large" @click="showDrawer=true" style="margin-right: 10px">详情</Button>
       <!-- <Button :type="$store.state.keepAliveComponents.length === 2 ? 'success' : 'warning'"
         size="large"
@@ -21,6 +22,8 @@
     </div>
     <!-- <job-editor-header :jobName="jobName" @saveJob="saveJob" @showDrawer="showDrawerHandler"></job-editor-header> -->
     <job-in-job :jobModalShow="jobModalShow" :currentJobBlockText="currentJobBlockText" @jobModalClose="jobModalClose"></job-in-job>
+    <job-res-file ref="jobResFile" :jobName="jobName" :resFileModalShow="resFileModalShow" @resFileModalClose="resFileModalClose"></job-res-file>
+
     <div id="chart-wrap">
       <div id="chart-palette"></div>
       <div id="chart-diagram"></div>
@@ -99,6 +102,7 @@ import {
 import jobMsgComponent from '../components/jobMsgComponent'
 import JobOperationComponent from '../components/jobOperationComponent'
 import jobInJob from '../components/jobInJob'
+import jobResFile from '../components/jobResFile'
 import { getTemporarySpace } from '../api/coral/jobLibSvc'
 import { getJobUnitsBodyDict } from '../api/reef/unit'
 import { getBlockFlowDict4Font, jobFlowAndMsgSave, jobFlowAndMsgUpdate } from '../api/reef/jobFlow'
@@ -117,7 +121,7 @@ import { baseURL } from '../config'
 
 export default {
   name: 'jobEditor',
-  components: { SwitchBlockDetailComponent, JobOperationComponent, jobMsgComponent, jobInJob },
+  components: { SwitchBlockDetailComponent, JobOperationComponent, jobMsgComponent, jobInJob, jobResFile },
   data () {
     return {
       jobName: '',
@@ -144,7 +148,8 @@ export default {
       ingroneList: ['login'],
       jobModalShow: false,
       currentJobBlockKey: null,
-      currentJobBlockText: 'Job block'
+      currentJobBlockText: 'Job block',
+      resFileModalShow: false
     }
   },
   mounted () {
@@ -562,7 +567,7 @@ export default {
       return Promise.all(requests)
     },
     _getData () {
-      let filesData = this.$refs.emptyOperation.filesData
+      let filesData = this.$refs.jobResFile.filesData
       let data = new FormData()
       data.append('job', this.$route.query.jobId)
       for (let i = 0; i < filesData.length; i++) {
@@ -707,6 +712,12 @@ export default {
         this.myDiagram.model.setDataProperty(currentJobBlockData, 'jobId', job.id)
         console.log(currentJobBlockData)
       }
+    },
+    viewResFile () {
+      this.resFileModalShow = true
+    },
+    resFileModalClose () {
+      this.resFileModalShow = false
     }
   }
 }
