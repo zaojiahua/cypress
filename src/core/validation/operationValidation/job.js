@@ -4,5 +4,5 @@ export function startValidation (fromnode, fromport, tonode, toport) {
   // Start只有一条指向链接
   if (fromnode.findNodesOutOf().count >= 1) return false
   // Start只能指向Normal block
-  return tonode.data.category === 'normalBlock'
+  return tonode.data.category === 'normalBlock' || tonode.category === 'Job'
 }

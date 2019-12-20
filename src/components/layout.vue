@@ -1,70 +1,3 @@
-<style scoped>
-  .layout{
-    background: #f5f7f9;
-    position: relative;
-    border-radius: 4px;
-    overflow: auto;
-  }
-  .layout-logo{
-    color: #1bbc9c;
-    height: 64px;
-    width: 200px;
-    float: left;
-    position: relative;
-    top: 0;
-    left: 0;
-    text-align: center;
-    border-bottom: #5b5b5b 1px solid;
-  }
-
-  .layout-logo b{
-    color:#1bbc9c;
-    font-size:24px;
-    font-weight: 900;
-    letter-spacing: 1px;
-  }
-  .layout-logo span{
-    color:#1bbc9c;
-    position: absolute;
-    font-size: 20px;
-    font-weight: 900;
-    top:-10px;
-    right:0;
-  }
-  .menu-item span{
-    display: inline-block;
-    overflow: hidden;
-    width: 69px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    vertical-align: bottom;
-    transition: width .2s ease .2s;
-  }
-  .menu-item i{
-    transform: translateX(0px);
-    transition: font-size .2s ease, transform .2s ease;
-    vertical-align: middle;
-    font-size: 16px;
-  }
-  .collapsed-menu span{
-    width: 0;
-    transition: width .2s ease;
-  }
-  .collapsed-menu i{
-    transform: translateX(5px);
-    transition: font-size .2s ease .2s, transform .2s ease .2s;
-    vertical-align: middle;
-    font-size: 22px;
-  }
-  .layout-nav{
-    width: 420px;
-    margin: 0 auto;
-    margin-right: 20px;
-  }
-  .ivu-layout-header{
-    padding: 0;
-  }
-</style>
 <template>
   <div class="layout">
     <Layout  style="height: 100vh">
@@ -163,3 +96,71 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+  .layout{
+    background: #f5f7f9;
+    position: relative;
+    border-radius: 4px;
+    overflow: auto;
+  }
+  .layout-logo{
+    color: #1bbc9c;
+    height: 64px;
+    width: 200px;
+    float: left;
+    position: relative;
+    top: 0;
+    left: 0;
+    text-align: center;
+    border-bottom: #5b5b5b 1px solid;
+  }
+
+  .layout-logo b{
+    color:#1bbc9c;
+    font-size:24px;
+    font-weight: 900;
+    letter-spacing: 1px;
+  }
+  .layout-logo span{
+    color:#1bbc9c;
+    position: absolute;
+    font-size: 20px;
+    font-weight: 900;
+    top:-10px;
+    right:0;
+  }
+  .menu-item span{
+    display: inline-block;
+    overflow: hidden;
+    width: 69px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+    transition: width .2s ease .2s;
+  }
+  .menu-item i{
+    transform: translateX(0px);
+    transition: font-size .2s ease, transform .2s ease;
+    vertical-align: middle;
+    font-size: 16px;
+  }
+  .collapsed-menu span{
+    width: 0;
+    transition: width .2s ease;
+  }
+  .collapsed-menu i{
+    transform: translateX(5px);
+    transition: font-size .2s ease .2s, transform .2s ease .2s;
+    vertical-align: middle;
+    font-size: 22px;
+  }
+  .layout-nav{
+    width: 420px;
+    margin: 0 auto;
+    margin-right: 20px;
+  }
+  .ivu-layout-header{
+    padding: 0;
+  }
+</style>

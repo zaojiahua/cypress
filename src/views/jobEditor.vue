@@ -1,10 +1,10 @@
 <template>
-  <div id="wrap">
+  <div id="wrap" ref="jobEditor">
     <Drawer title="用例详细信息" :closable="false" v-model="showDrawer" width="50">
       <job-msg-component ref="jobDetail" :prop-confirm-btn="false" :prop-enter-btn="false"></job-msg-component>
     </Drawer>
     <div class="jobName">
-      jobName: {{jobName}}
+      jobName: {{jobName}}<job-in-job :jobModalShow="jobModalShow"></job-in-job>
       <Button size="large" style="float: right" @click="$store.commit('noKeepAlive', 'jobEditor')" to="/jobList">取消</Button>
       <Button type="primary" size="large" @click="saveJob" style="margin-right: 10px">确定</Button>
       <Button type="info" size="large" @click="showDrawer=true" style="margin-right: 10px">详情</Button>
@@ -19,11 +19,12 @@
         <span slot="close">更新</span>
       </i-switch>
     </div>
-
-      <div id="chart-wrap">
-        <div id="chart-palette"></div>
-        <div id="chart-diagram"></div>
-      </div>
+    <!-- <job-editor-header :jobName="jobName" @saveJob="saveJob" @showDrawer="showDrawerHandler"></job-editor-header> -->
+    <job-in-job :jobModalShow="jobModalShow" :currentJobBlockText="currentJobBlockText" @jobModalClose="jobModalClose"></job-in-job>
+    <div id="chart-wrap">
+      <div id="chart-palette"></div>
+      <div id="chart-diagram"></div>
+    </div>
 
     <Modal v-model="blockModalShow" :closable="false" fullscreen>
       <div slot="header">
@@ -48,6 +49,8 @@
         <div id="inner-diagram"></div>
       </div>
     </Modal>
+    <!-- <job-editor-job-flow-editor :blockModalShow="blockModalShow" @blockModalClose="blockModalClose"></job-editor-job-flow-editor> -->
+
     <Modal
       v-model="unitModalShow"
       :width="this.screenWidth > 1366 ? '95' : '1290px'"
@@ -95,6 +98,7 @@ import {
 } from './jobEditorCommon'
 import jobMsgComponent from '../components/jobMsgComponent'
 import JobOperationComponent from '../components/jobOperationComponent'
+import jobInJob from '../components/jobInJob'
 import { getTemporarySpace } from '../api/coral/jobLibSvc'
 import { getJobUnitsBodyDict } from '../api/reef/unit'
 import { getBlockFlowDict4Font, jobFlowAndMsgSave, jobFlowAndMsgUpdate } from '../api/reef/jobFlow'
@@ -113,7 +117,7 @@ import { baseURL } from '../config'
 
 export default {
   name: 'jobEditor',
-  components: { SwitchBlockDetailComponent, JobOperationComponent, jobMsgComponent },
+  components: { SwitchBlockDetailComponent, JobOperationComponent, jobMsgComponent, jobInJob },
   data () {
     return {
       jobName: '',
@@ -137,7 +141,10 @@ export default {
       showDrawer: false,
       isCertain: false, // 是否是通过点击确定按钮离开jobEditor页面
       screenWidth: 1366,
-      ingroneList: ['login']
+      ingroneList: ['login'],
+      jobModalShow: false,
+      currentJobBlockKey: null,
+      currentJobBlockText: 'Job block'
     }
   },
   mounted () {
@@ -257,10 +264,19 @@ export default {
         }
       }
 
+      const jobBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: '#30cfd0', 1.0: '#2306F7' }), 'RoundedRectangle')
+      jobBlockTemplate.doubleClick = function (e, node) {
+        if (e.diagram instanceof go.Palette) return
+        self.currentJobBlockText = node.data.text
+        self.currentJobBlockKey = node.data.key
+        self.jobModalShow = true
+      }
+
       self.myDiagram.nodeTemplateMap.add('normalBlock', normalBlockTemplate)
       self.myDiagram.nodeTemplateMap.add('switchBlock', switchBlockTemplate)
       self.myDiagram.nodeTemplateMap.add('Start', startTemplate)
       self.myDiagram.nodeTemplateMap.add('End', endTemplate)
+      self.myDiagram.nodeTemplateMap.add('Job', jobBlockTemplate)
 
       self.myDiagram.toolManager.linkingTool.linkValidation = commonValidation
       self.myDiagram.toolManager.relinkingTool.linkValidation = commonValidation
@@ -369,8 +385,8 @@ export default {
       })()
     }
   },
-  beforUpdate () {
-    this.isCertain = false
+  beforeDestroy () {
+    console.log(this.$refs.jobEditor)
   },
   // 提醒用户暂存已编辑的内容
   beforeRouteLeave (to, from, next) {
@@ -412,7 +428,8 @@ export default {
         { category: 'Start', text: 'Start' },
         { category: 'switchBlock', text: 'Switch block' },
         { category: 'normalBlock', text: 'Normal block' },
-        { category: 'End', text: 'End' }
+        { category: 'End', text: 'End' },
+        { category: 'Job', text: 'Job block' }
       ])
 
       if (this.$route.query.jobFlow) {
@@ -656,7 +673,6 @@ export default {
           item.file = null
         })
 
-        this.$refs.emptyOperation.filesData[0]._highlight = true
         for (let i = 0; i < this.$refs.emptyOperation.filesData.length; i++) {
           axios.request({
             url: `${baseURL}/${this.$refs.emptyOperation.filesData[i].fileUrl}`,
@@ -680,6 +696,16 @@ export default {
       if (event.keyCode === 9) {
         event.preventDefault()
         insertAfterCursor(event.target, insertStr)
+      }
+    },
+    jobModalClose (job) {
+      this.jobModalShow = false
+      if (job.id) {
+        console.log('您选中的job为：', job.id)
+        let currentJobBlockData = this.myDiagram.findNodeForKey(this.currentJobBlockKey).data
+        this.myDiagram.model.setDataProperty(currentJobBlockData, 'text', job.job_name)
+        this.myDiagram.model.setDataProperty(currentJobBlockData, 'jobId', job.id)
+        console.log(currentJobBlockData)
       }
     }
   }
