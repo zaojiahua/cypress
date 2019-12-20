@@ -213,7 +213,7 @@ export default {
   methods: {
     routerTo () {
       this.$emit('closeDrawer')
-      this.$store.commit('noKeepAlive', 'jobEditor')
+      // this.$store.commit('noKeepAlive', 'jobEditor')
       this.$router.push(
         {
           name: 'jobEditor',

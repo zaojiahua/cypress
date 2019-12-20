@@ -39,9 +39,9 @@
         </Sider>
         <Content :style="{padding: '15px', minHeight: '280px', background: '#fff' }">
           <!-- 将需要被缓存的组件的name传入 -->
-          <keep-alive :include="$store.state.keepAliveComponents">
+          <!-- <keep-alive :include="$store.state.keepAliveComponents"> -->
             <router-view/>
-          </keep-alive>
+          <!-- </keep-alive> -->
         </Content>
       </Layout>
     </Layout>

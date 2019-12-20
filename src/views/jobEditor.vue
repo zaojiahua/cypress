@@ -5,15 +5,15 @@
     </Drawer>
     <div class="jobName">
       jobName: {{jobName}}<job-in-job :jobModalShow="jobModalShow"></job-in-job>
-      <Button size="large" style="float: right" @click="$store.commit('noKeepAlive', 'jobEditor')" to="/jobList">取消</Button>
+      <Button size="large" style="float: right" to="/jobList">取消</Button> <!-- @click="$store.commit('noKeepAlive', 'jobEditor')"-->
       <Button type="primary" size="large" @click="saveJob" style="margin-right: 10px">确定</Button>
       <Button type="info" size="large" @click="showDrawer=true" style="margin-right: 10px">详情</Button>
-      <Button :type="$store.state.keepAliveComponents.length === 2 ? 'success' : 'warning'"
+      <!-- <Button :type="$store.state.keepAliveComponents.length === 2 ? 'success' : 'warning'"
         size="large"
         @click="$store.commit('keepAlive', 'jobEditor')"
         style="margin-right: 10px">
         {{ this.$store.state.keepAliveComponents.length === 2 ? "已存" : "暂存" }}
-      </Button>
+      </Button> -->
       <i-switch size="large" v-show="switchButtonShow" v-model="switchButton">
         <span slot="open">另存</span>
         <span slot="close">更新</span>
@@ -140,7 +140,7 @@ export default {
       switchButton: false,
       showDrawer: false,
       isCertain: false, // 是否是通过点击确定按钮离开jobEditor页面
-      screenWidth: 1366,
+      screenWidth: 1400,
       ingroneList: ['login'],
       jobModalShow: false,
       currentJobBlockKey: null,
@@ -385,35 +385,35 @@ export default {
       })()
     }
   },
-  beforeDestroy () {
-    console.log(this.$refs.jobEditor)
-  },
+  // beforeDestroy () {
+  //   console.log(this.$refs.jobEditor)
+  // },
   // 提醒用户暂存已编辑的内容
-  beforeRouteLeave (to, from, next) {
-    let self = this
-    let toFullPath = to.fullPath
-    if (this.$store.state.keepAliveComponents.length !== 2 && this.myDiagram.model.nodeDataArray.length !== 0 && !this.isCertain && this.ingroneList.indexOf(to.name) === -1) {
-      this.$Modal.confirm({
-        title: 'WARNING',
-        content: '此操作会丢失已编辑的内容，确定要继续吗？',
-        closable: false,
-        okText: '保存并退出',
-        cancelText: '退出',
-        onOk () {
-          self.$store.commit('keepAlive', 'jobEditor')
-          next(false)
-          setTimeout(function () {
-            self.$router.push({ path: toFullPath })
-          }, 100)
-        },
-        onCancel () {
-          next()
-        }
-      })
-    } else {
-      next()
-    }
-  },
+  // beforeRouteLeave (to, from, next) {
+  //   let self = this
+  //   let toFullPath = to.fullPath
+  //   if (this.$store.state.keepAliveComponents.length !== 2 && this.myDiagram.model.nodeDataArray.length !== 0 && !this.isCertain && this.ingroneList.indexOf(to.name) === -1) {
+  //     this.$Modal.confirm({
+  //       title: 'WARNING',
+  //       content: '此操作会丢失已编辑的内容，确定要继续吗？',
+  //       closable: false,
+  //       okText: '保存并退出',
+  //       cancelText: '退出',
+  //       onOk () {
+  //         self.$store.commit('keepAlive', 'jobEditor')
+  //         next(false)
+  //         setTimeout(function () {
+  //           self.$router.push({ path: toFullPath })
+  //         }, 100)
+  //       },
+  //       onCancel () {
+  //         next()
+  //       }
+  //     })
+  //   } else {
+  //     next()
+  //   }
+  // },
   methods: {
     init () {
       this.myPalette = MAKE(
