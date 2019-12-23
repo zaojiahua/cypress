@@ -49,6 +49,9 @@
           </div>
           <div id="inner-palette"></div>
         </div>
+        <div id="tooltip">
+            <pre></pre>
+        </div>
         <div id="inner-diagram"></div>
       </div>
     </Modal>
@@ -316,7 +319,6 @@ export default {
       const unitTemplate = baseNodeTemplate('#c924c9', 'RoundedRectangle')
       unitTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
-
         self.$Notice.destroy()
         self.$refs.emptyOperation.deviceRefresh() // 双击unit时刷新device列表
         self.$refs.emptyOperation.emptyData()
@@ -324,6 +326,29 @@ export default {
         self.unitNodeByKey = node.data.key
         self.unitName = node.data.text
         self.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
+      }
+      let tooltip = document.querySelector('#tooltip')
+      unitTemplate.click = function (e, node) {
+        console.log(node)
+        let example = {
+          category: 'Unit'
+        }
+        let units = e.diagram.findNodesByExample(example)
+        console.log(e.diagram.findNodesByExample(example))
+        units.iterator.each(unit => {
+          console.log(unit.data)
+        })
+      }
+      unitTemplate.mouseOver = function (e, node) {
+        if (e.diagram instanceof go.Palette) return
+        tooltip.style.display = 'block'
+        tooltip.style.top = `${e.lr.y}px`
+        tooltip.style.left = `${e.lr.x}px`
+        tooltip.firstElementChild.innerHTML = JSON.stringify(node.data.unitMsg, null, 2)
+      }
+      unitTemplate.mouseLeave = function (e, node) {
+        if (e.diagram instanceof go.Palette) return
+        tooltip.style.display = 'none'
       }
 
       const unitListGroupTemplate = baseGroupTemplate()
@@ -784,7 +809,17 @@ export default {
           background-color: white;
         }
       }
+      #tooltip {
+        position: absolute;
+        background-color: rgba(40, 197, 224, 0.9);
+        z-index: 1000000000;
+        color: black;
+        border: 2px solid darkolivegreen;
+        border-radius: 10px;
+      }
+
       #inner-diagram{
+        position: relative;
         flex-grow: 1;
         background-color: white;
         border: solid 1px rgb(244, 244, 244);

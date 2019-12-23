@@ -1,7 +1,7 @@
 <template>
   <Modal v-model="resFileModalShow" :closable="false" width="90">
     <div slot="header">
-      <strong style="font-size: 18px;">Job{{ jobName }}的依赖文件：</strong>
+      <strong style="font-size: 18px;">Job--{{ jobName }}的依赖文件：</strong>
     </div>
     <div class="res-file">
       <job-res-file-table style="width: 45%;" :columns="filesColumn" :data="filesData" :currentFile="currentFile" @removeFile="removeFile" @showFile="showFile"></job-res-file-table>
