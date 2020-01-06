@@ -128,6 +128,36 @@ export function baseNodeTemplate (fill, shape) {
   return baseNodeTemplate
 }
 
+export function unitNodeTemplate (fill, shape) {
+  const unitTemplate = MAKE(go.Node, 'Spot', nodeStyle(),
+    {
+      selectable: true,
+      selectionAdornmentTemplate: nodeSelectionAdornmentTemplate
+    },
+    MAKE(go.Panel, 'Auto',
+      MAKE(go.Shape, shape,
+        { fill: fill, stroke: null },
+        new go.Binding('fill', 'isSelected', function (sel) {
+          return sel ? 'dodgerblue' : fill
+        }).ofObject()
+        // new go.Binding('fill', 'color')
+      ),
+      MAKE(go.TextBlock,
+        {
+          font: 'bold 11pt Helvetica, Arial, sans-serif',
+          stroke: lightText,
+          margin: 8,
+          maxSize: new go.Size(160, NaN),
+          wrap: go.TextBlock.WrapFit,
+          editable: false
+        },
+        new go.Binding('text').makeTwoWay())
+    )
+  )
+
+  return unitTemplate
+}
+
 export function baseGroupTemplate () {
   return MAKE(go.Group, 'Auto', nodeStyle(),
     {

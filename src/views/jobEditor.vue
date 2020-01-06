@@ -23,7 +23,7 @@
     <!-- <job-editor-header :jobName="jobName" @saveJob="saveJob" @showDrawer="showDrawerHandler"></job-editor-header> -->
     <job-in-job :jobModalShow="jobModalShow" :currentJobBlockText="currentJobBlockText" @jobModalClose="jobModalClose"></job-in-job>
     <job-res-file ref="jobResFile" :jobName="jobName" :resFileModalShow="resFileModalShow" @resFileModalClose="resFileModalClose"></job-res-file>
-
+    <unit-editor :unitContent="unitContent" :unitEditorModalShow="unitEditorModalShow" @closeUnitEditor="closeUnitEditor" @saveRawUnit="saveRawUnit" @saveUnit="saveUnit"></unit-editor>
     <div id="chart-wrap">
       <div id="chart-palette"></div>
       <div id="chart-diagram"></div>
@@ -50,7 +50,21 @@
           <div id="inner-palette"></div>
         </div>
         <div id="tooltip">
-            <pre></pre>
+          <Card v-show="unitMsgToogle" style="background-color: rgba(255, 255, 255, .95);">
+            <p slot="title"><Icon type="ios-book-outline" />Unit Message</p>
+            <pre>{{ unitContent }}</pre>
+         </Card>
+         <Card v-show="!unitMsgToogle">
+            <p slot="title"><Icon type="ios-document-outline" />Unit Files</p>
+            <Row style="width: 320px; display: flex; justify-content: space-between;">
+              <Col span="12">
+                <Table :columns="unitInputFileColumns" :data="unitInputFileData" width="150" border></Table>
+              </Col>
+              <Col span="12" style="margin-left: 20px;">
+                <Table :columns="unitOutputFileColumns" :data="unitOutputFileData" width="150" border></Table>
+              </Col>
+            </Row>
+         </Card>
         </div>
         <div id="inner-diagram"></div>
       </div>
@@ -97,7 +111,7 @@ import {
   linkTemplateStyle,
   startNodeTemplate,
   endNodeTemplate,
-  baseNodeTemplate,
+  unitNodeTemplate,
   baseNodeTemplateForPort,
   baseGroupTemplate,
   basicModel
@@ -106,6 +120,7 @@ import jobMsgComponent from '../components/jobMsgComponent'
 import JobOperationComponent from '../components/jobOperationComponent'
 import jobInJob from '../components/jobInJob'
 import jobResFile from '../components/jobResFile'
+import unitEditor from '../components/unitEditor'
 import { getTemporarySpace } from '../api/coral/jobLibSvc'
 import { getJobUnitsBodyDict } from '../api/reef/unit'
 import { getBlockFlowDict4Font, jobFlowAndMsgSave, jobFlowAndMsgUpdate } from '../api/reef/jobFlow'
@@ -124,7 +139,7 @@ import { baseURL } from '../config'
 
 export default {
   name: 'jobEditor',
-  components: { SwitchBlockDetailComponent, JobOperationComponent, jobMsgComponent, jobInJob, jobResFile },
+  components: { SwitchBlockDetailComponent, JobOperationComponent, jobMsgComponent, jobInJob, jobResFile, unitEditor },
   data () {
     return {
       jobName: '',
@@ -134,7 +149,7 @@ export default {
       switchBlockModalShow: false,
       currentSwitchBlockKey: null,
       unitName: null,
-      unitContent: null,
+      unitContent: '',
       blockName: '',
       stageJobLabel: null,
       unitNodeByKey: null,
@@ -152,19 +167,37 @@ export default {
       jobModalShow: false,
       currentJobBlockKey: null,
       currentJobBlockText: 'Job block',
-      resFileModalShow: false
+      resFileModalShow: false,
+      unitMsgToogle: true,
+      unitInputFileColumns: [
+        {
+          title: 'InputFile',
+          key: 'file_name',
+          align: 'center'
+        }
+      ],
+      unitInputFileData: [],
+      unitOutputFileColumns: [
+        {
+          title: 'OutputFile',
+          key: 'file_name',
+          align: 'center'
+        }
+      ],
+      unitOutputFileData: [],
+      unitEditorModalShow: false
     }
   },
   mounted () {
-    const self = this
-    self.$Notice.config({
+    const _this = this
+    _this.$Notice.config({
       top: 150,
       duration: 10
     })
 
     myDiagramInit()
     function myDiagramInit () {
-      self.myDiagram = MAKE(go.Diagram, 'chart-diagram', {
+      _this.myDiagram = MAKE(go.Diagram, 'chart-diagram', {
         initialContentAlignment: go.Spot.Center,
         allowDrop: true,
         // 设置网格
@@ -203,11 +236,11 @@ export default {
         'undoManager.isEnabled': true
       })
 
-      self.myDiagram.linkTemplate = linkTemplateStyle()
+      _this.myDiagram.linkTemplate = linkTemplateStyle()
 
-      self.myDiagram.linkTemplate.doubleClick = function (e, node) {
+      _this.myDiagram.linkTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
-        let block = self.myDiagram.findNodeForKey(node.data.from).data
+        let block = _this.myDiagram.findNodeForKey(node.data.from).data
 
         if (block.category === 'normalBlock') {
           // vm.showDrawerOperation('linkOperation')
@@ -222,11 +255,11 @@ export default {
 
       endTemplate.doubleClick = (e, node) => {
         if (node.data.text === 'End') {
-          self.myDiagram.model.setDataProperty(node.data, 'text', 'Fail')
-          self.myDiagram.model.setDataProperty(node.data, 'color', '#A9A9A9')
+          _this.myDiagram.model.setDataProperty(node.data, 'text', 'Fail')
+          _this.myDiagram.model.setDataProperty(node.data, 'color', '#A9A9A9')
         } else {
-          self.myDiagram.model.setDataProperty(node.data, 'text', 'End')
-          self.myDiagram.model.setDataProperty(node.data, 'color', '#DC3C00')
+          _this.myDiagram.model.setDataProperty(node.data, 'text', 'End')
+          _this.myDiagram.model.setDataProperty(node.data, 'color', '#DC3C00')
         }
 
         debugger
@@ -234,32 +267,32 @@ export default {
 
       const switchBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: '#74ebd5', 1.0: '#9face6' }), 'Diamond')
       switchBlockTemplate.doubleClick = function (e, node) {
-        self.$Notice.destroy()
+        _this.$Notice.destroy()
         if (e.diagram instanceof go.Palette) return
 
-        self.switchBlockInfo = {
+        _this.switchBlockInfo = {
           switchBlockName: node.data.text,
           fileName: node.data.fileName,
           explain: node.data.explain
         }
-        self.currentSwitchBlockKey = node.data.key
+        _this.currentSwitchBlockKey = node.data.key
 
-        self.switchBlockModalShow = true
+        _this.switchBlockModalShow = true
       }
 
       const normalBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: '#30cfd0', 1.0: '#330867' }), 'RoundedRectangle')
 
       normalBlockTemplate.doubleClick = function (e, node) {
-        self.$Notice.destroy()
+        _this.$Notice.destroy()
         if (e.diagram instanceof go.Palette) return
-        self.unitType = '请选择组件类型'
-        self.blockName = node.data.text
-        self.getCurrentNormalBlockByKey = node.data.key
-        self.blockModalShow = true
-        if (!self.blockDiagram) blockDiagramInit()
-        if (!self.blockPalette) blockPaletteInit()
+        _this.unitType = '请选择组件类型'
+        _this.blockName = node.data.text
+        _this.getCurrentNormalBlockByKey = node.data.key
+        _this.blockModalShow = true
+        if (!_this.blockDiagram) blockDiagramInit()
+        if (!_this.blockPalette) blockPaletteInit()
         if (!node.data.unitLists) { // unitList存在则展示
-          self.blockDiagram.model = go.Model.fromJson({
+          _this.blockDiagram.model = go.Model.fromJson({
             'class': 'go.GraphLinksModel',
             'linkFromPortIdProperty': 'fromPort',
             'linkToPortIdProperty': 'toPort',
@@ -267,31 +300,31 @@ export default {
             'linkDataArray': []
           })
         } else {
-          // 通过 lodbash deepCopy 一份数据并传递给 self.blockDiagram.model
-          self.blockDiagram.model = go.Model.fromJson(self._.cloneDeep(node.data.unitLists))
+          // 通过 lodbash deepCopy 一份数据并传递给 _this.blockDiagram.model
+          _this.blockDiagram.model = go.Model.fromJson(_this._.cloneDeep(node.data.unitLists))
         }
       }
 
       const jobBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: '#30cfd0', 1.0: '#2306F7' }), 'RoundedRectangle')
       jobBlockTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
-        self.currentJobBlockText = node.data.text
-        self.currentJobBlockKey = node.data.key
-        self.jobModalShow = true
+        _this.currentJobBlockText = node.data.text
+        _this.currentJobBlockKey = node.data.key
+        _this.jobModalShow = true
       }
 
-      self.myDiagram.nodeTemplateMap.add('normalBlock', normalBlockTemplate)
-      self.myDiagram.nodeTemplateMap.add('switchBlock', switchBlockTemplate)
-      self.myDiagram.nodeTemplateMap.add('Start', startTemplate)
-      self.myDiagram.nodeTemplateMap.add('End', endTemplate)
-      self.myDiagram.nodeTemplateMap.add('Job', jobBlockTemplate)
+      _this.myDiagram.nodeTemplateMap.add('normalBlock', normalBlockTemplate)
+      _this.myDiagram.nodeTemplateMap.add('switchBlock', switchBlockTemplate)
+      _this.myDiagram.nodeTemplateMap.add('Start', startTemplate)
+      _this.myDiagram.nodeTemplateMap.add('End', endTemplate)
+      _this.myDiagram.nodeTemplateMap.add('Job', jobBlockTemplate)
 
-      self.myDiagram.toolManager.linkingTool.linkValidation = commonValidation
-      self.myDiagram.toolManager.relinkingTool.linkValidation = commonValidation
+      _this.myDiagram.toolManager.linkingTool.linkValidation = commonValidation
+      _this.myDiagram.toolManager.relinkingTool.linkValidation = commonValidation
     }
 
     function blockDiagramInit () {
-      self.blockDiagram = MAKE(go.Diagram, 'inner-diagram', {
+      _this.blockDiagram = MAKE(go.Diagram, 'inner-diagram', {
         initialContentAlignment: go.Spot.Center,
         allowDrop: true,
         'toolManager.mouseWheelBehavior': go.ToolManager.WheelZoom,
@@ -302,53 +335,96 @@ export default {
       })
 
       // -------------从Palette拖拽节点的触发事件，判断Unit是否被UnitList包含------------
-      self.blockDiagram.addDiagramListener('externalobjectsdropped', function (e) {
+      _this.blockDiagram.addDiagramListener('externalobjectsdropped', function (e) {
         e.subject.each(function (n) {
           // 得到从Palette拖过来的节点 判断节点如果没有group则删除节点
           if (n.data.category === 'Unit') {
             if (!n.data.group) { // 判断Unit是否被UnitList包含
-              self.blockDiagram.commandHandler.deleteSelection()// 删除该选中节点
-              self.$Message.error('Unit只能被包裹在UnitList中') // 错误提示
+              _this.blockDiagram.commandHandler.deleteSelection()// 删除该选中节点
+              _this.$Message.error('Unit只能被包裹在UnitList中') // 错误提示
             }
           }
         })
       })
 
-      self.blockDiagram.linkTemplate = linkTemplateStyle()
+      _this.blockDiagram.linkTemplate = linkTemplateStyle()
 
-      const unitTemplate = baseNodeTemplate('#c924c9', 'RoundedRectangle')
+      const unitTemplate = unitNodeTemplate('#c924c9', 'RoundedRectangle')
+      // unitTemplate.doubleClick = function (e, node) {
+      //   if (e.diagram instanceof go.Palette) return
+      //   _this.$Notice.destroy()
+      //   _this.$refs.emptyOperation.deviceRefresh() // 双击unit时刷新device列表
+      //   _this.$refs.emptyOperation.emptyData()
+      //   _this.unitModalShow = true
+      //   _this.unitNodeByKey = node.data.key
+      //   _this.unitName = node.data.text
+      //   _this.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
+      // }
+
+      let tooltip = document.querySelector('#tooltip')
+      let example = {
+        category: 'Unit'
+      }
+      let inputPattern = /<blkInpPath>.*png/
+      let outputPattern = /<blkOutPath>.*png/ // (?<=\<span[^>]*\>).*?(?=\<\/span>)
+      let inputFile, outputFile
+
       unitTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
-        self.$Notice.destroy()
-        self.$refs.emptyOperation.deviceRefresh() // 双击unit时刷新device列表
-        self.$refs.emptyOperation.emptyData()
-        self.unitModalShow = true
-        self.unitNodeByKey = node.data.key
-        self.unitName = node.data.text
-        self.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
+        _this.unitMsgToogle = !_this.unitMsgToogle
+        _this.unitEditorModalShow = true
+        _this.unitNodeByKey = node.data.key
+        _this.unitName = node.data.text
+
+        // let units = e.diagram.findNodesByExample(example) // 模糊查找，找到所有的 Unit
+        // units.iterator.each(unit => {
+        //   let unitMsgCmdDict = JSON.stringify(unit.data.unitMsg.execCmdDict, null, 2)
+        //   if (outputFile && unitMsgCmdDict && (unitMsgCmdDict.indexOf('<blkInpPath>' + outputFile[0].split('>')[1]) !== -1)) {
+        //     unit.isSelected = true
+        //   }
+        //   if (inputFile && unitMsgCmdDict && (unitMsgCmdDict.indexOf('<blkOutPath>' + inputFile[0].split('>')[1]) !== -1)) {
+        //     unit.isSelected = true
+        //   }
+        // })
       }
-      let tooltip = document.querySelector('#tooltip')
-      unitTemplate.click = function (e, node) {
-        console.log(node)
-        let example = {
-          category: 'Unit'
+
+      unitTemplate.mouseEnter = function (e, node) {
+        _this.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
+        outputFile = JSON.stringify(node.data.unitMsg, null, 2).match(outputPattern)
+        if (outputFile) {
+          _this.unitOutputFileData = []
+          _this.unitOutputFileData.push({
+            file_name: outputFile[0].split('>')[1]
+          })
         }
-        let units = e.diagram.findNodesByExample(example)
-        console.log(e.diagram.findNodesByExample(example))
-        units.iterator.each(unit => {
-          console.log(unit.data)
-        })
+
+        inputFile = JSON.stringify(node.data.unitMsg, null, 2).match(inputPattern)
+        if (inputFile) {
+          _this.unitInputFileData = []
+          _this.unitInputFileData.push({
+            file_name: inputFile[0].split('>')[1]
+          })
+        }
+        tooltip.style.display = 'block'
       }
+
       unitTemplate.mouseOver = function (e, node) {
         if (e.diagram instanceof go.Palette) return
-        tooltip.style.display = 'block'
-        tooltip.style.top = `${e.lr.y}px`
-        tooltip.style.left = `${e.lr.x}px`
-        tooltip.firstElementChild.innerHTML = JSON.stringify(node.data.unitMsg, null, 2)
+        tooltip.style.top = `${e.event.y}px`
+        tooltip.style.left = `${e.event.x}px`
       }
+
       unitTemplate.mouseLeave = function (e, node) {
         if (e.diagram instanceof go.Palette) return
         tooltip.style.display = 'none'
+
+        let units = e.diagram.findNodesByExample(example) // 模糊查找 node
+        units.iterator.each(unit => {
+          unit.isSelected = false
+        })
+
+        _this.unitOutputFileData = []
+        _this.unitInputFileData = []
       }
 
       const unitListGroupTemplate = baseGroupTemplate()
@@ -358,21 +434,21 @@ export default {
 
       unitListGroupTemplate.linkValidation = unitListValidation
 
-      self.blockDiagram.nodeTemplateMap.add('Unit', unitTemplate)
-      self.blockDiagram.nodeTemplateMap.add('Start', startNodeTemplate('#00AD5F'))
-      self.blockDiagram.nodeTemplateMap.add('End', endNodeTemplate('tomato'))
-      self.blockDiagram.groupTemplateMap.add('UnitList', unitListGroupTemplate)
+      _this.blockDiagram.nodeTemplateMap.add('Unit', unitTemplate)
+      _this.blockDiagram.nodeTemplateMap.add('Start', startNodeTemplate('#00AD5F'))
+      _this.blockDiagram.nodeTemplateMap.add('End', endNodeTemplate('tomato'))
+      _this.blockDiagram.groupTemplateMap.add('UnitList', unitListGroupTemplate)
 
-      self.blockDiagram.toolManager.linkingTool.linkValidation = commonValidation
-      self.blockDiagram.toolManager.relinkingTool.linkValidation = commonValidation
+      _this.blockDiagram.toolManager.linkingTool.linkValidation = commonValidation
+      _this.blockDiagram.toolManager.relinkingTool.linkValidation = commonValidation
     }
 
     function blockPaletteInit () {
-      self.blockPalette =
+      _this.blockPalette =
         MAKE(go.Palette, 'inner-palette',
           {
-            nodeTemplateMap: self.blockDiagram.nodeTemplateMap,
-            groupTemplateMap: self.blockDiagram.groupTemplateMap,
+            nodeTemplateMap: _this.blockDiagram.nodeTemplateMap,
+            groupTemplateMap: _this.blockDiagram.groupTemplateMap,
             layout: MAKE(go.GridLayout, { wrappingColumn: 1, alignment: go.GridLayout.Position })
           })
       let basicModule = {
@@ -384,11 +460,11 @@ export default {
         ]
       }
 
-      self.basicModuleShow = {
+      _this.basicModuleShow = {
         key: 'basicModule',
         value: basicModule
       }
-      self.blockPalette.model = new go.GraphLinksModel(basicModule.nodeDataArray, basicModule.linkDataArray)
+      _this.blockPalette.model = new go.GraphLinksModel(basicModule.nodeDataArray, basicModule.linkDataArray)
     }
     getJobUnitsBodyDict().then(res => {
       res.data.unit.forEach((unit, index) => {
@@ -404,14 +480,14 @@ export default {
     this._getResFile(this.$route.query.jobId)
   },
   beforeCreate () {
-    const self = this
+    const _this = this
     window.onload = () => {
-      self.screenWidth = document.body.clientWidth
+      _this.screenWidth = document.body.clientWidth
     }
     window.onresize = () => {
       return (() => {
         window.screenWidth = document.body.clientWidth
-        self.screenWidth = window.screenWidth
+        _this.screenWidth = window.screenWidth
       })()
     }
   },
@@ -420,7 +496,7 @@ export default {
   // },
   // 提醒用户暂存已编辑的内容
   // beforeRouteLeave (to, from, next) {
-  //   let self = this
+  //   let _this = this
   //   let toFullPath = to.fullPath
   //   if (this.$store.state.keepAliveComponents.length !== 2 && this.myDiagram.model.nodeDataArray.length !== 0 && !this.isCertain && this.ingroneList.indexOf(to.name) === -1) {
   //     this.$Modal.confirm({
@@ -430,10 +506,10 @@ export default {
   //       okText: '保存并退出',
   //       cancelText: '退出',
   //       onOk () {
-  //         self.$store.commit('keepAlive', 'jobEditor')
+  //         _this.$store.commit('keepAlive', 'jobEditor')
   //         next(false)
   //         setTimeout(function () {
-  //           self.$router.push({ path: toFullPath })
+  //           _this.$router.push({ path: toFullPath })
   //         }, 100)
   //       },
   //       onCancel () {
@@ -475,6 +551,7 @@ export default {
           this.switchButtonShow = true
         })
       } else {
+        this.$refs.jobDetail.getMsg()
         getTemporarySpace().then(res => {
           // this.stageJobLabel = res.data.stageJobLabel
           // this.$refs.jobDetail.getMsg()
@@ -667,13 +744,9 @@ export default {
     },
     saveUnit () {
       let currentUnitNode = this.blockDiagram.findNodeForKey(this.unitNodeByKey).data
-      if (!this.unitContent) this.$Message.error('unit信息不能为空！')
-      else if (!isJsonString(this.unitContent)) this.$Message.error('不是json')
-      else {
-        this.blockDiagram.model.setDataProperty(currentUnitNode, 'unitMsg', JSON.parse(this.unitContent))
-        this.blockDiagram.model.setDataProperty(currentUnitNode, 'text', this.unitName)
-        this.unitModalShow = false
-      }
+      this.blockDiagram.model.setDataProperty(currentUnitNode, 'unitMsg', JSON.parse(this.unitContent))
+      this.blockDiagram.model.setDataProperty(currentUnitNode, 'text', this.unitName)
+      this.unitEditorModalShow = false
     },
     getSelectedUnit (name) {
       let unitCategoryData = {}
@@ -684,7 +757,7 @@ export default {
           unitCategoryData.nodeDataArray.push({
             category: 'Unit',
             text: unit[0],
-            unitMsg: unit[1]
+            unitContent: unit[1]
           })
         })
         this.blockPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
@@ -743,7 +816,21 @@ export default {
     },
     resFileModalClose () {
       this.resFileModalShow = false
+    },
+    closeUnitEditor () {
+      this.unitEditorModalShow = false
+    },
+    saveRawUnit (unitContent) {
+      this.unitContent = unitContent
     }
+  },
+  created () {
+    this.$bus.on('saveRawUnit', rawUnitMsg => {
+      this.saveRawUnit(rawUnitMsg)
+    })
+  },
+  beforeDestroy () {
+    this.$bus.off('saveRawUnit')
   }
 }
 </script>
@@ -810,12 +897,11 @@ export default {
         }
       }
       #tooltip {
+        display: none;
         position: absolute;
-        background-color: rgba(40, 197, 224, 0.9);
         z-index: 1000000000;
-        color: black;
-        border: 2px solid darkolivegreen;
         border-radius: 10px;
+        box-shadow: 6px 8px 12px gray;
       }
 
       #inner-diagram{

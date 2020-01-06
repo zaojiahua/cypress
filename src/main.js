@@ -6,6 +6,9 @@ import './plugins/iview.js'
 import { MOCK } from './config'
 import lodash from 'lodash'
 import md5 from 'js-md5'
+import VueBus from 'vue-bus'
+
+Vue.use(VueBus)
 
 if (process.env.NODE_ENV !== 'production' && MOCK) require('./mock')
 Vue.config.productionTip = false

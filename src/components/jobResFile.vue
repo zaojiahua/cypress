@@ -101,10 +101,18 @@ export default {
       })
     }
   },
+  created () {
+    this.$bus.on('addResFile', fileData => {
+      this.filesData.push(fileData)
+    })
+  },
   mounted () {
     if (this.$route.query.jobId) {
       this._getResFile(this.$route.query.jobId)
     }
+  },
+  beforeDestroy () {
+    this.$bus.off('addResFile')
   }
 }
 </script>
@@ -112,7 +120,7 @@ export default {
 <style lang="less" scoped>
 .res-file {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
     height: 1000px;
 

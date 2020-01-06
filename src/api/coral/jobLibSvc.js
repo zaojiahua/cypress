@@ -1,7 +1,7 @@
 import axios from '../index'
-import { jobLibSvcURL } from '../../config'
+import { jobLibSvcURL, machexecURL } from '../../config'
 
-export const callEblockExce = (data) => {
+export const getScreenShot = (data) => {
   /*
   * {
           requestName: ...,
@@ -13,9 +13,10 @@ export const callEblockExce = (data) => {
       }
   * */
   return axios.request({
-    url: jobLibSvcURL,
-    method: 'post',
-    data: data
+    url: `${machexecURL}/pane/snap_shot/`,
+    method: 'get',
+    params: data,
+    responseType: 'blob'
   })
 }
 
