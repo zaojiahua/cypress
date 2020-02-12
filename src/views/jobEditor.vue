@@ -23,7 +23,7 @@
     <!-- <job-editor-header :jobName="jobName" @saveJob="saveJob" @showDrawer="showDrawerHandler"></job-editor-header> -->
     <job-in-job :jobModalShow="jobModalShow" :currentJobBlockText="currentJobBlockText" @jobModalClose="jobModalClose"></job-in-job>
     <job-res-file ref="jobResFile" :jobName="jobName" :resFileModalShow="resFileModalShow" @resFileModalClose="resFileModalClose"></job-res-file>
-    <unit-editor :unitContent="unitContent" :unitEditorModalShow="unitEditorModalShow" @closeUnitEditor="closeUnitEditor" @saveRawUnit="saveRawUnit" @saveUnit="saveUnit"></unit-editor>
+    <unit-editor :unitName="unitName" :unitContent="unitContent" :unitEditorModalShow="unitEditorModalShow" @closeUnitEditor="closeUnitEditor" @saveRawUnit="saveRawUnit" @saveUnit="saveUnit"></unit-editor>
     <div id="chart-wrap">
       <div id="chart-palette"></div>
       <div id="chart-diagram"></div>
@@ -71,29 +71,6 @@
     </Modal>
     <!-- <job-editor-job-flow-editor :blockModalShow="blockModalShow" @blockModalClose="blockModalClose"></job-editor-job-flow-editor> -->
 
-    <Modal
-      v-model="unitModalShow"
-      :width="this.screenWidth > 1366 ? '95' : '1290px'"
-      :styles="{top: '20px'}"
-      :mask-closable="false"
-      :closable="false">
-      <div slot="header">
-        <Input v-model="unitName" size="large" placeholder="large size" />
-      </div>
-      <!--unit编辑页面-->
-      <div slot="footer">
-        <Button type="text" size="large" @click="unitModalShow=false">取消</Button>
-        <Button type="primary" size="large" @click="saveUnit">确定</Button>
-      </div>
-      <div class="unitView" @keydown="keydownHandler">
-        <div class="unitContent">
-          <Input v-model="unitContent" type="textarea" :autosize="{minRows: 10,maxRows: 31}" placeholder="Enter something..." />
-        </div>
-        <div class="unitOperation">
-          <job-operation-component :stage-job-label="stageJobLabel" ref="emptyOperation" @getImageName="getImageNames" @getFileName="getFileNames"></job-operation-component>
-        </div>
-      </div>
-    </Modal>
     <switch-block-detail-component
       :switch-block-info="switchBlockInfo"
       v-model="switchBlockModalShow"
@@ -117,7 +94,6 @@ import {
   basicModel
 } from './jobEditorCommon'
 import jobMsgComponent from '../components/jobMsgComponent'
-import JobOperationComponent from '../components/jobOperationComponent'
 import jobInJob from '../components/jobInJob'
 import jobResFile from '../components/jobResFile'
 import unitEditor from '../components/unitEditor'
@@ -126,7 +102,6 @@ import { getJobUnitsBodyDict } from '../api/reef/unit'
 import { getBlockFlowDict4Font, jobFlowAndMsgSave, jobFlowAndMsgUpdate } from '../api/reef/jobFlow'
 import { jobResFilesSave } from '../api/reef/jobResFileSave'
 import SwitchBlockDetailComponent from '../components/SwitchBlockDetailComponent'
-import { isJsonString, insertAfterCursor } from '../lib/tools'
 import { commonValidation } from '../core/validation/common'
 import {
   startValidation
@@ -139,12 +114,11 @@ import { baseURL } from '../config'
 
 export default {
   name: 'jobEditor',
-  components: { SwitchBlockDetailComponent, JobOperationComponent, jobMsgComponent, jobInJob, jobResFile, unitEditor },
+  components: { SwitchBlockDetailComponent, jobMsgComponent, jobInJob, jobResFile, unitEditor },
   data () {
     return {
       jobName: '',
       blockModalShow: false,
-      unitModalShow: false,
       jobOperationComponentShow: false,
       switchBlockModalShow: false,
       currentSwitchBlockKey: null,
@@ -389,6 +363,7 @@ export default {
       }
 
       unitTemplate.mouseEnter = function (e, node) {
+        if (e.diagram instanceof go.Palette) return
         _this.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
         outputFile = JSON.stringify(node.data.unitMsg, null, 2).match(outputPattern)
         if (outputFile) {
@@ -476,8 +451,6 @@ export default {
       this.$set(this.unitAllList, 'Basic Module', this.basicModuleShow)
     })
     this.init()
-
-    this._getResFile(this.$route.query.jobId)
   },
   beforeCreate () {
     const _this = this
@@ -558,23 +531,6 @@ export default {
           this.myDiagram.model = basicModel()
         })
       }
-    },
-    _sendContextIntoUnit (key, res) {
-      let unitMsgObj = {
-        execCmdDict: {}
-      }
-      if (this.unitContent) {
-        unitMsgObj = JSON.parse(this.unitContent)
-        if (!unitMsgObj.execCmdDict) unitMsgObj.execCmdDict = {}
-      }
-      unitMsgObj.execCmdDict[key] = '<1ijobFile>' + res
-      this.unitContent = JSON.stringify(unitMsgObj, null, 2)
-    },
-    getImageNames (res) {
-      this._sendContextIntoUnit('referImgFile', res)
-    },
-    getFileNames (res) {
-      this._sendContextIntoUnit('configFile', res)
     },
     switchBlockSave (msg) {
       let node = this.myDiagram.model.findNodeDataForKey(this.currentSwitchBlockKey)
@@ -742,9 +698,10 @@ export default {
         })
       }
     },
-    saveUnit () {
+    saveUnit (unitName, unitContent) {
+      this.unitName = unitName
       let currentUnitNode = this.blockDiagram.findNodeForKey(this.unitNodeByKey).data
-      this.blockDiagram.model.setDataProperty(currentUnitNode, 'unitMsg', JSON.parse(this.unitContent))
+      this.blockDiagram.model.setDataProperty(currentUnitNode, 'unitMsg', JSON.parse(unitContent))
       this.blockDiagram.model.setDataProperty(currentUnitNode, 'text', this.unitName)
       this.unitEditorModalShow = false
     },
@@ -763,42 +720,6 @@ export default {
         this.blockPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
       } else {
         this.blockPalette.model = new go.GraphLinksModel(this.basicModuleShow.value.nodeDataArray, this.basicModuleShow.value.linkDataArray)
-      }
-    },
-    _getResFile (id) {
-      if (!id) return
-      axios.request({
-        url: `api/v1/cedar/job/${id}/?fields=job_res_file,job_res_file.name,job_res_file.file,job_res_file.type`
-      }).then(res => {
-        this.$refs.emptyOperation.filesData = res.data.job_res_file
-        this.$refs.emptyOperation.filesData.forEach(item => {
-          item.fileUrl = item.file
-          item.file = null
-        })
-
-        for (let i = 0; i < this.$refs.emptyOperation.filesData.length; i++) {
-          axios.request({
-            url: `${baseURL}/${this.$refs.emptyOperation.filesData[i].fileUrl}`,
-            responseType: 'blob'
-          }).then(res => {
-            let reader = new FileReader()
-            if (res.data.type.split('/')[0] !== 'image') { // 图片则存放 dataURL
-              reader.readAsText(res.data)
-            } else { // json 则存放 text
-              reader.readAsDataURL(res.data)
-            }
-            reader.onload = () => {
-              this.$refs.emptyOperation.filesData[i].file = reader.result
-            }
-          })
-        }
-      })
-    },
-    keydownHandler () {
-      let insertStr = '  '
-      if (event.keyCode === 9) {
-        event.preventDefault()
-        insertAfterCursor(event.target, insertStr)
       }
     },
     jobModalClose (job) {

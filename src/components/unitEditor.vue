@@ -1,17 +1,21 @@
 <template>
-  <Modal v-model="unitEditorShow" :closable="false" title="Unit Editor" width="90" @on-ok="saveUnit" @on-cancel="closeUnitEditor">
-    <div class="unit-editor">
-      <div>
-        <unit-editor-unit-items :unitContent="unitContent"></unit-editor-unit-items>
-        <unit-editor-raw-unit :unitContent="unitContent" style="margin-top: 20px;"></unit-editor-raw-unit>
+  <Modal v-model="unitEditorShow" :mask-closable="false" :closable="false" width="90" @on-ok="saveUnit" @on-cancel="closeUnitEditor">
+      <div slot="header" class="unit-editor-header">
+        <span>Unit Editor</span>
+        <Input type="text" v-model="currentUnitName" style="margin-left:20px; flex: 1; font-size: 1rem;" ><span slot="prepend">UnitName</span></Input>
       </div>
-      <div>
-        <unit-editor-item-edit></unit-editor-item-edit>
+      <div class="unit-editor">
+        <div>
+          <unit-editor-unit-items :unitContent="currentUnitContent" :unitType="unitType"></unit-editor-unit-items>
+          <unit-editor-raw-unit :unitContent="currentUnitContent" :unitType="unitType" style="margin-top: 20px;"></unit-editor-raw-unit>
+        </div>
+        <div>
+          <unit-editor-item-edit ref="itemEdit" :unitName="currentUnitName" :unitType="unitType"></unit-editor-item-edit>
+        </div>
+        <div>
+          <unit-editor-utils></unit-editor-utils>
+        </div>
       </div>
-      <div>
-        <unit-editor-utils></unit-editor-utils>
-      </div>
-    </div>
   </Modal>
 </template>
 
@@ -28,6 +32,10 @@ import {
 export default {
   components: { unitEditorUnitItems, unitEditorRawUnit, unitEditorItemEdit, unitEditorUtils },
   props: {
+    unitName: {
+      type: String,
+      default: ''
+    },
     unitEditorModalShow: {
       type: Boolean,
       default: false
@@ -39,10 +47,11 @@ export default {
   },
   data () {
     return {
+      currentUnitName: this.unitName,
+      unitType: '',
       unitEditorShow: this.unitEditorModalShow,
       currentUnitContent: this.unitContent,
       unitMsgObj: null,
-      unitItemDatas: [],
       unitItems: [], // 存放 unit items 的每个实例
       isEditing: false,
       isEditingItem: false,
@@ -89,18 +98,16 @@ export default {
     }
   },
   watch: {
+    unitName (val) {
+      this.currentUnitName = val
+    },
     unitEditorModalShow (val) {
       this.unitEditorShow = val
     },
     unitContent (val) {
       this.currentUnitContent = val
       this.unitMsgObj = JSON.parse(val)
-      let execCmdDict = this.unitMsgObj.execCmdDict
-      this.unitItemDatas = []
-      this.unitItemDatas.push({ title: 'referImgFile', data: execCmdDict.referImgFile })
-      this.unitItemDatas.push({ title: 'configFile', data: execCmdDict.configFile })
-      this.unitItemDatas.push({ title: 'inputImgFile', data: execCmdDict.inputImgFile })
-      this.unitItemDatas.push({ title: 'imgCmpThreshold', data: execCmdDict.imgCmpThreshold })
+      this.unitType = this.unitMsgObj.execModName
       if (this.currentItem !== -1) {
         setTimeout(() => {
           this.unitItems[this.currentItem].$el.click()
@@ -140,23 +147,39 @@ export default {
   },
   methods: {
     closeUnitEditor () {
+      this.$refs.itemEdit.showEditPane = false
       this.$emit('closeUnitEditor')
     },
     saveUnit () {
-      this.$emit('saveUnit')
+      this.$refs.itemEdit.showEditPane = false
+      this.$emit('saveUnit', this.currentUnitName, this.currentUnitContent)
+    },
+    handleSearch (value) {
+      this.suffixs = !value || value.indexOf('.') >= 0 ? [] : [
+        value + '.jpg',
+        value + '.png'
+      ]
+    },
+    onDeviceRowClick (row, index) {
+      this.currentDeviceRowIndex = index
     }
   },
   beforeUpdate () {
     this.unitItems = [...findComponentsDownward(this, 'unit-item')]
   },
-  handleSearch (value) {
-    this.suffixs = !value || value.indexOf('.') >= 0 ? [] : [
-      value + '.jpg',
-      value + '.png'
-    ]
+  created () {
+    this.$bus.on('saveChange', data => {
+      let target = this.unitType === 'IMGTOOL' ? this.unitMsgObj.execCmdDict : this.unitMsgObj.execCmdDict.execCmdList
+      if (this.unitType === 'IMGTOOL') {
+        target[data.itemName] = data.itemContent
+      } else {
+        target[Number(data.itemName)] = data.itemContent
+      }
+      this.currentUnitContent = JSON.stringify(this.unitMsgObj, null, 2)
+    })
   },
-  onDeviceRowClick (row, index) {
-    this.currentDeviceRowIndex = index
+  destroyed () {
+    this.$bus.off('saveChange')
   }
 }
 </script>
@@ -187,6 +210,12 @@ export default {
       rgba(138, 94, 115, 0.8) 75%,
       rgba(107, 140, 167, 0.8)
   );
+}
+.unit-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
 }
 .unit-editor {
   display: flex;

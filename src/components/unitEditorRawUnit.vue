@@ -30,19 +30,21 @@ export default {
     unitContent: {
       type: String,
       default: ''
+    },
+    unitType: {
+      type: String,
+      default: ''
     }
   },
   data () {
     return {
       editing: false,
-      currentUnitContent: this.unitContent,
-      unitType: ''
+      currentUnitContent: this.unitContent
     }
   },
   watch: {
     unitContent (val) {
       this.currentUnitContent = val
-      this.unitType = JSON.parse(this.currentUnitContent).execModName
     },
     currentUnitContent (val) {
       // this.unitType = JSON.parse(this.currentUnitContent).execModName
@@ -53,7 +55,6 @@ export default {
       this.editing = true
       let pre = document.querySelector('pre')
       let unitContentEdit = document.querySelector('.unit-msg-edit')
-      console.log(pre.scrollWidth)
       unitContentEdit.style.width = pre.scrollWidth + 'px'
     },
     cancelEditCurrentUnitContent () {

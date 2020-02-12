@@ -3,12 +3,17 @@
     <p slot="title">Item Edit</p>
     <div v-show="!showEditPane" class="items-edit"></div>
     <div class="items-edit" v-show="showEditPane">
-      <div>
+      <!-- <div>
         <div class="data-type">
           <div>
             <p>请选择数据类型：</p>
-            <RadioGroup v-model="data.type">
+            <RadioGroup v-model="dataFromUnitItem.secondLevelType" v-if="dataFromUnitItem.firstLevelType === 'unitdata'">
               <Radio label="ux_input">&lt;ux_input></Radio>
+              <Radio label="input_file">&lt;input_file></Radio>
+              <Radio label="jobres_file">&lt;jobres_file></Radio>
+            </RadioGroup>
+            <RadioGroup v-model="dataFromUnitItem.secondLevelType" v-if="dataFromUnitItem.firstLevelType === 'unitfile'">
+              <Radio label="output_file">&lt;output_file</Radio>
               <Radio label="input_file">&lt;input_file></Radio>
               <Radio label="jobres_file">&lt;jobres_file></Radio>
             </RadioGroup>
@@ -17,21 +22,22 @@
             <Button @click="reset">重置</Button>
           </div>
         </div>
-        <div v-if="data.type === 'ux_input'">
+        <div v-if="dataFromUnitItem.secondLevelType === 'ux_input'">
           <p>请输入数据：</p>
-          <Input type="text" v-model="data.content" />
+          <Input type="text" v-model="dataFromUnitItem.content" />
         </div>
-        <div v-else-if="data.type === 'input_file'">
+        <div v-else-if="dataFromUnitItem.secondLevelType === 'input_file' || dataFromUnitItem.secondLevelType === 'output_file'">
           <p>请输入文件名：</p>
-          <Input type="text" v-model="data.content" />
+          <Input type="text" v-model="dataFromUnitItem.content" />
         </div>
-        <div v-else-if="data.type === 'jobres_file'">
+        <div v-else-if="dataFromUnitItem.secondLevelType === 'jobres_file'">
           <Tabs value="screenshot">
             <TabPane label="图片截取" name="screenshot">
-              <unit-editor-screen-shot></unit-editor-screen-shot>
+              <unit-editor-screen-shot :unitName="unitName"></unit-editor-screen-shot>
             </TabPane>
             <TabPane label="文件上传" name="upload">
-              <p>请选择上传文件：</p>
+              <p v-if="!file" style="margin-bottom: 10px;">请选择上传文件：</p>
+              <Input v-if="file" style="margin-bottom: 10px;" v-model="fileName"><span slot="prepend">文件名称</span></Input>
               <Upload
                 type="drag"
                 :before-upload="stopUpload"
@@ -48,17 +54,23 @@
                   <Icon type="ios-document-outline"  size="80" style="color: #3399ff" v-show="isText"></Icon>
                   <Icon type="ios-images" size="80" style="color: #3399ff" v-show="isImage"/>
                   <Icon type="ios-videocam-outline" size="80" style="color: #3399ff" v-show="isVideo"/>
-                  <p style="margin-top: 20px;">文件名称：{{ fileParams.name }}</p>
-                  <p>文件类型：{{ fileParams.type }}</p>
+                  <p style="margin-top: 20px;">文件名称：{{ fileName }}</p>
+                  <p>文件类型：{{ fileType }}</p>
                   <Button type="primary" style="margin-top: 20px;" :loading="uploading" @click.stop="upload">{{ !uploading ? '上传' : '上传中' }}</Button>
                 </div>
               </Upload>
             </TabPane>
           </Tabs>
         </div>
+      </div> -->
+      <div>
+        <Input v-show="dataFromUnitItem && dataFromUnitItem.itemContent.type !== 'jobResourceFile' ? true : false" v-for="(blank, index) in tmachBlanks" :key="index" v-model="tmachBlanks[index]" style="margin-bottom: 10px;"></Input>
+        <unit-editor-screen-shot v-if="dataFromUnitItem && dataFromUnitItem.itemContent.type === 'jobResourceFile' ? true : false"></unit-editor-screen-shot>
+        <p><Tag>操作说明</Tag>{{ dataFromUnitItem ? dataFromUnitItem.itemContent.meaning : ''}}</p>
+        <Checkbox v-model="saveToFinalResult" v-if="dataFromUnitItem && dataFromUnitItem.itemContent.type === 'outputPicture' ? true : false" style="float: right;">添加此图片至最终结果</Checkbox>
       </div>
       <div class="save-btn">
-        <Button type="primary" @click="saveData">保存</Button>
+        <Button type="primary" @click="saveItem">保存</Button>
       </div>
     </div>
   </Card>
@@ -72,29 +84,40 @@ import { fileToDataURL } from '../lib/tools.js'
 export default {
   name: 'item-edit',
   components: { unitEditorScreenShot },
+  props: {
+    unitName: {
+      type: String,
+      default: ''
+    },
+    unitType: {
+      type: String,
+      default: ''
+    }
+  },
   data () {
     return {
-      data: {
-        type: '',
-        content: ''
-      },
+      dataFromUnitItem: null,
       showEditPane: false,
       acceptFileType: 'image/jpeg, image/png, video/mp4, video/mov, application/json, text/plain',
       legalFormat: ['jpg', 'jpeg', 'png', 'mp4', 'mov', 'json', 'plain'],
       file: null,
-      fileParams: {},
+      fileName: undefined,
+      fileType: undefined,
       fileToShow: undefined,
       isText: false,
       isImage: false,
       isVideo: false,
-      uploading: false
+      uploading: false,
+      tmach: '',
+      saveToFinalResult: false,
+      tmachBlanks: []
     }
   },
   watch: {
     file (val) {
       if (val) {
-        this.$set(this.fileParams, 'name', val.name)
-        this.$set(this.fileParams, 'type', val.type)
+        this.fileName = val.name
+        this.fileType = val.type
         if (val.type.split('/')[0] === 'image') {
           this.isImage = true
           this.isText = false
@@ -120,27 +143,45 @@ export default {
           })
         }
       } else {
-        this.fileParams = {}
+        this.fileName = undefined
+        this.fileType = undefined
         this.fileToShow = undefined
       }
     },
     fileToShow (val) {
       this.$bus.emit('showFile', {
+        'fileName': this.fileName,
         'fileToShow': val,
         'isText': this.isText,
         'isImage': this.isImage,
         'isVideo': this.isVideo,
         'isScreenShot': false
       })
+    },
+    fileName (val) {
+      this.$bus.emit('setFileName', val)
     }
   },
   methods: {
     reset () {
-      this.data.type = ''
-      this.data.content = ''
+      this.file = null
+      this.fileName = undefined
+      this.fileType = undefined
+      this.fileToShow = undefined
+      this.isText = false
+      this.isImage = false
+      this.isVideo = false
+      this.tmach = ''
     },
-    saveData () {
+    saveItem () {
       this.showEditPane = false
+      let res = this.dataFromUnitItem.itemContent.content.match(/Tmach.*? /g)
+      for (let i = 0; i < res.length; i++) {
+        this.dataFromUnitItem.itemContent.content = this.dataFromUnitItem.itemContent.content.replace(res[i], 'Tmach' + this.tmachBlanks[i] + ' ')
+      }
+      this.$bus.emit('saveChange', this.dataFromUnitItem, this.tmachBlanks)
+      this.$bus.emit('reset')
+      this.reset()
     },
     stopUpload (file) {
       console.log(file.type)
@@ -157,8 +198,8 @@ export default {
     upload () {
       this.uploading = true
       this.$bus.emit('addResFile', {
-        'name': this.fileParams.name,
-        'type': this.fileParams.type.split('/')[1],
+        'name': this.fileName,
+        'type': this.fileType.split('/')[1],
         'file': this.fileToShow,
         'fileUrl': ''
       })
@@ -173,9 +214,12 @@ export default {
     }
   },
   created () {
-    this.$bus.on('editItem', dataForItemEdit => {
-      this.data.type = dataForItemEdit.type
-      this.data.content = dataForItemEdit.content
+    this.$bus.on('editItem', (dataFromUnitItem, tmachBlanks) => {
+      this.dataFromUnitItem = dataFromUnitItem
+      tmachBlanks.forEach((tmach, index, arr) => {
+        arr[index] = tmach.trim().substring(5)
+      })
+      this.tmachBlanks = tmachBlanks
       this.showEditPane = true
     })
   },

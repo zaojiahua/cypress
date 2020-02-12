@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="position: relative;">
     <Button @click="deviceRefresh" type="primary" class="refresh">Refresh</Button>
     <Divider orientation="left">获取图片</Divider>
     <Table border
@@ -12,15 +12,18 @@
       :data="deviceData">
     </Table>
     <div class="get-image">
-      <AutoComplete
-        v-model="imgName"
-        :data="suffixs"
-        @on-search="handleSearch"
-        placeholder="Please enter a picture name"
-        clearable
-        style="width: 66%">
-        <Option v-for="suffix in suffixs" :value="suffix" :key="suffix">{{ suffix }}</Option>
-      </AutoComplete>
+      <div style="display: flex; align-items: center; width: 66%;">
+        <span slot="prepend">图片名称：</span>
+        <AutoComplete
+          v-model="imgName"
+          :data="suffixs"
+          @on-search="handleSearch"
+          placeholder="Please enter a picture name"
+          clearable
+          style="flex: 1;">
+          <Option v-for="suffix in suffixs" :value="suffix" :key="suffix">{{ suffix }}</Option>
+        </AutoComplete>
+      </div>
       <Button type="primary" :loading="loading" @click="getImg">
         <span v-if="!loading">Commit</span>
         <span v-else>Loading...</span>
@@ -32,6 +35,13 @@
         <Button type="error" size="small" @click="remove(index)" :disabled="coordinateData.length === 1">Delete</Button>
       </template>
     </Table>
+    <div class="get-recognition-rate">
+      <div style="display: flex; align-items: center; width: 66%">
+        <span>识别率：</span>
+        <InputNumber :max="100" :min="0"  v-model="imgThreshold" style="flex: 1;" placeholder="识别率标准..." :formatter="value => `${value}%`" :parser="value => value.replace('%', '')"></InputNumber>
+      </div>
+      <Button type="primary" @click="getFeaturePointFileName">Commit</Button>
+    </div>
   </div>
 </template>
 
@@ -60,6 +70,12 @@ const deviceSerializer = [
 ]
 
 export default {
+  props: {
+    unitName: {
+      type: String,
+      default: ''
+    }
+  },
   data () {
     return {
       loading: false,
@@ -107,7 +123,8 @@ export default {
           align: 'center'
         }
       ],
-      coordinateData: []
+      coordinateData: [],
+      imgThreshold: 95
     }
   },
   methods: {
@@ -144,6 +161,8 @@ export default {
         return
       }
       const currentDevice = this.deviceData[this.currentDeviceRow]
+      this.loading = true
+      this.$bus.emit('isLoading')
       let getScreenShotParams = {
         device_label: currentDevice.device_label,
         device_ip: currentDevice.ip_address,
@@ -159,29 +178,48 @@ export default {
               'isVideo': false,
               'isScreenShot': true
             })
+            this.$bus.emit('isLoading')
           })
+        } else if (res.status === 500) {
+          console.log(res)
         }
+        this.loading = false
       })
     },
-    onCoordinateRowClick (row, index) {
-
-    },
-    add () {
-      if (this.coordinateData.length < 3) {
-        this.coordinateData.push(
-          {
-            coordinate_a: '',
-            coordinate_b: ''
-          }
-        )
-      }
-    },
     remove (index) {
-      this.coordinateData.length <= 1 ? this.$Message.error({ background: true, content: "can't deleted" }) : this.coordinateData.splice(index, 1)
+      this.coordinateData.splice(index, 1)
+    },
+    getFeaturePointFileName () {
+      let coordinateNum = 1
+      let coordinateDataList = {}
+      if (!this.imgThreshold) {
+        this.$Message.error({
+          background: true,
+          content: '识别率未输入'
+        })
+        return
+      } else {
+        coordinateDataList.threshold = parseFloat(this.imgThreshold)
+      }
+      for (let i = 0; i < this.coordinateData.length; i++) {
+        if (this.coordinateData[i].coordinate_a !== '' && this.coordinateData[i].coordinate_b !== '') {
+          let area = 'area' + coordinateNum
+          let coordinateRowList = this.coordinateData[i].coordinate_a.split(',').concat(this.coordinateData[i].coordinate_b.split(',')).map(parseFloat)
+          coordinateDataList[area] = coordinateRowList
+          coordinateNum++
+          console.log(area, coordinateRowList, coordinateDataList)
+        }
+      }
+      this.$bus.emit('addResFile', {
+        'name': 'featurePoint_' + this.unitName + '.json',
+        'type': 'json',
+        'file': JSON.stringify(coordinateDataList, null, 4),
+        'fileUrl': ''
+      })
+      this.coordinateData = []
     }
   },
   created () {
-    this.$bus.on('add', this.add)
     this.$bus.on('remove', index => this.remove(index))
     this.$bus.on('getCoordinate', coordinate => {
       this.coordinateData.push(coordinate)
@@ -191,7 +229,6 @@ export default {
     this.deviceRefresh()
   },
   beforeDestroy () {
-    this.$bus.off('add')
     this.$bus.off('remove')
     this.$bus.off('getCoordinate')
   }
@@ -201,11 +238,11 @@ export default {
 <style lang="less" scoped>
 .refresh {
   position: absolute;
-  top: 12px;
+  top: -4px;
   right: 0;
   z-index: 2;
 }
-.get-image {
+.get-image, .get-recognition-rate {
   display: flex;
   justify-content: space-between;
   margin-top: 20px;

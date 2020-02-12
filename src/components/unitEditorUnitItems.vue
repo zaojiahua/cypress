@@ -1,8 +1,10 @@
 <template>
   <Card style="height: 320px;">
-    <p slot="title">Unit Items &nbsp; (4)</p>
+    <p slot="title" style="display: flex; justify-content: space-between;">
+      <span>Unit Items &nbsp; ({{ unitItemDatas.length }})</span>
+    </p>
     <div class="items">
-      <unit-editor-unit-item v-for="(item, key, index) in unitItemDatas" :key="index" :itemData="{title: key, data: item}"></unit-editor-unit-item>
+      <unit-editor-unit-item v-for="itemData in unitItemDatas" :unitType="unitType" :key="itemData.itemName" :itemData="itemData"></unit-editor-unit-item>
     </div>
   </Card>
 </template>
@@ -13,6 +15,10 @@ import unitEditorUnitItem from './unitEditorUnitItem'
 export default {
   components: { unitEditorUnitItem },
   props: {
+    unitType: {
+      type: String,
+      default: ''
+    },
     unitContent: {
       type: String,
       default: ''
@@ -21,17 +27,35 @@ export default {
   data () {
     return {
       unitMsgObj: null,
-      unitItemDatas: {}
+      unitItemDatas: []
     }
   },
   watch: {
     unitContent (val) {
+      this.unitItemDatas = []
       this.unitMsgObj = JSON.parse(val)
-      let execCmdDict = this.unitMsgObj.execCmdDict
-      this.$set(this.unitItemDatas, 'referImgFile', execCmdDict.referImgFile)
-      this.$set(this.unitItemDatas, 'configFile', execCmdDict.configFile)
-      this.$set(this.unitItemDatas, 'inputImgFile', execCmdDict.inputImgFile)
-      this.$set(this.unitItemDatas, 'imgCmpThreshold', execCmdDict.imgCmpThreshold)
+      let dataForUnitItem
+      if (this.unitType === 'IMGTOOL') {
+        dataForUnitItem = this.unitMsgObj.execCmdDict
+        Object.keys(dataForUnitItem).forEach(execCmdDictKey => {
+          if (execCmdDictKey === 'referImgFile' || execCmdDictKey === 'configFile' || execCmdDictKey === 'inputImgFile' || execCmdDictKey === 'imgCmpThreshold') {
+            this.unitItemDatas.push({
+              'itemName': execCmdDictKey,
+              'itemContent': JSON.parse(JSON.stringify(dataForUnitItem[execCmdDictKey]))
+            })
+          }
+        })
+      } else {
+        dataForUnitItem = this.unitMsgObj.execCmdDict.execCmdList
+        dataForUnitItem.forEach((val, index) => {
+          if (val.type !== 'noChange') {
+            this.unitItemDatas.push({
+              'itemName': index,
+              'itemContent': JSON.parse(JSON.stringify(val))
+            })
+          }
+        })
+      }
     }
   },
   methods: {
@@ -42,7 +66,7 @@ export default {
 
 <style lang="less" scoped>
 .items {
-    // height: 230px;
+    height: 230px;
     overflow: auto;
 }
 </style>

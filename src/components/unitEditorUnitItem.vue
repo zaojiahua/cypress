@@ -1,7 +1,6 @@
 <template>
   <div class="item" :class="{active: checked}" @click="handleClick">
-    <p class="item-data" v-html="currentItemData">{{ itemData.title }}：</p>
-    <Checkbox v-model="isComplete" disabled style="float: right;"></Checkbox>
+    <p class="item-content" ><Tag :color="isComplete ? 'success' : 'error'">{{ isComplete ? '编辑完成' : '暂无数据' }}</Tag><span>{{ tagContent[this.currentItemData.type] }}</span></p>
   </div>
 </template>
 
@@ -11,6 +10,10 @@ import { findBrothersComponents } from '../lib/tools.js'
 export default {
   name: 'unit-item',
   props: {
+    unitType: {
+      type: String,
+      default: ''
+    },
     itemData: { // 存放该 item 所属类别及其内容
       type: Object,
       default () {
@@ -21,21 +24,34 @@ export default {
   data () {
     return {
       isComplete: false, // item 是否已完成
-      currentItemData: this.itemData.data,
+      currentItemData: this.itemData.itemContent,
       checked: false, // 是否被选中
       dataForItemEdit: { // 发送给 item edit，以进行默认内容的填充
-        type: '',
+        firstLevelType: '',
+        secondLevelType: '',
         content: ''
-      }
+      },
+      tagContent: {
+        'jobResourceFile': '参考标准图片',
+        'inputPicture': '输入图片名称',
+        'inputFile': '输入文件名称',
+        'outputPicture': '输出图片名称',
+        'outputFile': '输出文件名称',
+        'uxInput': '手动输入坐标值'
+      },
+      tmachBlanks: []
     }
   },
   watch: {
     itemData (val) {
       if (val) {
-        this.currentItemData = val.data
-        this.isComplete = this.hasCompleted(val.data)
-        this.currentItemData = this.handleCurrentItemData(this.currentItemData)
-        this.handleDataForItemEdit()
+        this.currentItemData = val.itemContent
+        this.isComplete = this._hasCompleted(this.currentItemData)
+        // this.currentItemData = this._handleCurrentItemData(this.currentItemData)
+        this._getDataForItemEdit()
+        if (this.checked) {
+          this.$el.click()
+        }
       }
     },
     dataForItemEdit (val) {
@@ -49,78 +65,77 @@ export default {
       unitItemBrothers.forEach(bro => {
         bro.checked = false
       })
-      this.$bus.emit('editItem', this.dataForItemEdit)
+      this.$bus.emit('editItem', this.itemData, this.tmachBlanks)
     },
-    hasCompleted (data) { // 判断 item 是否完成
+    _hasCompleted (data) { // 判断 item 是否完成
       if (!data) return
-      if (data.indexOf('<input_file></input_file>') === -1 && data.indexOf('<jobres_file></jobres_file>') === -1) return true
-      else return false
+      this.tmachBlanks = data.content.match(/Tmach.*? /g)
+      console.log(this.tmachBlanks)
+      let flag = true
+      for (let i = 0; i < this.tmachBlanks.length; i++) {
+        if (this.tmachBlanks[i] === 'Tmach ') {
+          flag = false
+          break
+        }
+      }
+      return flag
     },
-    handleCurrentItemData (data) { // 将未完成的 item 中的特定字段以红色字体标注出来
-      if (!data) return
-      data = data.split('<').join('&lt;')
-      if (!this.isComplete) {
-        data = data.split('&lt;jobres_file>&lt;/jobres_file>').join('<span style="color: red">&lt;jobres_file>&lt;/jobres_file></span>')
-        data = data.split('&lt;input_file>&lt;/input_file>').join('<span style="color: red">&lt;input_file>&lt;/input_file></span>')
-      }
-      return data
+    _getDataForItemEdit () {
+
     },
-    handleDataForItemEdit () {
-      if (!this.itemData.data) return
-      if (this.itemData.data.indexOf('ux_input') !== -1) {
-        this.dataForItemEdit.type = 'ux_input'
-      }
-      if (this.itemData.data.indexOf('input_file') !== -1) {
-        this.dataForItemEdit.type = 'input_file'
-        let pattern = /<input_file>(\S*)<\/input_file>/
-        let res = this.itemData.data.match(pattern)
-        if (res[1]) this.dataForItemEdit.content = res[1]
-      }
-      if (this.itemData.data.indexOf('jobres_file') !== -1) {
-        this.dataForItemEdit.type = 'jobres_file'
-        let pattern = /<jobres_file>(\S*)<\/jobres_file>/
-        let res = this.itemData.data.match(pattern)
-        if (res[1]) this.dataForItemEdit.content = res[1]
-      }
+    _reset () {
+      this.checked = false
     }
   },
+  created () {
+    this.$bus.on('reset', this._reset)
+  },
   mounted () {
-    if (this.itemData.data) {
-      this.isComplete = this.hasCompleted(this.itemData.data)
-      this.currentItemData = this.currentItemData.split('<').join('&lt;')
-      this.handleDataForItemEdit()
+    if (this.itemData.itemContent) {
+      this.isComplete = this._hasCompleted(this.itemData.itemContent)
+      this._getDataForItemEdit()
     }
+  },
+  beforeDestroy () {
+    this.$bus.off('reset', this._reset)
   }
 }
 </script>
 
 <style lang="less" scoped>
 .item {
-    display: flex;
-    justify-content: space-between;
-    border: 1px solid #eeeeee;
-    border-radius: 6px;
-    padding: 10px 6px;
-    margin: 10px 0;
-    margin-right: 10px;
-    &:hover {
-      box-shadow: inset 0px 0px 20px #a5d0e4;
-      border-color: #a7dbf3;
-    }
-    &:checked {
-        box-shadow: inset 0px 0px 20px #093549;
-        border-color: #072c3d;
-    }
+  display: flex;
+  justify-content: space-between;
+  border: 1px solid #eeeeee;
+  border-radius: 6px;
+  padding: 10px 6px;
+  margin: 10px 0;
+  margin-right: 10px;
+  &:hover {
+    box-shadow: inset 0px 0px 20px #a5d0e4;
+    border-color: #a7dbf3;
+  }
+  &:checked {
+      box-shadow: inset 0px 0px 20px #093549;
+      border-color: #072c3d;
+  }
 
-    .item-data {
-      width: 92%;
-      word-wrap:break-word;
-      word-break:break-all;
-      overflow: hidden;
-    }
+  .item-name {
+    background-color: tomato;
+    border-radius: 6px;
+    padding: 0 6px;
+    margin-right: 6px;
+  }
+
+  .item-content {
+    word-wrap:break-word;
+    word-break:break-all;
+    overflow: hidden;
+    margin-right: 6px;
+  }
 }
 .active {
-    box-shadow: inset 0px 0px 20px #c1dfec;
-    border-color: #a2c6d6;
+  box-shadow: inset 0px 0px 20px #c1dfec;
+  border-color: #a2c6d6;
 }
 </style>

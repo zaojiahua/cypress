@@ -1,8 +1,13 @@
 <template>
   <Card>
-    <p slot="title">Utils &nbsp;</p>
+    <p slot="title">Utils &nbsp; {{ fileName ? `(${fileName})` : '' }}</p>
     <div class="file-gallery">
-      <p class="file-none" v-show="!fileToShow">还没有可以展示/编辑的文件</p>
+      <p class="file-none" v-show="!fileToShow && !isLoading">还没有可以展示/编辑的文件</p>
+      <div class="loader" v-if="isLoading">
+        <div class="box"></div>
+        <div class="box"></div>
+        <div class="box"></div>
+      </div>
       <div v-show="fileToShow" class="file-container">
         <div v-show="isText" class="text">
           <Input v-model="fileToShow" type="textarea" :rows="16" />
@@ -37,7 +42,9 @@ import { toDecimal } from '../lib/tools'
 export default {
   data () {
     return {
+      fileName: null,
       fileToShow: null,
+      isLoading: false,
       isText: false,
       isImage: false,
       isVideo: false,
@@ -54,6 +61,7 @@ export default {
   },
   methods: {
     setFileData (data) {
+      this.fileName = data.fileName
       this.isText = data.isText
       this.isImage = data.isImage
       this.isVideo = data.isVideo
@@ -140,11 +148,28 @@ export default {
         coordinate_a: `${startPoint.x}, ${startPoint.y}`,
         coordinate_b: `${endPoint.x}, ${endPoint.y}`
       })
+    },
+    reset () {
+      this.fileName = null
+      this.fileToShow = null
+      this.isLoading = false
+      this.isText = false
+      this.isImage = false
+      this.isVideo = false
+      this.isScreenShot = false
     }
   },
   created () {
     this.$bus.on('showFile', data => {
       this.setFileData(data)
+    })
+    this.$bus.on('isLoading', () => {
+      this.isLoading = !this.isLoading
+      this.fileToShow = null
+    })
+    this.$bus.on('reset', this.reset)
+    this.$bus.on('setFileName', fileName => {
+      this.fileName = fileName
     })
   },
   mounted () {
@@ -153,15 +178,18 @@ export default {
 
     document.addEventListener('mouseover', this.over)
     this.selectionArea.addEventListener('mousedown', this.drag)
-    document.addEventListener('mousemove', this.drag)
-    document.addEventListener('mouseup', this.drag)
+    this.imageZoom.addEventListener('mousemove', this.drag)
+    this.imageZoom.addEventListener('mouseup', this.drag)
   },
   beforeDestroy () {
     this.$bus.off('showFile')
+    this.$bus.off('isLoading')
+    this.$bus.off('reset', this.reset)
+    this.$bus.off('setFileName')
     document.removeEventListener('mouseover', this.over)
-    document.removeEventListener('mousedown', this.drag)
-    document.removeEventListener('mousemove', this.drag)
-    document.removeEventListener('mouseup', this.drag)
+    this.selectionArea.removeEventListener('mousedown', this.drag)
+    this.imageZoom.removeEventListener('mousemove', this.drag)
+    this.imageZoom.removeEventListener('mouseup', this.drag)
   }
 }
 </script>
@@ -179,6 +207,44 @@ export default {
     border-radius: 6px;
     background-color: rgba(0, 0, 0, 0.4);
     color: white;
+  }
+
+  .loader {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    top: 50%;
+    left: 50%;
+    z-index: 5;
+    transform: translate(-50%, -50%);
+
+    .box {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      transform-origin: 48% 48%;
+      mix-blend-mode: screen;
+    }
+    .box:nth-child(1) {
+      background-color: #0000ff;
+      animation: turn 3s linear 0s infinite;
+    }
+    .box:nth-child(2) {
+      background-color: #00ff00;
+      animation: turn 3s linear -1s infinite;
+    }
+    .box:nth-child(3) {
+      background-color: #ff0000;
+      animation: turn 3s linear -2s infinite;
+    }
+    @keyframes turn {
+      to {
+        transform: rotate(360deg);
+      }
+    }
   }
 
   .file-container {

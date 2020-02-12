@@ -3,7 +3,7 @@
     <Row>
       <Divider>用例筛选</Divider>
       <Tabs type="card" class="tabs">
-        <TabPane v-for="column in filterColumn" :key="column.title" :label="column.title" :class="column.key">
+        <TabPane v-for="(column, index) in filterColumn" :key="column.title" :label="label(column)" :class="column.key">
           <CheckboxGroup v-model="filterRules" @on-change="onJobFilterChange">
             <Row type="flex">
               <Col span="4" v-for="(item, index) in filterData[column.key]" :key="index">
@@ -17,13 +17,9 @@
       </Tabs>
     </Row>
 
-    <Row style="margin-top: 50px; border-bottom: 1px solid #dcdee2;">
-      <Tag v-for="tag in filterColumn" :key="tag.title" :color="colors[tag.key]" >{{ tag.title }}</Tag>
-    </Row>
-
     <Row>
       <Row style="margin-top: 20px; min-height: 30px;">
-        <Tag v-for="(label, index) in filterRules" :key="index" :color="colors[label.split(':')[0]]" closable @on-close="close(index)">{{ label.split(':')[2] }}</Tag>
+        <Tag v-for="(label, index) in filterRules" :key="index" :color="colors[label.split(':')[0]][2]" closable @on-close="close(index)">{{ label.split(':')[2] }}</Tag>
       </Row>
       <Button style="margin: 30px 0px;" @click="clear()">清空</Button>
     </Row>
@@ -74,17 +70,45 @@ export default {
       filterData: {}, // 提供的筛选条件
       filterRules: [], // 已选的筛选条件
       filterUrlParam: '', // 根据已选的筛选条件生成的url参数
-      colors: { // Tag的颜色
-        phone_model: 'default',
-        job_test_area: 'red',
-        android_version: 'orange',
-        rom_version: 'cyan',
-        reefuser: 'blue',
-        custom_tag: 'purple'
+      colors: {
+        phone_model: ['#515a6e', 'f7f7f7', 'default'],
+        job_test_area: ['#f5222d', '#fff1f0', 'red'],
+        android_version: ['#fa8c16', '#fff7e6', 'orange'],
+        rom_version: ['#13c2c2', '#e6fffb', 'cyan'],
+        reefuser: ['#1890ff', '#e6f7ff', 'blue'],
+        custom_tag: ['#722ed1', '#f9f0ff', 'purple']
       }
     }
   },
   methods: {
+    label (params) {
+      return (h) => {
+        return h('div', [
+          h('span', {
+            'style': {
+              'display': 'flex',
+              'justify-content': 'center',
+              'align-items': 'center',
+              'position': 'absolute',
+              'top': '0',
+              'right': '0',
+              'width': '99.8%',
+              'height': '99.8%',
+              'border-radius': '6px',
+              'background-color': this.colors[params.key][1]
+            }
+          }, [
+            h('span', {
+              'style': {
+                'color': this.colors[params.key][0],
+                'line-height': '100%'
+              }
+            }, params.title)
+          ]),
+          params.title
+        ])
+      }
+    },
     _jobRender () { // 将filterRules数组整理为筛选条件
       let selectedData = {}
       this.filterRules.forEach(item => {
