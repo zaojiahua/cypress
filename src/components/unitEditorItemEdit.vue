@@ -65,7 +65,7 @@
       </div> -->
       <div>
         <Input v-show="dataFromUnitItem && dataFromUnitItem.itemContent.type !== 'jobResourceFile' ? true : false" v-for="(blank, index) in tmachBlanks" :key="index" v-model="tmachBlanks[index]" style="margin-bottom: 10px;"></Input>
-        <unit-editor-screen-shot v-if="dataFromUnitItem && dataFromUnitItem.itemContent.type === 'jobResourceFile' ? true : false"></unit-editor-screen-shot>
+        <unit-editor-screen-shot :imgName="tmachBlanks[0]" @setImgName='setImgName' v-if="dataFromUnitItem && dataFromUnitItem.itemContent.type === 'jobResourceFile' ? true : false"></unit-editor-screen-shot>
         <p><Tag>操作说明</Tag>{{ dataFromUnitItem ? dataFromUnitItem.itemContent.meaning : ''}}</p>
         <Checkbox v-model="saveToFinalResult" v-if="dataFromUnitItem && dataFromUnitItem.itemContent.type === 'outputPicture' ? true : false" style="float: right;">添加此图片至最终结果</Checkbox>
       </div>
@@ -211,6 +211,9 @@ export default {
           content: '上传成功'
         })
       }, 1500)
+    },
+    setImgName (imgName) {
+      this.tmachBlanks[0] = imgName
     }
   },
   created () {

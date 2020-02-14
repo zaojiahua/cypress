@@ -15,7 +15,7 @@
       <div style="display: flex; align-items: center; width: 66%;">
         <span slot="prepend">图片名称：</span>
         <AutoComplete
-          v-model="imgName"
+          v-model="currentImgName"
           :data="suffixs"
           @on-search="handleSearch"
           placeholder="Please enter a picture name"
@@ -74,6 +74,10 @@ export default {
     unitName: {
       type: String,
       default: ''
+    },
+    imgName: {
+      type: String,
+      default: ''
     }
   },
   data () {
@@ -103,7 +107,7 @@ export default {
       ],
       deviceData: [],
       currentDeviceRow: -1,
-      imgName: '',
+      currentImgName: '',
       suffixs: [],
       coordinateColumn: [
         {
@@ -148,9 +152,10 @@ export default {
       ]
     },
     getImg () {
+      this.$emit('setImgName', this.currentImgName)
       let errors = []
       if (this.currentDeviceRow === -1) errors.push('未选择 device')
-      if (!this.imgName || !new RegExp('(.jpg|.png|.JPG|.PNG)$').test(this.imgName)) errors.push('图片名称后缀格式错误')
+      if (!this.currentImgName || !new RegExp('(.jpg|.png|.JPG|.PNG)$').test(this.currentImgName)) errors.push('图片名称后缀格式错误')
       if (errors.length) {
         errors.forEach(error => {
           this.$Message.error({
@@ -166,7 +171,7 @@ export default {
       let getScreenShotParams = {
         device_label: currentDevice.device_label,
         device_ip: currentDevice.ip_address,
-        picture_name: this.imgName
+        picture_name: this.currentImgName
       }
       getScreenShot(getScreenShotParams).then(res => {
         if (res.status === 200) {
@@ -219,6 +224,11 @@ export default {
       this.coordinateData = []
     }
   },
+  watch: {
+    imgName (val) {
+      this.currentImgName = val
+    }
+  },
   created () {
     this.$bus.on('remove', index => this.remove(index))
     this.$bus.on('getCoordinate', coordinate => {
@@ -227,6 +237,7 @@ export default {
   },
   mounted () {
     this.deviceRefresh()
+    this.currentImgName = this.imgName
   },
   beforeDestroy () {
     this.$bus.off('remove')

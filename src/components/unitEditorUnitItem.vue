@@ -71,7 +71,6 @@ export default {
     _hasCompleted (data) { // 判断 item 是否完成
       if (!data) return
       this.tmachBlanks = data.content.match(/Tmach.*? /g)
-      console.log(this.tmachBlanks)
       let flag = true
       for (let i = 0; i < this.tmachBlanks.length; i++) {
         if (this.tmachBlanks[i] === 'Tmach ') {

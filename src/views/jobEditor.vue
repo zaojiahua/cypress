@@ -29,6 +29,10 @@
       <div id="chart-diagram"></div>
     </div>
 
+    <Modal v-model="openUnitTemplateEditor">
+      <unit-editor-raw-unit :unitContent="unitTemplateContent"></unit-editor-raw-unit>
+    </Modal>
+
     <Modal v-model="blockModalShow" :closable="false" fullscreen>
       <div slot="header">
         <Input v-model="blockName" size="large" placeholder="large size" />
@@ -38,7 +42,7 @@
         <Button type="primary" size="large" @click="saveNormalBlock">确定</Button>
       </div>
       <div id="inner-wrap">
-        <div id="chart-left">
+        <div id="chart-left" @click="closeContextMenu">
           <div id="dropdown-div" align="center">
             <Dropdown trigger="click" @on-click="getSelectedUnit">
               <Button id="dropdown-btn" type="primary">{{unitType}}</Button>
@@ -48,6 +52,10 @@
             </Dropdown>
           </div>
           <div id="inner-palette"></div>
+          <div id="unit-controller">
+            <Button type="error" long @click="delUnitTemplate">删除</Button>
+            <Button type="primary" long style="margin-top: 2px;" @click="editUnitTemplate">编辑</Button>
+          </div>
         </div>
         <div id="tooltip">
           <Card v-show="unitMsgToogle" style="background-color: rgba(255, 255, 255, .95);">
@@ -97,6 +105,7 @@ import jobMsgComponent from '../components/jobMsgComponent'
 import jobInJob from '../components/jobInJob'
 import jobResFile from '../components/jobResFile'
 import unitEditor from '../components/unitEditor'
+import unitEditorRawUnit from '../components/unitEditorRawUnit'
 import { getTemporarySpace } from '../api/coral/jobLibSvc'
 import { getJobUnitsBodyDict } from '../api/reef/unit'
 import { getBlockFlowDict4Font, jobFlowAndMsgSave, jobFlowAndMsgUpdate } from '../api/reef/jobFlow'
@@ -114,7 +123,7 @@ import { baseURL } from '../config'
 
 export default {
   name: 'jobEditor',
-  components: { SwitchBlockDetailComponent, jobMsgComponent, jobInJob, jobResFile, unitEditor },
+  components: { SwitchBlockDetailComponent, jobMsgComponent, jobInJob, jobResFile, unitEditor, unitEditorRawUnit },
   data () {
     return {
       jobName: '',
@@ -159,10 +168,15 @@ export default {
         }
       ],
       unitOutputFileData: [],
-      unitEditorModalShow: false
+      unitEditorModalShow: false,
+      unitController: null,
+      openUnitTemplateEditor: false,
+      unitTemplateContent: ''
     }
   },
   mounted () {
+    this.unitController = document.querySelector('#unit-controller')
+
     const _this = this
     _this.$Notice.config({
       top: 150,
@@ -339,8 +353,6 @@ export default {
       let example = {
         category: 'Unit'
       }
-      let inputPattern = /<blkInpPath>.*png/
-      let outputPattern = /<blkOutPath>.*png/ // (?<=\<span[^>]*\>).*?(?=\<\/span>)
       let inputFile, outputFile
 
       unitTemplate.doubleClick = function (e, node) {
@@ -365,21 +377,24 @@ export default {
       unitTemplate.mouseEnter = function (e, node) {
         if (e.diagram instanceof go.Palette) return
         _this.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
-        outputFile = JSON.stringify(node.data.unitMsg, null, 2).match(outputPattern)
-        if (outputFile) {
-          _this.unitOutputFileData = []
-          _this.unitOutputFileData.push({
-            file_name: outputFile[0].split('>')[1]
-          })
-        }
+        console.log(node.data)
+        console.log(_this.unitContent)
+        // outputFile = JSON.stringify(node.data.unitMsg, null, 2)
 
-        inputFile = JSON.stringify(node.data.unitMsg, null, 2).match(inputPattern)
-        if (inputFile) {
-          _this.unitInputFileData = []
-          _this.unitInputFileData.push({
-            file_name: inputFile[0].split('>')[1]
-          })
-        }
+        // if (outputFile) {
+        //   _this.unitOutputFileData = []
+        //   _this.unitOutputFileData.push({
+        //     file_name: outputFile[0].split('>')[1]
+        //   })
+        // }
+        // inputFile = JSON.stringify(node.data.unitMsg, null, 2)
+        // if (inputFile) {
+        //   _this.unitInputFileData = []
+        //   _this.unitInputFileData.push({
+        //     file_name: inputFile[0].split('>')[1]
+        //   })
+        // }
+        // console.log(outputFile, inputFile)
         tooltip.style.display = 'block'
       }
 
@@ -400,6 +415,13 @@ export default {
 
         _this.unitOutputFileData = []
         _this.unitInputFileData = []
+      }
+
+      unitTemplate.contextClick = function (e, node) {
+        _this.unitTemplateContent = JSON.stringify(node.data.unitMsg, null, 2)
+        _this.unitController.style.top = `${e.event.y - 50}px`
+        _this.unitController.style.left = `${e.event.x}px`
+        _this.unitController.style.display = 'block'
       }
 
       const unitListGroupTemplate = baseGroupTemplate()
@@ -442,6 +464,7 @@ export default {
       _this.blockPalette.model = new go.GraphLinksModel(basicModule.nodeDataArray, basicModule.linkDataArray)
     }
     getJobUnitsBodyDict().then(res => {
+      console.log(res)
       res.data.unit.forEach((unit, index) => {
         if (!(unit.type in this.unitAllList)) {
           this.$set(this.unitAllList, unit.type, {})
@@ -449,6 +472,7 @@ export default {
         this.$set(this.unitAllList[unit.type], unit.unit_name, unit.unit_content)
       })
       this.$set(this.unitAllList, 'Basic Module', this.basicModuleShow)
+      console.log(this.unitAllList)
     })
     this.init()
   },
@@ -714,7 +738,7 @@ export default {
           unitCategoryData.nodeDataArray.push({
             category: 'Unit',
             text: unit[0],
-            unitContent: unit[1]
+            unitMsg: unit[1]
           })
         })
         this.blockPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
@@ -743,6 +767,24 @@ export default {
     },
     saveRawUnit (unitContent) {
       this.unitContent = unitContent
+    },
+    delUnitTemplate () {
+      this.$Modal.confirm({
+        title: '温馨提示',
+        content: '确定要删除当前 Unit 模板吗？',
+        okText: '心意已决',
+        cancelText: '我再想想',
+        onOk () {
+          console.log('删除')
+        }
+      })
+    },
+    editUnitTemplate () {
+      console.log('编辑')
+      this.openUnitTemplateEditor = true
+    },
+    closeContextMenu () {
+      this.unitController.style.display = 'none'
     }
   },
   created () {
@@ -795,6 +837,7 @@ export default {
       margin-bottom: 22px;
 
       #chart-left{
+        position: relative;
         width: 15%;
         margin-right: 30px;
         background-color: white;
@@ -815,6 +858,14 @@ export default {
           width: 100%;
           height: 90%;
           background-color: white;
+        }
+
+        #unit-controller {
+          display: none;
+          position: absolute;
+          width: 100px;
+          border-radius: 6px;
+          z-index: 10;
         }
       }
       #tooltip {
