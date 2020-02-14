@@ -38,7 +38,7 @@ export default {
       if (this.unitType === 'IMGTOOL') {
         dataForUnitItem = this.unitMsgObj.execCmdDict
         Object.keys(dataForUnitItem).forEach(execCmdDictKey => {
-          if (execCmdDictKey === 'referImgFile' || execCmdDictKey === 'configFile' || execCmdDictKey === 'inputImgFile' || execCmdDictKey === 'imgCmpThreshold') {
+          if (dataForUnitItem[execCmdDictKey].type !== 'noChange') {
             this.unitItemDatas.push({
               'itemName': execCmdDictKey,
               'itemContent': JSON.parse(JSON.stringify(dataForUnitItem[execCmdDictKey]))

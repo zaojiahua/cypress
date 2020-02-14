@@ -65,6 +65,7 @@ export default {
       unitItemBrothers.forEach(bro => {
         bro.checked = false
       })
+      this.isComplete = this._hasCompleted(this.currentItemData)
       this.$bus.emit('editItem', this.itemData, this.tmachBlanks)
     },
     _hasCompleted (data) { // 判断 item 是否完成
