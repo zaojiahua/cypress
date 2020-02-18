@@ -425,7 +425,7 @@ export default {
       }
 
       unitTemplate.contextClick = function (e, node) {
-        if (!(e.diagram instanceof go.Palette)) return
+        if (!(e.diagram instanceof go.Palette) || !sessionStorage.identity.includes('Admin')) return
         _this.unitName = node.data.text
         _this.unitTemplateId = node.data.unit_id
         _this.unitTemplateContent = JSON.stringify(node.data.unitMsg, null, 2)

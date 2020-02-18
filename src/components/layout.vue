@@ -87,6 +87,8 @@ export default {
           // 登出后不能通过后退键回到TMach操作页面中
           sessionStorage.removeItem('token')
           localStorage.removeItem('token')
+          sessionStorage.removeItem('identity')
+          localStorage.removeItem('identity')
         },
         onCancel () {
           this.$Modal.remove()
