@@ -8,8 +8,7 @@
           icon="ios-search"
           placeholder="input here"
           style="width:300px">
-          <Option v-for="unitType in unitTypes" :value="unitType" :key="unitType">
-          </Option>
+          <Option v-for="unitType in unitTemplateTypes" :value="unitType" :key="unitType"></Option>
         </AutoComplete>
       </div>
       <div class="edit-area" @keydown="handleKeydown">
@@ -53,6 +52,12 @@ export default {
     unitTemplateId: {
       type: Number,
       default: undefined
+    },
+    unitTemplateTypes: {
+      type: Array,
+      default () {
+        return ['ADBC', 'IMGTOOL', 'LIMBTEMPR', 'MONITCAM']
+      }
     }
   },
   data () {
@@ -62,7 +67,6 @@ export default {
       currentOpenUnitTemplateEditor: this.openUnitTemplateEditor,
       currentUnitTemplateContent: this.unitTemplateContent,
       currentUnitType: this.unitTemplateType,
-      unitTypes: ['ADBC', 'IMGTOOL', 'LIMBTEMPR', 'MONITCAM'],
       newUnitName: ''
     }
   },
@@ -80,6 +84,7 @@ export default {
   methods: {
     _reset () {
       this.currentUnitType = this.unitTemplateType
+      this.newUnitName = ''
     },
     jsonFormatCheck (str) {
       if (!isJsonString(str)) {

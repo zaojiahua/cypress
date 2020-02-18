@@ -21,3 +21,10 @@ export const createNewUnitTemplate = (unitInfo) => {
     data: unitInfo
   })
 }
+
+export const deleteUnitTemplate = (id) => {
+  return axios.request({
+    url: `/api/v1/cedar/unit/${id}/`,
+    method: 'delete'
+  })
+}

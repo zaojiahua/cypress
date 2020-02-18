@@ -33,6 +33,7 @@
       :openUnitTemplateEditor="openUnitTemplateEditor"
       :unitTemplateId="unitTemplateId"
       :unitTemplateType="unitType"
+      :unitTemplateTypes="unitTypes"
       :unitTemplateName="unitName"
       :unitTemplateContent="unitTemplateContent"
       @closeUnitTemplateEditor="closeUnitTemplateEditor"
@@ -113,7 +114,7 @@ import jobResFile from '../components/jobResFile'
 import unitEditor from '../components/unitEditor'
 import unitTemplateEditor from '../components/unitTemplateEditor'
 import { getTemporarySpace } from '../api/coral/jobLibSvc'
-import { getJobUnitsBodyDict } from '../api/reef/unit'
+import { getJobUnitsBodyDict, deleteUnitTemplate } from '../api/reef/unit'
 import { getBlockFlowDict4Font, jobFlowAndMsgSave, jobFlowAndMsgUpdate } from '../api/reef/jobFlow'
 import { jobResFilesSave } from '../api/reef/jobResFileSave'
 import SwitchBlockDetailComponent from '../components/SwitchBlockDetailComponent'
@@ -178,7 +179,8 @@ export default {
       unitController: null,
       openUnitTemplateEditor: false,
       unitTemplateContent: '',
-      unitTemplateId: undefined
+      unitTemplateId: undefined,
+      unitTypes: []
     }
   },
   mounted () {
@@ -384,8 +386,6 @@ export default {
       unitTemplate.mouseEnter = function (e, node) {
         if (e.diagram instanceof go.Palette) return
         _this.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
-        console.log(node.data)
-        console.log(_this.unitContent)
         // outputFile = JSON.stringify(node.data.unitMsg, null, 2)
 
         // if (outputFile) {
@@ -770,12 +770,26 @@ export default {
       this.unitContent = unitContent
     },
     delUnitTemplate () {
+      let _this = this
       this.$Modal.confirm({
         title: '温馨提示',
         content: '确定要删除当前 Unit 模板吗？',
         okText: '心意已决',
         cancelText: '我再想想',
         onOk () {
+          deleteUnitTemplate(_this.unitTemplateId).then((res) => {
+            if (res.status === 204) {
+              _this.$Message.success({
+                background: true,
+                content: '删除成功'
+              })
+              setTimeout(() => {
+                _this.updateUnitAllList(_this.unitType)
+              }, 500)
+            }
+          }).catch((e) => {
+            console.log(e)
+          })
           console.log('删除')
         }
       })
@@ -790,6 +804,7 @@ export default {
       this.openUnitTemplateEditor = false
     },
     updateUnitAllList (name = undefined) {
+      this.unitAllList = {}
       getJobUnitsBodyDict().then(res => {
         res.data.unit.forEach((unit, index) => {
           if (!(unit.type in this.unitAllList)) {
@@ -801,6 +816,7 @@ export default {
           })
         })
         this.$set(this.unitAllList, 'Basic Module', this.basicModuleShow)
+        this.unitTypes = Object.keys(this.unitAllList).filter((unitType) => unitType !== 'Basic Module')
         if (name) this.getSelectedUnit(name)
       })
     }
