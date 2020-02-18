@@ -5,6 +5,8 @@ cmd = "git clone https://zt:angelreef@gitlab.anhereef.com/cypress/cypress-vue.gi
       "npm install && " \
       "cp -rf src/assets/js/go.js node_modules/gojs/release &&" \
       "npm run build &&" \
+      "docker rmi -f cypress &&" \
+      "docker rm -f cypress_container &&" \
       "docker build -t cypress . &&" \
       "docker run -itd -p 81:80 --name cypress_container cypress"
 
