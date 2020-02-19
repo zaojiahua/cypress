@@ -160,6 +160,13 @@ export default {
     },
     fileName (val) {
       this.$bus.emit('setFileName', val)
+    },
+    saveToFinalResult (val) {
+      if (!val) {
+        for (let i = 0; i < this.tmachBlanks.length; i++) {
+          this.tmachBlanks[i] = this.tmachBlanks[i].replace('<copy2rdsDatPath>', '')
+        }
+      }
     }
   },
   methods: {
@@ -173,8 +180,38 @@ export default {
       this.isVideo = false
       this.tmach = ''
     },
+    _tmachBlankSuffixComplete () {
+      if (this.dataFromUnitItem.itemContent.type === 'outputPicture') {
+        let suffixOfPicture = '.jpg'
+        let commandOfSaveToFinal = '<copy2rdsDatPath>'
+        for (let i = 0; i < this.tmachBlanks.length; i++) {
+          if (this.tmachBlanks[i].endsWith('.JPG') || this.tmachBlanks[i].endsWith('.png') || this.tmachBlanks[i].endsWith('.PNG')) {
+            this.tmachBlanks[i] = this.tmachBlanks[i].slice(0, this.tmachBlanks[i].length - 4) + suffixOfPicture
+          }
+          if (!this.tmachBlanks[i].endsWith(suffixOfPicture)) {
+            this.tmachBlanks[i] += suffixOfPicture
+          }
+          if (this.saveToFinalResult) {
+            this.tmachBlanks[i] += commandOfSaveToFinal
+          }
+        }
+      }
+      if (this.dataFromUnitItem.itemContent.type === 'outputFile') {
+        let indexOfPoint
+        let suffixOfFile = '.txt'
+        for (let i = 0; i < this.tmachBlanks.length; i++) {
+          indexOfPoint = this.tmachBlanks[i].lastIndexOf('.')
+          if (indexOfPoint === -1) {
+            this.tmachBlanks[i] += suffixOfFile
+          } else {
+            this.tmachBlanks[i] = this.tmachBlanks[i].substring(0, indexOfPoint) + suffixOfFile
+          }
+        }
+      }
+    },
     saveItem () {
       this.showEditPane = false
+      this._tmachBlankSuffixComplete()
       let res = this.dataFromUnitItem.itemContent.content.match(/Tmach.*? /g)
       for (let i = 0; i < res.length; i++) {
         this.dataFromUnitItem.itemContent.content = this.dataFromUnitItem.itemContent.content.replace(res[i], 'Tmach' + this.tmachBlanks[i] + ' ')
@@ -214,15 +251,29 @@ export default {
     },
     setImgName (imgName) {
       this.tmachBlanks[0] = imgName
+    },
+    _tmachBlankSuffixLessen (type, tmachBlanks) {
+      tmachBlanks.forEach((tmach, index, arr) => {
+        arr[index] = tmach.trim().substring(5)
+      })
+      if (type === 'outputPicture' || type === 'outputFile') {
+        let indexOfPoint
+        let commandOfSaveToFinal = '<copy2rdsDatPath>'
+        for (let i = 0; i < tmachBlanks.length; i++) {
+          if (tmachBlanks[i].includes(commandOfSaveToFinal)) this.saveToFinalResult = true
+          indexOfPoint = tmachBlanks[i].lastIndexOf('.')
+          if (indexOfPoint !== -1) {
+            tmachBlanks[i] = tmachBlanks[i].substring(0, indexOfPoint)
+          }
+        }
+      }
+      return tmachBlanks
     }
   },
   created () {
     this.$bus.on('editItem', (dataFromUnitItem, tmachBlanks) => {
       this.dataFromUnitItem = dataFromUnitItem
-      tmachBlanks.forEach((tmach, index, arr) => {
-        arr[index] = tmach.trim().substring(5)
-      })
-      this.tmachBlanks = tmachBlanks
+      this.tmachBlanks = this._tmachBlankSuffixLessen(dataFromUnitItem.itemContent.type, tmachBlanks)
       this.showEditPane = true
     })
   },
