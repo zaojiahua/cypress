@@ -30,17 +30,20 @@
      </Button>
     </div>
     <Divider orientation="left">特征点选取</Divider>
-    <Table :columns="coordinateColumn" :data="coordinateData" border  max-height="158" size="small">
+    <Table :columns="coordinateColumn" :data="coordinateData" border  max-height="158" size="small" style="margin-bottom: 16px;">
       <template slot-scope="{ row, index }" slot="action">
         <Button type="error" size="small" @click="remove(index)" :disabled="coordinateData.length === 1">Delete</Button>
       </template>
     </Table>
+    <Input placeholder="为选取的特征点们取一个名字吧" v-model="featurePointFileName">
+      <span slot="prepend">特征点名称</span>
+    </Input>
     <div class="get-recognition-rate">
       <div style="display: flex; align-items: center; width: 66%">
         <span>识别率：</span>
         <InputNumber :max="100" :min="0"  v-model="imgThreshold" style="flex: 1;" placeholder="识别率标准..." :formatter="value => `${value}%`" :parser="value => value.replace('%', '')"></InputNumber>
       </div>
-      <Button type="primary" @click="getFeaturePointFileName">Commit</Button>
+      <Button type="primary" @click="setFeaturePointFileName">Commit</Button>
     </div>
   </div>
 </template>
@@ -128,7 +131,8 @@ export default {
         }
       ],
       coordinateData: [],
-      imgThreshold: 95
+      imgThreshold: 95,
+      featurePointFileName: ''
     }
   },
   methods: {
@@ -147,15 +151,13 @@ export default {
     },
     handleSearch (value) {
       this.suffixs = !value || value.indexOf('.') >= 0 ? [] : [
-        value + '.jpg',
-        value + '.png'
+        value + '.jpg'
       ]
     },
     getImg () {
-      this.$emit('setImgName', this.currentImgName)
       let errors = []
       if (this.currentDeviceRow === -1) errors.push('未选择 device')
-      if (!this.currentImgName || !new RegExp('(.jpg|.png|.JPG|.PNG)$').test(this.currentImgName)) errors.push('图片名称后缀格式错误')
+      if (!this.currentImgName || !new RegExp('(.jpg|.JPG)$').test(this.currentImgName)) errors.push('图片名称后缀格式错误')
       if (errors.length) {
         errors.forEach(error => {
           this.$Message.error({
@@ -194,7 +196,7 @@ export default {
     remove (index) {
       this.coordinateData.splice(index, 1)
     },
-    getFeaturePointFileName () {
+    setFeaturePointFileName () {
       let coordinateNum = 1
       let coordinateDataList = {}
       if (!this.imgThreshold) {
@@ -215,8 +217,9 @@ export default {
           console.log(area, coordinateRowList, coordinateDataList)
         }
       }
+      this.$bus.emit('setNamesAboutScreenShotFile', this.currentImgName, this.featurePointFileName)
       this.$bus.emit('addResFile', {
-        'name': 'featurePoint_' + this.unitName + '.json',
+        'name': this.featurePointFileName + '.json',
         'type': 'json',
         'file': JSON.stringify(coordinateDataList, null, 4),
         'fileUrl': ''

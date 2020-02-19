@@ -177,6 +177,12 @@ export default {
       }
       this.currentUnitContent = JSON.stringify(this.unitMsgObj, null, 2)
     })
+    this.$bus.on('setNamesAboutScreenShotFile', (imgName, featurePointFileName) => {
+      let target = this.unitMsgObj.execCmdDict
+      target['referImgFile']['content'] = `Tmach${imgName} `
+      target['configFile']['content'] = `Tmach${featurePointFileName}.json `
+      this.currentUnitContent = JSON.stringify(this.unitMsgObj, null, 2)
+    })
   },
   destroyed () {
     this.$bus.off('saveChange')
