@@ -29,9 +29,16 @@
       <div id="chart-diagram"></div>
     </div>
 
-    <Modal v-model="openUnitTemplateEditor">
-      <unit-editor-raw-unit :unitContent="unitTemplateContent"></unit-editor-raw-unit>
-    </Modal>
+    <unit-template-editor
+      :openUnitTemplateEditor="openUnitTemplateEditor"
+      :unitTemplateId="unitTemplateId"
+      :unitTemplateType="unitType"
+      :unitTemplateTypes="unitTypes"
+      :unitTemplateName="unitName"
+      :unitTemplateContent="unitTemplateContent"
+      @closeUnitTemplateEditor="closeUnitTemplateEditor"
+      @updateUnitAllList="updateUnitAllList">
+    </unit-template-editor>
 
     <Modal v-model="blockModalShow" :closable="false" fullscreen>
       <div slot="header">
@@ -105,9 +112,9 @@ import jobMsgComponent from '../components/jobMsgComponent'
 import jobInJob from '../components/jobInJob'
 import jobResFile from '../components/jobResFile'
 import unitEditor from '../components/unitEditor'
-import unitEditorRawUnit from '../components/unitEditorRawUnit'
+import unitTemplateEditor from '../components/unitTemplateEditor'
 import { getTemporarySpace } from '../api/coral/jobLibSvc'
-import { getJobUnitsBodyDict } from '../api/reef/unit'
+import { getJobUnitsBodyDict, deleteUnitTemplate } from '../api/reef/unit'
 import { getBlockFlowDict4Font, jobFlowAndMsgSave, jobFlowAndMsgUpdate } from '../api/reef/jobFlow'
 import { jobResFilesSave } from '../api/reef/jobResFileSave'
 import SwitchBlockDetailComponent from '../components/SwitchBlockDetailComponent'
@@ -123,7 +130,7 @@ import { baseURL } from '../config'
 
 export default {
   name: 'jobEditor',
-  components: { SwitchBlockDetailComponent, jobMsgComponent, jobInJob, jobResFile, unitEditor, unitEditorRawUnit },
+  components: { SwitchBlockDetailComponent, jobMsgComponent, jobInJob, jobResFile, unitEditor, unitTemplateEditor },
   data () {
     return {
       jobName: '',
@@ -171,7 +178,9 @@ export default {
       unitEditorModalShow: false,
       unitController: null,
       openUnitTemplateEditor: false,
-      unitTemplateContent: ''
+      unitTemplateContent: '',
+      unitTemplateId: undefined,
+      unitTypes: []
     }
   },
   mounted () {
@@ -377,8 +386,6 @@ export default {
       unitTemplate.mouseEnter = function (e, node) {
         if (e.diagram instanceof go.Palette) return
         _this.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
-        console.log(node.data)
-        console.log(_this.unitContent)
         // outputFile = JSON.stringify(node.data.unitMsg, null, 2)
 
         // if (outputFile) {
@@ -418,6 +425,9 @@ export default {
       }
 
       unitTemplate.contextClick = function (e, node) {
+        if (!(e.diagram instanceof go.Palette) || !sessionStorage.identity.includes('Admin')) return
+        _this.unitName = node.data.text
+        _this.unitTemplateId = node.data.unit_id
         _this.unitTemplateContent = JSON.stringify(node.data.unitMsg, null, 2)
         _this.unitController.style.top = `${e.event.y - 50}px`
         _this.unitController.style.left = `${e.event.x}px`
@@ -463,17 +473,7 @@ export default {
       }
       _this.blockPalette.model = new go.GraphLinksModel(basicModule.nodeDataArray, basicModule.linkDataArray)
     }
-    getJobUnitsBodyDict().then(res => {
-      console.log(res)
-      res.data.unit.forEach((unit, index) => {
-        if (!(unit.type in this.unitAllList)) {
-          this.$set(this.unitAllList, unit.type, {})
-        }
-        this.$set(this.unitAllList[unit.type], unit.unit_name, unit.unit_content)
-      })
-      this.$set(this.unitAllList, 'Basic Module', this.basicModuleShow)
-      console.log(this.unitAllList)
-    })
+    this.updateUnitAllList()
     this.init()
   },
   beforeCreate () {
@@ -738,7 +738,8 @@ export default {
           unitCategoryData.nodeDataArray.push({
             category: 'Unit',
             text: unit[0],
-            unitMsg: unit[1]
+            unit_id: unit[1]['unit_id'],
+            unitMsg: unit[1]['unit_content']
           })
         })
         this.blockPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
@@ -769,22 +770,55 @@ export default {
       this.unitContent = unitContent
     },
     delUnitTemplate () {
+      let _this = this
       this.$Modal.confirm({
         title: '温馨提示',
         content: '确定要删除当前 Unit 模板吗？',
         okText: '心意已决',
         cancelText: '我再想想',
         onOk () {
+          deleteUnitTemplate(_this.unitTemplateId).then((res) => {
+            if (res.status === 204) {
+              _this.$Message.success({
+                background: true,
+                content: '删除成功'
+              })
+              setTimeout(() => {
+                _this.updateUnitAllList(_this.unitType)
+              }, 500)
+            }
+          }).catch((e) => {
+            console.log(e)
+          })
           console.log('删除')
         }
       })
     },
     editUnitTemplate () {
-      console.log('编辑')
       this.openUnitTemplateEditor = true
     },
     closeContextMenu () {
       this.unitController.style.display = 'none'
+    },
+    closeUnitTemplateEditor () {
+      this.openUnitTemplateEditor = false
+    },
+    updateUnitAllList (name = undefined) {
+      this.unitAllList = {}
+      getJobUnitsBodyDict().then(res => {
+        res.data.unit.forEach((unit, index) => {
+          if (!(unit.type in this.unitAllList)) {
+            this.$set(this.unitAllList, unit.type, {})
+          }
+          this.$set(this.unitAllList[unit.type], unit.unit_name, {
+            unit_id: unit.id,
+            unit_content: unit.unit_content
+          })
+        })
+        this.$set(this.unitAllList, 'Basic Module', this.basicModuleShow)
+        this.unitTypes = Object.keys(this.unitAllList).filter((unitType) => unitType !== 'Basic Module')
+        if (name) this.getSelectedUnit(name)
+      })
     }
   },
   created () {

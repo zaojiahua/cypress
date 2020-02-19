@@ -34,9 +34,11 @@ export default {
         localStorage.id = res.data.id
         localStorage.username = res.data.username
         sessionStorage.token = res.data.token
+        sessionStorage.identity = res.data.groups
         localStorage.removeItem('token')
         if (this.keepLogin) {
           localStorage.setItem('token', res.data.token)
+          localStorage.setItem('identity', res.data.groups)
         }
         this.$router.push(this.$route.query.redirect || '/')
       }).catch(error => {
