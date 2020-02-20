@@ -150,13 +150,13 @@ export default {
       })
     },
     reset () {
-      this.fileName = null
-      this.fileToShow = null
-      this.isLoading = false
-      this.isText = false
-      this.isImage = false
-      this.isVideo = false
-      this.isScreenShot = false
+      // this.fileName = null
+      // this.fileToShow = null
+      // this.isLoading = false
+      // this.isText = false
+      // this.isImage = false
+      // this.isVideo = false
+      // this.isScreenShot = false
     }
   },
   created () {

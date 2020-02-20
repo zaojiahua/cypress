@@ -1,5 +1,5 @@
 <template>
-  <div style="position: relative;">
+  <div style="position: relative; margin-bottom: 10px;">
     <Button @click="deviceRefresh" type="primary" class="refresh">Refresh</Button>
     <Divider orientation="left">获取图片</Divider>
     <Table border
@@ -28,22 +28,6 @@
         <span v-if="!loading">Commit</span>
         <span v-else>Loading...</span>
      </Button>
-    </div>
-    <Divider orientation="left">特征点选取</Divider>
-    <Table :columns="coordinateColumn" :data="coordinateData" border  max-height="158" size="small" style="margin-bottom: 16px;">
-      <template slot-scope="{ row, index }" slot="action">
-        <Button type="error" size="small" @click="remove(index)" :disabled="coordinateData.length === 1">Delete</Button>
-      </template>
-    </Table>
-    <Input placeholder="为选取的特征点们取一个名字吧" v-model="featurePointFileName">
-      <span slot="prepend">特征点名称</span>
-    </Input>
-    <div class="get-recognition-rate">
-      <div style="display: flex; align-items: center; width: 66%">
-        <span>识别率：</span>
-        <InputNumber :max="100" :min="0"  v-model="imgThreshold" style="flex: 1;" placeholder="识别率标准..." :formatter="value => `${value}%`" :parser="value => value.replace('%', '')"></InputNumber>
-      </div>
-      <Button type="primary" @click="setFeaturePointFileName">Commit</Button>
     </div>
   </div>
 </template>
@@ -111,28 +95,7 @@ export default {
       deviceData: [],
       currentDeviceRow: -1,
       currentImgName: '',
-      suffixs: [],
-      coordinateColumn: [
-        {
-          title: 'coordinate_A',
-          key: 'coordinate_a',
-          align: 'center'
-        },
-        {
-          title: 'coordinate_B',
-          key: 'coordinate_b',
-          align: 'center'
-        },
-        {
-          title: 'Action',
-          slot: 'action',
-          width: 150,
-          align: 'center'
-        }
-      ],
-      coordinateData: [],
-      imgThreshold: 95,
-      featurePointFileName: ''
+      suffixs: []
     }
   },
   methods: {
@@ -170,6 +133,7 @@ export default {
       const currentDevice = this.deviceData[this.currentDeviceRow]
       this.loading = true
       this.$bus.emit('isLoading')
+      this.$emit('setImgName', this.currentImgName)
       let getScreenShotParams = {
         device_label: currentDevice.device_label,
         device_ip: currentDevice.ip_address,
@@ -192,39 +156,6 @@ export default {
         }
         this.loading = false
       })
-    },
-    remove (index) {
-      this.coordinateData.splice(index, 1)
-    },
-    setFeaturePointFileName () {
-      let coordinateNum = 1
-      let coordinateDataList = {}
-      if (!this.imgThreshold) {
-        this.$Message.error({
-          background: true,
-          content: '识别率未输入'
-        })
-        return
-      } else {
-        coordinateDataList.threshold = parseFloat(this.imgThreshold)
-      }
-      for (let i = 0; i < this.coordinateData.length; i++) {
-        if (this.coordinateData[i].coordinate_a !== '' && this.coordinateData[i].coordinate_b !== '') {
-          let area = 'area' + coordinateNum
-          let coordinateRowList = this.coordinateData[i].coordinate_a.split(',').concat(this.coordinateData[i].coordinate_b.split(',')).map(parseFloat)
-          coordinateDataList[area] = coordinateRowList
-          coordinateNum++
-          console.log(area, coordinateRowList, coordinateDataList)
-        }
-      }
-      this.$bus.emit('setNamesAboutScreenShotFile', this.currentImgName, this.featurePointFileName)
-      this.$bus.emit('addResFile', {
-        'name': this.featurePointFileName + '.json',
-        'type': 'json',
-        'file': JSON.stringify(coordinateDataList, null, 4),
-        'fileUrl': ''
-      })
-      this.coordinateData = []
     }
   },
   watch: {
@@ -232,19 +163,9 @@ export default {
       this.currentImgName = val
     }
   },
-  created () {
-    this.$bus.on('remove', index => this.remove(index))
-    this.$bus.on('getCoordinate', coordinate => {
-      this.coordinateData.push(coordinate)
-    })
-  },
   mounted () {
     this.deviceRefresh()
     this.currentImgName = this.imgName
-  },
-  beforeDestroy () {
-    this.$bus.off('remove')
-    this.$bus.off('getCoordinate')
   }
 }
 </script>
@@ -256,7 +177,7 @@ export default {
   right: 0;
   z-index: 2;
 }
-.get-image, .get-recognition-rate {
+.get-image {
   display: flex;
   justify-content: space-between;
   margin-top: 20px;

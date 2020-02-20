@@ -65,7 +65,8 @@
       </div> -->
       <div>
         <Input v-show="dataFromUnitItem && dataFromUnitItem.itemContent.type !== 'jobResourceFile' ? true : false" v-for="(blank, index) in tmachBlanks" :key="index" v-model="tmachBlanks[index]" style="margin-bottom: 10px;"></Input>
-        <unit-editor-screen-shot :imgName="tmachBlanks[0]" v-if="dataFromUnitItem && dataFromUnitItem.itemContent.type === 'jobResourceFile' ? true : false"></unit-editor-screen-shot>
+        <unit-editor-screen-shot :imgName="tmachBlanks[0]" @setImgName="setImgName" v-if="dataFromUnitItem && dataFromUnitItem.itemName === 'referImgFile'"></unit-editor-screen-shot>
+        <unit-editor-get-feature-point :featurePointFileName="tmachBlanks[0]" @setFeaturePointFileName="setFeaturePointFileName" v-if="dataFromUnitItem && dataFromUnitItem.itemName === 'configFile'"></unit-editor-get-feature-point>
         <p><Tag>操作说明</Tag>{{ dataFromUnitItem ? dataFromUnitItem.itemContent.meaning : ''}}</p>
         <Checkbox v-model="saveToFinalResult" v-if="dataFromUnitItem && dataFromUnitItem.itemContent.type === 'outputPicture' ? true : false" style="float: right;">添加此图片至最终结果</Checkbox>
       </div>
@@ -78,12 +79,13 @@
 
 <script>
 import unitEditorScreenShot from './unitEditorScreenShot'
+import unitEditorGetFeaturePoint from './unitEditorGetFeaturePoint'
 
 import { fileToDataURL } from '../lib/tools.js'
 
 export default {
   name: 'item-edit',
-  components: { unitEditorScreenShot },
+  components: { unitEditorScreenShot, unitEditorGetFeaturePoint },
   props: {
     unitName: {
       type: String,
@@ -186,6 +188,7 @@ export default {
         let suffixOfPicture = '.jpg'
         let commandOfSaveToFinal = '<copy2rdsDatPath>'
         for (let i = 0; i < this.tmachBlanks.length; i++) {
+          if (this.tmachBlanks[i].length === 0) continue
           if (this.tmachBlanks[i].endsWith('.JPG') || this.tmachBlanks[i].endsWith('.png') || this.tmachBlanks[i].endsWith('.PNG')) {
             this.tmachBlanks[i] = this.tmachBlanks[i].slice(0, this.tmachBlanks[i].length - 4) + suffixOfPicture
           }
@@ -266,6 +269,13 @@ export default {
         }
       }
       return tmachBlanks
+    },
+    setImgName (imgName) {
+      this.tmachBlanks[0] = imgName
+    },
+    setFeaturePointFileName (featurePointFileName) {
+      console.log(featurePointFileName)
+      this.tmachBlanks[0] = featurePointFileName
     }
   },
   created () {
