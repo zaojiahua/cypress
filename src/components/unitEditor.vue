@@ -1,8 +1,11 @@
 <template>
   <Modal v-model="unitEditorShow" :mask-closable="false" :closable="false" width="90" @on-ok="saveUnit" @on-cancel="closeUnitEditor">
       <div slot="header" class="unit-editor-header">
-        <span>Unit Editor</span>
-        <Input type="text" v-model="currentUnitName" style="margin-left:20px; flex: 1; font-size: 1rem;" ><span slot="prepend">UnitName</span></Input>
+        <span>UNIT EDITOR</span>
+        <div style="margin-left:20px; display: flex; align-items: center; width: 32.8%;">
+          <Tag color="green" size="large" style="display: flex; align-items: center;">UNIT NAME</Tag>
+          <Input type="text" v-model="currentUnitName" style="flex: 1;"></Input>
+        </div>
       </div>
       <div class="unit-editor">
         <div>
@@ -151,8 +154,8 @@ export default {
       this.$emit('closeUnitEditor')
     },
     saveUnit () {
-      this.$refs.itemEdit.showEditPane = false
       this.$emit('saveUnit', this.currentUnitName, this.currentUnitContent)
+      this.closeUnitEditor()
     },
     handleSearch (value) {
       this.suffixs = !value || value.indexOf('.') >= 0 ? [] : [

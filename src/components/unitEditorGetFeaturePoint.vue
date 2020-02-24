@@ -7,7 +7,7 @@
       </template>
     </Table>
     <Input placeholder="为选取的特征点们取一个名字吧" required v-model="currentFeaturePointFileName">
-      <span slot="prepend">特征点名称</span>
+      <span slot="prepend">配置文件名称</span>
     </Input>
     <div class="get-recognition-rate">
       <div style="display: flex; align-items: center; width: 66%">
@@ -20,6 +20,8 @@
 </template>
 
 <script>
+import { blobToDataURL, suffixAutoRemove, suffixAutoComplete } from '../lib/tools.js'
+
 export default {
   props: {
     featurePointFileName: {
@@ -52,6 +54,19 @@ export default {
       currentFeaturePointFileName: ''
     }
   },
+  watch: {
+    featurePointFileName (val) {
+      this.currentFeaturePointFileName = suffixAutoRemove(val)
+    },
+    currentFeaturePointFileName (val) {
+      this.currentFeaturePointFileName = suffixAutoRemove(val)
+    }
+  },
+  computed: {
+    computedImgThreshold () {
+      return (this.imgThreshold / 100).toFixed(4)
+    }
+  },
   methods: {
     remove (index) {
       this.coordinateData.splice(index, 1)
@@ -66,7 +81,7 @@ export default {
         })
         return
       } else {
-        coordinateDataList.threshold = parseFloat(this.imgThreshold)
+        coordinateDataList.threshold = parseFloat(this.computedImgThreshold)
       }
       for (let i = 0; i < this.coordinateData.length; i++) {
         if (this.coordinateData[i].coordinate_a !== '' && this.coordinateData[i].coordinate_b !== '') {
@@ -77,9 +92,12 @@ export default {
           console.log(area, coordinateRowList, coordinateDataList)
         }
       }
-      this.$emit('setFeaturePointFileName', this.currentFeaturePointFileName)
+
+      let featurePointFileName = suffixAutoComplete(this.currentFeaturePointFileName, '.json')
+
+      this.$emit('setFeaturePointFileName', featurePointFileName)
       this.$bus.emit('addResFile', {
-        'name': this.featurePointFileName + '.json',
+        'name': featurePointFileName,
         'type': 'json',
         'file': JSON.stringify(coordinateDataList, null, 4),
         'fileUrl': ''
@@ -88,7 +106,7 @@ export default {
     }
   },
   mounted () {
-    this.currentFeaturePointFileName = this.featurePointFileName.replace('.json', '')
+    this.currentFeaturePointFileName = suffixAutoRemove(this.featurePointFileName)
   },
   created () {
     this.$bus.on('remove', index => this.remove(index))

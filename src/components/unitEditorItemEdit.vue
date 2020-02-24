@@ -64,9 +64,16 @@
         </div>
       </div> -->
       <div>
-        <Input v-show="dataFromUnitItem && dataFromUnitItem.itemContent.type !== 'jobResourceFile' ? true : false" v-for="(blank, index) in tmachBlanks" :key="index" v-model="tmachBlanks[index]" style="margin-bottom: 10px;"></Input>
-        <unit-editor-screen-shot :imgName="tmachBlanks[0]" @setImgName="setImgName" v-if="dataFromUnitItem && dataFromUnitItem.itemName === 'referImgFile'"></unit-editor-screen-shot>
-        <unit-editor-get-feature-point :featurePointFileName="tmachBlanks[0]" @setFeaturePointFileName="setFeaturePointFileName" v-if="dataFromUnitItem && dataFromUnitItem.itemName === 'configFile'"></unit-editor-get-feature-point>
+        <Input
+          v-show="showInput"
+          v-for="(blank, index) in tmachBlanks"
+          :key="index" v-model="tmachBlanks[index]"
+          style="margin-bottom: 10px;"
+          :placeholder="dataFromUnitItem && dataFromUnitItem.itemContent.type === 'outputFile' ? 'text.txt' : dataFromUnitItem.itemContent.type === 'outputPicture' ? 'snap.jpg' : ''"
+        >
+        </Input>
+        <unit-editor-screen-shot :imgName="tmachBlanks[0]" @setImgName="setImgName" v-if="dataFromUnitItem && dataFromUnitItem.itemContent.type === 'jobResourcePicture'"></unit-editor-screen-shot>
+        <unit-editor-get-feature-point :featurePointFileName="tmachBlanks[0]" @setFeaturePointFileName="setFeaturePointFileName" v-if="dataFromUnitItem && dataFromUnitItem.itemContent.type === 'jobResourceFile'"></unit-editor-get-feature-point>
         <p><Tag>操作说明</Tag>{{ dataFromUnitItem ? dataFromUnitItem.itemContent.meaning : ''}}</p>
         <Checkbox v-model="saveToFinalResult" v-if="dataFromUnitItem && dataFromUnitItem.itemContent.type === 'outputPicture' ? true : false" style="float: right;">添加此图片至最终结果</Checkbox>
       </div>
@@ -171,6 +178,14 @@ export default {
       }
     }
   },
+  computed: {
+    showInput () {
+      if (this.dataFromUnitItem.itemContent.type !== 'jobResourcePicture' && this.dataFromUnitItem.itemContent.type !== 'jobResourceFile') {
+        return true
+      }
+      return false
+    }
+  },
   methods: {
     reset () {
       this.file = null
@@ -219,6 +234,9 @@ export default {
       let res = this.dataFromUnitItem.itemContent.content.match(/Tmach.*? /g)
       for (let i = 0; i < res.length; i++) {
         this.dataFromUnitItem.itemContent.content = this.dataFromUnitItem.itemContent.content.replace(res[i], 'Tmach' + this.tmachBlanks[i] + ' ')
+      }
+      if (this.unitType === 'IMGTOOL' && this.dataFromUnitItem.itemContent.type === 'jobResourcePicture') {
+        this.$bus.emit('setUnitItemState')
       }
       this.$bus.emit('saveChange', this.dataFromUnitItem, this.tmachBlanks)
       this.$bus.emit('reset')

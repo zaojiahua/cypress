@@ -97,4 +97,20 @@ function blobToDataURL (blob) {
   })
 }
 
-export { findBrothersComponents, findComponentsDownward, fileToDataURL, dataURLtoFile, blobToDataURL }
+function suffixAutoRemove (str) {
+  let suffixIndex = str.lastIndexOf('.')
+  if (suffixIndex !== -1) {
+    return str.substring(0, suffixIndex)
+  }
+  return str
+}
+
+function suffixAutoComplete (str, suffix) {
+  let suffixIndex = str.lastIndexOf('.')
+  if (suffixIndex !== -1) {
+    return str.substring(0, suffixIndex) + suffix
+  }
+  return str + suffix
+}
+
+export { findBrothersComponents, findComponentsDownward, fileToDataURL, dataURLtoFile, blobToDataURL, suffixAutoRemove, suffixAutoComplete }

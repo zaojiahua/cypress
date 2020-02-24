@@ -1,6 +1,6 @@
 <template>
-  <div class="item" :class="{active: checked}" @click="handleClick">
-    <p class="item-content" ><Tag :color="isComplete ? 'success' : 'error'">{{ isComplete ? '编辑完成' : '暂无数据' }}</Tag><span>{{ tagContent[this.currentItemData.type] }}</span></p>
+  <div class="item" :class="{active: checked, disabled: !canEdit}" @click="handleClick">
+    <p class="item-content" ><Tag :color="!canEdit ? '#aaaaaa' : isComplete ? 'success' : 'error'">{{ isComplete ? '编辑完成' : '暂无数据' }}</Tag><span>{{ tagContent[this.currentItemData.type] }}</span></p>
   </div>
 </template>
 
@@ -32,14 +32,16 @@ export default {
         content: ''
       },
       tagContent: {
-        'jobResourceFile': '参考标准图片',
+        'jobResourceFile': '图片配置文件',
+        'jobResourcePicture': '参考标准图片',
         'inputPicture': '输入图片名称',
         'inputFile': '输入文件名称',
         'outputPicture': '输出图片名称',
         'outputFile': '输出文件名称',
         'uxInput': '手动输入坐标值'
       },
-      tmachBlanks: []
+      tmachBlanks: [],
+      canEdit: true
     }
   },
   watch: {
@@ -60,6 +62,13 @@ export default {
   },
   methods: {
     handleClick () {
+      if (this.canEdit === false) {
+        this.$Modal.warning({
+          title: '温馨提示',
+          content: '请先在 参考标准图片 中获取图片'
+        })
+        return
+      }
       this.checked = true
       let unitItemBrothers = findBrothersComponents(this, 'unit-item')
       unitItemBrothers.forEach(bro => {
@@ -85,12 +94,19 @@ export default {
     },
     _reset () {
       this.checked = false
+    },
+    _setUnitItemState () {
+      this.canEdit = true
     }
   },
   created () {
     this.$bus.on('reset', this._reset)
+    this.$bus.on('setUnitItemState', this._setUnitItemState)
   },
   mounted () {
+    if (this.itemData.itemContent.type === 'jobResourceFile') {
+      this.canEdit = false
+    }
     if (this.itemData.itemContent) {
       this.isComplete = this._hasCompleted(this.itemData.itemContent)
       this._getDataForItemEdit()
@@ -98,6 +114,7 @@ export default {
   },
   beforeDestroy () {
     this.$bus.off('reset', this._reset)
+    this.$bus.off('setUnitItemState', this._setUnitItemState)
   }
 }
 </script>
@@ -116,8 +133,8 @@ export default {
     border-color: #a7dbf3;
   }
   &:checked {
-      box-shadow: inset 0px 0px 20px #093549;
-      border-color: #072c3d;
+    box-shadow: inset 0px 0px 20px #093549;
+    border-color: #072c3d;
   }
 
   .item-name {
@@ -137,5 +154,13 @@ export default {
 .active {
   box-shadow: inset 0px 0px 20px #c1dfec;
   border-color: #a2c6d6;
+}
+.disabled {
+  background: #cccccc;
+  &:hover {
+    box-shadow: inset 0px 0px 0px #c1dfec;
+    border: 1px solid #eeeeee;
+    cursor: not-allowed;
+  }
 }
 </style>

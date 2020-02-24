@@ -13,8 +13,7 @@
     </Table>
     <div class="get-image">
       <div style="display: flex; align-items: center; width: 66%;">
-        <span slot="prepend">图片名称：</span>
-        <AutoComplete
+        <!-- <AutoComplete
           v-model="currentImgName"
           :data="suffixs"
           @on-search="handleSearch"
@@ -22,7 +21,10 @@
           clearable
           style="flex: 1;">
           <Option v-for="suffix in suffixs" :value="suffix" :key="suffix">{{ suffix }}</Option>
-        </AutoComplete>
+        </AutoComplete> -->
+        <Input v-model="currentImgName">
+          <span slot="prepend">图片名称</span>
+        </Input>
       </div>
       <Button type="primary" :loading="loading" @click="getImg">
         <span v-if="!loading">Commit</span>
@@ -36,7 +38,7 @@
 import { getUsableDeviceList } from '../api/reef/device.js'
 import { getScreenShot } from '../api/coral/jobLibSvc.js'
 
-import { blobToDataURL } from '../lib/tools.js'
+import { blobToDataURL, suffixAutoRemove, suffixAutoComplete } from '../lib/tools.js'
 
 import util from '../lib/util/validate.js'
 
@@ -120,7 +122,6 @@ export default {
     getImg () {
       let errors = []
       if (this.currentDeviceRow === -1) errors.push('未选择 device')
-      if (!this.currentImgName || !new RegExp('(.jpg|.JPG)$').test(this.currentImgName)) errors.push('图片名称后缀格式错误')
       if (errors.length) {
         errors.forEach(error => {
           this.$Message.error({
@@ -133,11 +134,13 @@ export default {
       const currentDevice = this.deviceData[this.currentDeviceRow]
       this.loading = true
       this.$bus.emit('isLoading')
-      this.$emit('setImgName', this.currentImgName)
+
+      let imgName = suffixAutoComplete(this.currentImgName, '.jpg')
+      this.$emit('setImgName', imgName)
       let getScreenShotParams = {
         device_label: currentDevice.device_label,
         device_ip: currentDevice.ip_address,
-        picture_name: this.currentImgName
+        picture_name: imgName
       }
       getScreenShot(getScreenShotParams).then(res => {
         if (res.status === 200) {
@@ -150,6 +153,12 @@ export default {
               'isScreenShot': true
             })
             this.$bus.emit('isLoading')
+            this.$bus.emit('addResFile', {
+              'name': imgName,
+              'type': 'jpg',
+              'file': res,
+              'fileUrl': ''
+            })
           })
         } else if (res.status === 500) {
           console.log(res)
@@ -160,12 +169,15 @@ export default {
   },
   watch: {
     imgName (val) {
-      this.currentImgName = val
+      this.currentImgName = suffixAutoRemove(val)
+    },
+    currentImgName (val) {
+      this.currentImgName = suffixAutoRemove(val)
     }
   },
   mounted () {
     this.deviceRefresh()
-    this.currentImgName = this.imgName
+    this.currentImgName = suffixAutoRemove(this.imgName)
   }
 }
 </script>
