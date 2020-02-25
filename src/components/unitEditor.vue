@@ -13,7 +13,7 @@
           <unit-editor-raw-unit :unitContent="currentUnitContent" :unitType="unitType" style="margin-top: 20px;"></unit-editor-raw-unit>
         </div>
         <div>
-          <unit-editor-item-edit ref="itemEdit" :unitName="currentUnitName" :unitType="unitType"></unit-editor-item-edit>
+          <unit-editor-item-edit :filesName="filesName" ref="itemEdit" :unitName="currentUnitName" :unitType="unitType"></unit-editor-item-edit>
         </div>
         <div>
           <unit-editor-utils></unit-editor-utils>
@@ -46,6 +46,12 @@ export default {
     unitContent: {
       type: String,
       default: ''
+    },
+    filesName: {
+      type: Array,
+      default () {
+        return []
+      }
     }
   },
   data () {

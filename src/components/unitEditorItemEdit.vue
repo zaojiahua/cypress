@@ -72,6 +72,19 @@
           :placeholder="dataFromUnitItem && dataFromUnitItem.itemContent.type === 'outputFile' ? 'text.txt' : dataFromUnitItem.itemContent.type === 'outputPicture' ? 'snap.jpg' : ''"
         >
         </Input>
+        <AutoComplete
+          v-show="dataFromUnitItem && (dataFromUnitItem.itemContent.type === 'inputFile' || dataFromUnitItem.itemContent.type === 'inputPicture') ? true : false"
+          v-for="(blank, index) in tmachBlanks"
+          :key="blank" v-model="tmachBlanks[index]"
+          style="margin-bottom: 10px;"
+        >
+          <div v-for="(names, index) in filesName" :key="index">
+            <div class="auto-complete-title">
+              <span>{{ names.title }}</span>
+            </div>
+            <Option v-for="(name, index) in names.children" :key="index" :value="name"></Option>
+          </div>
+        </AutoComplete>
         <unit-editor-screen-shot :imgName="tmachBlanks[0]" @setImgName="setImgName" v-if="dataFromUnitItem && dataFromUnitItem.itemContent.type === 'jobResourcePicture'"></unit-editor-screen-shot>
         <unit-editor-get-feature-point :featurePointFileName="tmachBlanks[0]" @setFeaturePointFileName="setFeaturePointFileName" v-if="dataFromUnitItem && dataFromUnitItem.itemContent.type === 'jobResourceFile'"></unit-editor-get-feature-point>
         <p><Tag>操作说明</Tag>{{ dataFromUnitItem ? dataFromUnitItem.itemContent.meaning : ''}}</p>
@@ -101,6 +114,12 @@ export default {
     unitType: {
       type: String,
       default: ''
+    },
+    filesName: {
+      type: Array,
+      default () {
+        return []
+      }
     }
   },
   data () {
@@ -180,11 +199,18 @@ export default {
   },
   computed: {
     showInput () {
-      if (this.dataFromUnitItem.itemContent.type !== 'jobResourcePicture' && this.dataFromUnitItem.itemContent.type !== 'jobResourceFile') {
+      let itemType = this.dataFromUnitItem.itemContent.type
+      if (itemType !== 'jobResourcePicture' && itemType !== 'jobResourceFile' && itemType !== 'inputFile' && itemType !== 'inputPicture') {
         return true
       }
       return false
+    },
+    showAutoComplete () {
+      let itemType = this.dataFromUnitItem.itemContent.type
+      if (itemType !== 'inputFile' && itemType !== 'inputPicture') return true
+      return false
     }
+
   },
   methods: {
     reset () {
@@ -230,6 +256,12 @@ export default {
     },
     saveItem () {
       this.showEditPane = false
+      if (this.dataFromUnitItem.itemContent.type === 'outputFile') {
+        this.$bus.emit('addFilesName', 'file', this.tmachBlanks)
+      }
+      if (this.dataFromUnitItem.itemContent.type === 'outputPicture') {
+        this.$bus.emit('addFilesName', 'picture', this.tmachBlanks)
+      }
       this._tmachBlankSuffixComplete()
       let res = this.dataFromUnitItem.itemContent.content.match(/Tmach.*? /g)
       for (let i = 0; i < res.length; i++) {
@@ -315,6 +347,11 @@ export default {
   flex-direction: column;
   justify-content: space-between;
   height: 755px;
+
+  .auto-complete-title {
+    padding: 0 10px;
+    font-weight: bold;
+  }
 
   .data-type {
     display: flex;

@@ -23,7 +23,7 @@
     <!-- <job-editor-header :jobName="jobName" @saveJob="saveJob" @showDrawer="showDrawerHandler"></job-editor-header> -->
     <job-in-job :jobModalShow="jobModalShow" :currentJobBlockText="currentJobBlockText" @jobModalClose="jobModalClose"></job-in-job>
     <job-res-file ref="jobResFile" :jobName="jobName" :resFileModalShow="resFileModalShow" @resFileModalClose="resFileModalClose"></job-res-file>
-    <unit-editor :unitName="unitName" :unitContent="unitContent" :unitEditorModalShow="unitEditorModalShow" @closeUnitEditor="closeUnitEditor" @saveRawUnit="saveRawUnit" @saveUnit="saveUnit"></unit-editor>
+    <unit-editor :filesName="filesName" :unitName="unitName" :unitContent="unitContent" :unitEditorModalShow="unitEditorModalShow" @closeUnitEditor="closeUnitEditor" @saveRawUnit="saveRawUnit" @saveUnit="saveUnit"></unit-editor>
     <div id="chart-wrap">
       <div id="chart-palette"></div>
       <div id="chart-diagram"></div>
@@ -180,7 +180,21 @@ export default {
       openUnitTemplateEditor: false,
       unitTemplateContent: '',
       unitTemplateId: undefined,
-      unitTypes: []
+      unitTypes: [],
+      filesName: [
+        {
+          title: '文件名称',
+          children: [
+            'text'
+          ]
+        },
+        {
+          title: '图片名称',
+          children: [
+            'snap'
+          ]
+        }
+      ]
     }
   },
   mounted () {
@@ -824,6 +838,15 @@ export default {
   created () {
     this.$bus.on('saveRawUnit', rawUnitMsg => {
       this.saveRawUnit(rawUnitMsg)
+    })
+    this.$bus.on('addFilesName', (type, data) => {
+      console.log(type, data)
+      if (type === 'file') {
+        this.filesName[0].children = this.filesName[0].children.concat(data)
+      }
+      if (type === 'picture') {
+        this.filesName[1].children = this.filesName[1].children.concat(data)
+      }
     })
   },
   beforeDestroy () {

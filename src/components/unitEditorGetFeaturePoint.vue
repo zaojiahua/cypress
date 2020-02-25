@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import { blobToDataURL, suffixAutoRemove, suffixAutoComplete } from '../lib/tools.js'
+import { suffixAutoRemove, suffixAutoComplete } from '../lib/tools.js'
 
 export default {
   props: {
