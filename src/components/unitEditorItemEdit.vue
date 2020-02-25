@@ -101,7 +101,7 @@
 import unitEditorScreenShot from './unitEditorScreenShot'
 import unitEditorGetFeaturePoint from './unitEditorGetFeaturePoint'
 
-import { fileToDataURL } from '../lib/tools.js'
+import { fileToDataURL, suffixAutoRemove, suffixAutoComplete } from '../lib/tools.js'
 
 export default {
   name: 'item-edit',
@@ -225,41 +225,31 @@ export default {
       this.tmach = ''
     },
     _tmachBlankSuffixComplete () {
-      if (this.dataFromUnitItem.itemContent.type === 'outputPicture' || this.dataFromUnitItem.itemContent.type === 'inputPicture') {
-        let suffixOfPicture = '.jpg'
+      let itemType = this.dataFromUnitItem.itemContent.type
+      if (itemType === 'outputPicture' || itemType === 'inputPicture') {
         let commandOfSaveToFinal = '<copy2rdsDatPath>'
         for (let i = 0; i < this.tmachBlanks.length; i++) {
           if (this.tmachBlanks[i].length === 0) continue
-          if (this.tmachBlanks[i].endsWith('.JPG') || this.tmachBlanks[i].endsWith('.png') || this.tmachBlanks[i].endsWith('.PNG')) {
-            this.tmachBlanks[i] = this.tmachBlanks[i].slice(0, this.tmachBlanks[i].length - 4) + suffixOfPicture
-          }
-          if (!this.tmachBlanks[i].endsWith(suffixOfPicture)) {
-            this.tmachBlanks[i] += suffixOfPicture
-          }
+          this.tmachBlanks[i] = suffixAutoComplete(this.tmachBlanks[i], '.jpg')
           if (this.saveToFinalResult) {
             this.tmachBlanks[i] += commandOfSaveToFinal
           }
         }
       }
-      if (this.dataFromUnitItem.itemContent.type === 'outputFile' || this.dataFromUnitItem.itemContent.type === 'inputFile') {
-        let indexOfPoint
-        let suffixOfFile = '.txt'
+      if (itemType === 'outputFile' || itemType === 'inputFile') {
         for (let i = 0; i < this.tmachBlanks.length; i++) {
-          indexOfPoint = this.tmachBlanks[i].lastIndexOf('.')
-          if (indexOfPoint === -1) {
-            this.tmachBlanks[i] += suffixOfFile
-          } else {
-            this.tmachBlanks[i] = this.tmachBlanks[i].substring(0, indexOfPoint) + suffixOfFile
-          }
+          if (this.tmachBlanks[i].length === 0) continue
+          this.tmachBlanks[i] = suffixAutoComplete(this.tmachBlanks[i], '.txt')
         }
       }
     },
     saveItem () {
+      let itemType = this.dataFromUnitItem.itemContent.type
       this.showEditPane = false
-      if (this.dataFromUnitItem.itemContent.type === 'outputFile') {
+      if (itemType === 'outputFile') {
         this.$bus.emit('addFilesName', 'file', this.tmachBlanks)
       }
-      if (this.dataFromUnitItem.itemContent.type === 'outputPicture') {
+      if (itemType === 'outputPicture') {
         this.$bus.emit('addFilesName', 'picture', this.tmachBlanks)
       }
       this._tmachBlankSuffixComplete()
@@ -267,7 +257,7 @@ export default {
       for (let i = 0; i < res.length; i++) {
         this.dataFromUnitItem.itemContent.content = this.dataFromUnitItem.itemContent.content.replace(res[i], 'Tmach' + this.tmachBlanks[i] + ' ')
       }
-      if (this.unitType === 'IMGTOOL' && this.dataFromUnitItem.itemContent.type === 'jobResourcePicture') {
+      if (this.unitType === 'IMGTOOL' && itemType === 'jobResourcePicture') {
         this.$bus.emit('setUnitItemState')
       }
       this.$bus.emit('saveChange', this.dataFromUnitItem, this.tmachBlanks)

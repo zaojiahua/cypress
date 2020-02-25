@@ -48,8 +48,8 @@ export default {
     itemData (val) {
       if (val) {
         this.currentItemData = val.itemContent
+        if (this.currentItemData.type === 'jobResourceFile') this.canEdit = false
         this.isComplete = this._hasCompleted(this.currentItemData)
-        // this.currentItemData = this._handleCurrentItemData(this.currentItemData)
         this._getDataForItemEdit()
         if (this.checked) {
           this.$el.click()
@@ -104,7 +104,7 @@ export default {
     this.$bus.on('setUnitItemState', this._setUnitItemState)
   },
   mounted () {
-    if (this.itemData.itemContent.type === 'jobResourceFile') {
+    if (this.itemData.itemContent.type == 'jobResourceFile') {
       this.canEdit = false
     }
     if (this.itemData.itemContent) {
