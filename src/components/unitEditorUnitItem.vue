@@ -104,7 +104,7 @@ export default {
     this.$bus.on('setUnitItemState', this._setUnitItemState)
   },
   mounted () {
-    if (this.itemData.itemContent.type == 'jobResourceFile') {
+    if (this.itemData.itemContent.type === 'jobResourceFile') {
       this.canEdit = false
     }
     if (this.itemData.itemContent) {

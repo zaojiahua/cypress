@@ -376,7 +376,7 @@ export default {
       let example = {
         category: 'Unit'
       }
-      let inputFile, outputFile
+      // let inputFile, outputFile
 
       unitTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
@@ -662,10 +662,10 @@ export default {
       }
       return Promise.all(requests)
     },
-    _getData () {
+    _getData (id) {
       let filesData = this.$refs.jobResFile.filesData
       let data = new FormData()
-      data.append('job', this.$route.query.jobId)
+      data.append('job', id)
       for (let i = 0; i < filesData.length; i++) {
         let file = null
         if (filesData[i].type === 'jpg' || filesData[i].type === 'png') {
@@ -693,44 +693,51 @@ export default {
       if (this._jobFlowRules() & this._jobMsgRules()) {
         let info = this.$refs.jobDetail.jobInfo
         let jobFlow = this.myDiagram.model.toJson()
-        Promise.all([this._createNewTag('test_area')]).then(() => { // this._createNewTag('custom_tag') API暂时不能用
-          // console.log(this.$refs.jobDetail.jobInfo.test_area)
+        Promise.all([this._createNewTag('test_area')]).then((res) => { // this._createNewTag('custom_tag') API暂时不能用
           let id = this.$route.query.jobId
           info.ui_json_file = JSON.parse(jobFlow)
-          if (!id) { // 新建job
-            info.job_label = this._createJobLabel(jobFlow)
-            jobFlowAndMsgSave(info).then(res => {
-            // 保存成功后跳转回jobList页面
-              if (res.status === 200) {
-                this.isCertain = true
-                this.$router.push({ path: '/jobList' })
-                this.$Message.info('操作完成')
-              } else {
-                console.log(res)
-              }
-            }).catch(res => {
-              debugger
-            })
-          } else { // 更新job
-            let data = this._getData() // 准备要上传的依赖文件
-
-            jobFlowAndMsgUpdate(id, info).then(res => { // 保存job
-              if (res.status === 200) {
-                this.$Message.info('Job 保存成功')
-
-                jobResFilesSave(data).then(res => { // 上传依赖文件
-                  if (res.status === 201) {
-                    this.isCertain = true
-                    this.$Message.info('Job 依赖文件保存成功')
-                    console.log('更新成功')
-                    this.$router.push({ path: '/jobList' })
-                  } else {
-                    console.log(res)
+          if (id) { // 不是新建 job
+            if (this.switchButton) { // 另存为
+              info.job_label = this._createJobLabel(jobFlow)
+              jobFlowAndMsgSave(info).then(res => {
+                if (res.status === 201) {
+                  id = res.data.id
+                }
+              }).then(() => {
+                let data = this._getData(id)
+                jobFlowAndMsgUpdate(id, info).then(res => {
+                  if (res.status === 200) {
+                    jobResFilesSave(data).then(res => {
+                      if (res.status === 201) {
+                        this.$Message.info('保存成功')
+                        this.$router.push({ path: '/jobList' })
+                      }
+                    })
                   }
                 })
-              } else {
-                console.log(res)
+              })
+            } else { // 更新
+              let data = this._getData(id)
+              jobFlowAndMsgUpdate(id, info).then(res => {
+                if (res.status === 200) {
+                  jobResFilesSave(data).then(res => {
+                    if (res.status === 201) {
+                      this.$Message.info('保存成功')
+                      this.$router.push({ path: '/jobList' })
+                    }
+                  })
+                }
+              })
+            }
+          } else { // 新建 job
+            info.job_label = this._createJobLabel(jobFlow)
+            jobFlowAndMsgSave(info).then(res => {
+              if (res.status === 201) {
+                this.$router.push({ path: '/jobList' })
+                this.$Message.info('操作完成')
               }
+            }).catch(err => {
+              console.log(err)
             })
           }
         })

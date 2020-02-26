@@ -99,7 +99,7 @@ export default {
           selArea.style.display = 'flex'
           break
         case 'mousemove':
-          var selArea = this.selectionArea
+          selArea = this.selectionArea
           if (this.isDragging) {
             selArea.style.width = Math.abs(event.clientX - this.mouseStartX) + 'px'
             selArea.style.height = Math.abs(event.clientY - this.mouseStartY) + 'px'
@@ -233,10 +233,6 @@ export default {
   .file-container {
     flex: 1;
     height: 100%;
-
-    .text {
-
-    }
 
     .image-container {
       display: flex;

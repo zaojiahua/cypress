@@ -101,7 +101,7 @@
 import unitEditorScreenShot from './unitEditorScreenShot'
 import unitEditorGetFeaturePoint from './unitEditorGetFeaturePoint'
 
-import { fileToDataURL, suffixAutoRemove, suffixAutoComplete } from '../lib/tools.js'
+import { fileToDataURL, suffixAutoComplete } from '../lib/tools.js'
 
 export default {
   name: 'item-edit',
