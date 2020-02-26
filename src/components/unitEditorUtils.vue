@@ -13,19 +13,10 @@
           <Input v-model="fileToShow" type="textarea" :rows="16" />
         </div>
         <div v-show="isImage" class="image-container">
+          <Button size="small" type="primary" @click.native="getCoordinate" id='btn-confirm-area'>确定</Button>
           <div class="image-zoom">
             <img :src="fileToShow" draggable="false" class="image">
-            <div id="selection-area" v-show="isScreenShot">
-              <Button size="small" type="primary" @click="getCoordinate">选取完毕</Button>
-              <div class="block" id="top-left"></div>
-              <div class="block" id="top-right"></div>
-              <div class="block" id="bottom-right"></div>
-              <div class="block" id="bottom-left"></div>
-              <div class="border" id="top"></div>
-              <div class="border" id="right"></div>
-              <div class="border" id="bottom"></div>
-              <div class="border" id="left"></div>
-            </div>
+            <div id="selection-area" v-show="isScreenShot"></div>
           </div>
         </div>
         <div v-show="isVideo" class="video">
@@ -52,11 +43,11 @@ export default {
       imageZoom: null,
       imageZoomData: null,
       selectionArea: null,
+      btnConfirmArea: null,
       selectionAreaData: null,
       mouseStartX: undefined,
       mouseStartY: undefined,
-      dragging: false,
-      bottomRightToggle: false
+      isDragging: false
     }
   },
   methods: {
@@ -89,53 +80,46 @@ export default {
         this.fileToShow = data.fileToShow
       }
     },
-    drag (event) {
+    selectArea (event) {
       event.preventDefault()
       switch (event.type) {
         case 'mousedown':
-          this.dragging = true
-          this.mouseStartX = event.screenX
-          this.mouseStartY = event.screenY
-          this.imageZoomData = this.imageZoom.getBoundingClientRect()
-          this.selectionAreaData = this.selectionArea.getBoundingClientRect()
+          var selArea = this.selectionArea
+          this.isDragging = true
+          this.mouseStartX = event.clientX
+          this.mouseStartY = event.clientY
+          this.btnConfirmArea.style.display = 'none'
+          if (!this.imageZoomData) {
+            this.imageZoomData = this.imageZoom.getBoundingClientRect()
+          }
+          selArea.style.left = this.mouseStartX - this.imageZoomData.x + 'px'
+          selArea.style.top = this.mouseStartY - this.imageZoomData.y + 'px'
+          selArea.style.width = '0px'
+          selArea.style.height = '0px'
+          selArea.style.display = 'flex'
           break
         case 'mousemove':
-          let moveX = event.screenX - this.mouseStartX
-          let moveY = event.screenY - this.mouseStartY
-          if (this.dragging && !this.bottomRightToggle) {
-            if (event.target.id === 'selection-area') {
-              let topLeftX = moveX + this.selectionAreaData.x - this.imageZoomData.x
-              let topLeftY = moveY + this.selectionAreaData.y - this.imageZoomData.y
-              topLeftX = Math.min(Math.max(0, topLeftX), this.imageZoomData.width - this.selectionAreaData.width)
-              topLeftY = Math.min(Math.max(0, topLeftY), this.imageZoomData.height - this.selectionAreaData.height)
-              this.selectionArea.style.left = topLeftX + 'px'
-              this.selectionArea.style.top = topLeftY + 'px'
-            }
-          }
-          if (this.dragging && this.bottomRightToggle) {
-            let width = Math.min(this.selectionAreaData.width + moveX, this.imageZoomData.width)
-            let height = Math.min(this.selectionAreaData.height + moveY, this.imageZoomData.height)
-
-            this.selectionArea.style.width = width + 'px'
-            this.selectionArea.style.height = height + 'px'
+          var selArea = this.selectionArea
+          if (this.isDragging) {
+            selArea.style.width = Math.abs(event.clientX - this.mouseStartX) + 'px'
+            selArea.style.height = Math.abs(event.clientY - this.mouseStartY) + 'px'
           }
           break
         case 'mouseup':
-          this.dragging = false
-          this.bottomRightToggle = false
+          this.isDragging = false
+          this.btnConfirmArea.style.display = ''
+          this.selectionAreaData = this.selectionArea.getBoundingClientRect()
           break
       }
     },
-    over (event) {
-      if (!this.dragging) {
-        switch (event.target.id) {
-          case 'bottom-right':
-            this.bottomRightToggle = true
-            break
-          default:
-            this.bottomRightToggle = false
-        }
-      }
+    selectAreaMouseDown (event) {
+
+    },
+    selectAreaMouseMove (event) {
+
+    },
+    selectAreaMouseUp (event) {
+
     },
     getCoordinate () {
       let startPoint = {}
@@ -175,21 +159,20 @@ export default {
   mounted () {
     this.imageZoom = document.querySelector('.image-zoom')
     this.selectionArea = document.querySelector('#selection-area')
+    this.btnConfirmArea = document.querySelector('#btn-confirm-area')
 
-    document.addEventListener('mouseover', this.over)
-    this.selectionArea.addEventListener('mousedown', this.drag)
-    this.imageZoom.addEventListener('mousemove', this.drag)
-    this.imageZoom.addEventListener('mouseup', this.drag)
+    this.imageZoom.addEventListener('mousedown', this.selectArea)
+    this.imageZoom.addEventListener('mousemove', this.selectArea)
+    this.imageZoom.addEventListener('mouseup', this.selectArea)
   },
   beforeDestroy () {
     this.$bus.off('showFile')
     this.$bus.off('isLoading')
     this.$bus.off('reset', this.reset)
     this.$bus.off('setFileName')
-    document.removeEventListener('mouseover', this.over)
-    this.selectionArea.removeEventListener('mousedown', this.drag)
-    this.imageZoom.removeEventListener('mousemove', this.drag)
-    this.imageZoom.removeEventListener('mouseup', this.drag)
+    this.imageZoom.removeEventListener('mousedown', this.selectArea)
+    this.imageZoom.removeEventListener('mousemove', this.selectArea)
+    this.imageZoom.removeEventListener('mouseup', this.selectArea)
   }
 }
 </script>
@@ -260,23 +243,32 @@ export default {
       justify-content: center;
       align-items: center;
       height: 100%;
+      position: relative;
+
+      #btn-confirm-area {
+        position: absolute;
+        right: 0;
+        top: -54px;
+      }
 
       .image-zoom {
         position: relative;
+        border: 6px outset rgb(73, 195, 243);
 
         .image {
           user-select: none;
         }
 
         #selection-area {
-          position: absolute;
-          top: 40px;
-          left: 40px;
-          width: 100px;
-          height: 100px;
-          cursor: move;
+          position:absolute;
+          width:0px;
+          height:0px;
+          font-size:0px;
+          margin:0px;
+          padding:0px;
+          border:1px dashed #0099FF;
           background: url('../assets/image/selctionbg.png') repeat scroll 0 0 transparent;
-          display: flex;
+          display: none;
           justify-content: center;
           align-items: center;
 
