@@ -245,13 +245,29 @@ export default {
     },
     saveItem () {
       let itemType = this.dataFromUnitItem.itemContent.type
-      this.showEditPane = false
       if (itemType === 'outputFile') {
+        let flag = false
+        for (let i = 0; i < this.tmachBlanks.length; i++) {
+          if (this.filesName[0]['children'].includes(this.tmachBlanks[i])) {
+            flag = true
+            this.$Message.error(`该名字(${this.tmachBlanks[i]})已经存在，请再想一个吧`)
+          }
+        }
+        if (flag) return
         this.$bus.emit('addFilesName', 'file', this.tmachBlanks)
       }
       if (itemType === 'outputPicture') {
+        let flag = false
+        for (let i = 0; i < this.tmachBlanks.length; i++) {
+          if (this.filesName[1]['children'].includes(this.tmachBlanks[i])) {
+            flag = true
+            this.$Message.error(`该名字(${this.tmachBlanks[i]})已经存在，请再想一个吧`)
+          }
+        }
+        if (flag) return
         this.$bus.emit('addFilesName', 'picture', this.tmachBlanks)
       }
+      this.showEditPane = false
       this._tmachBlankSuffixComplete()
       let res = this.dataFromUnitItem.itemContent.content.match(/Tmach.*? /g)
       for (let i = 0; i < res.length; i++) {

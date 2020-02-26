@@ -184,15 +184,11 @@ export default {
       filesName: [
         {
           title: '文件名称',
-          children: [
-            'text'
-          ]
+          children: []
         },
         {
           title: '图片名称',
-          children: [
-            'snap'
-          ]
+          children: []
         }
       ]
     }
