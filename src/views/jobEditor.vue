@@ -693,7 +693,7 @@ export default {
       if (this._jobFlowRules() & this._jobMsgRules()) {
         let info = this.$refs.jobDetail.jobInfo
         let jobFlow = this.myDiagram.model.toJson()
-        Promise.all([this._createNewTag('test_area')]).then((res) => { // this._createNewTag('custom_tag') API暂时不能用
+        Promise.all([this._createNewTag('test_area'), this._createNewTag('custom_tag')]).then((res) => { // this._createNewTag('custom_tag') API暂时不能用
           let id = this.$route.query.jobId
           info.ui_json_file = JSON.parse(jobFlow)
           if (id) { // 不是新建 job
