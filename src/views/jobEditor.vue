@@ -23,7 +23,17 @@
     <!-- <job-editor-header :jobName="jobName" @saveJob="saveJob" @showDrawer="showDrawerHandler"></job-editor-header> -->
     <job-in-job :jobModalShow="jobModalShow" :currentJobBlockText="currentJobBlockText" @jobModalClose="jobModalClose"></job-in-job>
     <job-res-file ref="jobResFile" :jobName="jobName" :resFileModalShow="resFileModalShow" @resFileModalClose="resFileModalClose"></job-res-file>
-    <unit-editor :filesName="filesName" :unitName="unitName" :unitContent="unitContent" :unitEditorModalShow="unitEditorModalShow" @closeUnitEditor="closeUnitEditor" @saveRawUnit="saveRawUnit" @saveUnit="saveUnit"></unit-editor>
+    <unit-editor
+      :filesName="filesName"
+      :unitName="unitName"
+      :unitContent="unitContent"
+      :unitEditorModalShow="unitEditorModalShow"
+      :nodeKey="nodeKey"
+      @closeUnitEditor="closeUnitEditor"
+      @updateCanvas="updateCanvas"
+      @saveRawUnit="saveRawUnit"
+      @saveUnit="saveUnit"
+    ></unit-editor>
     <div id="chart-wrap">
       <div id="chart-palette"></div>
       <div id="chart-diagram"></div>
@@ -190,7 +200,8 @@ export default {
           title: '图片名称',
           children: []
         }
-      ]
+      ],
+      nodeKey: null
     }
   },
   mounted () {
@@ -356,7 +367,7 @@ export default {
 
       _this.blockDiagram.linkTemplate = linkTemplateStyle()
 
-      const unitTemplate = unitNodeTemplate('#c924c9', 'RoundedRectangle')
+      const unitTemplate = unitNodeTemplate('#c924c9')
       // unitTemplate.doubleClick = function (e, node) {
       //   if (e.diagram instanceof go.Palette) return
       //   _this.$Notice.destroy()
@@ -376,11 +387,12 @@ export default {
 
       unitTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
+        _this.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
         _this.unitMsgToogle = !_this.unitMsgToogle
         _this.unitEditorModalShow = true
         _this.unitNodeByKey = node.data.key
         _this.unitName = node.data.text
-
+        _this.nodeKey = node.data.key
         // let units = e.diagram.findNodesByExample(example) // 模糊查找，找到所有的 Unit
         // units.iterator.each(unit => {
         //   let unitMsgCmdDict = JSON.stringify(unit.data.unitMsg.execCmdDict, null, 2)
@@ -395,7 +407,8 @@ export default {
 
       unitTemplate.mouseEnter = function (e, node) {
         if (e.diagram instanceof go.Palette) return
-        _this.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
+        console.log(node.data)
+        // _this.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
         // outputFile = JSON.stringify(node.data.unitMsg, null, 2)
 
         // if (outputFile) {
@@ -412,7 +425,7 @@ export default {
         //   })
         // }
         // console.log(outputFile, inputFile)
-        tooltip.style.display = 'block'
+        // tooltip.style.display = 'block'
       }
 
       unitTemplate.mouseOver = function (e, node) {
@@ -471,7 +484,6 @@ export default {
       let basicModule = {
         'nodeDataArray': [
           { category: 'Start', text: 'Entry' },
-          { category: 'Unit', text: 'Unit' },
           { category: 'UnitList', text: 'UnitList', isGroup: true },
           { category: 'End', text: 'Exit' }
         ]
@@ -756,7 +768,8 @@ export default {
             category: 'Unit',
             text: unit[0],
             unit_id: unit[1]['unit_id'],
-            unitMsg: unit[1]['unit_content']
+            unitMsg: unit[1]['unit_content'],
+            unit_hasCompleted: false
           })
         })
         this.blockPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
@@ -836,6 +849,15 @@ export default {
         this.unitTypes = Object.keys(this.unitAllList).filter((unitType) => unitType !== 'Basic Module')
         if (name) this.getSelectedUnit(name)
       })
+    },
+    updateCanvas (hasCompleted, nodeKey) {
+      let currentNode = this.blockDiagram.findNodeForKey(nodeKey).data
+      if (hasCompleted) {
+        this.blockDiagram.model.setDataProperty(currentNode, 'color', '#19be6b')
+      } else {
+        this.blockDiagram.model.setDataProperty(currentNode, 'color', '#ed4014')
+      }
+      // this.blockDiagram.model = go.Model.fromJson(this.blockDiagram.model.toJson())
     }
   },
   created () {

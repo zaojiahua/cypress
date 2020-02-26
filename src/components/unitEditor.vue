@@ -1,6 +1,7 @@
 <template>
   <Modal v-model="unitEditorShow" :mask-closable="false" :closable="false" width="90" @on-ok="saveUnit" @on-cancel="closeUnitEditor">
       <div slot="header" class="unit-editor-header">
+        {{ nodeKey }}
         <span>UNIT EDITOR</span>
         <div style="margin-left:20px; display: flex; align-items: center; width: 32.8%;">
           <Tag color="green" size="large" style="display: flex; align-items: center;">UNIT NAME</Tag>
@@ -52,6 +53,9 @@ export default {
       default () {
         return []
       }
+    },
+    nodeKey: {
+      type: Number
     }
   },
   data () {
@@ -103,7 +107,8 @@ export default {
       suffixs: [],
       imgName: '',
       imgUrl: '',
-      loading: false
+      loading: false,
+      hasCompleted: false
     }
   },
   watch: {
@@ -161,6 +166,11 @@ export default {
     },
     saveUnit () {
       this.$emit('saveUnit', this.currentUnitName, this.currentUnitContent)
+      this.unitItems = [...findComponentsDownward(this, 'unit-item')]
+      this.hasCompleted = this.unitItems.every(unitItem => {
+        return unitItem.isComplete === true
+      })
+      this.$emit('updateCanvas', this.hasCompleted, this.nodeKey)
       this.closeUnitEditor()
     },
     handleSearch (value) {

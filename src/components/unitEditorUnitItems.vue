@@ -13,6 +13,7 @@
 import unitEditorUnitItem from './unitEditorUnitItem'
 
 export default {
+  name: 'unit-items',
   components: { unitEditorUnitItem },
   props: {
     unitType: {

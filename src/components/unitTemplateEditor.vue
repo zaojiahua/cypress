@@ -165,7 +165,7 @@ export default {
 </script>
 
 <style lang="less">
-.edit-area {
+// .edit-area {
 
-}
+// }
 </style>
