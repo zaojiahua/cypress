@@ -26,11 +26,6 @@ export default {
       isComplete: false, // item 是否已完成
       currentItemData: this.itemData.itemContent,
       checked: false, // 是否被选中
-      dataForItemEdit: { // 发送给 item edit，以进行默认内容的填充
-        firstLevelType: '',
-        secondLevelType: '',
-        content: ''
-      },
       tagContent: {
         'jobResourceFile': '图片配置文件',
         'jobResourcePicture': '参考标准图片',
@@ -38,7 +33,8 @@ export default {
         'inputFile': '输入文件名称',
         'outputPicture': '输出图片名称',
         'outputFile': '输出文件名称',
-        'uxInput': '手动输入坐标值'
+        'uxInput': '手动输入坐标值',
+        'picInput': '从图片选取坐标点'
       },
       tmachBlanks: [],
       canEdit: true
@@ -50,14 +46,10 @@ export default {
         this.currentItemData = val.itemContent
         if (this.currentItemData.type === 'jobResourceFile') this.canEdit = false
         this.isComplete = this._hasCompleted(this.currentItemData)
-        this._getDataForItemEdit()
         if (this.checked) {
           this.$el.click()
         }
       }
-    },
-    dataForItemEdit (val) {
-      console.log(val.content)
     }
   },
   methods: {
@@ -76,6 +68,7 @@ export default {
       })
       this.isComplete = this._hasCompleted(this.currentItemData)
       this.$bus.emit('editItem', this.itemData, this.tmachBlanks)
+      this.$bus.emit('setItemType', this.itemData.itemContent.type)
     },
     _hasCompleted (data) { // 判断 item 是否完成
       if (!data) return
@@ -88,9 +81,6 @@ export default {
         }
       }
       return flag
-    },
-    _getDataForItemEdit () {
-
     },
     _reset () {
       this.checked = false
@@ -109,7 +99,6 @@ export default {
     }
     if (this.itemData.itemContent) {
       this.isComplete = this._hasCompleted(this.itemData.itemContent)
-      this._getDataForItemEdit()
     }
   },
   beforeDestroy () {

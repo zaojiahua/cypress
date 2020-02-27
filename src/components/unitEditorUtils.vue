@@ -3,24 +3,21 @@
     <p slot="title">Utils &nbsp; {{ fileName ? `(${fileName})` : '' }}</p>
     <div class="file-gallery">
       <p class="file-none" v-show="!fileToShow && !isLoading">还没有可以展示/编辑的文件</p>
+      <!-- 加载动画 -->
       <div class="loader" v-if="isLoading">
         <div class="box"></div>
         <div class="box"></div>
         <div class="box"></div>
       </div>
+
       <div v-show="fileToShow" class="file-container">
-        <div v-show="isText" class="text">
-          <Input v-model="fileToShow" type="textarea" :rows="16" />
-        </div>
-        <div v-show="isImage" class="image-container">
-          <Button size="small" type="primary" @click.native="getCoordinate" id='btn-confirm-area'>确定</Button>
+        <div class="image-container">
+          <Button size="small" type="primary" @click.native="getCoordinate" id='btn-confirm-area' v-show="itemType === 'jobResourceFile'">确定</Button>
+          <Button size="small" type="primary" @click="getPointAbsoluteCoordinates" id="btn-get-coordinate" v-show="itemType === 'picInput'">获取坐标</Button>
           <div class="image-zoom">
             <img :src="fileToShow" draggable="false" class="image">
             <div id="selection-area" v-show="isScreenShot"></div>
           </div>
-        </div>
-        <div v-show="isVideo" class="video">
-          <video :src="fileToShow" controls></video>
         </div>
       </div>
     </div>
@@ -36,9 +33,6 @@ export default {
       fileName: null,
       fileToShow: null,
       isLoading: false,
-      isText: false,
-      isImage: false,
-      isVideo: false,
       isScreenShot: false,
       imageZoom: null,
       imageZoomData: null,
@@ -47,25 +41,27 @@ export default {
       selectionAreaData: null,
       mouseStartX: undefined,
       mouseStartY: undefined,
-      isDragging: false
+      isDragging: false,
+      imageWidth: null,
+      imageHeight: null,
+      itemType: null
     }
   },
   methods: {
     setFileData (data) {
       this.fileName = data.fileName
-      this.isText = data.isText
-      this.isImage = data.isImage
-      this.isVideo = data.isVideo
       this.isScreenShot = data.isScreenShot
-      if (this.isImage && data.fileToShow) {
+      this.itemType = data.itemType
+      // console.log(this.itemType)
+      if (data.fileToShow) {
         let _this = this
         let image = new Image()
         image.src = data.fileToShow
         image.onload = function () {
-          let width = image.width
-          let height = image.height
+          _this.imageWidth = image.width
+          _this.imageHeight = image.height
           let img = document.querySelector('.image')
-          if (width > height) {
+          if (this.imageWidth > this.imageHeight) {
             _this.imageZoom.style.width = '100%'
             _this.imageZoom.style.height = 'auto'
             img.style.maxWidth = _this.imageZoom.style.width
@@ -88,7 +84,6 @@ export default {
           this.isDragging = true
           this.mouseStartX = event.clientX
           this.mouseStartY = event.clientY
-          this.btnConfirmArea.style.display = 'none'
           if (!this.imageZoomData) {
             this.imageZoomData = this.imageZoom.getBoundingClientRect()
           }
@@ -107,19 +102,14 @@ export default {
           break
         case 'mouseup':
           this.isDragging = false
-          this.btnConfirmArea.style.display = ''
           this.selectionAreaData = this.selectionArea.getBoundingClientRect()
           break
       }
     },
-    selectAreaMouseDown (event) {
-
-    },
-    selectAreaMouseMove (event) {
-
-    },
-    selectAreaMouseUp (event) {
-
+    getPointAbsoluteCoordinates () {
+      let x = parseInt(toDecimal((this.selectionAreaData.x - this.imageZoomData.x) / this.imageZoomData.width) * this.imageWidth)
+      let y = parseInt(toDecimal((this.selectionAreaData.y - this.imageZoomData.y) / this.imageZoomData.height) * this.imageHeight)
+      this.$bus.emit('getPointAbsoluteCoordinates', { x, y })
     },
     getCoordinate () {
       let startPoint = {}
@@ -137,9 +127,6 @@ export default {
       // this.fileName = null
       // this.fileToShow = null
       // this.isLoading = false
-      // this.isText = false
-      // this.isImage = false
-      // this.isVideo = false
       // this.isScreenShot = false
     }
   },
@@ -154,6 +141,9 @@ export default {
     this.$bus.on('reset', this.reset)
     this.$bus.on('setFileName', fileName => {
       this.fileName = fileName
+    })
+    this.$bus.on('setItemType', (itemType) => {
+      this.itemType = itemType
     })
   },
   mounted () {
@@ -170,6 +160,7 @@ export default {
     this.$bus.off('isLoading')
     this.$bus.off('reset', this.reset)
     this.$bus.off('setFileName')
+    this.$bus.off('setItemType')
     this.imageZoom.removeEventListener('mousedown', this.selectArea)
     this.imageZoom.removeEventListener('mousemove', this.selectArea)
     this.imageZoom.removeEventListener('mouseup', this.selectArea)
@@ -240,8 +231,9 @@ export default {
       align-items: center;
       height: 100%;
       position: relative;
+      background: linear-gradient(to bottom right ,#12c2e9, #c471ed, #f64f59);
 
-      #btn-confirm-area {
+      #btn-confirm-area, #btn-get-coordinate {
         position: absolute;
         right: 0;
         top: -54px;
@@ -249,7 +241,6 @@ export default {
 
       .image-zoom {
         position: relative;
-        border: 6px outset rgb(73, 195, 243);
 
         .image {
           user-select: none;
@@ -275,67 +266,7 @@ export default {
             height: 4px;
             background-color: #0f0;
           }
-          #top-left {
-            // cursor: nw-resize;
-            top: -4px;
-            left: -4px;
-          }
-          #top-right {
-            // cursor: ne-resize;
-            top: -4px;
-            right: -4px;
-          }
-          #bottom-right {
-            cursor: se-resize;
-            bottom: -4px;
-            right: -4px;
-            background-color: red;
-          }
-          #bottom-left {
-            // cursor: sw-resize;
-            bottom: -4px;
-            left: -4px;
-          }
-          .border {
-            position: absolute;
-            background-color: #0f0;
-          }
-          #top,#bottom {
-            width: 100%;
-            height: 4px;
-          }
-          #right,#left {
-            width: 4px;
-            height: 100%;
-          }
-          #top {
-            top: -4px;
-            // cursor: n-resize;
-          }
-          #right {
-            right: -4px;
-            cursor: e-resize;
-          }
-          #bottom {
-            bottom: -4px;
-            cursor: s-resize;
-          }
-          #left {
-            left: -4px;
-            // cursor: w-resize;
-          }
         }
-      }
-    }
-
-    .video {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100%;
-
-      video {
-        max-height: 755px;
       }
     }
   }

@@ -13,16 +13,7 @@
     </Table>
     <div class="get-image">
       <div style="display: flex; align-items: center; width: 66%;">
-        <!-- <AutoComplete
-          v-model="currentImgName"
-          :data="suffixs"
-          @on-search="handleSearch"
-          placeholder="Please enter a picture name"
-          clearable
-          style="flex: 1;">
-          <Option v-for="suffix in suffixs" :value="suffix" :key="suffix">{{ suffix }}</Option>
-        </AutoComplete> -->
-        <Input v-model="currentImgName">
+        <Input v-model="currentImgName" v-if="itemType === 'picInput' ? false : true">
           <span slot="prepend">图片名称</span>
         </Input>
       </div>
@@ -60,13 +51,13 @@ const deviceSerializer = [
 
 export default {
   props: {
-    unitName: {
-      type: String,
-      default: ''
-    },
     imgName: {
       type: String,
       default: ''
+    },
+    itemType: {
+      type: String,
+      default: 'jobResourcePicture'
     }
   },
   data () {
@@ -136,7 +127,7 @@ export default {
       this.$bus.emit('isLoading')
 
       let imgName = suffixAutoComplete(this.currentImgName, '.jpg')
-      this.$emit('setImgName', imgName)
+      if (this.itemType === 'jobResourcePicture') this.$emit('setImgName', imgName)
       let getScreenShotParams = {
         device_label: currentDevice.device_label,
         device_ip: currentDevice.ip_address,
@@ -147,18 +138,18 @@ export default {
           blobToDataURL(res.data).then(res => {
             this.$bus.emit('showFile', {
               'fileToShow': res,
-              'isText': false,
-              'isImage': true,
-              'isVideo': false,
+              'itemType': this.itemType,
               'isScreenShot': true
             })
             this.$bus.emit('isLoading')
-            this.$bus.emit('addResFile', {
-              'name': imgName,
-              'type': 'jpg',
-              'file': res,
-              'fileUrl': ''
-            })
+            if (this.itemType === 'jobResourcePicture') {
+              this.$bus.emit('addResFile', {
+                'name': imgName,
+                'type': 'jpg',
+                'file': res,
+                'fileUrl': ''
+              })
+            }
           })
         } else if (res.status === 500) {
           console.log(res)

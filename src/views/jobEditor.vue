@@ -194,11 +194,11 @@ export default {
       filesName: [
         {
           title: '文件名称',
-          children: []
+          children: ['text']
         },
         {
           title: '图片名称',
-          children: []
+          children: ['snap']
         }
       ],
       nodeKey: null
@@ -406,8 +406,8 @@ export default {
       }
 
       unitTemplate.mouseEnter = function (e, node) {
-        if (e.diagram instanceof go.Palette) return
-        console.log(node.data)
+        // if (e.diagram instanceof go.Palette) return
+        // console.log(node.data)
         // _this.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
         // outputFile = JSON.stringify(node.data.unitMsg, null, 2)
 
@@ -768,8 +768,7 @@ export default {
             category: 'Unit',
             text: unit[0],
             unit_id: unit[1]['unit_id'],
-            unitMsg: unit[1]['unit_content'],
-            unit_hasCompleted: false
+            unitMsg: unit[1]['unit_content']
           })
         })
         this.blockPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
@@ -865,7 +864,6 @@ export default {
       this.saveRawUnit(rawUnitMsg)
     })
     this.$bus.on('addFilesName', (type, data) => {
-      console.log(type, data)
       if (type === 'file') {
         this.filesName[0].children = this.filesName[0].children.concat(data)
       }

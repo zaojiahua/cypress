@@ -1,7 +1,6 @@
 <template>
   <Modal v-model="unitEditorShow" :mask-closable="false" :closable="false" width="90" @on-ok="saveUnit" @on-cancel="closeUnitEditor">
       <div slot="header" class="unit-editor-header">
-        {{ nodeKey }}
         <span>UNIT EDITOR</span>
         <div style="margin-left:20px; display: flex; align-items: center; width: 32.8%;">
           <Tag color="green" size="large" style="display: flex; align-items: center;">UNIT NAME</Tag>
@@ -28,10 +27,7 @@ import unitEditorUnitItems from './unitEditorUnitItems'
 import unitEditorRawUnit from './unitEditorRawUnit'
 import unitEditorItemEdit from './unitEditorItemEdit'
 import unitEditorUtils from './unitEditorUtils'
-import {
-  findComponentsDownward,
-  fileToDataURL
-} from '../lib/tools.js'
+import { findComponentsDownward } from '../lib/tools.js'
 
 export default {
   components: { unitEditorUnitItems, unitEditorRawUnit, unitEditorItemEdit, unitEditorUtils },
@@ -67,23 +63,7 @@ export default {
       unitMsgObj: null,
       unitItems: [], // 存放 unit items 的每个实例
       isEditing: false,
-      isEditingItem: false,
       currentItem: -1,
-      acceptFileType: 'image/jpeg, image/png, video/mp4, video/mov, application/json, text/plain',
-      legalFormat: ['jpg', 'jpeg', 'png', 'mp4', 'mov', 'json', 'plain'],
-      dataForItemEdit: {
-        type: '',
-        content: ''
-      },
-      file: null,
-      fileParams: {
-        name: '',
-        type: ''
-      },
-      fileToShow: '',
-      isImage: false,
-      isText: false,
-      isVideo: false,
       loadingStatus: false,
       deviceColumn: [
         {
@@ -103,12 +83,8 @@ export default {
           key: 'rom_version'
         }
       ],
-      deviceData: [],
-      suffixs: [],
       imgName: '',
-      imgUrl: '',
-      loading: false,
-      hasCompleted: false
+      loading: false
     }
   },
   watch: {
@@ -127,36 +103,6 @@ export default {
           this.unitItems[this.currentItem].$el.click()
         })
       }
-    },
-    file (val) {
-      if (val) {
-        this.$set(this.fileParams, 'name', val.name)
-        this.$set(this.fileParams, 'type', val.type)
-        if (val.type.split('/')[0] === 'image') {
-          this.isImage = true
-          this.isText = false
-          this.isVideo = false
-          fileToDataURL(val).then(res => {
-            this.fileToShow = res
-          })
-        } else if (val.type.split('/')[0] === 'application' || val.type.split('/')[0] === 'text') {
-          this.isText = true
-          this.isImage = false
-          this.isVideo = false
-          let reader = new FileReader()
-          reader.readAsText(val)
-          reader.onload = () => {
-            this.fileToShow = reader.result
-          }
-        } else if (val.type.split('/')[0] === 'video') {
-          this.isVideo = true
-          this.isText = false
-          this.isImage = false
-          fileToDataURL(val).then(res => {
-            this.fileToShow = res
-          })
-        }
-      }
     }
   },
   methods: {
@@ -164,23 +110,19 @@ export default {
       this.$refs.itemEdit.showEditPane = false
       this.$emit('closeUnitEditor')
     },
-    saveUnit () {
-      this.$emit('saveUnit', this.currentUnitName, this.currentUnitContent)
+    _checkWhetherCompleted () {
       this.unitItems = [...findComponentsDownward(this, 'unit-item')]
-      this.hasCompleted = this.unitItems.every(unitItem => {
+      return this.unitItems.every(unitItem => {
         return unitItem.isComplete === true
       })
-      this.$emit('updateCanvas', this.hasCompleted, this.nodeKey)
+    },
+    _changeUnitStatus () {
+      this.$emit('updateCanvas', this._checkWhetherCompleted(), this.nodeKey)
+    },
+    saveUnit () {
+      this._changeUnitStatus()
+      this.$emit('saveUnit', this.currentUnitName, this.currentUnitContent)
       this.closeUnitEditor()
-    },
-    handleSearch (value) {
-      this.suffixs = !value || value.indexOf('.') >= 0 ? [] : [
-        value + '.jpg',
-        value + '.png'
-      ]
-    },
-    onDeviceRowClick (row, index) {
-      this.currentDeviceRowIndex = index
     }
   },
   beforeUpdate () {
@@ -205,6 +147,7 @@ export default {
   },
   destroyed () {
     this.$bus.off('saveChange')
+    this.$bus.off('setNamesAboutScreenShotFile')
   }
 }
 </script>
