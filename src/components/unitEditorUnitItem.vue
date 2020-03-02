@@ -58,8 +58,8 @@ export default {
     itemData (val) {
       if (val) {
         this.currentItemData = val.itemContent
-        if (this.currentItemData.type === 'jobResourceFile' && !this.editToggle) this.canEdit = false
-        else this.canEdit = true
+        // if (this.currentItemData.type === 'jobResourceFile' && !this.editToggle) this.canEdit = false
+        // else this.canEdit = true
         this.isComplete = this._hasCompleted(this.currentItemData)
         if (this.checked) {
           this.$el.click()
@@ -67,8 +67,9 @@ export default {
       }
     },
     editToggle (val) {
-      console.log(val)
-      this.canEdit = val
+      if (this.currentItemData.type === 'jobResourceFile' && !val) this.canEdit = false
+      else if (this.currentItemData.type === 'jobResourceFile' && val) this.canEdit = true
+      else this.canEdit = true
     }
   },
   methods: {
@@ -102,9 +103,9 @@ export default {
       if (this.itemData.itemContent.type === 'jobResourcePicture' && flag) { // 通知 UnitItems 不必再限制 UnitItem 的状态
         this.$emit('setEditToggle', true)
       }
-      // if (this.itemData.itemContent.type === 'jobResourcePicture' && !flag) {
-      //   this.$emit('setEditToggle', false)
-      // }
+      if (this.itemData.itemContent.type === 'jobResourcePicture' && !flag) {
+        this.$emit('setEditToggle', false)
+      }
       return flag
     },
     _reset () {
