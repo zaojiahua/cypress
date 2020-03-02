@@ -65,7 +65,7 @@ export default {
           content: '不是 JSON 格式'
         })
       } else {
-        this.$bus.emit('saveRawUnit', this.currentUnitContent)
+        this.$emit('saveRawUnit', this.currentUnitContent)
         this.$Message.success({
           background: true,
           content: '保存成功'

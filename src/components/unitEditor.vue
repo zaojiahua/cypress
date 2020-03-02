@@ -15,7 +15,13 @@
       <div class="unit-editor">
         <div>
           <unit-editor-unit-items v-if="unitItemsData !== null" :unitItemsData="unitItemsData"></unit-editor-unit-items>
-          <unit-editor-raw-unit v-if="unitContent !== null" :unitContent="unitContent" :unitType="unitType" style="margin-top: 20px;"></unit-editor-raw-unit>
+          <unit-editor-raw-unit
+            v-if="unitContent !== null"
+            :unitContent="unitContent"
+            :unitType="unitType"
+            @saveRawUnit="saveRawUnit"
+            style="margin-top: 20px;"
+          ></unit-editor-raw-unit>
         </div>
         <div>
           <unit-editor-item-edit :filesName="filesName" @saveChange="saveChange" :unitType="unitType" ref="itemEdit"></unit-editor-item-edit>
@@ -163,6 +169,9 @@ export default {
         this.unitMsg.execCmdDict.execCmdList.splice(Number(data.itemName), 1, data.itemContent)
       }
       this._updateUnitEditorData(this.unitMsg)
+    },
+    saveRawUnit (rawUnitContent) {
+      this.unitMsg = JSON.parse(rawUnitContent)
     }
   },
   beforeUpdate () {

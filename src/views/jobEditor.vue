@@ -783,9 +783,6 @@ export default {
     closeUnitEditor () {
       this.unitEditorModalShow = false
     },
-    saveRawUnit (unitContent) {
-      this.unitContent = unitContent
-    },
     delUnitTemplate () {
       let _this = this
       this.$Modal.confirm({
@@ -873,7 +870,6 @@ export default {
     }
   },
   created () {
-    this.$bus.on('saveRawUnit', this.saveRawUnit)
     this.$bus.on('addFilesName', (type, data) => {
       if (type === 'file') {
         this.filesName[0].children = this.filesName[0].children.concat(data)
@@ -884,7 +880,7 @@ export default {
     })
   },
   beforeDestroy () {
-    this.$bus.off('saveRawUnit', this.saveRawUnit)
+
   }
 }
 </script>
