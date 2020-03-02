@@ -18,7 +18,7 @@
           <unit-editor-raw-unit v-if="unitContent !== null" :unitContent="unitContent" :unitType="unitType" style="margin-top: 20px;"></unit-editor-raw-unit>
         </div>
         <div>
-          <unit-editor-item-edit :filesName="filesName" @saveChange="saveChange" ref="itemEdit"></unit-editor-item-edit>
+          <unit-editor-item-edit :filesName="filesName" @saveChange="saveChange" :unitType="unitType" ref="itemEdit"></unit-editor-item-edit>
         </div>
         <div>
           <unit-editor-utils></unit-editor-utils>

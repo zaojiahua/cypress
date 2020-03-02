@@ -103,7 +103,6 @@ export default {
       if (!this._handleDuplicateName()) return // 重名则中断
       this._tmachBlankSuffixComplete() // 补全后缀
       this._patchUnitContent() // 拼接 Tamch 并填入
-      this._setUnitItemState() // 使 UnitItem 变为可编辑状态
       this._closeEditPane() // 关闭当前面板
     },
     setImgName (imgName) {
@@ -163,12 +162,6 @@ export default {
       let res = this.unitItemData.itemContent.content.match(/Tmach.*? /g)
       for (let i = 0; i < res.length; i++) {
         this.unitItemData.itemContent.content = this.unitItemData.itemContent.content.replace(res[i], 'Tmach' + this.tmachBlanks[i] + ' ')
-      }
-    },
-    _setUnitItemState () {
-      let itemType = this.unitItemData.itemContent.type
-      if (this.unitType === 'IMGTOOL' && itemType === 'jobResourcePicture') {
-        this.$bus.emit('setUnitItemState')
       }
     },
     _tmachBlankSuffixLessen (type, tmachBlanks) {

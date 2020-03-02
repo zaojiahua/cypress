@@ -4,7 +4,13 @@
       <span>Unit Items &nbsp; ({{ unitItemsData.length }})</span>
     </p>
     <div class="items">
-      <unit-editor-unit-item v-for="(itemData, index) in unitItemsData" :itemData="itemData" :itemIndex="index" :key="itemData.itemName" ></unit-editor-unit-item>
+      <unit-editor-unit-item
+        v-for="(itemData, index) in unitItemsData"
+        :itemData="itemData" :itemIndex="index"
+        :key="itemData.itemName"
+        :editToggle="editToggle"
+        @setEditToggle="_setEditToggle"
+      ></unit-editor-unit-item>
     </div>
   </Card>
 </template>
@@ -25,19 +31,13 @@ export default {
   },
   data () {
     return {
-
-    }
-  },
-  watch: {
-    unitItemsData (val) {
-      // console.log(val.length)
+      editToggle: false
     }
   },
   methods: {
-
-  },
-  mounted () {
-
+    _setEditToggle (toggle) {
+      this.editToggle = toggle
+    }
   }
 }
 </script>

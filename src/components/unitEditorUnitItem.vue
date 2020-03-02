@@ -1,6 +1,13 @@
 <template>
   <div class="item" :class="{active: checked, disabled: !canEdit}" @click="handleClick">
-    <p class="item-content" ><Tag :color="!canEdit ? '#aaaaaa' : isComplete ? 'success' : 'error'">{{ isComplete ? '编辑完成' : '暂无数据' }}</Tag><span>{{ tagContent[this.currentItemData.type] }}</span></p>
+    <p class="item-content" >
+      <Tag :color="!canEdit ? '#aaaaaa' : isComplete ? 'success' : 'error'">
+        {{ isComplete ? '编辑完成' : '暂无数据' }}
+      </Tag>
+      <span>
+        {{ tagContent[this.currentItemData.type] }}
+      </span>
+    </p>
   </div>
 </template>
 
@@ -10,6 +17,10 @@ import { findBrothersComponents } from '../lib/tools.js'
 export default {
   name: 'unit-item',
   props: {
+    editToggle: {
+      type: Boolean,
+      default: false
+    },
     itemIndex: {
       type: Number
     },
@@ -47,12 +58,17 @@ export default {
     itemData (val) {
       if (val) {
         this.currentItemData = val.itemContent
-        if (this.currentItemData.type === 'jobResourceFile') this.canEdit = false
+        if (this.currentItemData.type === 'jobResourceFile' && !this.editToggle) this.canEdit = false
+        else this.canEdit = true
         this.isComplete = this._hasCompleted(this.currentItemData)
         if (this.checked) {
           this.$el.click()
         }
       }
+    },
+    editToggle (val) {
+      console.log(val)
+      this.canEdit = val
     }
   },
   methods: {
@@ -83,21 +99,26 @@ export default {
           break
         }
       }
+      if (this.itemData.itemContent.type === 'jobResourcePicture' && flag) { // 通知 UnitItems 不必再限制 UnitItem 的状态
+        this.$emit('setEditToggle', true)
+      }
+      // if (this.itemData.itemContent.type === 'jobResourcePicture' && !flag) {
+      //   this.$emit('setEditToggle', false)
+      // }
       return flag
     },
     _reset () {
       this.checked = false
     },
-    _setUnitItemState () {
-      this.canEdit = true
+    _setEditToggle () {
+      if (this.editToggle) this.canEdit = true
     }
   },
   created () {
     this.$bus.on('reset', this._reset)
-    this.$bus.on('setUnitItemState', this._setUnitItemState)
   },
   mounted () {
-    if (this.itemData.itemContent.type === 'jobResourceFile') {
+    if (this.itemData.itemContent.type === 'jobResourceFile' && !this.editToggle) {
       this.canEdit = false
     }
     if (this.itemData.itemContent) {
@@ -106,7 +127,6 @@ export default {
   },
   beforeDestroy () {
     this.$bus.off('reset', this._reset)
-    this.$bus.off('setUnitItemState', this._setUnitItemState)
   }
 }
 </script>
