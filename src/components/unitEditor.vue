@@ -162,7 +162,7 @@ export default {
       this.unitContent = JSON.stringify(unitMsg, null, 2)
       this.unitItemsData = this._getUnitItems(unitMsg)
     },
-    saveChange (data) { // 修改 unitMsg 的内容
+    saveChange (data) { // 修改 unitMsg 的内容（来自Item Edit的修改）
       if (this.unitType === 'IMGTOOL') {
         this.$set(this.unitMsg.execCmdDict, data.itemName, data.itemContent)
       } else {
@@ -170,7 +170,7 @@ export default {
       }
       this._updateUnitEditorData(this.unitMsg)
     },
-    saveRawUnit (rawUnitContent) {
+    saveRawUnit (rawUnitContent) { // 修改 unitMsg 的内容（来自Raw Unit的修改）
       this.unitMsg = JSON.parse(rawUnitContent)
     }
   },

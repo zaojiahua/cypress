@@ -12,6 +12,28 @@
     <div slot="footer">
       <Button type="primary" size="large" @click="resFileModalClose">确定</Button>
     </div>
+    <Modal v-model="checkDuplicateNameModal" :styles="{top: '48%'}" :mask-closable="false"  :closable="false">
+      <p slot="header">
+        <Icon type="ios-alert-outline" style="color:orange;font-size:1.2em;font-weight:bold;" />
+        温馨提示
+      </p>
+      <p style="width:100%;text-align:center;">已存在同名文件，请选择您要进行的操作。</p>
+      <div slot="footer">
+        <Button type="warning" @click="overwrite">覆盖同名文件</Button>
+        <Button type="primary" @click="rename">重命名</Button>
+      </div>
+    </Modal>
+    <Modal v-model="renameModal" :styles="{top: '48%'}" :mask-closable="false" :closable="false">
+      <p slot="header">
+        <Icon type="ios-clipboard-outline" style="color:orange;font-size:1.2em;font-weight:bold;" />
+        请填写新的名字
+      </p>
+      <Input v-model="newName"/>
+      <div slot="footer">
+        <Button type="info" @click="checkDuplicateName">检测名称是否可用</Button>
+        <Button type="success" @click="setNewName" :disabled="this.checkState ? false : true">确定</Button>
+      </div>
+    </Modal>
   </Modal>
 </template>
 
@@ -21,6 +43,8 @@ import jobResFileTable from './jobResFileTable'
 
 import axios from '../api'
 import { baseURL } from '../config'
+
+import { suffixAutoRemove } from '../lib/tools'
 
 export default {
   components: { jobResFileShow, jobResFileTable },
@@ -51,7 +75,13 @@ export default {
         }
       ],
       filesData: [],
-      currentFile: 0
+      currentFile: 0,
+      fileData: null,
+      checkDuplicateNameModal: false,
+      overwriteAt: null,
+      renameModal: false,
+      newName: '',
+      checkState: null
     }
   },
   methods: {
@@ -99,11 +129,51 @@ export default {
           })
         }
       })
+    },
+    overwrite () {
+      this.filesData.splice(this.overwriteAt, 1, this.fileData)
+      this.checkDuplicateNameModal = false
+    },
+    rename () {
+      this.checkDuplicateNameModal = false
+      this.renameModal = true
+    },
+    setNewName () {
+      this.fileData.name = this.newName + '.' + this.fileData.type
+      this.filesData.push(this.fileData)
+      this.renameModal = false
+      this.checkState = null
+    },
+    checkDuplicateName () {
+      let flag = true
+      for (let i = 0; i < this.filesData.length; i++) {
+        if (suffixAutoRemove(this.filesData[i].name) === this.newName && this.fileData.type === this.filesData[i].type) {
+          flag = false
+          break
+        }
+      }
+      this.checkState = flag
     }
   },
   created () {
     this.$bus.on('addResFile', fileData => {
-      this.filesData.push(fileData)
+      console.log(fileData)
+      console.log(this.filesData)
+      let filesData = this.filesData
+      let flag = true
+      for (let i = 0; i < filesData.length; i++) {
+        if (fileData.name === filesData[i].name && fileData.type === filesData[i].type) {
+          flag = false
+          this.overwriteAt = i
+          break
+        }
+      }
+      if (!flag) {
+        this.fileData = fileData
+        this.checkDuplicateNameModal = true
+      } else {
+        filesData.push(fileData)
+      }
     })
   },
   mounted () {
