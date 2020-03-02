@@ -45,9 +45,6 @@ export default {
   watch: {
     unitContent (val) {
       this.currentUnitContent = val
-    },
-    currentUnitContent (val) {
-      // this.unitType = JSON.parse(this.currentUnitContent).execModName
     }
   },
   methods: {

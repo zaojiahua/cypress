@@ -1,6 +1,6 @@
 <template>
   <div style="position: relative; margin-bottom: 10px;">
-    <Button @click="deviceRefresh" type="primary" class="refresh">Refresh</Button>
+    <Button @click="deviceRefresh" type="primary" class="refresh">刷新列表</Button>
     <Divider orientation="left">获取图片</Divider>
     <Table border
       size="small"
@@ -18,7 +18,7 @@
         </Input>
       </div>
       <Button type="primary" :loading="loading" @click="getImg">
-        <span v-if="!loading">Commit</span>
+        <span v-if="!loading">{{ itemType === 'picInput' ? '获取截图' : 'commit' }}</span>
         <span v-else>Loading...</span>
      </Button>
     </div>

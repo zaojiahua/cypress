@@ -39,8 +39,8 @@ export default {
       selectionArea: null,
       btnConfirmArea: null,
       selectionAreaData: null,
-      mouseStartX: undefined,
-      mouseStartY: undefined,
+      mouseStartX: null,
+      mouseStartY: null,
       isDragging: false,
       imageWidth: null,
       imageHeight: null,
@@ -124,10 +124,20 @@ export default {
       })
     },
     reset () {
-      // this.fileName = null
-      // this.fileToShow = null
-      // this.isLoading = false
-      // this.isScreenShot = false
+      this.fileName = null
+      this.fileToShow = null
+      this.isLoading = false
+      this.isScreenShot = false
+      // this.imageZoom = null
+      // this.imageZoomData = null
+      // this.selectionArea = null
+      // this.selectionAreaData = null
+      this.mouseStartX = null
+      this.mouseStartY = null
+      this.isDragging = false
+      this.imageWidth = null
+      this.imageHeight = null
+      this.itemType = null
     }
   },
   created () {
@@ -138,13 +148,14 @@ export default {
       this.isLoading = !this.isLoading
       this.fileToShow = null
     })
-    this.$bus.on('reset', this.reset)
+    this.$bus.on('resetUnitUtils', this.reset)
     this.$bus.on('setFileName', fileName => {
       this.fileName = fileName
     })
     this.$bus.on('setItemType', (itemType) => {
       this.itemType = itemType
     })
+    this.$bus.on('closeUnitEditor', this.reset)
   },
   mounted () {
     this.imageZoom = document.querySelector('.image-zoom')

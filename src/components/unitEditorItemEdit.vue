@@ -4,18 +4,18 @@
     <div v-show="!showEditPane" class="items-edit"></div>
     <div class="items-edit" v-show="showEditPane">
       <div>
-        <div v-if="dataFromUnitItem && showInput">
+        <div v-if="unitItemData && showInput">
           <Input
             v-for="(blank, index) in tmachBlanks"
             :key="index"
             v-model="tmachBlanks[index]"
             style="margin-bottom: 10px;"
-            :placeholder="dataFromUnitItem && dataFromUnitItem.itemContent.type === 'outputFile' ? 'text.txt' : dataFromUnitItem.itemContent.type === 'outputPicture' ? 'snap.jpg' : ''"
-            :disabled="dataFromUnitItem.itemContent.type === 'picInput' ? true : false"
+            :placeholder="unitItemData && unitItemData.itemContent.type === 'outputFile' ? 'text.txt' : unitItemData.itemContent.type === 'outputPicture' ? 'snap.jpg' : ''"
+            :disabled="unitItemData.itemContent.type === 'picInput' ? true : false"
           >
           </Input>
         </div>
-        <div v-if="dataFromUnitItem && (dataFromUnitItem.itemContent.type === 'inputFile' || dataFromUnitItem.itemContent.type === 'inputPicture') ? true : false">
+        <div v-if="unitItemData && (unitItemData.itemContent.type === 'inputFile' || unitItemData.itemContent.type === 'inputPicture') ? true : false">
           <AutoComplete
             v-for="(blank, index) in tmachBlanks"
             :key="index" v-model="tmachBlanks[index]"
@@ -31,13 +31,13 @@
         </div>
         <unit-editor-screen-shot
           :imgName="tmachBlanks[0]"
-          :itemType="dataFromUnitItem.itemContent.type"
+          :itemType="unitItemData.itemContent.type"
           @setImgName="setImgName"
-          v-if="dataFromUnitItem && (dataFromUnitItem.itemContent.type === 'jobResourcePicture' || dataFromUnitItem.itemContent.type === 'picInput')"
+          v-if="unitItemData && (unitItemData.itemContent.type === 'jobResourcePicture' || unitItemData.itemContent.type === 'picInput')"
         ></unit-editor-screen-shot>
-        <unit-editor-get-feature-point :featurePointFileName="tmachBlanks[0]" @setFeaturePointFileName="setFeaturePointFileName" v-if="dataFromUnitItem && dataFromUnitItem.itemContent.type === 'jobResourceFile'"></unit-editor-get-feature-point>
-        <p><Tag>操作说明</Tag>{{ dataFromUnitItem ? dataFromUnitItem.itemContent.meaning : ''}}</p>
-        <Checkbox v-model="saveToFinalResult" v-if="dataFromUnitItem && dataFromUnitItem.itemContent.type === 'outputPicture' ? true : false" style="float: right;">添加此图片至最终结果</Checkbox>
+        <unit-editor-get-feature-point :featurePointFileName="tmachBlanks[0]" @setFeaturePointFileName="setFeaturePointFileName" v-if="unitItemData && unitItemData.itemContent.type === 'jobResourceFile'"></unit-editor-get-feature-point>
+        <p><Tag>操作说明</Tag>{{ unitItemData ? unitItemData.itemContent.meaning : ''}}</p>
+        <Checkbox v-model="saveToFinalResult" v-if="unitItemData && unitItemData.itemContent.type === 'outputPicture' ? true : false" style="float: right;">添加此图片至最终结果</Checkbox>
       </div>
       <div class="save-btn">
         <Button type="primary" @click="saveItem">保存</Button>
@@ -56,10 +56,6 @@ export default {
   name: 'item-edit',
   components: { unitEditorScreenShot, unitEditorGetFeaturePoint },
   props: {
-    unitName: {
-      type: String,
-      default: ''
-    },
     unitType: {
       type: String,
       default: ''
@@ -73,7 +69,7 @@ export default {
   },
   data () {
     return {
-      dataFromUnitItem: null,
+      unitItemData: null,
       showEditPane: false,
       saveToFinalResult: false,
       tmachBlanks: []
@@ -90,14 +86,14 @@ export default {
   },
   computed: {
     showInput () {
-      let itemType = this.dataFromUnitItem.itemContent.type
+      let itemType = this.unitItemData.itemContent.type
       if (itemType !== 'jobResourcePicture' && itemType !== 'jobResourceFile' && itemType !== 'inputFile' && itemType !== 'inputPicture') {
         return true
       }
       return false
     },
     showAutoComplete () {
-      let itemType = this.dataFromUnitItem.itemContent.type
+      let itemType = this.unitItemData.itemContent.type
       if (itemType !== 'inputFile' && itemType !== 'inputPicture') return true
       return false
     }
@@ -106,9 +102,9 @@ export default {
     saveItem () {
       if (!this._handleDuplicateName()) return // 重名则中断
       this._tmachBlankSuffixComplete() // 补全后缀
-      this._patchUnitContent()
-      this._setUnitItemState()
-      this._closeEditPane()
+      this._patchUnitContent() // 拼接 Tamch 并填入
+      this._setUnitItemState() // 使 UnitItem 变为可编辑状态
+      this._closeEditPane() // 关闭当前面板
     },
     setImgName (imgName) {
       this.tmachBlanks[0] = imgName
@@ -117,7 +113,7 @@ export default {
       this.tmachBlanks[0] = featurePointFileName
     },
     _tmachBlankSuffixComplete () {
-      let itemType = this.dataFromUnitItem.itemContent.type
+      let itemType = this.unitItemData.itemContent.type
       if (itemType === 'outputPicture' || itemType === 'inputPicture') {
         let commandOfSaveToFinal = '<copy2rdsDatPath>'
         for (let i = 0; i < this.tmachBlanks.length; i++) {
@@ -146,7 +142,7 @@ export default {
       return flag // true: 重复 false: 无重复
     },
     _handleDuplicateName () {
-      let itemType = this.dataFromUnitItem.itemContent.type
+      let itemType = this.unitItemData.itemContent.type
       if (itemType === 'outputFile') {
         if (this._checkDuplicateName(0)) return false
         this.$bus.emit('addFilesName', 'file', this.tmachBlanks)
@@ -158,19 +154,19 @@ export default {
       return true // 无重复
     },
     _closeEditPane () {
-      this.$bus.emit('saveChange', this.dataFromUnitItem, this.tmachBlanks)
+      this.$emit('saveChange', this.unitItemData, this.tmachBlanks)
       this.$bus.emit('reset')
       this.saveToFinalResult = false
       this.showEditPane = false
     },
     _patchUnitContent () {
-      let res = this.dataFromUnitItem.itemContent.content.match(/Tmach.*? /g)
+      let res = this.unitItemData.itemContent.content.match(/Tmach.*? /g)
       for (let i = 0; i < res.length; i++) {
-        this.dataFromUnitItem.itemContent.content = this.dataFromUnitItem.itemContent.content.replace(res[i], 'Tmach' + this.tmachBlanks[i] + ' ')
+        this.unitItemData.itemContent.content = this.unitItemData.itemContent.content.replace(res[i], 'Tmach' + this.tmachBlanks[i] + ' ')
       }
     },
     _setUnitItemState () {
-      let itemType = this.dataFromUnitItem.itemContent.type
+      let itemType = this.unitItemData.itemContent.type
       if (this.unitType === 'IMGTOOL' && itemType === 'jobResourcePicture') {
         this.$bus.emit('setUnitItemState')
       }
@@ -187,23 +183,24 @@ export default {
         }
       }
       return tmachBlanks
+    },
+    editItem (unitItemData, tmachBlanks) {
+      this.unitItemData = unitItemData
+      this.tmachBlanks = this._tmachBlankSuffixLessen(unitItemData.itemContent.type, tmachBlanks)
+      this.showEditPane = true
     }
   },
   created () {
-    this.$bus.on('editItem', (dataFromUnitItem, tmachBlanks) => {
-      this.dataFromUnitItem = dataFromUnitItem
-      this.tmachBlanks = this._tmachBlankSuffixLessen(dataFromUnitItem.itemContent.type, tmachBlanks)
-      this.showEditPane = true
-    })
+    this.$bus.on('editItem', this.editItem)
     this.$bus.on('getPointAbsoluteCoordinates', (coordinate) => {
-      if (this.dataFromUnitItem.itemContent.type === 'picInput') {
+      if (this.unitItemData.itemContent.type === 'picInput') {
         this.tmachBlanks.splice(0, 1, coordinate.x.toString())
         this.tmachBlanks.splice(1, 1, coordinate.y.toString())
       }
     })
   },
   beforeDestroy () {
-    this.$bus.off('editItem')
+    this.$bus.off('editItem', this.editItem)
     this.$bus.off('getPointAbsoluteCoordinates')
   }
 }

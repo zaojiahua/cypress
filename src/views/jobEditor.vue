@@ -25,13 +25,11 @@
     <job-res-file ref="jobResFile" :jobName="jobName" :resFileModalShow="resFileModalShow" @resFileModalClose="resFileModalClose"></job-res-file>
     <unit-editor
       :filesName="filesName"
-      :unitName="unitName"
       :unitContent="unitContent"
       :unitEditorModalShow="unitEditorModalShow"
       :nodeKey="nodeKey"
       @closeUnitEditor="closeUnitEditor"
       @updateCanvas="updateCanvas"
-      @saveRawUnit="saveRawUnit"
       @saveUnit="saveUnit"
     ></unit-editor>
     <div id="chart-wrap">
@@ -74,7 +72,7 @@
             <Button type="primary" long style="margin-top: 2px;" @click="editUnitTemplate">编辑</Button>
           </div>
         </div>
-        <div id="tooltip">
+        <!-- <div id="tooltip">
           <Card v-show="unitMsgToogle" style="background-color: rgba(255, 255, 255, .95);">
             <p slot="title"><Icon type="ios-book-outline" />Unit Message</p>
             <pre>{{ unitContent }}</pre>
@@ -90,7 +88,7 @@
               </Col>
             </Row>
          </Card>
-        </div>
+        </div> -->
         <div id="inner-diagram"></div>
       </div>
     </Modal>
@@ -152,7 +150,6 @@ export default {
       unitContent: '',
       blockName: '',
       stageJobLabel: null,
-      unitNodeByKey: null,
       getCurrentNormalBlockByKey: null,
       unitType: '请选择组件类型',
       switchBlockInfo: {},
@@ -368,31 +365,22 @@ export default {
       _this.blockDiagram.linkTemplate = linkTemplateStyle()
 
       const unitTemplate = unitNodeTemplate('#c924c9')
-      // unitTemplate.doubleClick = function (e, node) {
-      //   if (e.diagram instanceof go.Palette) return
-      //   _this.$Notice.destroy()
-      //   _this.$refs.emptyOperation.deviceRefresh() // 双击unit时刷新device列表
-      //   _this.$refs.emptyOperation.emptyData()
-      //   _this.unitModalShow = true
-      //   _this.unitNodeByKey = node.data.key
-      //   _this.unitName = node.data.text
-      //   _this.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
-      // }
-
-      let tooltip = document.querySelector('#tooltip')
-      let example = {
-        category: 'Unit'
-      }
-      // let inputFile, outputFile
 
       unitTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
         _this.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
         _this.unitMsgToogle = !_this.unitMsgToogle
         _this.unitEditorModalShow = true
-        _this.unitNodeByKey = node.data.key
         _this.unitName = node.data.text
         _this.nodeKey = node.data.key
+        _this.$bus.emit('setUnitEditorData', {
+          unitNodeKey: node.data.key,
+          unitName: node.data.text,
+          unitType: node.data.unitMsg.execModName,
+          unitMsg: JSON.parse(JSON.stringify(node.data.unitMsg, null, 2)),
+          unitContent: JSON.stringify(node.data.unitMsg, null, 2),
+          unitItemsData: _this._getUnitItems(node.data.unitMsg)
+        })
         // let units = e.diagram.findNodesByExample(example) // 模糊查找，找到所有的 Unit
         // units.iterator.each(unit => {
         //   let unitMsgCmdDict = JSON.stringify(unit.data.unitMsg.execCmdDict, null, 2)
@@ -429,22 +417,22 @@ export default {
       }
 
       unitTemplate.mouseOver = function (e, node) {
-        if (e.diagram instanceof go.Palette) return
-        tooltip.style.top = `${e.event.y}px`
-        tooltip.style.left = `${e.event.x}px`
+        // if (e.diagram instanceof go.Palette) return
+        // tooltip.style.top = `${e.event.y}px`
+        // tooltip.style.left = `${e.event.x}px`
       }
 
       unitTemplate.mouseLeave = function (e, node) {
-        if (e.diagram instanceof go.Palette) return
-        tooltip.style.display = 'none'
+        // if (e.diagram instanceof go.Palette) return
+        // tooltip.style.display = 'none'
 
-        let units = e.diagram.findNodesByExample(example) // 模糊查找 node
-        units.iterator.each(unit => {
-          unit.isSelected = false
-        })
+        // let units = e.diagram.findNodesByExample(example) // 模糊查找 node
+        // units.iterator.each(unit => {
+        //   unit.isSelected = false
+        // })
 
-        _this.unitOutputFileData = []
-        _this.unitInputFileData = []
+        // _this.unitOutputFileData = []
+        // _this.unitInputFileData = []
       }
 
       unitTemplate.contextClick = function (e, node) {
@@ -751,11 +739,11 @@ export default {
         })
       }
     },
-    saveUnit (unitName, unitContent) {
+    saveUnit (unitNodeKey, unitName, unitMsg) {
+      let currentUnitNode = this.blockDiagram.findNodeForKey(unitNodeKey)
       this.unitName = unitName
-      let currentUnitNode = this.blockDiagram.findNodeForKey(this.unitNodeByKey).data
-      this.blockDiagram.model.setDataProperty(currentUnitNode, 'unitMsg', JSON.parse(unitContent))
-      this.blockDiagram.model.setDataProperty(currentUnitNode, 'text', this.unitName)
+      this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'unitMsg', unitMsg)
+      this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'text', unitName)
       this.unitEditorModalShow = false
     },
     getSelectedUnit (name) {
@@ -835,6 +823,7 @@ export default {
     updateUnitAllList (name = undefined) {
       this.unitAllList = {}
       getJobUnitsBodyDict().then(res => {
+        console.log(res)
         res.data.unit.forEach((unit, index) => {
           if (!(unit.type in this.unitAllList)) {
             this.$set(this.unitAllList, unit.type, {})
@@ -857,12 +846,34 @@ export default {
         this.blockDiagram.model.setDataProperty(currentNode, 'color', '#ed4014')
       }
       // this.blockDiagram.model = go.Model.fromJson(this.blockDiagram.model.toJson())
+    },
+    _getUnitItems (unitMsg) {
+      let unitItemsData = []
+      let unitType = unitMsg.execModName
+      if (unitType === 'IMGTOOL') {
+        Object.keys(unitMsg.execCmdDict).forEach(execCmdDictKey => {
+          if (unitMsg.execCmdDict[execCmdDictKey].type !== 'noChange') {
+            unitItemsData.push({
+              'itemName': execCmdDictKey,
+              'itemContent': JSON.parse(JSON.stringify(unitMsg.execCmdDict[execCmdDictKey]))
+            })
+          }
+        })
+      } else {
+        unitMsg.execCmdDict.execCmdList.forEach((val, index) => {
+          if (val.type !== 'noChange') {
+            unitItemsData.push({
+              'itemName': index,
+              'itemContent': JSON.parse(JSON.stringify(val))
+            })
+          }
+        })
+      }
+      return unitItemsData
     }
   },
   created () {
-    this.$bus.on('saveRawUnit', rawUnitMsg => {
-      this.saveRawUnit(rawUnitMsg)
-    })
+    this.$bus.on('saveRawUnit', this.saveRawUnit)
     this.$bus.on('addFilesName', (type, data) => {
       if (type === 'file') {
         this.filesName[0].children = this.filesName[0].children.concat(data)
@@ -873,7 +884,7 @@ export default {
     })
   },
   beforeDestroy () {
-    this.$bus.off('saveRawUnit')
+    this.$bus.off('saveRawUnit', this.saveRawUnit)
   }
 }
 </script>

@@ -10,6 +10,9 @@ import { findBrothersComponents } from '../lib/tools.js'
 export default {
   name: 'unit-item',
   props: {
+    itemIndex: {
+      type: Number
+    },
     unitType: {
       type: String,
       default: ''

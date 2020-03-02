@@ -1,10 +1,10 @@
 <template>
   <Card style="height: 320px;">
     <p slot="title" style="display: flex; justify-content: space-between;">
-      <span>Unit Items &nbsp; ({{ unitItemDatas.length }})</span>
+      <span>Unit Items &nbsp; ({{ unitItemsData.length }})</span>
     </p>
     <div class="items">
-      <unit-editor-unit-item v-for="itemData in unitItemDatas" :unitType="unitType" :key="itemData.itemName" :itemData="itemData"></unit-editor-unit-item>
+      <unit-editor-unit-item v-for="(itemData, index) in unitItemsData" :itemData="itemData" :itemIndex="index" :key="itemData.itemName" ></unit-editor-unit-item>
     </div>
   </Card>
 </template>
@@ -16,50 +16,27 @@ export default {
   name: 'unit-items',
   components: { unitEditorUnitItem },
   props: {
-    unitType: {
-      type: String,
-      default: ''
-    },
-    unitContent: {
-      type: String,
-      default: ''
+    unitItemsData: {
+      type: Array,
+      default () {
+        return []
+      }
     }
   },
   data () {
     return {
-      unitMsgObj: null,
-      unitItemDatas: []
+
     }
   },
   watch: {
-    unitContent (val) {
-      this.unitItemDatas = []
-      this.unitMsgObj = JSON.parse(val)
-      let dataForUnitItem
-      if (this.unitType === 'IMGTOOL') {
-        dataForUnitItem = this.unitMsgObj.execCmdDict
-        Object.keys(dataForUnitItem).forEach(execCmdDictKey => {
-          if (dataForUnitItem[execCmdDictKey].type !== 'noChange') {
-            this.unitItemDatas.push({
-              'itemName': execCmdDictKey,
-              'itemContent': JSON.parse(JSON.stringify(dataForUnitItem[execCmdDictKey]))
-            })
-          }
-        })
-      } else {
-        dataForUnitItem = this.unitMsgObj.execCmdDict.execCmdList
-        dataForUnitItem.forEach((val, index) => {
-          if (val.type !== 'noChange') {
-            this.unitItemDatas.push({
-              'itemName': index,
-              'itemContent': JSON.parse(JSON.stringify(val))
-            })
-          }
-        })
-      }
+    unitItemsData (val) {
+      // console.log(val.length)
     }
   },
   methods: {
+
+  },
+  mounted () {
 
   }
 }

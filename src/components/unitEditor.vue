@@ -1,19 +1,24 @@
 <template>
-  <Modal v-model="unitEditorShow" :mask-closable="false" :closable="false" width="90" @on-ok="saveUnit" @on-cancel="closeUnitEditor">
+  <Modal
+    v-model="unitEditorShow"
+    :mask-closable="false"
+    :closable="false" width="90"
+    @on-ok="editorCompleted"
+    @on-cancel="closeUnitEditor">
       <div slot="header" class="unit-editor-header">
         <span>UNIT EDITOR</span>
         <div style="margin-left:20px; display: flex; align-items: center; width: 32.8%;">
           <Tag color="green" size="large" style="display: flex; align-items: center;">UNIT NAME</Tag>
-          <Input type="text" v-model="currentUnitName" style="flex: 1;"></Input>
+          <Input type="text" v-model="unitName" style="flex: 1;"></Input>
         </div>
       </div>
       <div class="unit-editor">
         <div>
-          <unit-editor-unit-items :unitContent="currentUnitContent" :unitType="unitType"></unit-editor-unit-items>
-          <unit-editor-raw-unit :unitContent="currentUnitContent" :unitType="unitType" style="margin-top: 20px;"></unit-editor-raw-unit>
+          <unit-editor-unit-items v-if="unitItemsData !== null" :unitItemsData="unitItemsData"></unit-editor-unit-items>
+          <unit-editor-raw-unit v-if="unitContent !== null" :unitContent="unitContent" :unitType="unitType" style="margin-top: 20px;"></unit-editor-raw-unit>
         </div>
         <div>
-          <unit-editor-item-edit :filesName="filesName" ref="itemEdit" :unitName="currentUnitName" :unitType="unitType"></unit-editor-item-edit>
+          <unit-editor-item-edit :filesName="filesName" @saveChange="saveChange" ref="itemEdit"></unit-editor-item-edit>
         </div>
         <div>
           <unit-editor-utils></unit-editor-utils>
@@ -32,17 +37,9 @@ import { findComponentsDownward } from '../lib/tools.js'
 export default {
   components: { unitEditorUnitItems, unitEditorRawUnit, unitEditorItemEdit, unitEditorUtils },
   props: {
-    unitName: {
-      type: String,
-      default: ''
-    },
     unitEditorModalShow: {
       type: Boolean,
       default: false
-    },
-    unitContent: {
-      type: String,
-      default: ''
     },
     filesName: {
       type: Array,
@@ -56,11 +53,13 @@ export default {
   },
   data () {
     return {
-      currentUnitName: this.unitName,
+      unitNodeKey: 0,
+      unitName: '',
       unitType: '',
+      unitMsg: null,
+      unitContent: '',
+      unitItemsData: [],
       unitEditorShow: this.unitEditorModalShow,
-      currentUnitContent: this.unitContent,
-      unitMsgObj: null,
       unitItems: [], // 存放 unit items 的每个实例
       isEditing: false,
       currentItem: -1,
@@ -89,28 +88,24 @@ export default {
   },
   watch: {
     unitName (val) {
-      this.currentUnitName = val
+      this.unitName = val
     },
     unitEditorModalShow (val) {
       this.unitEditorShow = val
-    },
-    unitContent (val) {
-      this.currentUnitContent = val
-      this.unitMsgObj = JSON.parse(val)
-      this.unitType = this.unitMsgObj.execModName
-      if (this.currentItem !== -1) {
-        setTimeout(() => {
-          this.unitItems[this.currentItem].$el.click()
-        })
-      }
     }
   },
   methods: {
+    editorCompleted () {
+      this._changeUnitStatus() // 根据 unit 是否编辑完毕来改变 unit 的颜色
+      this._resetUnitUtils() // 初始化 UnitUtils 模块
+      this._saveUnit() // 保存当前 unit 的内容
+      this.closeUnitEditor() // 关闭 UnitEditor
+    },
     closeUnitEditor () {
       this.$refs.itemEdit.showEditPane = false
       this.$emit('closeUnitEditor')
     },
-    _checkWhetherCompleted () {
+    _checkWhetherCompleted () { // 检查当前 unit 是否编辑完毕
       this.unitItems = [...findComponentsDownward(this, 'unit-item')]
       return this.unitItems.every(unitItem => {
         return unitItem.isComplete === true
@@ -119,34 +114,70 @@ export default {
     _changeUnitStatus () {
       this.$emit('updateCanvas', this._checkWhetherCompleted(), this.nodeKey)
     },
-    saveUnit () {
-      this._changeUnitStatus()
-      this.$emit('saveUnit', this.currentUnitName, this.currentUnitContent)
-      this.closeUnitEditor()
+    _resetUnitUtils () {
+      this.$bus.emit('resetUnitUtils')
+    },
+    _saveUnit () {
+      this.$emit('saveUnit', this.unitNodeKey, this.unitName, this.unitMsg)
+    },
+    _setUnitEditorData (unitEditorData) { // 设置 UnitEditor 所需数据
+      this.unitNodeKey = unitEditorData.unitNodeKey
+      this.unitName = unitEditorData.unitName
+      this.unitType = unitEditorData.unitType
+      this.unitMsg = unitEditorData.unitMsg
+      this.unitContent = unitEditorData.unitContent
+      this.unitItemsData = unitEditorData.unitItemsData
+    },
+    _getUnitItems (unitMsg) { // 解析 UnitMsg 以获取需要编辑的 UnitItem
+      let unitItemsData = []
+      let unitType = unitMsg.execModName
+      if (unitType === 'IMGTOOL') {
+        Object.keys(unitMsg.execCmdDict).forEach(execCmdDictKey => {
+          if (unitMsg.execCmdDict[execCmdDictKey].type !== 'noChange') {
+            unitItemsData.push({
+              'itemName': execCmdDictKey,
+              'itemContent': JSON.parse(JSON.stringify(unitMsg.execCmdDict[execCmdDictKey]))
+            })
+          }
+        })
+      } else {
+        unitMsg.execCmdDict.execCmdList.forEach((val, index) => {
+          if (val.type !== 'noChange') {
+            unitItemsData.push({
+              'itemName': index,
+              'itemContent': JSON.parse(JSON.stringify(val))
+            })
+          }
+        })
+      }
+      return unitItemsData
+    },
+    _updateUnitEditorData (unitMsg) { // 更新 UnitEditor 所需数据
+      this.unitContent = JSON.stringify(unitMsg, null, 2)
+      this.unitItemsData = this._getUnitItems(unitMsg)
+    },
+    saveChange (data) { // 修改 unitMsg 的内容
+      if (this.unitType === 'IMGTOOL') {
+        this.$set(this.unitMsg.execCmdDict, data.itemName, data.itemContent)
+      } else {
+        this.unitMsg.execCmdDict.execCmdList.splice(Number(data.itemName), 1, data.itemContent)
+      }
+      this._updateUnitEditorData(this.unitMsg)
     }
   },
   beforeUpdate () {
     this.unitItems = [...findComponentsDownward(this, 'unit-item')]
   },
   created () {
-    this.$bus.on('saveChange', data => {
-      let target = this.unitType === 'IMGTOOL' ? this.unitMsgObj.execCmdDict : this.unitMsgObj.execCmdDict.execCmdList
-      if (this.unitType === 'IMGTOOL') {
-        target[data.itemName] = data.itemContent
-      } else {
-        target[Number(data.itemName)] = data.itemContent
-      }
-      this.currentUnitContent = JSON.stringify(this.unitMsgObj, null, 2)
-    })
+    this.$bus.on('setUnitEditorData', this._setUnitEditorData)
     this.$bus.on('setNamesAboutScreenShotFile', (imgName, featurePointFileName) => {
-      let target = this.unitMsgObj.execCmdDict
+      let target = this.unitMsg.execCmdDict
       target['referImgFile']['content'] = `Tmach${imgName} `
       target['configFile']['content'] = `Tmach${featurePointFileName}.json `
-      this.currentUnitContent = JSON.stringify(this.unitMsgObj, null, 2)
     })
   },
   destroyed () {
-    this.$bus.off('saveChange')
+    this.$bus.off('setUnitEditorData', this._setUnitEditorData)
     this.$bus.off('setNamesAboutScreenShotFile')
   }
 }
