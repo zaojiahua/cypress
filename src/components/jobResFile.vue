@@ -143,6 +143,7 @@ export default {
       this.filesData.push(this.fileData)
       this.renameModal = false
       this.checkState = null
+      this.$bus.emit('setNewName', this.newName + '.' + this.fileData.type)
     },
     checkDuplicateName () {
       let flag = true
@@ -157,8 +158,6 @@ export default {
   },
   created () {
     this.$bus.on('addResFile', fileData => {
-      console.log(fileData)
-      console.log(this.filesData)
       let filesData = this.filesData
       let flag = true
       for (let i = 0; i < filesData.length; i++) {

@@ -156,6 +156,9 @@ export default {
         }
         this.loading = false
       })
+    },
+    setNewName (newName) {
+      this.currentImgName = newName
     }
   },
   watch: {
@@ -169,6 +172,12 @@ export default {
   mounted () {
     this.deviceRefresh()
     this.currentImgName = suffixAutoRemove(this.imgName)
+  },
+  created () {
+    this.$bus.on('setNewName', this.setNewName)
+  },
+  beforeDestroy () {
+    this.$bus.on('setNewName', this.setNewName)
   }
 }
 </script>

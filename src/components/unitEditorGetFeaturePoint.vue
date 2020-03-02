@@ -89,7 +89,6 @@ export default {
           let coordinateRowList = this.coordinateData[i].coordinate_a.split(',').concat(this.coordinateData[i].coordinate_b.split(',')).map(parseFloat)
           coordinateDataList[area] = coordinateRowList
           coordinateNum++
-          console.log(area, coordinateRowList, coordinateDataList)
         }
       }
 
@@ -103,6 +102,9 @@ export default {
         'fileUrl': ''
       })
       this.coordinateData = []
+    },
+    setNewName (newName) {
+      this.currentFeaturePointFileName = newName
     }
   },
   mounted () {
@@ -113,10 +115,12 @@ export default {
     this.$bus.on('getCoordinate', coordinate => {
       this.coordinateData.push(coordinate)
     })
+    this.$bus.on('setNewName', this.setNewName)
   },
   beforeDestroy () {
     this.$bus.off('remove')
     this.$bus.off('getCoordinate')
+    this.$bus.off('setNewName', this.setNewName)
   }
 }
 </script>

@@ -111,6 +111,9 @@ export default {
     setFeaturePointFileName (featurePointFileName) {
       this.tmachBlanks[0] = featurePointFileName
     },
+    setNewName (newName) {
+      this.tmachBlanks[0] = newName
+    },
     _tmachBlankSuffixComplete () {
       let itemType = this.unitItemData.itemContent.type
       if (itemType === 'outputPicture' || itemType === 'inputPicture') {
@@ -191,10 +194,12 @@ export default {
         this.tmachBlanks.splice(1, 1, coordinate.y.toString())
       }
     })
+    this.$bus.on('setNewName', this.setNewName)
   },
   beforeDestroy () {
     this.$bus.off('editItem', this.editItem)
     this.$bus.off('getPointAbsoluteCoordinates')
+    this.$bus.on('setNewName', this.setNewName)
   }
 }
 </script>
