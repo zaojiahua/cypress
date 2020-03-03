@@ -113,6 +113,7 @@ export default {
     getImg () {
       let errors = []
       if (this.currentDeviceRow === -1) errors.push('未选择 device')
+      if (this.itemType === 'jobResourcePicture' && !this.currentImgName) errors.push('请为图片命名')
       if (errors.length) {
         errors.forEach(error => {
           this.$Message.error({
