@@ -83,6 +83,13 @@ export default {
       } else {
         coordinateDataList.threshold = parseFloat(this.computedImgThreshold)
       }
+      if (!this.currentFeaturePointFileName) {
+        this.$Message.error({
+          background: true,
+          content: '请为配置文件命名'
+        })
+        return
+      }
       for (let i = 0; i < this.coordinateData.length; i++) {
         if (this.coordinateData[i].coordinate_a !== '' && this.coordinateData[i].coordinate_b !== '') {
           let area = 'area' + coordinateNum
