@@ -10,7 +10,7 @@
             :key="index"
             v-model="tmachBlanks[index]"
             style="margin-bottom: 10px;"
-            :placeholder="unitItemData && unitItemData.itemContent.type === 'outputFile' ? 'text.txt' : unitItemData.itemContent.type === 'outputPicture' ? 'snap.jpg' : ''"
+            :placeholder="unitItemData && unitItemData.itemContent.type === 'outputFile' ? 'text.txt' : unitItemData.itemContent.type === 'outputPicture' ? 'snap.png' : ''"
             :disabled="unitItemData.itemContent.type === 'picInput' ? true : false"
           >
           </Input>
@@ -120,7 +120,7 @@ export default {
         let commandOfSaveToFinal = '<copy2rdsDatPath>'
         for (let i = 0; i < this.tmachBlanks.length; i++) {
           if (this.tmachBlanks[i].length === 0) continue
-          this.tmachBlanks[i] = suffixAutoComplete(this.tmachBlanks[i], '.jpg')
+          this.tmachBlanks[i] = suffixAutoComplete(this.tmachBlanks[i], '.png')
           if (this.saveToFinalResult) {
             this.tmachBlanks[i] += commandOfSaveToFinal
           }

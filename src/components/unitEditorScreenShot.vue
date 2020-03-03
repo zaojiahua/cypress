@@ -107,7 +107,7 @@ export default {
     },
     handleSearch (value) {
       this.suffixs = !value || value.indexOf('.') >= 0 ? [] : [
-        value + '.jpg'
+        value + '.png'
       ]
     },
     getImg () {
@@ -126,7 +126,7 @@ export default {
       this.loading = true
       this.$bus.emit('isLoading')
 
-      let imgName = suffixAutoComplete(this.currentImgName, '.jpg')
+      let imgName = suffixAutoComplete(this.currentImgName, '.png')
       if (this.itemType === 'jobResourcePicture') this.$emit('setImgName', imgName)
       let getScreenShotParams = {
         device_label: currentDevice.device_label,
@@ -145,7 +145,7 @@ export default {
             if (this.itemType === 'jobResourcePicture') {
               this.$bus.emit('addResFile', {
                 'name': imgName,
-                'type': 'jpg',
+                'type': 'png',
                 'file': res,
                 'fileUrl': ''
               })
