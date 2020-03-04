@@ -45,7 +45,7 @@ export default {
       imageWidth: null,
       imageHeight: null,
       itemType: null,
-      scrollDOMs: null
+      currentModalScrollTop: null
     }
   },
   methods: {
@@ -53,7 +53,6 @@ export default {
       this.fileName = data.fileName
       this.isScreenShot = data.isScreenShot
       this.itemType = data.itemType
-      // console.log(this.itemType)
       if (data.fileToShow) {
         let _this = this
         let image = new Image()
@@ -81,25 +80,24 @@ export default {
       event.preventDefault()
       switch (event.type) {
         case 'mousedown':
-          this.scrollDOMs = [...document.querySelectorAll('.ivu-modal-wrap')].filter((dom) => dom.classList.length === 1)
-          var selArea = this.selectionArea
+          this.currentModalScrollTop = document.querySelector('#unit-editor .ivu-modal-wrap').scrollTop
           this.isDragging = true
           this.mouseStartX = event.pageX
-          this.mouseStartY = event.pageY + this.scrollDOMs[0].scrollTop
+          this.mouseStartY = event.pageY
           if (!this.imageZoomData) {
             this.imageZoomData = this.imageZoom.getBoundingClientRect()
           }
-          selArea.style.left = this.mouseStartX - this.imageZoomData.x + 'px'
-          selArea.style.top = this.mouseStartY - this.imageZoomData.y + 'px'
-          selArea.style.width = '0px'
-          selArea.style.height = '0px'
-          selArea.style.display = 'flex'
+          this.selectionArea.style.left = this.mouseStartX - this.imageZoomData.x + 'px'
+          this.selectionArea.style.top = this.mouseStartY - this.imageZoomData.y + this.currentModalScrollTop + 'px'
+          this.selectionArea.style.width = '0px'
+          this.selectionArea.style.height = '0px'
+          this.selectionArea.style.display = 'flex'
           break
         case 'mousemove':
-          selArea = this.selectionArea
           if (this.isDragging) {
-            selArea.style.width = Math.abs(event.pageX - this.mouseStartX) + 'px'
-            selArea.style.height = Math.abs(event.pageY - this.mouseStartY + this.scrollDOMs[0].scrollTop) + 'px'
+            this.selectionArea.style.width = Math.abs(event.pageX - this.mouseStartX) + 'px'
+            console.log(this.currentModalScrollTop)
+            this.selectionArea.style.height = Math.abs(event.pageY - this.mouseStartY) + 'px'
           }
           break
         case 'mouseup':

@@ -1,5 +1,6 @@
 <template>
   <Modal
+    id="unit-editor"
     v-model="unitEditorShow"
     :mask-closable="false"
     :closable="false" width="90"
