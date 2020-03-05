@@ -114,7 +114,7 @@ export default {
 
         for (let i = 0; i < this.filesData.length; i++) {
           axios.request({
-            url: `${baseURL}/${this.filesData[i].fileUrl}`,
+            url: `${baseURL}${this.filesData[i].fileUrl}`,
             responseType: 'blob'
           }).then(res => {
             let reader = new FileReader()

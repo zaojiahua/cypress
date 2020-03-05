@@ -634,8 +634,9 @@ export default {
       return flag
     },
     // 生成 jobLabel
-    _createJobLabel (src) {
-      let jobLabel = this.md5(this.myDiagram.model.toJson())
+    _createJobLabel () {
+      let randomStr = Math.random().toString(36).substr(2)
+      let jobLabel = this.md5(this.myDiagram.model.toJson() + randomStr)
       jobLabel = 'job-' + jobLabel.substr(0, 8) + '-' + jobLabel.substr(8, 4) + '-' + jobLabel.substr(12, 4) + '-' + jobLabel.substr(16, 4) + '-' + jobLabel.substr(20)
       return jobLabel
     },
@@ -694,7 +695,7 @@ export default {
           info.ui_json_file = JSON.parse(jobFlow)
           if (id) { // 不是新建 job
             if (this.switchButton) { // 另存为
-              info.job_label = this._createJobLabel(jobFlow)
+              info.job_label = this._createJobLabel()
               jobFlowAndMsgSave(info).then(res => {
                 if (res.status === 201) {
                   id = res.data.id
@@ -726,7 +727,7 @@ export default {
               })
             }
           } else { // 新建 job
-            info.job_label = this._createJobLabel(jobFlow)
+            info.job_label = this._createJobLabel()
             jobFlowAndMsgSave(info).then(res => {
               if (res.status === 201) {
                 this.$router.push({ path: '/jobList' })

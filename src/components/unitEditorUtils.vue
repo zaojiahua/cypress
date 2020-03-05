@@ -44,8 +44,7 @@ export default {
       isDragging: false,
       imageWidth: null,
       imageHeight: null,
-      itemType: null,
-      currentModalScrollTop: null
+      itemType: null
     }
   },
   methods: {
@@ -80,15 +79,13 @@ export default {
       event.preventDefault()
       switch (event.type) {
         case 'mousedown':
-          this.currentModalScrollTop = document.querySelector('#unit-editor .ivu-modal-wrap').scrollTop
           this.isDragging = true
           this.mouseStartX = event.pageX
           this.mouseStartY = event.pageY
-          if (!this.imageZoomData) {
-            this.imageZoomData = this.imageZoom.getBoundingClientRect()
-          }
+          this.imageZoom = document.querySelector('.image-zoom')
+          this.imageZoomData = this.imageZoom.getBoundingClientRect()
           this.selectionArea.style.left = this.mouseStartX - this.imageZoomData.x + 'px'
-          this.selectionArea.style.top = this.mouseStartY - this.imageZoomData.y + this.currentModalScrollTop + 'px'
+          this.selectionArea.style.top = this.mouseStartY - this.imageZoomData.y + 'px'
           this.selectionArea.style.width = '0px'
           this.selectionArea.style.height = '0px'
           this.selectionArea.style.display = 'flex'
@@ -96,7 +93,6 @@ export default {
         case 'mousemove':
           if (this.isDragging) {
             this.selectionArea.style.width = Math.abs(event.pageX - this.mouseStartX) + 'px'
-            console.log(this.currentModalScrollTop)
             this.selectionArea.style.height = Math.abs(event.pageY - this.mouseStartY) + 'px'
           }
           break
