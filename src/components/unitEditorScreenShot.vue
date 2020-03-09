@@ -135,13 +135,12 @@ export default {
         picture_name: imgName
       }
       var screenShot = new Promise((resolve, reject) => {
-        getScreenShot(getScreenShotParams).then(res => resolve(res))
+        getScreenShot(getScreenShotParams).then(res => resolve(res)).catch(err => reject(err))
       })
       var getScreenShotTimeOut = new Promise((resolve, reject) => {
-        setTimeout(reject, 8000, 'timeout')
+        setTimeout(reject, 10000, 'timeout')
       })
       Promise.race([screenShot, getScreenShotTimeOut]).then((res) => {
-        console.log('success', res)
         this.$bus.emit('isLoading')
         this.loading = false
         if (res.status === 200) {
@@ -160,8 +159,6 @@ export default {
               })
             }
           })
-        } else if (res.status === 500) {
-          console.log(res)
         }
       }).catch((err) => {
         console.log('error', err)
