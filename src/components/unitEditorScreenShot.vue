@@ -134,7 +134,16 @@ export default {
         device_ip: currentDevice.ip_address,
         picture_name: imgName
       }
-      getScreenShot(getScreenShotParams).then(res => {
+      var screenShot = new Promise((resolve, reject) => {
+        getScreenShot(getScreenShotParams).then(res => resolve(res))
+      })
+      var getScreenShotTimeOut = new Promise((resolve, reject) => {
+        setTimeout(reject, 8000, 'timeout')
+      })
+      Promise.race([screenShot, getScreenShotTimeOut]).then((res) => {
+        console.log('success', res)
+        this.$bus.emit('isLoading')
+        this.loading = false
         if (res.status === 200) {
           blobToDataURL(res.data).then(res => {
             this.$bus.emit('showFile', {
@@ -142,7 +151,6 @@ export default {
               'itemType': this.itemType,
               'isScreenShot': true
             })
-            this.$bus.emit('isLoading')
             if (this.itemType === 'jobResourcePicture') {
               this.$bus.emit('addResFile', {
                 'name': imgName,
@@ -155,7 +163,15 @@ export default {
         } else if (res.status === 500) {
           console.log(res)
         }
+      }).catch((err) => {
+        console.log('error', err)
+        this.$bus.emit('isLoading')
         this.loading = false
+        this.$Notice.error({
+          title: '截图失败',
+          desc: '请检查您的设备',
+          duration: 4
+        })
       })
     },
     setNewName (newName) {
