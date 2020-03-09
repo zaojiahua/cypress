@@ -640,25 +640,6 @@ export default {
       jobLabel = 'job-' + jobLabel.substr(0, 8) + '-' + jobLabel.substr(8, 4) + '-' + jobLabel.substr(12, 4) + '-' + jobLabel.substr(16, 4) + '-' + jobLabel.substr(20)
       return jobLabel
     },
-    _createNewTag (tagType) { // 生成新的测试用途、自定义标签条目
-      let requests = []
-      let targetName = tagType === 'test_area' ? 'job_test_area' : 'custom_tag'
-      let target = this.$refs.jobDetail.jobInfo[tagType]
-      for (let i = target.length - 1; i > 0; i--) {
-        if (typeof target[i] !== 'number') {
-          requests.push(
-            axios.request({
-              url: `${baseURL}/api/v1/cedar/${targetName}/`,
-              method: 'post',
-              data: tagType === 'test_area' ? { description: target[i] } : { custom_tag_name: target[i] }
-            }).then(res => {
-              target[i] = res.data.id
-            })
-          )
-        }
-      }
-      return Promise.all(requests)
-    },
     _getData (id) {
       let filesData = this.$refs.jobResFile.filesData
       let data = new FormData()
@@ -685,35 +666,41 @@ export default {
       }
       return new File([u8arr], filename, { type: mime })
     },
-    saveJob () {
+    async _createNewTag (tagType) { // 生成新的测试用途、自定义标签条目
+      let targetNameDic = {
+        'test_area': 'job_test_area',
+        'custom_tag': 'custom_tag'
+      }
+      let target = this.$refs.jobDetail.jobInfo[tagType]
+      for (let i = 0; i < target.length; i++) {
+        if (typeof target[i] !== 'number') {
+          let res = await axios.request({
+            url: `${baseURL}/api/v1/cedar/${targetNameDic[tagType]}/`,
+            method: 'post',
+            data: tagType === 'test_area' ? { description: target[i] } : { custom_tag_name: target[i] }
+          })
+          target.splice(i, 1, res.data.id)
+        }
+      }
+      return target
+    },
+    async saveJob () {
       // 使用 & 保证都运行
       if (this._jobFlowRules() & this._jobMsgRules()) {
         let info = this.$refs.jobDetail.jobInfo
+        info['test_area'] = await this._createNewTag('test_area')
+        info['custom_tag'] = await this._createNewTag('custom_tag')
         let jobFlow = this.myDiagram.model.toJson()
-        Promise.all([this._createNewTag('test_area'), this._createNewTag('custom_tag')]).then((res) => { // this._createNewTag('custom_tag') API暂时不能用
-          let id = this.$route.query.jobId
-          info.ui_json_file = JSON.parse(jobFlow)
-          if (id) { // 不是新建 job
-            if (this.switchButton) { // 另存为
-              info.job_label = this._createJobLabel()
-              jobFlowAndMsgSave(info).then(res => {
-                if (res.status === 201) {
-                  id = res.data.id
-                }
-              }).then(() => {
-                let data = this._getData(id)
-                jobFlowAndMsgUpdate(id, info).then(res => {
-                  if (res.status === 200) {
-                    jobResFilesSave(data).then(res => {
-                      if (res.status === 201) {
-                        this.$Message.info('保存成功')
-                        this.$router.push({ path: '/jobList' })
-                      }
-                    })
-                  }
-                })
-              })
-            } else { // 更新
+        let id = this.$route.query.jobId
+        info.ui_json_file = JSON.parse(jobFlow)
+        if (id) { // 不是新建 job
+          if (this.switchButton) { // 另存为
+            info.job_label = this._createJobLabel()
+            jobFlowAndMsgSave(info).then(res => {
+              if (res.status === 201) {
+                id = res.data.id
+              }
+            }).then(() => {
               let data = this._getData(id)
               jobFlowAndMsgUpdate(id, info).then(res => {
                 if (res.status === 200) {
@@ -725,19 +712,31 @@ export default {
                   })
                 }
               })
-            }
-          } else { // 新建 job
-            info.job_label = this._createJobLabel()
-            jobFlowAndMsgSave(info).then(res => {
-              if (res.status === 201) {
-                this.$router.push({ path: '/jobList' })
-                this.$Message.info('操作完成')
+            })
+          } else { // 更新
+            let data = this._getData(id)
+            jobFlowAndMsgUpdate(id, info).then(res => {
+              if (res.status === 200) {
+                jobResFilesSave(data).then(res => {
+                  if (res.status === 201) {
+                    this.$Message.info('保存成功')
+                    this.$router.push({ path: '/jobList' })
+                  }
+                })
               }
-            }).catch(err => {
-              console.log(err)
             })
           }
-        })
+        } else { // 新建 job
+          info.job_label = this._createJobLabel()
+          jobFlowAndMsgSave(info).then(res => {
+            if (res.status === 201) {
+              this.$router.push({ path: '/jobList' })
+              this.$Message.info('操作完成')
+            }
+          }).catch(err => {
+            console.log(err)
+          })
+        }
       }
     },
     saveUnit (unitNodeKey, unitName, unitMsg) {
