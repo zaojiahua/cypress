@@ -394,6 +394,7 @@ export default {
       }
 
       unitTemplate.mouseEnter = function (e, node) {
+        // console.log(node)
         // if (e.diagram instanceof go.Palette) return
         // console.log(node.data)
         // _this.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
@@ -445,7 +446,7 @@ export default {
         _this.unitController.style.display = 'block'
       }
 
-      const unitListGroupTemplate = baseGroupTemplate()
+      const unitListGroupTemplate = baseGroupTemplate(_this)
       unitListGroupTemplate.memberValidation = function groupValidation (group, node) {
         return node.data.category === 'Unit'// 当节点的category值为Unit时
       }

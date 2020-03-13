@@ -133,7 +133,7 @@ export function unitNodeTemplate (color, shape = 'RoundedRectangle') {
   return unitTemplate
 }
 
-export function baseGroupTemplate () {
+export function baseGroupTemplate (context) {
   return MAKE(go.Group, 'Auto', nodeStyle(),
     {
       selectable: true,
@@ -147,6 +147,29 @@ export function baseGroupTemplate () {
       },
       mouseDragLeave: function (e, grp, next) {
         highlightGroup(e, grp, false)
+      },
+      memberAdded: function (t, n) { // 判断当前 Unit 是否已经编辑完成，并改变 Unit 状态
+        let unitData = n.data
+        let target = null
+        if (unitData.unitMsg.execModName === 'IMGTOOL') {
+          target = unitData.unitMsg.execCmdDict
+          for (let key in target) {
+            if (target[key].type !== 'noChange' && target[key].content.includes('Tmach ')) {
+              context.blockDiagram.model.setDataProperty(n.data, 'color', '#ed4014')
+              return
+            }
+          }
+          context.blockDiagram.model.setDataProperty(n.data, 'color', '#19be6b')
+        } else {
+          target = unitData.unitMsg.execCmdDict.execCmdList
+          target.forEach(item => {
+            if (item.type !== 'noChange' && item.content.includes('Tmach ')) {
+              context.blockDiagram.model.setDataProperty(n.data, 'color', '#ed4014')
+              return
+            }
+            context.blockDiagram.model.setDataProperty(n.data, 'color', '#19be6b')
+          })
+        }
       },
       computesBoundsAfterDrag: true,
       // when the selection is dropped into a Group, add the selected Parts into that Group;
