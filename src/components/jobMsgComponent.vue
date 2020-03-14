@@ -38,7 +38,7 @@
       </Select>
     </Form-item>
     <Form-item>
-      <Button v-show="propConfirmBtn" type="success" @click="submit(currentJobId)" style="float: right;margin-right: 20px">提交</Button>
+      <Button v-show="propConfirmBtn" type="success" @click="submit(currentJobId)" style="float: right;margin-right: 20px">更新</Button>
       <Button v-show="propEnterBtn" type="info" @click="routerTo" style="float: right;margin-right: 20px">进入</Button>
     </Form-item>
   </Form>

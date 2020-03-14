@@ -154,6 +154,24 @@ export default {
         }
       }
       this.checkState = flag
+    },
+    getFileData (tmachBlanks, itemType) {
+      if (!tmachBlanks[0]) return
+      for (let i = 0; i < this.filesData.length; i++) {
+        if (this.filesData[i].name === tmachBlanks[0]) {
+          /**
+           * 将文件展示在 UnitEditor 中
+           * 由 unitEditorUtils 组件响应
+           */
+          this.$bus.emit('showFile', {
+            'fileToShow': this.filesData[i].file,
+            'fileName': this.filesData[i].name,
+            'itemType': itemType,
+            'isScreenShot': true
+          })
+          break
+        }
+      }
     }
   },
   created () {
@@ -174,6 +192,11 @@ export default {
         filesData.push(fileData)
       }
     })
+    /**
+     * 获取 UnitItem 的依赖文件数据
+     * 来自 unitEditorUnitItem 组件
+     */
+    this.$bus.on('getFileData', this.getFileData)
   },
   mounted () {
     if (this.$route.query.jobId) {
@@ -182,6 +205,7 @@ export default {
   },
   beforeDestroy () {
     this.$bus.off('addResFile')
+    this.$bus.off('getFileData', this.getFileData)
   }
 }
 </script>

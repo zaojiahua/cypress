@@ -104,12 +104,12 @@ export default {
   methods: {
     editorCompleted () {
       this._changeUnitStatus() // 根据 unit 是否编辑完毕来改变 unit 的颜色
-      this._resetUnitUtils() // 初始化 UnitUtils 模块
       this._saveUnit() // 保存当前 unit 的内容
       this.closeUnitEditor() // 关闭 UnitEditor
     },
     closeUnitEditor () {
       this.$refs.itemEdit.showEditPane = false
+      this._resetUnitUtils() // 初始化 UnitUtils 模块
       this.$emit('closeUnitEditor')
     },
     _checkWhetherCompleted () { // 检查当前 unit 是否编辑完毕

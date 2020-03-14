@@ -49,10 +49,10 @@ export default {
   },
   methods: {
     setFileData (data) {
-      this.fileName = data.fileName
       this.isScreenShot = data.isScreenShot
       this.itemType = data.itemType
-      if (data.fileToShow) {
+      if (data.itemType === 'jobResourcePicture' && data.fileToShow) {
+        this.fileName = data.fileName
         let _this = this
         let image = new Image()
         image.src = data.fileToShow
@@ -71,8 +71,37 @@ export default {
           }
           _this.fileToShow = data.fileToShow
         }
-      } else {
-        this.fileToShow = data.fileToShow
+      } else if (data.itemType === 'jobResourceFile') {
+        let areas = []
+        let JsonFileData = JSON.parse(data.fileToShow)
+        for (let key in JsonFileData) {
+          if (key.startsWith('area')) {
+            areas.push(JsonFileData[key])
+          }
+        }
+        let imageZoomData = this.imageZoom.getBoundingClientRect()
+        for (let i = 0; i < areas.length; i++) {
+          let left = Math.floor(areas[i][0] * imageZoomData.width)
+          let top = Math.floor(areas[i][1] * imageZoomData.height)
+          let width = Math.round((areas[i][2] - areas[i][0]) * imageZoomData.width)
+          let height = Math.round((areas[i][3] - areas[i][1]) * imageZoomData.height)
+          let area = document.createElement('div')
+          area.classList.add('area')
+          area.style.display = 'flex'
+          area.style.justifyContent = 'center'
+          area.style.alignItems = 'center'
+          area.style.fontSize = '24px'
+          area.style.fontWeight = 'bolder'
+          area.style.position = 'absolute'
+          area.style.left = `${left}px`
+          area.style.top = `${top}px`
+          area.style.width = `${width}px`
+          area.style.height = `${height}px`
+          area.style.background = 'rgba(87, 250, 255, .4)'
+          area.style.border = '1px dashed #0099FF'
+          area.innerText = i + 1
+          this.imageZoom.appendChild(area)
+        }
       }
     },
     selectArea (event) {
@@ -89,6 +118,11 @@ export default {
           this.selectionArea.style.width = '0px'
           this.selectionArea.style.height = '0px'
           this.selectionArea.style.display = 'flex'
+
+          let areas = document.querySelectorAll('.area')
+          areas.forEach(area => {
+            this.imageZoom.removeChild(area)
+          })
           break
         case 'mousemove':
           if (this.isDragging) {
@@ -137,9 +171,7 @@ export default {
     }
   },
   created () {
-    this.$bus.on('showFile', data => {
-      this.setFileData(data)
-    })
+    this.$bus.on('showFile', this.setFileData)
     this.$bus.on('isLoading', () => {
       this.isLoading = !this.isLoading
       this.fileToShow = null
@@ -163,7 +195,7 @@ export default {
     this.imageZoom.addEventListener('mouseup', this.selectArea)
   },
   beforeDestroy () {
-    this.$bus.off('showFile')
+    this.$bus.off('showFile', this.setFileData)
     this.$bus.off('isLoading')
     this.$bus.off('reset', this.reset)
     this.$bus.off('setFileName')

@@ -147,6 +147,7 @@ export default {
           blobToDataURL(res.data).then(res => {
             this.$bus.emit('showFile', {
               'fileToShow': res,
+              'fileName': imgName,
               'itemType': this.itemType,
               'isScreenShot': true
             })

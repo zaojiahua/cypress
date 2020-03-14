@@ -88,6 +88,20 @@ export default {
       })
       this.isComplete = this._hasCompleted(this.currentItemData)
       this.$bus.emit('editItem', this.itemData, this.tmachBlanks)
+      if (this.currentItemData.type === 'jobResourceFile') {
+        let imageZoom = document.querySelector('.image-zoom')
+        let areas = document.querySelectorAll('.area')
+        areas.forEach(area => {
+          imageZoom.removeChild(area)
+        })
+      }
+      if (this.currentItemData.type === 'jobResourcePicture' || this.currentItemData.type === 'jobResourceFile') {
+        /**
+         * 获取该 UnitItem 的依赖文件
+         * 由 jobResFile 组件响应
+         */
+        this.$bus.emit('getFileData', this.tmachBlanks, this.currentItemData.type)
+      }
       this.$bus.emit('setItemType', this.itemData.itemContent.type)
     },
     _hasCompleted (data) { // 判断 item 是否完成
