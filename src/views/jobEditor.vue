@@ -4,8 +4,10 @@
       <job-msg-component ref="jobDetail" :prop-confirm-btn="false" :prop-enter-btn="false"></job-msg-component>
     </Drawer>
     <div class="jobName">
-      jobName: {{jobName}}<job-in-job :jobModalShow="jobModalShow"></job-in-job>
-      <Button size="large" style="float: right" to="/jobList">取消</Button> <!-- @click="$store.commit('noKeepAlive', 'jobEditor')"-->
+      jobName: {{jobName}}
+      <job-in-job :jobModalShow="jobModalShow"></job-in-job>
+      <Button size="large" style="float: right" to="/jobList">取消</Button>
+      <!-- @click="$store.commit('noKeepAlive', 'jobEditor')"-->
       <Button type="primary" size="large" @click="saveJob" style="margin-right: 10px">确定</Button>
       <Button type="primary" size="large" @click="viewResFile" style="margin-right: 10px">查看依赖文件</Button>
       <Button type="info" size="large" @click="showDrawer=true" style="margin-right: 10px">详情</Button>
@@ -14,15 +16,24 @@
         @click="$store.commit('keepAlive', 'jobEditor')"
         style="margin-right: 10px">
         {{ this.$store.state.keepAliveComponents.length === 2 ? "已存" : "暂存" }}
-      </Button> -->
+      </Button>-->
       <i-switch size="large" v-show="switchButtonShow" v-model="switchButton">
         <span slot="open">另存</span>
         <span slot="close">更新</span>
       </i-switch>
     </div>
     <!-- <job-editor-header :jobName="jobName" @saveJob="saveJob" @showDrawer="showDrawerHandler"></job-editor-header> -->
-    <job-in-job :jobModalShow="jobModalShow" :currentJobBlockText="currentJobBlockText" @jobModalClose="jobModalClose"></job-in-job>
-    <job-res-file ref="jobResFile" :jobName="jobName" :resFileModalShow="resFileModalShow" @resFileModalClose="resFileModalClose"></job-res-file>
+    <job-in-job
+      :jobModalShow="jobModalShow"
+      :currentJobBlockText="currentJobBlockText"
+      @jobModalClose="jobModalClose"
+    ></job-in-job>
+    <job-res-file
+      ref="jobResFile"
+      :jobName="jobName"
+      :resFileModalShow="resFileModalShow"
+      @resFileModalClose="resFileModalClose"
+    ></job-res-file>
     <unit-editor
       :filesName="filesName"
       :unitContent="unitContent"
@@ -45,8 +56,8 @@
       :unitTemplateName="unitName"
       :unitTemplateContent="unitTemplateContent"
       @closeUnitTemplateEditor="closeUnitTemplateEditor"
-      @updateUnitAllList="updateUnitAllList">
-    </unit-template-editor>
+      @updateUnitAllList="updateUnitAllList"
+    ></unit-template-editor>
 
     <Modal v-model="blockModalShow" :closable="false" fullscreen>
       <div slot="header">
@@ -62,7 +73,11 @@
             <Dropdown trigger="click" @on-click="getSelectedUnit">
               <Button id="dropdown-btn" type="primary">{{unitType}}</Button>
               <DropdownMenu slot="list" style="width: 150px">
-                <DropdownItem v-for="(currentUnit, key) in unitAllList" :name="key" :key="key">{{key}}</DropdownItem>
+                <DropdownItem
+                  v-for="(currentUnit, key) in unitAllList"
+                  :name="key"
+                  :key="key"
+                >{{key}}</DropdownItem>
               </DropdownMenu>
             </Dropdown>
           </div>
@@ -88,7 +103,7 @@
               </Col>
             </Row>
          </Card>
-        </div> -->
+        </div>-->
         <div id="inner-diagram"></div>
       </div>
     </Modal>
@@ -98,8 +113,8 @@
       :switch-block-info="switchBlockInfo"
       v-model="switchBlockModalShow"
       @save="switchBlockSave"
-      @clear="switchBlockInfo = {}">
-    </switch-block-detail-component>
+      @clear="switchBlockInfo = {}"
+    ></switch-block-detail-component>
   </div>
 </template>
 <script>
@@ -318,6 +333,10 @@ export default {
           // 通过 lodbash deepCopy 一份数据并传递给 _this.blockDiagram.model
           _this.blockDiagram.model = go.Model.fromJson(_this._.cloneDeep(node.data.unitLists))
         }
+      }
+
+      normalBlockTemplate.click = function (e, node) {
+        console.log(node, JSON.stringify(node.data.unitLists))
       }
 
       const jobBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: '#30cfd0', 1.0: '#2306F7' }), 'RoundedRectangle')
@@ -541,7 +560,52 @@ export default {
       this.myPalette.model = new go.GraphLinksModel([
         { category: 'Start', text: 'Start' },
         { category: 'switchBlock', text: 'Switch block' },
-        { category: 'normalBlock', text: 'Normal block' },
+        {
+          category: 'normalBlock',
+          text: 'Normal block',
+          unitLists: {
+            'class': 'GraphLinksModel',
+            'linkFromPortIdProperty': 'fromPort',
+            'linkToPortIdProperty': 'toPort',
+            'nodeDataArray': [
+              {
+                'category': 'Start',
+                'text': 'Entry',
+                'key': -1,
+                'loc': '-914.2500000000001 -64.00000000000001'
+              },
+              {
+                'category': 'UnitList',
+                'text': 'UnitList',
+                'isGroup': true,
+                'key': -2,
+                'loc': '-700.5 -49'
+              },
+              {
+                'category': 'End',
+                'text': 'Exit',
+                'key': -3,
+                'loc': '-423.5 -65'
+              }
+            ],
+            'linkDataArray': [
+              {
+                'from': -1,
+                'to': -2,
+                'fromPort': 'R',
+                'toPort': 'L',
+                'points': [-874.8887031022892, -64, -864.8887031022892, -64, -790.6943515511446, -64, -790.6943515511446, -64.69453125, -716.5, -64.69453125, -706.5, -64.69453125]
+              },
+              {
+                'from': -2,
+                'to': -3,
+                'fromPort': 'R',
+                'toPort': 'L',
+                'points': [-605.8209025016921, -64.69453125, -595.8209025016921, -64.69453125, -530.494088399681, -64.69453125, -530.494088399681, -65, -465.1672742976699, -65, -455.1672742976699, -65]
+              }
+            ]
+          }
+        },
         { category: 'End', text: 'End' },
         { category: 'Job', text: 'Job block' }
       ])
@@ -886,111 +950,111 @@ export default {
 }
 </script>
 <style lang="less" scoped>
-  .jobName {
-    font-size: 18px;
-    padding: 5px 20px
+.jobName {
+  font-size: 18px;
+  padding: 5px 20px;
+}
+
+.jobName button {
+  float: right;
+  margin-bottom: 5px;
+}
+
+#chart-wrap {
+  width: 100%;
+  display: flex;
+  height: 83vh;
+  justify-content: space-between;
+  margin-bottom: 22px;
+
+  #chart-palette {
+    width: 15%;
+    margin-right: 30px;
+    background-color: white;
+    border: solid 1px rgb(244, 244, 244);
   }
 
-  .jobName Button{
-    float: right;
-    margin-bottom: 5px;
+  #chart-diagram {
+    flex-grow: 1;
+    background-color: white;
+    border: solid 1px rgb(244, 244, 244);
   }
+}
 
-  #chart-wrap {
-    width: 100%;
-    display: flex;
-    height: 83vh;
-    justify-content: space-between;
-    margin-bottom: 22px;
+#inner-wrap {
+  width: 100%;
+  display: flex;
+  height: 78vh;
+  justify-content: space-between;
+  margin-bottom: 22px;
 
-    #chart-palette {
-      width: 15%;
-      margin-right: 30px;
-      background-color: white;
-      border: solid 1px rgb(244, 244, 244);
-    }
+  #chart-left {
+    position: relative;
+    width: 15%;
+    margin-right: 30px;
+    background-color: white;
+    border: solid 1px rgb(244, 244, 244);
 
-    #chart-diagram {
-      flex-grow: 1;
-      background-color: white;
-      border: solid 1px rgb(244, 244, 244);
-    }
-  }
-
-    #inner-wrap {
+    #dropdown-div {
       width: 100%;
-      display: flex;
-      height: 78vh;
-      justify-content: space-between;
-      margin-bottom: 22px;
+      height: 10%;
 
-      #chart-left{
-        position: relative;
-        width: 15%;
-        margin-right: 30px;
-        background-color: white;
-        border: solid 1px rgb(244, 244, 244);
-
-        #dropdown-div{
-          width: 100%;
-          height: 10%;
-
-          #dropdown-btn{
-            width: 100%;
-            margin-top: 10px;
-            letter-spacing: 2px;
-            font-size: 14px;
-          }
-        }
-        #inner-palette {
-          width: 100%;
-          height: 90%;
-          background-color: white;
-        }
-
-        #unit-controller {
-          display: none;
-          position: absolute;
-          width: 100px;
-          border-radius: 6px;
-          z-index: 10;
-        }
-      }
-      #tooltip {
-        display: none;
-        position: absolute;
-        z-index: 1000000000;
-        border-radius: 10px;
-        box-shadow: 6px 8px 12px gray;
-      }
-
-      #inner-diagram{
-        position: relative;
-        flex-grow: 1;
-        background-color: white;
-        border: solid 1px rgb(244, 244, 244);
+      #dropdown-btn {
+        width: 100%;
+        margin-top: 10px;
+        letter-spacing: 2px;
+        font-size: 14px;
       }
     }
-
-    .unitView{
+    #inner-palette {
       width: 100%;
-      display: flex;
-      height: 74vh;
-      justify-content: space-between;
-      margin-bottom: 22px;
-
-      .unitContent {
-        width: 20%;
-        margin-right: 16px;
-        background-color: white;
-        border: solid 1px rgb(244, 244, 244);
-      }
-
-      .unitOperation{
-        width: 80%;
-        flex-grow: 1;
-        background-color: white;
-        border: solid 1px rgb(244, 244, 244);
-      }
+      height: 90%;
+      background-color: white;
     }
+
+    #unit-controller {
+      display: none;
+      position: absolute;
+      width: 100px;
+      border-radius: 6px;
+      z-index: 10;
+    }
+  }
+  #tooltip {
+    display: none;
+    position: absolute;
+    z-index: 1000000000;
+    border-radius: 10px;
+    box-shadow: 6px 8px 12px gray;
+  }
+
+  #inner-diagram {
+    position: relative;
+    flex-grow: 1;
+    background-color: white;
+    border: solid 1px rgb(244, 244, 244);
+  }
+}
+
+.unitView {
+  width: 100%;
+  display: flex;
+  height: 74vh;
+  justify-content: space-between;
+  margin-bottom: 22px;
+
+  .unitContent {
+    width: 20%;
+    margin-right: 16px;
+    background-color: white;
+    border: solid 1px rgb(244, 244, 244);
+  }
+
+  .unitOperation {
+    width: 80%;
+    flex-grow: 1;
+    background-color: white;
+    border: solid 1px rgb(244, 244, 244);
+  }
+}
 </style>
