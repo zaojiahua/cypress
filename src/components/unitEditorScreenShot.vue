@@ -128,7 +128,13 @@ export default {
       this.$bus.emit('isLoading')
 
       let imgName = suffixAutoComplete(this.currentImgName, '.png')
-      if (this.itemType === 'jobResourcePicture') this.$emit('setImgName', imgName)
+      if (this.itemType === 'jobResourcePicture') {
+        this.$emit('setImgName', imgName)
+        /**
+         * 设置当前截图的名称，由 unitEditorUtils 接收
+         */
+        this.$bus.emit('setFileName', imgName)
+      }
       let getScreenShotParams = {
         device_label: currentDevice.device_label,
         device_ip: currentDevice.ip_address,

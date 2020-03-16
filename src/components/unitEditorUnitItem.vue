@@ -73,28 +73,34 @@ export default {
     }
   },
   methods: {
-    handleClick () {
+    _isEditable () {
       if (this.canEdit === false) {
         this.$Modal.warning({
           title: '温馨提示',
           content: '请先在 参考标准图片 中获取图片'
         })
-        return
       }
+    },
+    _setClickedState () {
       this.checked = true
       let unitItemBrothers = findBrothersComponents(this, 'unit-item')
       unitItemBrothers.forEach(bro => {
         bro.checked = false
       })
+    },
+    _removeAreas () {
+      let imageZoom = document.querySelector('.image-zoom')
+      let areas = document.querySelectorAll('.area')
+      areas.forEach(area => {
+        imageZoom.removeChild(area)
+      })
+    },
+    handleClick () {
+      this._isEditable()
+      this._setClickedState()
       this.isComplete = this._hasCompleted(this.currentItemData)
       this.$bus.emit('editItem', this.itemData, this.tmachBlanks)
-      if (this.currentItemData.type === 'jobResourceFile') {
-        let imageZoom = document.querySelector('.image-zoom')
-        let areas = document.querySelectorAll('.area')
-        areas.forEach(area => {
-          imageZoom.removeChild(area)
-        })
-      }
+      this._removeAreas()
       if (this.currentItemData.type === 'jobResourcePicture' || this.currentItemData.type === 'jobResourceFile') {
         /**
          * 获取该 UnitItem 的依赖文件

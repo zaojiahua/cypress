@@ -90,6 +90,11 @@ export default {
         })
         return
       }
+      /**
+       * 设置当前识别率，由 unitEditorUtils 接收
+       */
+      this.$bus.emit('setThreshold', parseFloat(this.computedImgThreshold))
+
       for (let i = 0; i < this.coordinateData.length; i++) {
         if (this.coordinateData[i].coordinate_a !== '' && this.coordinateData[i].coordinate_b !== '') {
           let area = 'area' + coordinateNum

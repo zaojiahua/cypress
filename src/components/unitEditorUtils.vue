@@ -1,6 +1,6 @@
 <template>
   <Card>
-    <p slot="title">Utils &nbsp; {{ fileName ? `(${fileName})` : '' }}</p>
+    <p slot="title">Utils &nbsp; {{ fileInfo }}</p>
     <div class="file-gallery">
       <p class="file-none" v-show="!fileToShow && !isLoading">还没有可以展示/编辑的文件</p>
       <!-- 加载动画 -->
@@ -44,7 +44,9 @@ export default {
       isDragging: false,
       imageWidth: null,
       imageHeight: null,
-      itemType: null
+      itemType: null,
+      threshold: null,
+      fileInfo: null
     }
   },
   methods: {
@@ -53,55 +55,62 @@ export default {
       this.itemType = data.itemType
       if (data.itemType === 'jobResourcePicture' && data.fileToShow) {
         this.fileName = data.fileName
-        let _this = this
-        let image = new Image()
-        image.src = data.fileToShow
-        image.onload = function () {
-          _this.imageWidth = image.width
-          _this.imageHeight = image.height
-          let img = document.querySelector('.image')
-          if (this.imageWidth > this.imageHeight) {
-            _this.imageZoom.style.width = '100%'
-            _this.imageZoom.style.height = 'auto'
-            img.style.maxWidth = _this.imageZoom.style.width
-          } else {
-            _this.imageZoom.style.height = '100%'
-            _this.imageZoom.style.width = 'auto'
-            img.style.maxHeight = _this.imageZoom.style.height
-          }
-          _this.fileToShow = data.fileToShow
-        }
+        this._showImage(data)
       } else if (data.itemType === 'jobResourceFile') {
-        let areas = []
-        let JsonFileData = JSON.parse(data.fileToShow)
-        for (let key in JsonFileData) {
-          if (key.startsWith('area')) {
-            areas.push(JsonFileData[key])
-          }
+        this._addAreas(data)
+      }
+    },
+    _showImage (data) {
+      let _this = this
+      let image = new Image()
+      image.src = data.fileToShow
+      image.onload = function () {
+        _this.imageWidth = image.width
+        _this.imageHeight = image.height
+        let img = document.querySelector('.image')
+        if (this.imageWidth > this.imageHeight) {
+          _this.imageZoom.style.width = '100%'
+          _this.imageZoom.style.height = 'auto'
+          img.style.maxWidth = _this.imageZoom.style.width
+        } else {
+          _this.imageZoom.style.height = '100%'
+          _this.imageZoom.style.width = 'auto'
+          img.style.maxHeight = _this.imageZoom.style.height
         }
-        let imageZoomData = this.imageZoom.getBoundingClientRect()
-        for (let i = 0; i < areas.length; i++) {
-          let left = Math.floor(areas[i][0] * imageZoomData.width)
-          let top = Math.floor(areas[i][1] * imageZoomData.height)
-          let width = Math.round((areas[i][2] - areas[i][0]) * imageZoomData.width)
-          let height = Math.round((areas[i][3] - areas[i][1]) * imageZoomData.height)
-          let area = document.createElement('div')
-          area.classList.add('area')
-          area.style.display = 'flex'
-          area.style.justifyContent = 'center'
-          area.style.alignItems = 'center'
-          area.style.fontSize = '24px'
-          area.style.fontWeight = 'bolder'
-          area.style.position = 'absolute'
-          area.style.left = `${left}px`
-          area.style.top = `${top}px`
-          area.style.width = `${width}px`
-          area.style.height = `${height}px`
-          area.style.background = 'rgba(87, 250, 255, .4)'
-          area.style.border = '1px dashed #0099FF'
-          area.innerText = i + 1
-          this.imageZoom.appendChild(area)
+        _this.fileToShow = data.fileToShow
+      }
+    },
+    _addAreas (data) {
+      let areas = []
+      let JsonFileData = JSON.parse(data.fileToShow)
+      this.threshold = JsonFileData.threshold
+      for (let key in JsonFileData) {
+        if (key.startsWith('area')) {
+          areas.push(JsonFileData[key])
         }
+      }
+      let imageZoomData = this.imageZoom.getBoundingClientRect()
+      for (let i = 0; i < areas.length; i++) {
+        let left = Math.floor(areas[i][0] * imageZoomData.width)
+        let top = Math.floor(areas[i][1] * imageZoomData.height)
+        let width = Math.round((areas[i][2] - areas[i][0]) * imageZoomData.width)
+        let height = Math.round((areas[i][3] - areas[i][1]) * imageZoomData.height)
+        let area = document.createElement('div')
+        area.classList.add('area')
+        area.style.display = 'flex'
+        area.style.justifyContent = 'center'
+        area.style.alignItems = 'center'
+        area.style.fontSize = '24px'
+        area.style.fontWeight = 'bolder'
+        area.style.position = 'absolute'
+        area.style.left = `${left}px`
+        area.style.top = `${top}px`
+        area.style.width = `${width}px`
+        area.style.height = `${height}px`
+        area.style.background = 'rgba(87, 250, 255, .4)'
+        area.style.border = '1px dashed #0099FF'
+        area.innerText = i + 1
+        this.imageZoom.appendChild(area)
       }
     },
     selectArea (event) {
@@ -154,6 +163,10 @@ export default {
       })
     },
     reset () {
+      let areas = document.querySelectorAll('.area')
+      areas.forEach(area => {
+        this.imageZoom.removeChild(area)
+      })
       this.fileName = null
       this.fileToShow = null
       this.isLoading = false
@@ -168,6 +181,31 @@ export default {
       this.imageWidth = null
       this.imageHeight = null
       this.itemType = null
+      this.threshold = null
+      this.fileInfo = null
+    },
+    setFileName (fileName) {
+      this.fileName = fileName
+    },
+    setThreshold (threshold) {
+      this.threshold = threshold
+    },
+    setFileInfo () {
+      if (this.fileName && !this.threshold) {
+        this.fileInfo = `( ${'图片名称：' + this.fileName} )`
+      } else if (this.fileName && this.threshold) {
+        this.fileInfo = `( ${'图片名称：' + this.fileName + ' 识别率：' + this.threshold} )`
+      } else {
+        this.fileInfo = ''
+      }
+    }
+  },
+  watch: {
+    fileName (val) {
+      this.setFileInfo()
+    },
+    threshold (val) {
+      this.setFileInfo()
     }
   },
   created () {
@@ -177,9 +215,14 @@ export default {
       this.fileToShow = null
     })
     this.$bus.on('resetUnitUtils', this.reset)
-    this.$bus.on('setFileName', fileName => {
-      this.fileName = fileName
-    })
+    /**
+     * 设置当前图片名称，来自 unitEditorScreenShot
+     */
+    this.$bus.on('setFileName', this.setFileName)
+    /**
+     * 设置当前图片识别率，来自 unitEditorGetFeaturePoint
+     */
+    this.$bus.on('setThreshold', this.setThreshold)
     this.$bus.on('setItemType', (itemType) => {
       this.itemType = itemType
     })
@@ -197,8 +240,9 @@ export default {
   beforeDestroy () {
     this.$bus.off('showFile', this.setFileData)
     this.$bus.off('isLoading')
-    this.$bus.off('reset', this.reset)
-    this.$bus.off('setFileName')
+    this.$bus.off('resetUnitUtils', this.reset)
+    this.$bus.off('setFileName', this.setFileName)
+    this.$bus.off('setThreshold', this.setThreshold)
     this.$bus.off('setItemType')
     this.imageZoom.removeEventListener('mousedown', this.selectArea)
     this.imageZoom.removeEventListener('mousemove', this.selectArea)
