@@ -162,13 +162,13 @@ export function baseGroupTemplate (context) {
           context.blockDiagram.model.setDataProperty(n.data, 'color', '#19be6b')
         } else {
           target = unitData.unitMsg.execCmdDict.execCmdList
-          target.forEach(item => {
-            if (item.type !== 'noChange' && item.content.includes('Tmach ')) {
+          for (let i = 0; i < target.length; i++) {
+            if (target[i].type !== 'noChange' && target[i].content.includes('Tmach ')) {
               context.blockDiagram.model.setDataProperty(n.data, 'color', '#ed4014')
               return
             }
             context.blockDiagram.model.setDataProperty(n.data, 'color', '#19be6b')
-          })
+          }
         }
       },
       computesBoundsAfterDrag: true,

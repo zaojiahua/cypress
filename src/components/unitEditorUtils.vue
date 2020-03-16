@@ -56,6 +56,9 @@ export default {
       if (data.itemType === 'jobResourcePicture' && data.fileToShow) {
         this.fileName = data.fileName
         this._showImage(data)
+      } else if (data.itemType === 'picInput' && data.fileToShow) {
+        this.fileName = '选点用图.png'
+        this._showImage(data)
       } else if (data.itemType === 'jobResourceFile') {
         this._addAreas(data)
       }

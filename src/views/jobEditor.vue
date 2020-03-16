@@ -335,10 +335,6 @@ export default {
         }
       }
 
-      normalBlockTemplate.click = function (e, node) {
-        console.log(node, JSON.stringify(node.data.unitLists))
-      }
-
       const jobBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: '#30cfd0', 1.0: '#2306F7' }), 'RoundedRectangle')
       jobBlockTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
