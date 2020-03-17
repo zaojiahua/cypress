@@ -701,7 +701,7 @@ export default {
       jobLabel = 'job-' + jobLabel.substr(0, 8) + '-' + jobLabel.substr(8, 4) + '-' + jobLabel.substr(12, 4) + '-' + jobLabel.substr(16, 4) + '-' + jobLabel.substr(20)
       return jobLabel
     },
-    _getData (id) {
+    _setJobResFile (id) {
       let filesData = this.$refs.jobResFile.filesData
       let data = new FormData()
       data.append('job', id)
@@ -748,9 +748,9 @@ export default {
     async saveJob () {
       // 使用 & 保证都运行
       if (this._jobFlowRules() & this._jobMsgRules()) {
-        let info = this.$refs.jobDetail.jobInfo
-        info['test_area'] = await this._createNewTag('test_area')
-        info['custom_tag'] = await this._createNewTag('custom_tag')
+        let info = JSON.parse(JSON.stringify(this.$refs.jobDetail.jobInfo, null, 2))
+        info.test_area = await this._createNewTag('test_area')
+        info.custom_tag = await this._createNewTag('custom_tag')
         let jobFlow = this.myDiagram.model.toJson()
         let id = this.$route.query.jobId
         info.ui_json_file = JSON.parse(jobFlow)
@@ -762,7 +762,7 @@ export default {
                 id = res.data.id
               }
             }).then(() => {
-              let data = this._getData(id)
+              let data = this._setJobResFile(id)
               jobFlowAndMsgUpdate(id, info).then(res => {
                 if (res.status === 200) {
                   jobResFilesSave(data).then(res => {
@@ -775,7 +775,7 @@ export default {
               })
             })
           } else { // 更新
-            let data = this._getData(id)
+            let data = this._setJobResFile(id)
             jobFlowAndMsgUpdate(id, info).then(res => {
               if (res.status === 200) {
                 jobResFilesSave(data).then(res => {
@@ -791,9 +791,20 @@ export default {
           info.job_label = this._createJobLabel()
           jobFlowAndMsgSave(info).then(res => {
             if (res.status === 201) {
-              this.$router.push({ path: '/jobList' })
-              this.$Message.info('操作完成')
+              id = res.data.id
             }
+          }).then(() => {
+            let data = this._setJobResFile(id)
+            jobFlowAndMsgUpdate(id, info).then(res => {
+              if (res.status === 200) {
+                jobResFilesSave(data).then(res => {
+                  if (res.status === 201) {
+                    this.$Message.info('保存成功')
+                    this.$router.push({ path: '/jobList' })
+                  }
+                })
+              }
+            })
           }).catch(err => {
             console.log(err)
           })
@@ -881,7 +892,7 @@ export default {
     updateUnitAllList (name = undefined) {
       this.unitAllList = {}
       getJobUnitsBodyDict().then(res => {
-        console.log(res)
+        // console.log(res)
         res.data.unit.forEach((unit, index) => {
           if (!(unit.type in this.unitAllList)) {
             this.$set(this.unitAllList, unit.type, {})
