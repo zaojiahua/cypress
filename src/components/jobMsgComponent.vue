@@ -17,10 +17,9 @@
       <Input v-model="jobInfo.description" placeholder="请输入"/>
     </Form-item>
     <Form-item label="厂商信息:" prop="manufacturers">
-      <div>
       <Select v-model="jobInfo.manufacturer" placeholder="请选择" @on-change="clear" filterable>
         <Option v-for="item in manufacturer.manufacturers" :value="item.id" :key="item.id">{{ item.manufacturer_name }}</Option>
-      </Select></div>
+      </Select>
     </Form-item>
     <Form-item label="适配机型:" prop="phone_models">
       <Select v-model="jobInfo.phone_models" multiple :disabled="disabled" placeholder="请选择" filterable>
@@ -38,8 +37,8 @@
       </Select>
     </Form-item>
     <Form-item>
-      <Button v-show="propConfirmBtn" type="success" @click="submit(currentJobId)" style="float: right;margin-right: 20px">更新</Button>
-      <Button v-show="propEnterBtn" type="info" @click="routerTo" style="float: right;margin-right: 20px">进入</Button>
+      <Button v-show="propEnterBtn" type="info" @click="routerTo" style="float: right;margin-right: 20px">开始编辑</Button>
+      <Button v-show="propConfirmBtn" type="success" @click="submit(currentJobId)" style="float: right;margin-right: 20px">保存修改</Button>
     </Form-item>
   </Form>
 </template>
@@ -156,6 +155,10 @@ export default {
     propConfirmBtn: {
       type: Boolean,
       default: true
+    },
+    jobName: {
+      type: String,
+      default: ''
     }
   },
   data () {
@@ -174,7 +177,7 @@ export default {
         phone_models: [],
         rom_version: [],
         job_label: '',
-        job_name: '',
+        job_name: this.jobName,
         description: ''
       },
       jobInfoRules: {
@@ -184,15 +187,15 @@ export default {
         test_area: [
           { required: true, type: 'array', min: 1, message: '请输入测试用途', trigger: 'change' }
         ],
-        custom_tag: [
-          { required: true, type: 'array', min: 1, message: '请输入自定义标签', trigger: 'change' }
-        ],
-        description: [
-          { required: true, message: '请输入用例说明', trigger: 'blur' }
-        ],
-        manufacturer: [
-          { required: true, message: '请输入厂商信息', trigger: 'change' }
-        ],
+        // custom_tag: [
+        //   { required: true, type: 'array', min: 1, message: '请输入自定义标签', trigger: 'change' }
+        // ],
+        // description: [
+        //   { required: true, message: '请输入用例说明', trigger: 'blur' }
+        // ],
+        // manufacturers: [
+        //   { required: true, type: 'string', message: '请输入厂商信息', trigger: 'change' }
+        // ],
         phone_models: [
           { required: true, type: 'array', min: 1, message: '请输入适配机型', trigger: 'change' }
         ],
@@ -208,6 +211,11 @@ export default {
       androidVersion: util.validate(androidVersionSerializer, {}),
       customTag: util.validate(customTagSerializer, {}),
       jobTestArea: util.validate(jobTestAreaSerializer, {})
+    }
+  },
+  watch: {
+    jobName (val) {
+      this.jobInfo.job_name = val
     }
   },
   methods: {

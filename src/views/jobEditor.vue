@@ -1,120 +1,112 @@
 <template>
   <div id="wrap" ref="jobEditor">
-    <Drawer title="用例详细信息" :closable="false" v-model="showDrawer" width="50">
-      <job-msg-component ref="jobDetail" :prop-confirm-btn="false" :prop-enter-btn="false"></job-msg-component>
-    </Drawer>
-    <div class="jobName">
-      jobName: {{jobName}}
-      <job-in-job :jobModalShow="jobModalShow"></job-in-job>
-      <Button size="large" style="float: right" to="/jobList">取消</Button>
-      <!-- @click="$store.commit('noKeepAlive', 'jobEditor')"-->
-      <Button type="primary" size="large" @click="saveJob" style="margin-right: 10px">确定</Button>
-      <Button type="primary" size="large" @click="viewResFile" style="margin-right: 10px">查看依赖文件</Button>
-      <Button type="info" size="large" @click="showDrawer=true" style="margin-right: 10px">详情</Button>
-      <!-- <Button :type="$store.state.keepAliveComponents.length === 2 ? 'success' : 'warning'"
-        size="large"
-        @click="$store.commit('keepAlive', 'jobEditor')"
-        style="margin-right: 10px">
-        {{ this.$store.state.keepAliveComponents.length === 2 ? "已存" : "暂存" }}
-      </Button>-->
-      <i-switch size="large" v-show="switchButtonShow" v-model="switchButton">
-        <span slot="open">另存</span>
-        <span slot="close">更新</span>
-      </i-switch>
-    </div>
-    <!-- <job-editor-header :jobName="jobName" @saveJob="saveJob" @showDrawer="showDrawerHandler"></job-editor-header> -->
-    <job-in-job
-      :jobModalShow="jobModalShow"
-      :currentJobBlockText="currentJobBlockText"
-      @jobModalClose="jobModalClose"
-    ></job-in-job>
-    <job-res-file
-      ref="jobResFile"
-      :jobName="jobName"
-      :resFileModalShow="resFileModalShow"
-      @resFileModalClose="resFileModalClose"
-    ></job-res-file>
-    <unit-editor
-      :filesName="filesName"
-      :unitContent="unitContent"
-      :unitEditorModalShow="unitEditorModalShow"
-      :nodeKey="nodeKey"
-      @closeUnitEditor="closeUnitEditor"
-      @updateCanvas="updateCanvas"
-      @saveUnit="saveUnit"
-    ></unit-editor>
-    <div id="chart-wrap">
-      <div id="chart-palette"></div>
-      <div id="chart-diagram"></div>
-    </div>
-
-    <unit-template-editor
-      :openUnitTemplateEditor="openUnitTemplateEditor"
-      :unitTemplateId="unitTemplateId"
-      :unitTemplateType="unitType"
-      :unitTemplateTypes="unitTypes"
-      :unitTemplateName="unitName"
-      :unitTemplateContent="unitTemplateContent"
-      @closeUnitTemplateEditor="closeUnitTemplateEditor"
-      @updateUnitAllList="updateUnitAllList"
-    ></unit-template-editor>
-
-    <Modal v-model="blockModalShow" :closable="false" fullscreen>
-      <div slot="header">
-        <Input v-model="blockName" size="large" placeholder="large size" />
+    <div>
+      <Drawer title="用例详细信息" :closable="false" v-model="showDrawer" width="50">
+        <job-msg-component ref="jobDetail" :prop-confirm-btn="false" :prop-enter-btn="false" :jobName="jobName"></job-msg-component>
+      </Drawer>
+      <div class="job-editor-header">
+        <Input v-model="jobName" class="job-name" placeholder="请输入JOB名称" size="large" />
+        <Button type="info" ghost @click="showDrawer=true" size="large">用例详情</Button>
       </div>
-      <div slot="footer">
-        <Button type="text" size="large" @click="blockModalShow=false">取消</Button>
-        <Button type="primary" size="large" @click="saveNormalBlock">确定</Button>
+      <job-in-job
+        :jobModalShow="jobModalShow"
+        :currentJobBlockText="currentJobBlockText"
+        @jobModalClose="jobModalClose"
+      ></job-in-job>
+      <job-res-file
+        ref="jobResFile"
+        :jobName="jobName"
+        :resFileModalShow="resFileModalShow"
+        @resFileModalClose="resFileModalClose"
+      ></job-res-file>
+      <unit-editor
+        :filesName="filesName"
+        :unitContent="unitContent"
+        :unitEditorModalShow="unitEditorModalShow"
+        :nodeKey="nodeKey"
+        @closeUnitEditor="closeUnitEditor"
+        @updateCanvas="updateCanvas"
+        @saveUnit="saveUnit"
+      ></unit-editor>
+      <div id="chart-wrap">
+        <div id="chart-palette"></div>
+        <div id="chart-diagram"></div>
       </div>
-      <div id="inner-wrap">
-        <div id="chart-left" @click="closeContextMenu">
-          <div id="dropdown-div" align="center">
-            <Dropdown trigger="click" @on-click="getSelectedUnit">
-              <Button id="dropdown-btn" type="primary">{{unitType}}</Button>
-              <DropdownMenu slot="list" style="width: 150px">
-                <DropdownItem
-                  v-for="(currentUnit, key) in unitAllList"
-                  :name="key"
-                  :key="key"
-                >{{key}}</DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
-          </div>
-          <div id="inner-palette"></div>
-          <div id="unit-controller">
-            <Button type="error" long @click="delUnitTemplate">删除</Button>
-            <Button type="primary" long style="margin-top: 2px;" @click="editUnitTemplate">编辑</Button>
-          </div>
+
+      <unit-template-editor
+        :openUnitTemplateEditor="openUnitTemplateEditor"
+        :unitTemplateId="unitTemplateId"
+        :unitTemplateType="unitType"
+        :unitTemplateTypes="unitTypes"
+        :unitTemplateName="unitName"
+        :unitTemplateContent="unitTemplateContent"
+        @closeUnitTemplateEditor="closeUnitTemplateEditor"
+        @updateUnitAllList="updateUnitAllList"
+      ></unit-template-editor>
+
+      <Modal v-model="blockModalShow" :closable="false" fullscreen>
+        <div slot="header">
+          <Input v-model="blockName" size="large" placeholder="large size" />
         </div>
-        <!-- <div id="tooltip">
-          <Card v-show="unitMsgToogle" style="background-color: rgba(255, 255, 255, .95);">
-            <p slot="title"><Icon type="ios-book-outline" />Unit Message</p>
-            <pre>{{ unitContent }}</pre>
-         </Card>
-         <Card v-show="!unitMsgToogle">
-            <p slot="title"><Icon type="ios-document-outline" />Unit Files</p>
-            <Row style="width: 320px; display: flex; justify-content: space-between;">
-              <Col span="12">
-                <Table :columns="unitInputFileColumns" :data="unitInputFileData" width="150" border></Table>
-              </Col>
-              <Col span="12" style="margin-left: 20px;">
-                <Table :columns="unitOutputFileColumns" :data="unitOutputFileData" width="150" border></Table>
-              </Col>
-            </Row>
-         </Card>
-        </div>-->
-        <div id="inner-diagram"></div>
-      </div>
-    </Modal>
-    <!-- <job-editor-job-flow-editor :blockModalShow="blockModalShow" @blockModalClose="blockModalClose"></job-editor-job-flow-editor> -->
+        <div slot="footer">
+          <Button type="text" size="large" @click="blockModalShow=false">取消</Button>
+          <Button type="primary" size="large" @click="saveNormalBlock">确定</Button>
+        </div>
+        <div id="inner-wrap">
+          <div id="chart-left" @click="closeContextMenu">
+            <div id="dropdown-div" align="center">
+              <Dropdown trigger="click" @on-click="getSelectedUnit">
+                <Button id="dropdown-btn" type="primary">{{unitType}}</Button>
+                <DropdownMenu slot="list" style="width: 150px">
+                  <DropdownItem
+                    v-for="(currentUnit, key) in unitAllList"
+                    :name="key"
+                    :key="key"
+                  >{{key}}</DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </div>
+            <div id="inner-palette"></div>
+            <div id="unit-controller">
+              <Button type="error" long @click="delUnitTemplate">删除</Button>
+              <Button type="primary" long style="margin-top: 2px;" @click="editUnitTemplate">编辑</Button>
+            </div>
+          </div>
+          <!-- <div id="tooltip">
+            <Card v-show="unitMsgToogle" style="background-color: rgba(255, 255, 255, .95);">
+              <p slot="title"><Icon type="ios-book-outline" />Unit Message</p>
+              <pre>{{ unitContent }}</pre>
+          </Card>
+          <Card v-show="!unitMsgToogle">
+              <p slot="title"><Icon type="ios-document-outline" />Unit Files</p>
+              <Row style="width: 320px; display: flex; justify-content: space-between;">
+                <Col span="12">
+                  <Table :columns="unitInputFileColumns" :data="unitInputFileData" width="150" border></Table>
+                </Col>
+                <Col span="12" style="margin-left: 20px;">
+                  <Table :columns="unitOutputFileColumns" :data="unitOutputFileData" width="150" border></Table>
+                </Col>
+              </Row>
+          </Card>
+          </div>-->
+          <div id="inner-diagram"></div>
+        </div>
+      </Modal>
+      <!-- <job-editor-job-flow-editor :blockModalShow="blockModalShow" @blockModalClose="blockModalClose"></job-editor-job-flow-editor> -->
 
-    <switch-block-detail-component
-      :switch-block-info="switchBlockInfo"
-      v-model="switchBlockModalShow"
-      @save="switchBlockSave"
-      @clear="switchBlockInfo = {}"
-    ></switch-block-detail-component>
+      <switch-block-detail-component
+        :switch-block-info="switchBlockInfo"
+        v-model="switchBlockModalShow"
+        @save="switchBlockSave"
+        @clear="switchBlockInfo = {}"
+      ></switch-block-detail-component>
+    </div>
+    <div>
+      <Button size="large" style="float: right" to="/jobList">退出</Button>
+      <Button size="large" type="success" @click="saveJob(true)" style="margin-right: 10px;float: right" >另存为</Button>
+      <Button type="primary" size="large" @click="saveJob(false)" style="margin-right: 10px;float: right">保存</Button>
+      <!-- <Button type="primary" size="large" @click="viewResFile" style="margin-right: 10px;float: right">查看依赖文件</Button> -->
+    </div>
   </div>
 </template>
 <script>
@@ -170,8 +162,6 @@ export default {
       switchBlockInfo: {},
       unitAllList: {},
       basicModuleShow: {},
-      switchButtonShow: false,
-      switchButton: false,
       showDrawer: false,
       isCertain: false, // 是否是通过点击确定按钮离开jobEditor页面
       screenWidth: 1400,
@@ -213,7 +203,20 @@ export default {
           children: ['snap']
         }
       ],
-      nodeKey: null
+      nodeKey: null,
+      colors: {
+        start: '#064973',
+        switch: '#768BB9',
+        normal: '#F76132',
+        job: '#50A5F4',
+        end: '#313131',
+        fail: '#818286',
+        success: '#F65A6D',
+        finish: '#29BB87',
+        unfinished: '#F76132',
+        unit: '#338FF0',
+        group: '#50A5F4'
+      }
     }
   },
   mounted () {
@@ -278,24 +281,27 @@ export default {
         }
       }
 
-      const startTemplate = startNodeTemplate('#00AD5F')
+      const startTemplate = startNodeTemplate(_this.colors.start)
       startTemplate.linkValidation = startValidation
 
-      const endTemplate = endNodeTemplate('tomato')
+      const endTemplate = endNodeTemplate(_this.colors.end)
 
       endTemplate.doubleClick = (e, node) => {
         if (node.data.text === 'End') {
           _this.myDiagram.model.setDataProperty(node.data, 'text', 'Fail')
-          _this.myDiagram.model.setDataProperty(node.data, 'color', '#A9A9A9')
+          _this.myDiagram.model.setDataProperty(node.data, 'color', _this.colors.fail)
+        } else if (node.data.text === 'Fail') {
+          _this.myDiagram.model.setDataProperty(node.data, 'text', 'Success')
+          _this.myDiagram.model.setDataProperty(node.data, 'color', _this.colors.success)
         } else {
           _this.myDiagram.model.setDataProperty(node.data, 'text', 'End')
-          _this.myDiagram.model.setDataProperty(node.data, 'color', '#DC3C00')
+          _this.myDiagram.model.setDataProperty(node.data, 'color', _this.colors.end)
         }
 
-        debugger
+        // debugger
       }
 
-      const switchBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: '#74ebd5', 1.0: '#9face6' }), 'Diamond')
+      const switchBlockTemplate = baseNodeTemplateForPort(_this.colors.switch, 'Diamond')
       switchBlockTemplate.doubleClick = function (e, node) {
         _this.$Notice.destroy()
         if (e.diagram instanceof go.Palette) return
@@ -310,7 +316,7 @@ export default {
         _this.switchBlockModalShow = true
       }
 
-      const normalBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: '#30cfd0', 1.0: '#330867' }), 'RoundedRectangle')
+      const normalBlockTemplate = baseNodeTemplateForPort(_this.colors.normal, 'Rectangle')
 
       normalBlockTemplate.doubleClick = function (e, node) {
         _this.$Notice.destroy()
@@ -335,7 +341,17 @@ export default {
         }
       }
 
-      const jobBlockTemplate = baseNodeTemplateForPort(MAKE(go.Brush, go.Brush.Linear, { 0.0: '#30cfd0', 1.0: '#2306F7' }), 'RoundedRectangle')
+      // normalBlockTemplate.mouseEnter = function (e, node) {
+      //   if (e.diagram instanceof go.Palette || node.data.color) return
+      //   let units = node.data.unitLists.nodeDataArray.filter(item => item.category === 'Unit')
+      //   if (units.length === 0 || units.some(item => item.completed === false)) {
+      //     _this.myDiagram.model.setDataProperty(node.data, 'color', _this.colors.unfinished)
+      //   } else {
+      //     _this.myDiagram.model.setDataProperty(node.data, 'color', _this.colors.finish)
+      //   }
+      // }
+
+      const jobBlockTemplate = baseNodeTemplateForPort(_this.colors.job, 'Rectangle')
       jobBlockTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
         _this.currentJobBlockText = node.data.text
@@ -379,7 +395,7 @@ export default {
 
       _this.blockDiagram.linkTemplate = linkTemplateStyle()
 
-      const unitTemplate = unitNodeTemplate('#c924c9')
+      const unitTemplate = unitNodeTemplate(_this.colors.unit)
 
       unitTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
@@ -469,8 +485,8 @@ export default {
       unitListGroupTemplate.linkValidation = unitListValidation
 
       _this.blockDiagram.nodeTemplateMap.add('Unit', unitTemplate)
-      _this.blockDiagram.nodeTemplateMap.add('Start', startNodeTemplate('#00AD5F'))
-      _this.blockDiagram.nodeTemplateMap.add('End', endNodeTemplate('tomato'))
+      _this.blockDiagram.nodeTemplateMap.add('Start', startNodeTemplate(_this.colors.start))
+      _this.blockDiagram.nodeTemplateMap.add('End', endNodeTemplate(_this.colors.end))
       _this.blockDiagram.groupTemplateMap.add('UnitList', unitListGroupTemplate)
 
       _this.blockDiagram.toolManager.linkingTool.linkValidation = commonValidation
@@ -555,10 +571,10 @@ export default {
 
       this.myPalette.model = new go.GraphLinksModel([
         { category: 'Start', text: 'Start' },
-        { category: 'switchBlock', text: 'Switch block' },
+        { category: 'switchBlock', text: 'Switch' },
         {
           category: 'normalBlock',
-          text: 'Normal block',
+          text: 'Normal',
           unitLists: {
             'class': 'GraphLinksModel',
             'linkFromPortIdProperty': 'fromPort',
@@ -602,8 +618,8 @@ export default {
             ]
           }
         },
-        { category: 'End', text: 'End' },
-        { category: 'Job', text: 'Job block' }
+        { category: 'Job', text: 'Job' },
+        { category: 'End', text: 'End' }
       ])
 
       if (this.$route.query.jobFlow) {
@@ -616,7 +632,6 @@ export default {
           this.jobName = this.$route.query.jobName
           this.$refs.jobDetail.getMsg(this.$route.query.jobId)
           this.myDiagram.model = go.Model.fromJson(res.data)
-          this.switchButtonShow = true
         })
       } else {
         this.$refs.jobDetail.getMsg()
@@ -657,9 +672,15 @@ export default {
           desc: errorMessage
         })
       } else {
-        this.blockModalShow = false
+        let units = blockDiagramData.nodeDataArray.filter(item => item.category === 'Unit')
+        if (units.length === 0 || units.some(item => item.completed === false)) {
+          this.myDiagram.model.setDataProperty(currentNormalBlockData, 'color', this.colors.unfinished)
+        } else {
+          this.myDiagram.model.setDataProperty(currentNormalBlockData, 'color', this.colors.finish)
+        }
         this.myDiagram.model.setDataProperty(currentNormalBlockData, 'unitLists', blockDiagramData)
         this.myDiagram.model.setDataProperty(currentNormalBlockData, 'text', this.blockName)
+        this.blockModalShow = false
       }
     },
     _jobFlowRules () {
@@ -745,7 +766,7 @@ export default {
       }
       return target
     },
-    async saveJob () {
+    async saveJob (saveAs) {
       // 使用 & 保证都运行
       if (this._jobFlowRules() & this._jobMsgRules()) {
         let info = JSON.parse(JSON.stringify(this.$refs.jobDetail.jobInfo, null, 2))
@@ -755,7 +776,7 @@ export default {
         let id = this.$route.query.jobId
         info.ui_json_file = JSON.parse(jobFlow)
         if (id) { // 不是新建 job
-          if (this.switchButton) { // 另存为
+          if (saveAs) { // 另存为
             info.job_label = this._createJobLabel()
             jobFlowAndMsgSave(info).then(res => {
               if (res.status === 201) {
@@ -910,9 +931,11 @@ export default {
     updateCanvas (hasCompleted, nodeKey) {
       let currentNode = this.blockDiagram.findNodeForKey(nodeKey).data
       if (hasCompleted) {
-        this.blockDiagram.model.setDataProperty(currentNode, 'color', '#19be6b')
+        this.blockDiagram.model.setDataProperty(currentNode, 'color', this.colors.finish)
+        currentNode.completed = true
       } else {
-        this.blockDiagram.model.setDataProperty(currentNode, 'color', '#ed4014')
+        this.blockDiagram.model.setDataProperty(currentNode, 'color', this.colors.unfinished)
+        currentNode.completed = false
       }
       // this.blockDiagram.model = go.Model.fromJson(this.blockDiagram.model.toJson())
     },
@@ -957,14 +980,17 @@ export default {
 }
 </script>
 <style lang="less" scoped>
-.jobName {
+.job-editor-header {
+  display: flex;
+  justify-content: space-between;
   font-size: 18px;
-  padding: 5px 20px;
-}
+  padding: 5px 0;
+  margin-bottom: 10px;
 
-.jobName button {
-  float: right;
-  margin-bottom: 5px;
+  .job-name {
+    width: 15%;
+    font-size: 18px;
+  }
 }
 
 #chart-wrap {

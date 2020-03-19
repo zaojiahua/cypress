@@ -3,6 +3,20 @@ export const MAKE = go.GraphObject.make
 
 const lightText = 'whitesmoke'
 
+const Colors = {
+  start: '#064973',
+  switch: '#768BB9',
+  normal: '#F76132',
+  job: '#50A5F4',
+  end: '#313131',
+  fail: '#818286',
+  success: '#F65A6D',
+  finish: '#29BB87',
+  unfinished: '#F76132',
+  unit: '#338FF0',
+  group: '#50A5F4'
+}
+
 export function showLinkLabel (e) {
   /*
   * 是否展示link text
@@ -61,15 +75,16 @@ export function linkTemplateStyle () {
   )
 }
 
-export function startNodeTemplate (color, shape = 'Circle') {
+export function startNodeTemplate (color, shape = 'RoundedRectangle') {
   const startNodeTemplate = baseNodeTemplate(color, shape)
+  // parameter1: 20,
   startNodeTemplate.add(makePort('L', go.Spot.Left, true, false))
   startNodeTemplate.add(makePort('R', go.Spot.Right, true, false))
   startNodeTemplate.add(makePort('B', go.Spot.Bottom, true, false))
   return startNodeTemplate
 }
 
-export function endNodeTemplate (color, shape = 'Circle') {
+export function endNodeTemplate (color, shape = 'RoundedRectangle') {
   const endNodeTemplate = baseNodeTemplate(color, shape)
   endNodeTemplate.add(makePort('T', go.Spot.Top, false, true))
   endNodeTemplate.add(makePort('L', go.Spot.Left, false, true))
@@ -109,7 +124,12 @@ export function baseNodeTemplate (fill, shape) {
     // the main object is a Panel that surrounds a TextBlock with a rectangular Shape
     MAKE(go.Panel, 'Auto',
       MAKE(go.Shape, shape,
-        { fill: fill, stroke: null },
+        {
+          parameter1: 10,
+          minSize: new go.Size(100, 40),
+          fill: fill,
+          stroke: null
+        },
         new go.Binding('fill', 'color')
       ),
       MAKE(go.TextBlock,
@@ -128,7 +148,7 @@ export function baseNodeTemplate (fill, shape) {
   return baseNodeTemplate
 }
 
-export function unitNodeTemplate (color, shape = 'RoundedRectangle') {
+export function unitNodeTemplate (color, shape = 'Rectangle') {
   const unitTemplate = baseNodeTemplate(color, shape)
   return unitTemplate
 }
@@ -155,19 +175,23 @@ export function baseGroupTemplate (context) {
           target = unitData.unitMsg.execCmdDict
           for (let key in target) {
             if (target[key].type !== 'noChange' && target[key].content.includes('Tmach ')) {
-              context.blockDiagram.model.setDataProperty(n.data, 'color', '#ed4014')
+              context.blockDiagram.model.setDataProperty(n.data, 'color', Colors.unfinished)
+              n.data.completed = false
               return
             }
           }
-          context.blockDiagram.model.setDataProperty(n.data, 'color', '#19be6b')
+          context.blockDiagram.model.setDataProperty(n.data, 'color', Colors.finish)
+          n.data.completed = true
         } else {
           target = unitData.unitMsg.execCmdDict.execCmdList
           for (let i = 0; i < target.length; i++) {
             if (target[i].type !== 'noChange' && target[i].content.includes('Tmach ')) {
-              context.blockDiagram.model.setDataProperty(n.data, 'color', '#ed4014')
+              context.blockDiagram.model.setDataProperty(n.data, 'color', Colors.unfinished)
+              n.data.completed = false
               return
             }
-            context.blockDiagram.model.setDataProperty(n.data, 'color', '#19be6b')
+            context.blockDiagram.model.setDataProperty(n.data, 'color', Colors.finish)
+            n.data.completed = true
           }
         }
       },
@@ -192,7 +216,7 @@ export function baseGroupTemplate (context) {
     MAKE(go.Shape, 'Rectangle',
       {
         fill: null,
-        stroke: '#33D3E5',
+        stroke: Colors.group,
         strokeWidth: 2,
         // 设置link的port  使其连线
         portId: '',
@@ -200,7 +224,7 @@ export function baseGroupTemplate (context) {
       }),
     MAKE(go.Panel, 'Vertical', // title above Placeholder
       MAKE(go.Panel, 'Horizontal', // button next to TextBlock
-        { stretch: go.GraphObject.Horizontal, background: '#33D3E5' },
+        { stretch: go.GraphObject.Horizontal, background: Colors.group },
         MAKE('SubGraphExpanderButton',
           { alignment: go.Spot.Right, margin: 5 }),
         MAKE(go.TextBlock,
@@ -272,7 +296,7 @@ function showPorts (node, show) {
   let diagram = node.diagram
   if (!diagram || diagram.isReadOnly || !diagram.allowLink) return
   node.ports.each(function (port) {
-    port.stroke = (show ? 'yellow' : null)
+    port.stroke = (show ? 'yellow' : Colors.group)
   })
 }
 
