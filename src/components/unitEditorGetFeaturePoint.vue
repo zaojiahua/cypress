@@ -14,7 +14,7 @@
         <span>识别率：</span>
         <InputNumber :max="100" :min="0"  v-model="imgThreshold" style="flex: 1;" placeholder="识别率标准..." :formatter="value => `${value}%`" :parser="value => value.replace('%', '')"></InputNumber>
       </div>
-      <Button type="primary" @click="setFeaturePointFileName">Commit</Button>
+      <!-- <Button type="primary" @click="setFeaturePointFileName">Commit</Button> -->
     </div>
   </div>
 </template>
@@ -79,7 +79,7 @@ export default {
           background: true,
           content: '识别率未输入'
         })
-        return
+        return false
       } else {
         coordinateDataList.threshold = parseFloat(this.computedImgThreshold)
       }
@@ -88,7 +88,7 @@ export default {
           background: true,
           content: '请为配置文件命名'
         })
-        return
+        return false
       }
       /**
        * 设置当前识别率，由 unitEditorUtils 接收
@@ -114,6 +114,7 @@ export default {
         'fileUrl': ''
       })
       this.coordinateData = []
+      return true
     },
     setNewName (newName) {
       this.currentFeaturePointFileName = newName

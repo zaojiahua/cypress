@@ -35,7 +35,7 @@
           @setImgName="setImgName"
           v-if="unitItemData && (unitItemData.itemContent.type === 'jobResourcePicture' || unitItemData.itemContent.type === 'picInput')"
         ></unit-editor-screen-shot>
-        <unit-editor-get-feature-point :featurePointFileName="tmachBlanks[0]" @setFeaturePointFileName="setFeaturePointFileName" v-if="unitItemData && unitItemData.itemContent.type === 'jobResourceFile'"></unit-editor-get-feature-point>
+        <unit-editor-get-feature-point ref="getFeaturePoint" :featurePointFileName="tmachBlanks[0]" @setFeaturePointFileName="setFeaturePointFileName" v-if="unitItemData && unitItemData.itemContent.type === 'jobResourceFile'"></unit-editor-get-feature-point>
         <p><Tag>操作说明</Tag>{{ unitItemData ? unitItemData.itemContent.meaning : ''}}</p>
         <Checkbox v-model="saveToFinalResult" v-if="unitItemData && unitItemData.itemContent.type === 'outputPicture' ? true : false" style="float: right;">添加此图片至最终结果</Checkbox>
       </div>
@@ -103,7 +103,7 @@ export default {
       if (!this._handleDuplicateName()) return // 重名则中断
       this._tmachBlankSuffixComplete() // 补全后缀
       this._patchUnitContent() // 拼接 Tamch 并填入
-      this._closeEditPane() // 关闭当前面板
+      if (this._saveFeaturePoint()) this._closeEditPane() // 关闭当前面板
     },
     setImgName (imgName) {
       this.tmachBlanks[0] = imgName
@@ -113,6 +113,17 @@ export default {
     },
     setNewName (newName) {
       this.tmachBlanks[0] = newName
+    },
+    _saveFeaturePoint () {
+      if (this.$refs.getFeaturePoint.coordinateData.length) {
+        if (!this.$refs.getFeaturePoint.setFeaturePointFileName()) {
+          return false
+        } else {
+          return true
+        }
+      } else {
+        return true
+      }
     },
     _tmachBlankSuffixComplete () {
       let itemType = this.unitItemData.itemContent.type

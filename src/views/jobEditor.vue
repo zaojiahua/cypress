@@ -6,7 +6,12 @@
       </Drawer>
       <div class="job-editor-header">
         <Input v-model="jobName" class="job-name" placeholder="请输入JOB名称" size="large" />
-        <Button type="info" ghost @click="showDrawer=true" size="large">用例详情</Button>
+        <div>
+          <Button type="info" ghost @click="showDrawer=true" size="large" style="margin-right: 10px;">用例详情</Button>
+          <Button type="primary" size="large" @click="saveJob(false)" style="margin-right: 10px;">保存</Button>
+          <Button size="large" type="success" @click="saveJob(true)" style="margin-right: 10px;">另存为</Button>
+          <Button size="large" to="/jobList">退出</Button>
+        </div>
       </div>
       <job-in-job
         :jobModalShow="jobModalShow"
@@ -101,12 +106,7 @@
         @clear="switchBlockInfo = {}"
       ></switch-block-detail-component>
     </div>
-    <div>
-      <Button size="large" style="float: right" to="/jobList">退出</Button>
-      <Button size="large" type="success" @click="saveJob(true)" style="margin-right: 10px;float: right" >另存为</Button>
-      <Button type="primary" size="large" @click="saveJob(false)" style="margin-right: 10px;float: right">保存</Button>
-      <!-- <Button type="primary" size="large" @click="viewResFile" style="margin-right: 10px;float: right">查看依赖文件</Button> -->
-    </div>
+    <!-- <Button type="primary" size="large" @click="viewResFile" style="margin-right: 10px;float: right">查看依赖文件</Button> -->
   </div>
 </template>
 <script>
@@ -996,9 +996,9 @@ export default {
 #chart-wrap {
   width: 100%;
   display: flex;
-  height: 83vh;
+  height: 88vh;
   justify-content: space-between;
-  margin-bottom: 22px;
+  // margin-bottom: 22px;
 
   #chart-palette {
     width: 15%;
