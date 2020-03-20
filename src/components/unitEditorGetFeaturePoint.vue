@@ -6,15 +6,18 @@
         <Button type="error" size="small" @click="remove(index)" :disabled="coordinateData.length === 1">Delete</Button>
       </template>
     </Table>
-    <Input placeholder="为选取的特征点们取一个名字吧" required v-model="currentFeaturePointFileName">
+    <!-- <Input placeholder="为选取的特征点们取一个名字吧" required v-model="currentFeaturePointFileName">
       <span slot="prepend">配置文件名称</span>
-    </Input>
-    <div class="get-recognition-rate">
-      <div style="display: flex; align-items: center; width: 66%">
-        <span>识别率：</span>
+    </Input> -->
+    <div class="file-info">
+      <div class="file-name">
+        <Tag color="blue" size="large" style="line-height: 32px;">文件名称</Tag>
+        <Input placeholder="为选取的特征点们取一个名字吧" v-model="currentFeaturePointFileName" style="flex: 1;"></Input>
+      </div>
+      <div class="recognition-rate">
+        <Tag color="blue" size="large" style="line-height: 32px;">识别率</Tag>
         <InputNumber :max="100" :min="0"  v-model="imgThreshold" style="flex: 1;" placeholder="识别率标准..." :formatter="value => `${value}%`" :parser="value => value.replace('%', '')"></InputNumber>
       </div>
-      <!-- <Button type="primary" @click="setFeaturePointFileName">Commit</Button> -->
     </div>
   </div>
 </template>
@@ -139,9 +142,23 @@ export default {
 </script>
 
 <style scoped>
-.get-recognition-rate {
+.file-info {
   display: flex;
   justify-content: space-between;
-  margin-top: 20px;
+}
+.file-name {
+  display: flex;
+  flex: 1;
+  justify-content: space-between;
+  align-items: center;
+  margin-right: 20px;
+}
+/* .file-name span {
+  display: inline-block;
+} */
+.file-info .recognition-rate {
+  display: flex;
+  flex: 1;
+  align-items: center;
 }
 </style>
