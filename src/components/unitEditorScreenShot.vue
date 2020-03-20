@@ -6,7 +6,7 @@
       size="small"
       :loading="loading"
       highlight-row
-      max-height="600"
+      max-height="556"
       @on-row-click="onDeviceRowClick"
       :columns="deviceColumns"
       :data="deviceData">
