@@ -115,7 +115,7 @@ export default {
       this.tmachBlanks[0] = newName
     },
     _saveFeaturePoint () {
-      if (this.$refs.getFeaturePoint.coordinateData.length) {
+      if (this.$refs.getFeaturePoint && this.$refs.getFeaturePoint.coordinateData.length) {
         if (!this.$refs.getFeaturePoint.setFeaturePointFileName()) {
           return false
         } else {
