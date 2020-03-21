@@ -7,6 +7,7 @@
       <div class="job-editor-header">
         <Input v-model="jobName" class="job-name" placeholder="请输入JOB名称" size="large" />
         <div>
+          <Button type="primary" size="large" @click="viewResFile" style="margin-right: 10px;">查看依赖文件</Button>
           <Button type="info" ghost @click="showDrawer=true" size="large" style="margin-right: 10px;">用例详情</Button>
           <Button type="primary" size="large" @click="saveJob(false)" style="margin-right: 10px;">保存</Button>
           <Button size="large" type="success" @click="saveJob(true)" style="margin-right: 10px;">另存为</Button>
@@ -106,7 +107,6 @@
         @clear="switchBlockInfo = {}"
       ></switch-block-detail-component>
     </div>
-    <!-- <Button type="primary" size="large" @click="viewResFile" style="margin-right: 10px;float: right">查看依赖文件</Button> -->
   </div>
 </template>
 <script>
