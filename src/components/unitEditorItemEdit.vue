@@ -100,10 +100,12 @@ export default {
   },
   methods: {
     saveItem () {
-      if (!this._handleDuplicateName()) return // 重名则中断
-      this._tmachBlankSuffixComplete() // 补全后缀
-      this._patchUnitContent() // 拼接 Tamch 并填入
-      if (this._saveFeaturePoint()) this._closeEditPane() // 关闭当前面板
+      if (this._saveFeaturePoint()) {
+        if (!this._handleDuplicateName()) return // 重名则中断
+        this._tmachBlankSuffixComplete() // 补全后缀
+        this._patchUnitContent() // 拼接 Tamch 并填入
+        this._closeEditPane() // 关闭当前面板
+      }
     },
     setImgName (imgName) {
       this.tmachBlanks[0] = imgName

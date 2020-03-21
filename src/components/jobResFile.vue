@@ -1,5 +1,5 @@
 <template>
-  <Modal v-model="resFileModalShow" :closable="false" width="90">
+  <Modal v-model="resFileModalShow" :closable="false" :mask-closable="false" width="90">
     <div slot="header">
       <strong style="font-size: 18px;">Job--{{ jobName }}的依赖文件：</strong>
     </div>
