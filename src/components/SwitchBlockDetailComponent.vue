@@ -1,18 +1,12 @@
 <template>
   <Modal
-    title="switchBlock Detail"
+    title="Switch Detial  "
     :value="switchBlockModalShow"
     :mask-closable="false"
     :closable="false">
     <Form ref="switchBlockForm" :label-width="80" :model="switchBlockInfo" :rules="switchBlocRules">
       <FormItem label="name" prop="switchBlockName">
         <Input v-model="switchBlockInfo.switchBlockName" placeholder="Enter something..."/>
-      </FormItem>
-      <FormItem label="fileName" prop="fileName">
-        <Input v-model="switchBlockInfo.fileName" placeholder="Enter something..."/>
-      </FormItem>
-      <FormItem label="explain" prop="explain">
-        <Input v-model="switchBlockInfo.explain" type="textarea" :autosize="{minRows: 2,maxRows: 5}" placeholder="Enter something..." />
       </FormItem>
     </Form>
 
@@ -37,26 +31,11 @@ export default {
     }
   },
   data () {
-    const validatePassCheck = (rule, value, callback) => {
-      if (!value) {
-        callback(new Error('文件名不能为空'))
-      } else if (!new RegExp('(.py|.txt)$').test(value)) {
-        callback(new Error('文件名后缀必须为 .py|.txt'))
-      } else {
-        callback()
-      }
-    }
     return {
       switchBlockRules: '',
       switchBlocRules: {
         switchBlockName: [
-          { required: true, message: 'switchBlock名称不能为空', trigger: 'blur' }
-        ],
-        fileName: [
-          { validator: validatePassCheck, trigger: 'blur' }
-        ],
-        explain: [
-          { required: true, message: '描述不能为空', trigger: 'blur' }
+          { required: true, message: 'Switch名称不能为空', trigger: 'blur' }
         ]
       }
     }

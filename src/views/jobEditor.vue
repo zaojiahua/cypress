@@ -60,41 +60,35 @@
         </div>
         <div id="inner-wrap">
           <div id="chart-left" @click="closeContextMenu">
-            <div id="dropdown-div" align="center">
-              <Dropdown trigger="click" @on-click="getSelectedUnit">
-                <Button id="dropdown-btn" type="primary">{{unitType}}</Button>
-                <DropdownMenu slot="list" style="width: 150px">
-                  <DropdownItem
-                    v-for="(currentUnit, key) in unitAllList"
-                    :name="key"
-                    :key="key"
-                  >{{key}}</DropdownItem>
-                </DropdownMenu>
-              </Dropdown>
+            <div class="common-palette-container">
+              <div class="common-palette-header">
+                <p>常用工具</p>
+              </div>
+              <div id="common-palette"></div>
             </div>
-            <div id="inner-palette"></div>
+            <div class="unit-palette-container">
+              <div class="common-palette-header">
+                <Dropdown trigger="click" @on-click="getSelectedUnit">
+                  <Button id="dropdown-btn" type="primary" ghost>
+                    {{ unitType }}
+                    <Icon type="ios-arrow-down"></Icon>
+                  </Button>
+                  <DropdownMenu slot="list">
+                    <DropdownItem
+                      v-for="(currentUnit, key) in unitAllList"
+                      :name="key"
+                      :key="key"
+                    >{{key}}</DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
+              </div>
+              <div id="unit-palette"></div>
+            </div>
             <div id="unit-controller">
               <Button type="error" long @click="delUnitTemplate">删除</Button>
               <Button type="primary" long style="margin-top: 2px;" @click="editUnitTemplate">编辑</Button>
             </div>
           </div>
-          <!-- <div id="tooltip">
-            <Card v-show="unitMsgToogle" style="background-color: rgba(255, 255, 255, .95);">
-              <p slot="title"><Icon type="ios-book-outline" />Unit Message</p>
-              <pre>{{ unitContent }}</pre>
-          </Card>
-          <Card v-show="!unitMsgToogle">
-              <p slot="title"><Icon type="ios-document-outline" />Unit Files</p>
-              <Row style="width: 320px; display: flex; justify-content: space-between;">
-                <Col span="12">
-                  <Table :columns="unitInputFileColumns" :data="unitInputFileData" width="150" border></Table>
-                </Col>
-                <Col span="12" style="margin-left: 20px;">
-                  <Table :columns="unitOutputFileColumns" :data="unitOutputFileData" width="150" border></Table>
-                </Col>
-              </Row>
-          </Card>
-          </div>-->
           <div id="inner-diagram"></div>
         </div>
       </Modal>
@@ -150,7 +144,6 @@ export default {
     return {
       jobName: '',
       blockModalShow: false,
-      jobOperationComponentShow: false,
       switchBlockModalShow: false,
       currentSwitchBlockKey: null,
       unitName: null,
@@ -163,30 +156,12 @@ export default {
       unitAllList: {},
       basicModuleShow: {},
       showDrawer: false,
-      isCertain: false, // 是否是通过点击确定按钮离开jobEditor页面
       screenWidth: 1400,
-      ingroneList: ['login'],
       jobModalShow: false,
       currentJobBlockKey: null,
       currentJobBlockText: 'Job block',
       resFileModalShow: false,
       unitMsgToogle: true,
-      unitInputFileColumns: [
-        {
-          title: 'InputFile',
-          key: 'file_name',
-          align: 'center'
-        }
-      ],
-      unitInputFileData: [],
-      unitOutputFileColumns: [
-        {
-          title: 'OutputFile',
-          key: 'file_name',
-          align: 'center'
-        }
-      ],
-      unitOutputFileData: [],
       unitEditorModalShow: false,
       unitController: null,
       openUnitTemplateEditor: false,
@@ -327,6 +302,7 @@ export default {
         _this.blockModalShow = true
         if (!_this.blockDiagram) blockDiagramInit()
         if (!_this.blockPalette) blockPaletteInit()
+        if (!_this.commonPalette) commonPaletteInit()
         if (!node.data.unitLists) { // unitList存在则展示
           _this.blockDiagram.model = go.Model.fromJson({
             'class': 'go.GraphLinksModel',
@@ -340,16 +316,6 @@ export default {
           _this.blockDiagram.model = go.Model.fromJson(_this._.cloneDeep(node.data.unitLists))
         }
       }
-
-      // normalBlockTemplate.mouseEnter = function (e, node) {
-      //   if (e.diagram instanceof go.Palette || node.data.color) return
-      //   let units = node.data.unitLists.nodeDataArray.filter(item => item.category === 'Unit')
-      //   if (units.length === 0 || units.some(item => item.completed === false)) {
-      //     _this.myDiagram.model.setDataProperty(node.data, 'color', _this.colors.unfinished)
-      //   } else {
-      //     _this.myDiagram.model.setDataProperty(node.data, 'color', _this.colors.finish)
-      //   }
-      // }
 
       const jobBlockTemplate = baseNodeTemplateForPort(_this.colors.job, 'Rectangle')
       jobBlockTemplate.doubleClick = function (e, node) {
@@ -448,25 +414,6 @@ export default {
         // tooltip.style.display = 'block'
       }
 
-      unitTemplate.mouseOver = function (e, node) {
-        // if (e.diagram instanceof go.Palette) return
-        // tooltip.style.top = `${e.event.y}px`
-        // tooltip.style.left = `${e.event.x}px`
-      }
-
-      unitTemplate.mouseLeave = function (e, node) {
-        // if (e.diagram instanceof go.Palette) return
-        // tooltip.style.display = 'none'
-
-        // let units = e.diagram.findNodesByExample(example) // 模糊查找 node
-        // units.iterator.each(unit => {
-        //   unit.isSelected = false
-        // })
-
-        // _this.unitOutputFileData = []
-        // _this.unitInputFileData = []
-      }
-
       unitTemplate.contextClick = function (e, node) {
         if (!(e.diagram instanceof go.Palette) || !sessionStorage.identity.includes('Admin')) return
         _this.unitName = node.data.text
@@ -495,7 +442,18 @@ export default {
 
     function blockPaletteInit () {
       _this.blockPalette =
-        MAKE(go.Palette, 'inner-palette',
+        MAKE(go.Palette, 'unit-palette',
+          {
+            nodeTemplateMap: _this.blockDiagram.nodeTemplateMap,
+            groupTemplateMap: _this.blockDiagram.groupTemplateMap,
+            layout: MAKE(go.GridLayout, { wrappingColumn: 1, alignment: go.GridLayout.Center })
+          })
+      console.log(_this.unitAllList)
+      _this.getSelectedUnit('基础操作')
+    }
+    function commonPaletteInit () {
+      _this.commonPalette =
+        MAKE(go.Palette, 'common-palette',
           {
             nodeTemplateMap: _this.blockDiagram.nodeTemplateMap,
             groupTemplateMap: _this.blockDiagram.groupTemplateMap,
@@ -513,7 +471,7 @@ export default {
         key: 'basicModule',
         value: basicModule
       }
-      _this.blockPalette.model = new go.GraphLinksModel(basicModule.nodeDataArray, basicModule.linkDataArray)
+      _this.commonPalette.model = new go.GraphLinksModel(basicModule.nodeDataArray, basicModule.linkDataArray)
     }
     this.updateUnitAllList()
     this.init()
@@ -843,19 +801,15 @@ export default {
       let unitCategoryData = {}
       unitCategoryData.nodeDataArray = []
       this.unitType = name
-      if (name !== 'Basic Module') {
-        Object.entries(this.unitAllList[name]).forEach((unit) => {
-          unitCategoryData.nodeDataArray.push({
-            category: 'Unit',
-            text: unit[0],
-            unit_id: unit[1]['unit_id'],
-            unitMsg: unit[1]['unit_content']
-          })
+      Object.entries(this.unitAllList[name]).forEach((unit) => {
+        unitCategoryData.nodeDataArray.push({
+          category: 'Unit',
+          text: unit[0],
+          unit_id: unit[1]['unit_id'],
+          unitMsg: unit[1]['unit_content']
         })
-        this.blockPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
-      } else {
-        this.blockPalette.model = new go.GraphLinksModel(this.basicModuleShow.value.nodeDataArray, this.basicModuleShow.value.linkDataArray)
-      }
+      })
+      this.blockPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
     },
     jobModalClose (job) {
       this.jobModalShow = false
@@ -923,8 +877,6 @@ export default {
             unit_content: unit.unit_content
           })
         })
-        this.$set(this.unitAllList, 'Basic Module', this.basicModuleShow)
-        this.unitTypes = Object.keys(this.unitAllList).filter((unitType) => unitType !== 'Basic Module')
         if (name) this.getSelectedUnit(name)
       })
     },
@@ -1017,7 +969,7 @@ export default {
 #inner-wrap {
   width: 100%;
   display: flex;
-  height: 78vh;
+  height: 87vh;
   justify-content: space-between;
   margin-bottom: 22px;
 
@@ -1028,21 +980,44 @@ export default {
     background-color: white;
     border: solid 1px rgb(244, 244, 244);
 
-    #dropdown-div {
+    .common-palette-container {
+      display: flex;
+      flex-direction: column;
       width: 100%;
-      height: 10%;
+      height: 19%;
 
-      #dropdown-btn {
-        width: 100%;
-        margin-top: 10px;
-        letter-spacing: 2px;
-        font-size: 14px;
+      .common-palette-header p {
+        text-align: center;
+        font-size: 16px;
+        font-weight: bolder;
+        margin: 6px 0;
+      }
+
+      #common-palette {
+        flex: 1;
+        background-color: white;
       }
     }
-    #inner-palette {
+
+    .unit-palette-container {
+      display: flex;
+      flex-direction: column;
       width: 100%;
-      height: 90%;
-      background-color: white;
+      height: 81%;
+      padding-top: 40px;
+
+      .common-palette-header {
+        text-align: center;
+
+        #dropdown-btn {
+          margin: 10px 0;
+        }
+      }
+
+      #unit-palette {
+        flex: 1;
+        background-color: white;
+      }
     }
 
     #unit-controller {
