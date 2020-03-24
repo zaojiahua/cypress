@@ -29,6 +29,17 @@ export function jobFlowValidation (vueObj) {
         if (endLinksInto.count <= 0) {
           myDiagramEventValidationHint.add('End至少有一条被指向链接')
         }
+        if (node.data.text === 'End') {
+          endLinksInto.each(link => {
+            let preNormalBlockData = self.myDiagram.model.findNodeDataForKey(link.data.from)
+            if (preNormalBlockData.category === 'normalBlock') {
+              let imgToolUnits = preNormalBlockData.unitLists.nodeDataArray.filter(item => item.category === 'Unit' && item.unitMsg.execModName === 'IMGTOOL')
+              if (!imgToolUnits.length) {
+                myDiagramEventValidationHint.add('End 节点前的 NormalBlock 未包含类型为 "图像识别" 的 Unit（如果必须要这么做，请将 End 节点更换为 Success 或 Fail 节点）')
+              }
+            }
+          })
+        }
       })
     }
   }
@@ -40,22 +51,36 @@ export function jobFlowValidation (vueObj) {
       let switchBlockLinksInto = node.findLinksInto()
       let switchBlockLinksOutOf = node.findLinksOutOf()
       if (switchBlockLinksInto.count < 1) {
-        myDiagramEventValidationHint.add('Switch block至少有一条被指向链接')
+        myDiagramEventValidationHint.add('SwitchBlock至少有一条被指向链接')
       }
       if (switchBlockLinksOutOf.count < 2) {
-        myDiagramEventValidationHint.add('Switch block至少有两条指向链接')
+        myDiagramEventValidationHint.add('SwitchBlock至少有两条指向链接')
       }
 
-      let elseNum = 0
+      switchBlockLinksInto.each(link => {
+        let preNormalBlockData = self.myDiagram.model.findNodeDataForKey(link.data.from)
+        if (preNormalBlockData.category === 'normalBlock') {
+          let imgToolUnits = preNormalBlockData.unitLists.nodeDataArray.filter(item => item.category === 'Unit' && item.unitMsg.execModName === 'IMGTOOL')
+          if (!imgToolUnits.length) {
+            myDiagramEventValidationHint.add('SwitchBlock 节点前的 NormalBlock 未包含类型为 "图像识别" 的 Unit')
+          }
+        }
+      })
 
-      node.findLinksOutOf().iterator.each(link => {
+      let elseNum = 0
+      let textOfLinksOutof = {}
+      switchBlockLinksOutOf.iterator.each(link => {
+        if (link.data.text in textOfLinksOutof) {
+          myDiagramEventValidationHint.add('由 SwitchBlock 出发的链接不能拥有重复的值')
+        } else {
+          textOfLinksOutof[link.data.text] = 1
+        }
         let linkVal = link.data
         if (linkVal.visible && !linkVal.text) {
           elseNum++
         } else if (linkVal.visible && linkVal.text.replace(/^\s+|\s+$/g, '') === 'else') elseNum++
       })
-
-      if (elseNum !== 1) myDiagramEventValidationHint.add('Switch block有且只有一条包含else的指向链接,其他链接需要写入相应token值')
+      if (elseNum !== 1) myDiagramEventValidationHint.add('SwitchBlock 有且只有一条包含 else 的指向链接,其他链接需要写入相应 token 值')
     })
   }
 

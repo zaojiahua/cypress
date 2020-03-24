@@ -200,7 +200,7 @@ export default {
     const _this = this
     _this.$Notice.config({
       top: 150,
-      duration: 10
+      duration: 0
     })
 
     myDiagramInit()
@@ -974,17 +974,15 @@ export default {
   margin-bottom: 22px;
 
   #chart-left {
-    position: relative;
+    display: flex;
+    flex-direction: column;
     width: 15%;
     margin-right: 30px;
     background-color: white;
     border: solid 1px rgb(244, 244, 244);
 
     .common-palette-container {
-      display: flex;
-      flex-direction: column;
       width: 100%;
-      height: 19%;
 
       .common-palette-header p {
         text-align: center;
@@ -994,16 +992,16 @@ export default {
       }
 
       #common-palette {
-        flex: 1;
+        height: 162px;
         background-color: white;
       }
     }
 
     .unit-palette-container {
+      flex: 1;
       display: flex;
       flex-direction: column;
       width: 100%;
-      height: 81%;
       padding-top: 40px;
 
       .common-palette-header {
