@@ -6,13 +6,20 @@
       </Drawer>
       <div class="job-editor-header">
         <Input v-model="jobName" class="job-name" placeholder="请输入JOB名称" size="large" />
-        <div>
+        <!-- <div>
           <Button type="primary" size="large" @click="viewResFile" style="margin-right: 10px;">查看依赖文件</Button>
           <Button type="info" ghost @click="showDrawer=true" size="large" style="margin-right: 10px;">用例详情</Button>
           <Button type="primary" size="large" @click="saveJob(false)" style="margin-right: 10px;">保存</Button>
           <Button size="large" type="success" @click="saveJob(true)" style="margin-right: 10px;">另存为</Button>
           <Button size="large" to="/jobList">退出</Button>
-        </div>
+        </div> -->
+        <ButtonGroup shape="circle" size="large">
+          <Button type="primary" @click="viewResFile">查看依赖文件</Button>
+          <Button type="primary" @click="showDrawer=true" size="large">用例详情</Button>
+          <Button type="primary" @click="saveJob(false)">保存</Button>
+          <Button type="primary" @click="saveJob(true)">另存为</Button>
+          <Button type="primary" size="large" to="/jobList">退出</Button>
+        </ButtonGroup>
       </div>
       <job-in-job
         :jobModalShow="jobModalShow"
@@ -631,6 +638,11 @@ export default {
         })
       } else {
         let units = blockDiagramData.nodeDataArray.filter(item => item.category === 'Unit')
+        if (units.some(item => item.unitMsg.execModName === 'IMGTOOL')) {
+          this.myDiagram.model.setDataProperty(currentNormalBlockData, 'star', true)
+        } else {
+          this.myDiagram.model.setDataProperty(currentNormalBlockData, 'star', false)
+        }
         if (units.length === 0 || units.some(item => item.completed === false)) {
           this.myDiagram.model.setDataProperty(currentNormalBlockData, 'color', this.colors.unfinished)
         } else {
@@ -881,13 +893,14 @@ export default {
       })
     },
     updateCanvas (hasCompleted, nodeKey) {
-      let currentNode = this.blockDiagram.findNodeForKey(nodeKey).data
+      let currentNodeData = this.blockDiagram.findNodeForKey(nodeKey).data
+
       if (hasCompleted) {
-        this.blockDiagram.model.setDataProperty(currentNode, 'color', this.colors.finish)
-        currentNode.completed = true
+        this.blockDiagram.model.setDataProperty(currentNodeData, 'color', this.colors.finish)
+        currentNodeData.completed = true
       } else {
-        this.blockDiagram.model.setDataProperty(currentNode, 'color', this.colors.unfinished)
-        currentNode.completed = false
+        this.blockDiagram.model.setDataProperty(currentNodeData, 'color', this.colors.unfinished)
+        currentNodeData.completed = false
       }
       // this.blockDiagram.model = go.Model.fromJson(this.blockDiagram.model.toJson())
     },
@@ -992,7 +1005,7 @@ export default {
       }
 
       #common-palette {
-        height: 162px;
+        height: 176px;
         background-color: white;
       }
     }

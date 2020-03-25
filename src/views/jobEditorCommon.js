@@ -128,7 +128,8 @@ export function baseNodeTemplate (fill, shape) {
           parameter1: 10,
           minSize: new go.Size(100, 40),
           fill: fill,
-          stroke: null
+          stroke: null,
+          margin: 4
         },
         new go.Binding('fill', 'color')
       ),
@@ -141,7 +142,17 @@ export function baseNodeTemplate (fill, shape) {
           wrap: go.TextBlock.WrapFit,
           editable: false
         },
-        new go.Binding('text').makeTwoWay())
+        new go.Binding('text').makeTwoWay()
+      ),
+      MAKE(go.Shape, 'Diamond',
+        {
+          desiredSize: new go.Size(12, 12),
+          fill: 'yellow',
+          alignment: new go.Spot(1, 0, -1, 1),
+          opacity: 0.0
+        },
+        new go.Binding('opacity', 'star', function (v) { return v ? 1.0 : 0.0 })
+      )
     )
   )
 
@@ -172,6 +183,7 @@ export function baseGroupTemplate (context) {
         let unitData = n.data
         let target = null
         if (unitData.unitMsg.execModName === 'IMGTOOL') {
+          context.blockDiagram.model.setDataProperty(n.data, 'star', true)
           target = unitData.unitMsg.execCmdDict
           for (let key in target) {
             if (target[key].type !== 'noChange' && target[key].content.includes('Tmach ')) {
