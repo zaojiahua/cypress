@@ -47,7 +47,7 @@ export default {
         'inputFile': '输入文件名称',
         'outputPicture': '输出图片名称',
         'outputFile': '输出文件名称',
-        'uxInput': '手动输入坐标值',
+        'uxInput': '手动输入参数',
         'picInput': '从图片选取坐标点'
       },
       tmachBlanks: [],

@@ -27,11 +27,28 @@ export function showLinkLabel (e) {
 
 export function finishDrop (e, grp) {
   if (e.diagram instanceof go.Palette) return // unit不能放置在palette内的unitList中
-  // if (e.targetDiagram.Ia.id === 'inner-palette') return
   let ok = (grp !== null
     ? grp.addMembers(grp.diagram.selection, true)
     : e.diagram.commandHandler.addTopLevelParts(e.diagram.selection, true))
   if (!ok) e.diagram.currentTool.doCancel()
+}
+
+function dropOntoLink (e, obj) {
+  let diagram = e.diagram
+  let newNode = diagram.selection.first()
+  if (newNode.data.category === 'Unit') {
+    diagram.commandHandler.groupSelection()
+    newNode = diagram.selection.first()
+  }
+  let oldLink = obj.part
+  // let fromNode = oldLink.fromNode
+  let toNode = oldLink.toNode
+  oldLink.toNode = newNode
+  if (newNode.data.category === 'switchBlock') {
+    diagram.model.addLinkData({ from: newNode.data.key, to: toNode.data.key, visible: true })
+  } else {
+    diagram.model.addLinkData({ from: newNode.data.key, to: toNode.data.key })
+  }
 }
 
 export function linkTemplateStyle () {
@@ -45,9 +62,11 @@ export function linkTemplateStyle () {
       relinkableTo: true,
       reshapable: true,
       resegmentable: false, // 用户是否可以更改链接中的段数，默认为false
+      // layoutConditions: go.Part.LayoutAdded | go.Part.LayoutRemoved,
       // mouse-overs subtly highlight links:
       mouseEnter: function (e, link) { link.findObject('HIGHLIGHT').stroke = 'rgba(30,144,255,0.2)' },
       mouseLeave: function (e, link) { link.findObject('HIGHLIGHT').stroke = 'transparent' },
+      mouseDrop: dropOntoLink,
       selectionAdorned: false
     },
     new go.Binding('points').makeTwoWay(),
@@ -59,14 +78,14 @@ export function linkTemplateStyle () {
     MAKE(go.Shape, // the arrowhead
       { toArrow: 'standard', strokeWidth: 0, fill: 'gray' }),
     MAKE(go.Panel, 'Auto', // the link label, normally not visible
-      { visible: false, name: 'LABEL', segmentIndex: 1, segmentFraction: 0.5 },
+      { visible: false, name: 'LABEL', segmentIndex: 3, segmentFraction: 0.6 },
       new go.Binding('visible', 'visible').makeTwoWay(),
       MAKE(go.Shape, 'RoundedRectangle', // the label shape
         { fill: '#F8F8F8', strokeWidth: 0 }),
       MAKE(go.TextBlock, 'else', // the label
         {
           textAlign: 'center',
-          font: '18pt helvetica, arial, sans-serif',
+          font: '12pt helvetica, arial, sans-serif',
           stroke: '#56d8e4',
           editable: true
         },

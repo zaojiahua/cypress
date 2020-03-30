@@ -215,27 +215,28 @@ export default {
       _this.myDiagram = MAKE(go.Diagram, 'chart-diagram', {
         initialContentAlignment: go.Spot.Center,
         allowDrop: true,
+        // layout: MAKE(go.LayeredDigraphLayout, { direction: 90, layerSpacing: 40, columnSpacing: 30, setsPortSpots: true }),
         // 设置网格
-        grid: MAKE(go.Panel, 'Grid',
-          MAKE(go.Shape, 'LineH', {
-            stroke: 'lightgray',
-            strokeWidth: 0.5
-          }),
-          MAKE(go.Shape, 'LineH', {
-            stroke: 'gray',
-            strokeWidth: 0.5,
-            interval: 10
-          }),
-          MAKE(go.Shape, 'LineV', {
-            stroke: 'lightgray',
-            strokeWidth: 0.5
-          }),
-          MAKE(go.Shape, 'LineV', {
-            stroke: 'gray',
-            strokeWidth: 0.5,
-            interval: 10
-          })
-        ),
+        // grid: MAKE(go.Panel, 'Grid',
+        //   MAKE(go.Shape, 'LineH', {
+        //     stroke: 'lightgray',
+        //     strokeWidth: 0.5
+        //   }),
+        //   MAKE(go.Shape, 'LineH', {
+        //     stroke: 'gray',
+        //     strokeWidth: 0.5,
+        //     interval: 10
+        //   }),
+        //   MAKE(go.Shape, 'LineV', {
+        //     stroke: 'lightgray',
+        //     strokeWidth: 0.5
+        //   }),
+        //   MAKE(go.Shape, 'LineV', {
+        //     stroke: 'gray',
+        //     strokeWidth: 0.5,
+        //     interval: 10
+        //   })
+        // ),
         // 拖动时是否捕捉网格点
         'draggingTool.isGridSnapEnabled': true,
         // 初次链接时，以链接（link）头部距离目标节点的某个Port的距离小于linkingTool.portGravity时，链接会自动吸附到目标节点的Port上
@@ -346,11 +347,13 @@ export default {
       _this.blockDiagram = MAKE(go.Diagram, 'inner-diagram', {
         initialContentAlignment: go.Spot.Center,
         allowDrop: true,
+        layout: MAKE(go.LayeredDigraphLayout, { direction: 0, layerSpacing: 40, columnSpacing: 30, setsPortSpots: false }),
         'toolManager.mouseWheelBehavior': go.ToolManager.WheelZoom,
         mouseDrop: function (e) {
           finishDrop(e, null)
         },
-        'undoManager.isEnabled': true
+        'undoManager.isEnabled': true,
+        'commandHandler.archetypeGroupData': { category: 'UnitList', text: 'UnitList', isGroup: true }
       })
 
       // -------------从Palette拖拽节点的触发事件，判断Unit是否被UnitList包含------------
@@ -359,13 +362,11 @@ export default {
           // 得到从Palette拖过来的节点 判断节点如果没有group则删除节点
           if (n.data.category === 'Unit') {
             if (!n.data.group) { // 判断Unit是否被UnitList包含
-              _this.blockDiagram.commandHandler.deleteSelection()// 删除该选中节点
-              _this.$Message.error('Unit只能被包裹在UnitList中') // 错误提示
+              _this.blockDiagram.commandHandler.groupSelection()
             }
           }
         })
       })
-
       _this.blockDiagram.linkTemplate = linkTemplateStyle()
 
       const unitTemplate = unitNodeTemplate(_this.colors.unit)
@@ -455,7 +456,6 @@ export default {
             groupTemplateMap: _this.blockDiagram.groupTemplateMap,
             layout: MAKE(go.GridLayout, { wrappingColumn: 1, alignment: go.GridLayout.Center })
           })
-      console.log(_this.unitAllList)
       _this.getSelectedUnit('基础操作')
     }
     function commonPaletteInit () {
@@ -570,15 +570,13 @@ export default {
                 'from': -1,
                 'to': -2,
                 'fromPort': 'R',
-                'toPort': 'L',
-                'points': [-874.8887031022892, -64, -864.8887031022892, -64, -790.6943515511446, -64, -790.6943515511446, -64.69453125, -716.5, -64.69453125, -706.5, -64.69453125]
+                'toPort': 'L'
               },
               {
                 'from': -2,
                 'to': -3,
                 'fromPort': 'R',
-                'toPort': 'L',
-                'points': [-605.8209025016921, -64.69453125, -595.8209025016921, -64.69453125, -530.494088399681, -64.69453125, -530.494088399681, -65, -465.1672742976699, -65, -455.1672742976699, -65]
+                'toPort': 'L'
               }
             ]
           }
@@ -694,6 +692,16 @@ export default {
     },
     _setJobResFile (id) {
       let filesData = this.$refs.jobResFile.filesData
+      let filesNameConfig = filesData.find(item => item.name === 'filesNameConfig.json')
+      if (filesNameConfig) {
+        filesNameConfig.file = JSON.stringify(this.filesName, null, 2)
+      } else {
+        filesData.push({
+          name: 'filesNameConfig.json',
+          type: 'json',
+          file: JSON.stringify(this.filesName, null, 2)
+        })
+      }
       let data = new FormData()
       data.append('job', id)
       for (let i = 0; i < filesData.length; i++) {
@@ -737,6 +745,7 @@ export default {
       return target
     },
     async saveJob (saveAs) {
+      // this._setJobResFile(this.$route.query.jobId)
       // 使用 & 保证都运行
       if (this._jobFlowRules() & this._jobMsgRules()) {
         let info = JSON.parse(JSON.stringify(this.$refs.jobDetail.jobInfo, null, 2))
@@ -927,6 +936,9 @@ export default {
         })
       }
       return unitItemsData
+    },
+    setFilesName (filesNameConfig) {
+      this.filesName = JSON.parse(filesNameConfig)
     }
   },
   created () {
@@ -938,9 +950,10 @@ export default {
         this.filesName[1].children = this.filesName[1].children.concat(data)
       }
     })
+    this.$bus.on('setFilesName', this.setFilesName)
   },
   beforeDestroy () {
-
+    this.$bus.off('setFilesName', this.setFilesName)
   }
 }
 </script>

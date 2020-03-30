@@ -41,8 +41,7 @@
 import jobResFileShow from './jobResFileShow'
 import jobResFileTable from './jobResFileTable'
 
-import axios from '../api'
-import { baseURL } from '../config'
+import { jobResFilesList, jobResFile } from '../api/reef/jobResFileSave'
 
 import { suffixAutoRemove } from '../lib/tools'
 
@@ -103,31 +102,36 @@ export default {
     },
     _getResFile (id) {
       if (!id) return
-      axios.request({
-        url: `api/v1/cedar/job/${id}/?fields=job_res_file,job_res_file.name,job_res_file.file,job_res_file.type`
-      }).then(res => {
+      jobResFilesList(id).then(res => {
         this.filesData = res.data.job_res_file
-        this.filesData.forEach(item => {
+        let filesNameConfigIndex
+        this.filesData.forEach((item, index) => {
           item.fileUrl = item.file
           item.file = null
+          if (item.name === 'filesNameConfig.json') {
+            filesNameConfigIndex = index
+          }
         })
-
+        let requests = []
         for (let i = 0; i < this.filesData.length; i++) {
-          axios.request({
-            url: `${baseURL}${this.filesData[i].fileUrl}`,
-            responseType: 'blob'
-          }).then(res => {
+          requests.push(jobResFile(this.filesData[i].fileUrl))
+        }
+        Promise.all(requests).then(res => {
+          res.forEach((file, index) => {
             let reader = new FileReader()
-            if (res.data.type.split('/')[0] !== 'image') { // 图片则存放 dataURL
-              reader.readAsText(res.data)
-            } else { // json 则存放 text
-              reader.readAsDataURL(res.data)
+            if (file.data.type.split('/')[0] !== 'image') { // json 则存放 text
+              reader.readAsText(file.data)
+            } else { // 图片则存放 dataURL
+              reader.readAsDataURL(file.data)
             }
             reader.onload = () => {
-              this.filesData[i].file = reader.result
+              this.filesData[index].file = reader.result
+              if (index === filesNameConfigIndex) {
+                this.$bus.emit('setFilesName', reader.result)
+              }
             }
           })
-        }
+        })
       })
     },
     overwrite () {
@@ -212,16 +216,16 @@ export default {
 
 <style lang="less" scoped>
 .res-file {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    height: 1000px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 1000px;
 
-    .res-file-show {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 45%;
-    }
+  .res-file-show {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 45%;
+  }
 }
 </style>

@@ -31,7 +31,7 @@ export function jobFlowValidation (vueObj) {
         }
         if (node.data.text === 'End') {
           endLinksInto.each(link => {
-            let preNormalBlockData = self.myDiagram.model.findNodeDataForKey(link.data.from)
+            let preNormalBlockData = link.fromNode.data
             if (preNormalBlockData.category === 'normalBlock') {
               // self.myDiagram.model.setDataProperty(preNormalBlockData, 'star', true)
               let imgToolUnits = preNormalBlockData.unitLists.nodeDataArray.filter(item => item.category === 'Unit' && item.unitMsg.execModName === 'IMGTOOL')
@@ -59,7 +59,7 @@ export function jobFlowValidation (vueObj) {
       }
 
       switchBlockLinksInto.each(link => {
-        let preNormalBlockData = self.myDiagram.model.findNodeDataForKey(link.data.from)
+        let preNormalBlockData = link.fromNode.data
         if (preNormalBlockData.category === 'normalBlock') {
           // self.myDiagram.model.setDataProperty(preNormalBlockData, 'star', true)
           let imgToolUnits = preNormalBlockData.unitLists.nodeDataArray.filter(item => item.category === 'Unit' && item.unitMsg.execModName === 'IMGTOOL')
