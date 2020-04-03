@@ -9,3 +9,39 @@ export const getUsableDeviceList = () => {
       '&status=idle&ai_occupy=False'
   })
 }
+
+export const getDeviceList = (queryParameters) => {
+  return axios.request({
+    url: 'api/v1/cedar/device/?fields=' +
+      'id,' +
+      'device_label,' +
+      'phone_model,' +
+      'phone_model.id,' +
+      'phone_model.phone_model_name,' +
+      'phone_model.manufacturer,' +
+      'phone_model.manufacturer.id,' +
+      'phone_model.manufacturer.manufacturer_name,' +
+      'phone_model.cpu_name,' +
+      'rom_version,' +
+      'rom_version.id,' +
+      'rom_version.version,' +
+      'device_name,' +
+      'android_version,' +
+      'android_version.id,' +
+      'android_version.version,' +
+      'ip_address,' +
+      'cabinet,' +
+      'cabinet.ip_address,' +
+      'status' +
+      '&limit=' + queryParameters.pageSize +
+      '&offset=' + queryParameters.pageOffset +
+      queryParameters.deviceStatus +
+      '&ordering=id'
+  })
+}
+
+export const getDeviceBatteryLevel = (parameter) => {
+  return axios.request({
+    url: 'api/v1/cedar/get_device_power_battery_level/?device_id=' + parameter
+  })
+}

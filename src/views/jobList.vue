@@ -1,6 +1,6 @@
 <template>
   <div>
-    <job-list-filter @getMsg="getMsg"></job-list-filter>
+    <job-list-filter @getCurrentPageJobList="getCurrentPageJobList"></job-list-filter>
 
     <Divider style="margin-top: -6px">已选用例</Divider>
     <Row>
@@ -23,7 +23,7 @@
         </Col>
       </Row>
       <Row span="24"  style="margin-top: 20px; min-height: 60px;">
-        <Tag v-for="job in selectedJobs" :key="job.id" @click.native="openDetail(job.id)" closable @on-close="close(job.id)">{{ job.name }}</Tag>
+        <Tag v-for="job in selectedJobs" :key="job.id" closable @on-close="close(job.id)">{{ job.name }}</Tag>
       </Row>
     </Row>
     <Divider  style="margin-top: 40px">用例列表</Divider>
@@ -33,35 +33,27 @@
     </div>
 
     <Page simple :page-size="pageSize" :total="dataCount" :current="this.currentPage" @on-change="jobPageChange" style="text-align: center;margin-top: 20px"></Page>
-    <Drawer title="用例详细信息" :closable="false" v-model="showDrawer" width="50">
-      <job-msg-component ref="jobDetail" @closeDrawer="closeDrawer"></job-msg-component>
-    </Drawer>
   </div>
 </template>
 
 <script>
 import util from '../lib/util/validate.js'
-import jobMsgComponent from '../components/jobMsgComponent'
-import axios from '../api/index'
 import { getSelectedJobs } from '../api/coral/jobLibSvc'
 import { jobLibSvcURL } from '../config/index'
-import serializer from '../lib/util/jobListSerializer'
+import { serializer, jobSerializer } from '../lib/util/jobListSerializer'
 import jobListFilter from '../components/jobListFilter'
+import { getJobDetail, getJobList, patchUpdateJob } from '../api/reef/job'
 
 export default {
   name: 'jobList',
   components: {
-    jobMsgComponent,
     jobListFilter
   },
   data () {
     return {
-      showDrawer: false, // 侧滑栏是否打开
       pageSize: 10, // 每页条数
       currentPage: 1, // 当前页数
       dataCount: 0,
-      jobCurrentId: null,
-      jobMsgLoad: false,
       columns: [
         {
           type: 'selection',
@@ -74,96 +66,122 @@ export default {
         },
         {
           title: '测试用途',
-          key: 'text_area'
+          key: 'test_area'
         },
         {
           title: '自定义标签',
           key: 'custom_tag'
+        },
+        {
+          title: '用例状态',
+          key: 'job_state',
+          sortable: true,
+          align: 'center',
+          filters: [
+            {
+              label: '草稿',
+              value: 'draft'
+            },
+            {
+              label: '正式',
+              value: 'release'
+            }
+          ],
+          filterMultiple: false,
+          filterRemote (value) {
+            this.jobFilterCondition = value[0]
+            this.jobPageChange(1)
+          }
         }
       ],
       jobData: util.validate(serializer.jobSerializer, []),
       selectedJobs: {}, // 已选的job
-      currentPageJobs: {}, // 当前页面的已选job
+      currentPageSelectedJobs: {}, // 当前页面的已选job
       uploadData: { // 上传时附带的额外参数
         requestName: 'importJob'
       },
-      loading: false
+      loading: false,
+      jobFilterCondition: ''
     }
   },
   methods: {
-    getMsg (filterUrlParam) { // 每个页面的请求数据
-      let url =
-        'api/v1/cedar/job/?fields=' +
-        'id,' +
-        'job_label,' +
-        'job_name,' +
-        'test_area,' +
-        'test_area.id,' +
-        'test_area.description,' +
-        'custom_tag,' +
-        'custom_tag.id,' +
-        'custom_tag.custom_tag_name' +
-        '&limit=' + this.pageSize +
-        '&offset=' + this.offset +
-        '&job_deleted=False' +
-        '&ordering=id' + filterUrlParam
+    getCurrentPageJobList (filterUrlParam = '') { // 每个页面的请求数据
+      let jobState
+      if (this.jobFilterCondition === 'draft') {
+        jobState = '&draft=True'
+      } else if (this.jobFilterCondition === 'release') {
+        jobState = '&draft=False'
+      } else {
+        jobState = ''
+      }
+      getJobList({
+        pageSize: this.pageSize,
+        offset: this.offset,
+        jobState,
+        filterUrlParam
+      }).then(res => {
+        this.currentPageSelectedJobs = {}
+        this.dataCount = parseInt(res.headers['total-count'])
 
-      axios.request({ url })
-        .then(res => {
-          this.currentPageJobs = {}
-          this.dataCount = parseInt(res.headers['total-count'])
-
-          this.jobData = util.validate(serializer.jobSerializer, res.data.jobs)
-          this.jobData.forEach(job => { // 遍历后返回返回的值
-            let jobTextAreas = []
-            job.test_area.forEach(jobTextArea => {
-              jobTextAreas.push(jobTextArea.description)
-            })
-
-            let jobCustomTags = []
-            job.custom_tag.forEach(jobCustomTag => {
-              jobCustomTags.push(jobCustomTag.custom_tag_name)
-            })
-
-            job.text_area = jobTextAreas.join(',')
-            job.custom_tag = jobCustomTags.join(',')
-          })
+        this.jobData = res.data.jobs
+        this.jobData.forEach(job => {
+          job.test_area = job.test_area.map(item => item.description).join(',')
+          job.custom_tag = job.custom_tag.map(item => item.custom_tag_name).join(',')
+          job.job_state = job.draft ? '草稿' : '正式'
 
           // 勾选已选的选项
-          this.jobData.forEach((value) => {
-            if (this.selectedJobs[value.id] !== undefined) {
-              value._checked = true
-              this.$set(this.currentPageJobs, value.id, 'exist')
-            }
-          })
+          if (this.selectedJobs[job.id] !== undefined) {
+            job._checked = true
+            this.$set(this.currentPageSelectedJobs, job.id, 'exist')
+          }
         })
-        .catch(err => {
-          console.log(err)
-        })
+      }).catch(err => {
+        console.log(err)
+      })
     },
     jobPageChange (page) { // 切换页面
       this.loading = true
       this.currentPage = page
-      this.getMsg()
+      this.getCurrentPageJobList()
       this.loading = false
     },
+    getJobInfo (jobId) {
+      getJobDetail(jobId).then(res => {
+        let job = util.validate(jobSerializer, res.data)
+        let jobInfo = {
+          job_name: job.job_name,
+          job_type: job.job_type,
+          job_label: job.job_label,
+          description: job.description,
+          manufacturer: job.phone_models[0].manufacturer.id,
+          author: parseInt(localStorage.id),
+
+          test_area: job.test_area.map(item => item.id),
+          android_version: job.android_version.map(item => item.id),
+          custom_tag: job.custom_tag.map(item => item.id),
+          phone_models: job.phone_models.map(item => item.id),
+          rom_version: job.rom_version.map(item => item.id),
+
+          job_id: job.id,
+          job_flow: job.ui_json_file
+
+        }
+        this.$store.commit('setJobInfo', jobInfo)
+      })
+    },
     onRowClick (currentData, index) { // 单击表格某一行
-      // this.$emit('on-row-click', currentData, index)
-      this.showDrawer = true
-      this.jobMsgLoad = true
-      // this.jobCurrentId = currentData.id
-      // this.jobCurrentId = currentData.id
-      this.$refs.jobDetail.getMsg(currentData.id)
+      this.getJobInfo(currentData.id)
+      this.$store.commit('handleShowDrawer')
     },
     selectedJobsChange (selection) {
       selection.forEach((value) => {
         if (this.selectedJobs[value.id] === undefined) {
           console.log('勾选了id为' + value.id + '的job')
           this.$set(this.selectedJobs, value.id, { id: value.id, name: value.job_name })
-          this.$set(this.currentPageJobs, value.id, 'exist')
+          this.$set(this.currentPageSelectedJobs, value.id, 'exist')
         }
       })
-      for (let item in this.currentPageJobs) {
+      for (let item in this.currentPageSelectedJobs) {
         let i = 0
         for (i; i < selection.length; i++) {
           if (parseInt(item) === selection[i].id) {
@@ -173,7 +191,7 @@ export default {
         if (i === selection.length) {
           console.log('不再勾选id为' + item + '的job')
           this.$delete(this.selectedJobs, item)
-          this.$delete(this.currentPageJobs, item)
+          this.$delete(this.currentPageSelectedJobs, item)
         }
       }
     },
@@ -197,15 +215,8 @@ export default {
         }
       }
       this.selectedJobs = {}
-      this.currentPageJobs = {}
+      this.currentPageSelectedJobs = {}
       this.filterRules = []
-    },
-    openDetail (id) {
-      this.showDrawer = true
-      this.jobMsgLoad = true
-      // this.jobCurrentId = currentData.id
-      // this.jobCurrentId = currentData.id
-      this.$refs.jobDetail.getMsg(id)
     },
     /**
      * 导入用例模块
@@ -236,7 +247,7 @@ export default {
           content: '请先选择要导出的用例'
         })
       } else {
-        let self = this
+        let _this = this
         this.$Modal.confirm({
           title: '提示',
           content: '您确定要导出这些用例吗？',
@@ -244,7 +255,7 @@ export default {
           onOk () {
             getSelectedJobs({
               requestName: 'exportJob',
-              jobIdList: self.jobIdList
+              jobIdList: _this.jobIdList
             }).then(res => {
               if (res.data.file) {
                 window.location.href = res.data.file
@@ -261,7 +272,7 @@ export default {
     /**
      * 删除用例
      * author lc
-     * lastEditTime 2019年11月27日14:28:36
+     * lastEditTime 2020年4月2日17:15:52
      */
     delSelectedJobs () {
       if (this.jobIdList.length === 0) {
@@ -270,33 +281,24 @@ export default {
           content: '请先选择要删除的用例！'
         })
       } else {
-        let self = this
+        let _this = this
         this.$Modal.confirm({
           title: '提示',
           content: '您真的要删除这些用例吗？',
           onOk () {
-            let delUrlList = []
-            for (let i = 0; i < self.jobIdList.length; i++) {
-              delUrlList.push(axios.request({
-                url: 'api/v1/cedar/job/' + self.jobIdList[i] + '/',
-                method: 'patch',
-                data: { job_deleted: true }
-              }))
-            }
-            Promise.all(delUrlList).then(res => {
-              this.$Message.success('用例删除成功')
-              self.selectedJobs = {}
-              self.getMsg()
+            Promise.all(_this.jobIdList.map(id => {
+              patchUpdateJob(id, { job_deleted: true })
+            })).then(res => {
+              _this.$Message.success('用例删除成功')
+              _this.selectedJobs = {}
+              _this.jobPageChange()
             }).catch(err => {
               console.log(err)
-              this.$Message.error('用例删除失败')
+              _this.$Message.error('用例删除失败')
             })
           }
         })
       }
-    },
-    closeDrawer () { // 路由切换后关闭drawer
-      this.showDrawer = false
     }
   },
   computed: {
@@ -311,7 +313,7 @@ export default {
     }
   },
   mounted () {
-    this.getMsg()
+    this.getCurrentPageJobList()
   }
 }
 </script>

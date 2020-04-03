@@ -1,26 +1,32 @@
 <template>
   <div id="wrap" ref="jobEditor">
     <div>
-      <Drawer title="用例详细信息" :closable="false" v-model="showDrawer" width="50">
-        <job-msg-component ref="jobDetail" :prop-confirm-btn="false" :prop-enter-btn="false" :jobName="jobName"></job-msg-component>
-      </Drawer>
       <div class="job-editor-header">
-        <Input v-model="jobName" class="job-name" placeholder="请输入JOB名称" size="large" />
-        <!-- <div>
-          <Button type="primary" size="large" @click="viewResFile" style="margin-right: 10px;">查看依赖文件</Button>
-          <Button type="info" ghost @click="showDrawer=true" size="large" style="margin-right: 10px;">用例详情</Button>
-          <Button type="primary" size="large" @click="saveJob(false)" style="margin-right: 10px;">保存</Button>
-          <Button size="large" type="success" @click="saveJob(true)" style="margin-right: 10px;">另存为</Button>
-          <Button size="large" to="/jobList">退出</Button>
-        </div> -->
-        <ButtonGroup shape="circle" size="large">
-          <Button type="primary" @click="viewResFile">查看依赖文件</Button>
-          <Button type="primary" @click="showDrawer=true" size="large">用例详情</Button>
-          <Button type="primary" @click="saveJob(false)">保存</Button>
-          <Button type="primary" @click="saveJob(true)">另存为</Button>
-          <Button type="primary" size="large" to="/jobList">退出</Button>
-        </ButtonGroup>
+        <Input v-model="$store.state.jobInfo.job_name" class="job-name" placeholder="请输入JOB名称" size="large" />
+
+        <div class="job-editor-header-btns">
+          <div>
+            <Button type="primary" @click="$store.commit('handleShowDrawer')" size="large" style="margin-right: 10px;">用例详情</Button>
+            <Button type="info" ghost size="large" @click="viewResFile" style="margin-right: 10px;">查看依赖文件</Button>
+          </div>
+          <div>
+            <Button type="primary" size="large" @click="saveJob" style="margin-right: 10px;">保存</Button>
+            <!-- <Button type="error" size="large" style="margin-right: 10px;">存为草稿</Button> -->
+            <Button size="large" type="success" @click="saveAs" style="margin-right: 10px;">另存为</Button>
+            <Button size="large" to="/jobList">退出</Button>
+          </div>
+        </div>
       </div>
+      <Modal v-model="rename" :closable="false" :mask-closeable="false" :styles="{ top: '42%' }">
+        <div slot="header" style="color:#f60;text-align:center">
+          <Icon type="ios-information-circle" style="font-size: 20px;"></Icon>
+          <span style="font-size: 18px;">重命名</span>
+        </div>
+        <Input placeholder="重命名" v-model="$store.state.jobInfo.job_name" />
+        <div slot="footer" >
+          <Button type="primary" @click="_saveJob(true, true, false)">确定</Button>
+        </div>
+      </Modal>
       <job-in-job
         :jobModalShow="jobModalShow"
         :currentJobBlockText="currentJobBlockText"
@@ -45,7 +51,6 @@
         <div id="chart-palette"></div>
         <div id="chart-diagram"></div>
       </div>
-
       <unit-template-editor
         :openUnitTemplateEditor="openUnitTemplateEditor"
         :unitTemplateId="unitTemplateId"
@@ -124,12 +129,10 @@ import {
   baseGroupTemplate,
   basicModel
 } from './jobEditorCommon'
-import jobMsgComponent from '../components/jobMsgComponent'
 import jobInJob from '../components/jobInJob'
 import jobResFile from '../components/jobResFile'
 import unitEditor from '../components/unitEditor'
 import unitTemplateEditor from '../components/unitTemplateEditor'
-import { getTemporarySpace } from '../api/coral/jobLibSvc'
 import { getJobUnitsBodyDict, deleteUnitTemplate } from '../api/reef/unit'
 import { getBlockFlowDict4Font, jobFlowAndMsgSave, jobFlowAndMsgUpdate } from '../api/reef/jobFlow'
 import { jobResFilesSave } from '../api/reef/jobResFileSave'
@@ -146,7 +149,7 @@ import { baseURL } from '../config'
 
 export default {
   name: 'jobEditor',
-  components: { SwitchBlockDetailComponent, jobMsgComponent, jobInJob, jobResFile, unitEditor, unitTemplateEditor },
+  components: { SwitchBlockDetailComponent, jobInJob, jobResFile, unitEditor, unitTemplateEditor },
   data () {
     return {
       jobName: '',
@@ -162,7 +165,6 @@ export default {
       switchBlockInfo: {},
       unitAllList: {},
       basicModuleShow: {},
-      showDrawer: false,
       screenWidth: 1400,
       jobModalShow: false,
       currentJobBlockKey: null,
@@ -198,7 +200,8 @@ export default {
         unfinished: '#F76132',
         unit: '#338FF0',
         group: '#50A5F4'
-      }
+      },
+      rename: false
     }
   },
   mounted () {
@@ -495,35 +498,6 @@ export default {
       })()
     }
   },
-  // beforeDestroy () {
-  //   console.log(this.$refs.jobEditor)
-  // },
-  // 提醒用户暂存已编辑的内容
-  // beforeRouteLeave (to, from, next) {
-  //   let _this = this
-  //   let toFullPath = to.fullPath
-  //   if (this.$store.state.keepAliveComponents.length !== 2 && this.myDiagram.model.nodeDataArray.length !== 0 && !this.isCertain && this.ingroneList.indexOf(to.name) === -1) {
-  //     this.$Modal.confirm({
-  //       title: 'WARNING',
-  //       content: '此操作会丢失已编辑的内容，确定要继续吗？',
-  //       closable: false,
-  //       okText: '保存并退出',
-  //       cancelText: '退出',
-  //       onOk () {
-  //         _this.$store.commit('keepAlive', 'jobEditor')
-  //         next(false)
-  //         setTimeout(function () {
-  //           _this.$router.push({ path: toFullPath })
-  //         }, 100)
-  //       },
-  //       onCancel () {
-  //         next()
-  //       }
-  //     })
-  //   } else {
-  //     next()
-  //   }
-  // },
   methods: {
     init () {
       this.myPalette = MAKE(
@@ -585,24 +559,19 @@ export default {
         { category: 'End', text: 'End' }
       ])
 
-      if (this.$route.query.jobFlow) {
-        getBlockFlowDict4Font(this.$route.query.jobFlow).then(res => {
+      if (this.$store.state.jobInfo.job_flow) {
+        getBlockFlowDict4Font(this.$store.state.jobInfo.job_flow).then(res => {
           if (JSON.stringify(res.data) === '{}') {
             this.$Message.warning('这个job不存在')
             return this.$router.push({ path: '/' })
           }
-          this.stageJobLabel = this.$route.query.jobLabel
-          this.jobName = this.$route.query.jobName
-          this.$refs.jobDetail.getMsg(this.$route.query.jobId)
+          this.stageJobLabel = this.$store.state.jobInfo.jobLabel
           this.myDiagram.model = go.Model.fromJson(res.data)
         })
       } else {
-        this.$refs.jobDetail.getMsg()
-        getTemporarySpace().then(res => {
-          // this.stageJobLabel = res.data.stageJobLabel
-          // this.$refs.jobDetail.getMsg()
-          this.myDiagram.model = basicModel()
-        })
+        // getTemporarySpace().then(res => {
+        this.myDiagram.model = basicModel()
+        // })
       }
     },
     switchBlockSave (msg) {
@@ -668,19 +637,41 @@ export default {
         // message提示
         this.$Notice.error({
           title: '当前用例出现以下错误',
-          desc: errorMessage // 提示内容
+          // desc: errorMessage, // 提示内容
+          render: h => {
+            return h(
+              'div',
+              [
+                h(
+                  'div',
+                  {
+                    domProps: {
+                      innerHTML: errorMessage
+                    }
+                  }
+                ),
+                h('Button', {
+                  style: {
+                    marginTop: '16px'
+                  },
+                  on: {
+                    click: this._saveJob
+                  }
+                }, '存为草稿')
+              ]
+            )
+          }
         })
         return false
       } else return true
     },
     _jobMsgRules () {
-      let flag = true
-      this.$refs.jobDetail.$refs.jobInfoForm.validate((valid) => {
-        if (!valid) {
-          this.showDrawer = true
-          flag = false
-        }
-      })
+      let flag = false
+      if (this.$store.state.jobInfoValid) {
+        flag = true
+      } else {
+        this.$store.commit('handleShowDrawer')
+      }
       return flag
     },
     // 生成 jobLabel
@@ -731,7 +722,7 @@ export default {
         'test_area': 'job_test_area',
         'custom_tag': 'custom_tag'
       }
-      let target = this.$refs.jobDetail.jobInfo[tagType]
+      let target = this.$store.state.jobInfo[tagType]
       for (let i = 0; i < target.length; i++) {
         if (typeof target[i] !== 'number') {
           let res = await axios.request({
@@ -744,50 +735,23 @@ export default {
       }
       return target
     },
-    async saveJob (saveAs) {
-      // this._setJobResFile(this.$route.query.jobId)
+    saveJob (saveAs = false) {
       // 使用 & 保证都运行
-      if (this._jobFlowRules() & this._jobMsgRules()) {
-        let info = JSON.parse(JSON.stringify(this.$refs.jobDetail.jobInfo, null, 2))
-        info.test_area = await this._createNewTag('test_area')
-        info.custom_tag = await this._createNewTag('custom_tag')
-        let jobFlow = this.myDiagram.model.toJson()
-        let id = this.$route.query.jobId
-        info.ui_json_file = JSON.parse(jobFlow)
-        if (id) { // 不是新建 job
-          if (saveAs) { // 另存为
-            info.job_label = this._createJobLabel()
-            jobFlowAndMsgSave(info).then(res => {
-              if (res.status === 201) {
-                id = res.data.id
-              }
-            }).then(() => {
-              let data = this._setJobResFile(id)
-              jobFlowAndMsgUpdate(id, info).then(res => {
-                if (res.status === 200) {
-                  jobResFilesSave(data).then(res => {
-                    if (res.status === 201) {
-                      this.$Message.info('保存成功')
-                      this.$router.push({ path: '/jobList' })
-                    }
-                  })
-                }
-              })
-            })
-          } else { // 更新
-            let data = this._setJobResFile(id)
-            jobFlowAndMsgUpdate(id, info).then(res => {
-              if (res.status === 200) {
-                jobResFilesSave(data).then(res => {
-                  if (res.status === 201) {
-                    this.$Message.info('保存成功')
-                    this.$router.push({ path: '/jobList' })
-                  }
-                })
-              }
-            })
-          }
-        } else { // 新建 job
+      if (!this._jobMsgRules()) return
+      if (this._jobFlowRules()) {
+        this._saveJob(saveAs, false, false)
+      }
+    },
+    async _saveJob (e, saveAs = false, isDraft = true) { // render 函数中会向函数传入点击事件参数
+      let jobFlow = this.myDiagram.model.toJson()
+      let id = this.$route.query.jobId
+      let info = JSON.parse(JSON.stringify(this.$store.state.jobInfo, null, 2))
+      info.ui_json_file = JSON.parse(jobFlow)
+      info.test_area = await this._createNewTag('test_area')
+      info.custom_tag = await this._createNewTag('custom_tag')
+      info.draft = isDraft
+      if (id) { // 不是新建 job
+        if (saveAs) { // 另存为
           info.job_label = this._createJobLabel()
           jobFlowAndMsgSave(info).then(res => {
             if (res.status === 201) {
@@ -805,11 +769,45 @@ export default {
                 })
               }
             })
-          }).catch(err => {
-            console.log(err)
+          })
+        } else { // 更新
+          let data = this._setJobResFile(id)
+          jobFlowAndMsgUpdate(id, info).then(res => {
+            if (res.status === 200) {
+              jobResFilesSave(data).then(res => {
+                if (res.status === 201) {
+                  this.$Message.info('保存成功')
+                  this.$router.push({ path: '/jobList' })
+                }
+              })
+            }
           })
         }
+      } else { // 新建 job
+        info.job_label = this._createJobLabel()
+        jobFlowAndMsgSave(info).then(res => {
+          if (res.status === 201) {
+            id = res.data.id
+          }
+        }).then(() => {
+          let data = this._setJobResFile(id)
+          jobFlowAndMsgUpdate(id, info).then(res => {
+            if (res.status === 200) {
+              jobResFilesSave(data).then(res => {
+                if (res.status === 201) {
+                  this.$Message.info('保存成功')
+                  this.$router.push({ path: '/jobList' })
+                }
+              })
+            }
+          })
+        }).catch(err => {
+          console.log(err)
+        })
       }
+    },
+    saveAs () {
+      this.rename = true
     },
     saveUnit (unitNodeKey, unitName, unitMsg) {
       let currentUnitNode = this.blockDiagram.findNodeForKey(unitNodeKey)
@@ -954,6 +952,12 @@ export default {
   },
   beforeDestroy () {
     this.$bus.off('setFilesName', this.setFilesName)
+  },
+  beforeRouteLeave (to, from, next) {
+    setTimeout(() => {
+      this.$Notice.destroy()
+    }, 600)
+    next()
   }
 }
 </script>
@@ -968,6 +972,12 @@ export default {
   .job-name {
     width: 15%;
     font-size: 18px;
+  }
+
+  .job-editor-header-btns {
+    width: 83.1%;
+    display: flex;
+    justify-content: space-between;
   }
 }
 

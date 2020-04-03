@@ -112,11 +112,7 @@ export default {
             filesNameConfigIndex = index
           }
         })
-        let requests = []
-        for (let i = 0; i < this.filesData.length; i++) {
-          requests.push(jobResFile(this.filesData[i].fileUrl))
-        }
-        Promise.all(requests).then(res => {
+        Promise.all(this.filesData.map((item) => jobResFile(item.fileUrl))).then(res => {
           res.forEach((file, index) => {
             let reader = new FileReader()
             if (file.data.type.split('/')[0] !== 'image') { // json 则存放 text

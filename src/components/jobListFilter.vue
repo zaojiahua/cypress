@@ -29,7 +29,7 @@
 
 <script>
 import util from '../lib/util/validate.js'
-import serializer from '../lib/util/jobListSerializer'
+import { serializer } from '../lib/util/jobListSerializer'
 import { getPhoneModelList } from '../api/reef/phoneModel'
 import { getJobTestAreaList } from '../api/reef/jobTestArea'
 import { getAndroidVersionList } from '../api/reef/androidVersion'

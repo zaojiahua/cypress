@@ -2,8 +2,22 @@ import axios from '../index'
 
 export const getJobList = (params) => {
   return axios.request({
-    url: '/api/v1/cedar/job/',
-    params: params
+    url: 'api/v1/cedar/job/?fields=' +
+      'id,' +
+      'test_area,' +
+      'test_area.description,' +
+      'custom_tag,' +
+      'custom_tag.custom_tag_name,' +
+      'ui_json_file,' +
+      'job_name,' +
+      'job_type,' +
+      'draft' +
+      '&job_deleted=False' +
+      '&job_type=Joblib' +
+      '&limit=' + params.pageSize +
+      '&offset=' + params.offset +
+      params.jobState +
+      '&ordering=id' + params.filterUrlParam
   })
 }
 
@@ -28,11 +42,10 @@ export const getJobDetail = (id) => {
   })
 }
 
-export const patchUpdateJob = (id, jobInfo) => {
+export const patchUpdateJob = (id, data) => {
   return axios.request({
     url: `/api/v1/cedar/job/${id}/`,
     method: 'patch',
-    data: jobInfo
-
+    data
   })
 }

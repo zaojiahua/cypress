@@ -27,11 +27,15 @@
       <Layout>
         <Sider collapsible :collapsed-width="78" v-model="isCollapsed">
           <Menu :active-name="$route.name" ref="menu" theme="dark" width="auto" :class="menuitemClasses">
-              <MenuItem name="jobList" style="border-top: 1px solid darkgrey" to="jobList">
+            <MenuItem
+              name="jobList"
+              style="border-top: 1px solid darkgrey"
+              to="jobList"
+            >
               <Icon type="logo-buffer"></Icon>
               <span>用例管理</span>
             </MenuItem>
-            <MenuItem name="jobEditor" to="jobEditor">
+            <MenuItem name="jobEditor" @click.native="createJob" to="jobEditor">
               <Icon type="ios-create"></Icon>
               <span>创建用例</span>
             </MenuItem>
@@ -45,10 +49,14 @@
         </Content>
       </Layout>
     </Layout>
+    <job-msg-component></job-msg-component>
   </div>
 </template>
 <script>
+import jobMsgComponent from '../components/jobMsgComponent'
+
 export default {
+  components: { jobMsgComponent },
   data () {
     return {
       isCollapsed: true,
@@ -94,6 +102,12 @@ export default {
           this.$Modal.remove()
         }
       })
+    },
+    createJob () {
+      this.$store.commit('setJobInfo', {})
+      setTimeout(() => {
+        this.$store.commit('handleShowDrawer')
+      }, 600)
     }
   }
 }

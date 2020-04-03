@@ -18,7 +18,7 @@
 import jobListFilter from '../components/jobListFilter'
 import axios from '../api'
 import util from '../lib/util/validate.js'
-import serializer from '../lib/util/jobListSerializer'
+import { serializer } from '../lib/util/jobListSerializer'
 
 export default {
   components: { jobListFilter },
