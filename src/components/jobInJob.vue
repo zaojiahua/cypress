@@ -123,7 +123,8 @@ export default {
       this.currentJobName = data.job_name
       this.currentJob = {
         id: data.id,
-        job_name: data.job_name
+        job_name: data.job_name,
+        job_label: data.job_label
       }
     }
   },

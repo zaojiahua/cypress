@@ -172,6 +172,7 @@ export default {
       if (save) {
         this.$store.commit('setSelectedDeviceInfo', this.deviceSelected)
       }
+      this.handleShowDeviceSelectPage()
     },
     selectDevice (currentRow, oldCurrentRow) {
       this.deviceSelected = currentRow

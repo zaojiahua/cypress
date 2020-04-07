@@ -4,33 +4,36 @@
     v-model="unitEditorShow"
     :mask-closable="false"
     :closable="false" width="90"
-    @on-ok="editorCompleted"
-    @on-cancel="closeUnitEditor">
-      <div slot="header" class="unit-editor-header">
-        <span>UNIT EDITOR</span>
-        <div style="margin-left:20px; display: flex; align-items: center; width: 32.8%;">
-          <Tag color="green" size="large" style="display: flex; align-items: center;">UNIT NAME</Tag>
-          <Input type="text" v-model="unitName" style="flex: 1;"></Input>
-        </div>
+  >
+    <div slot="header" class="unit-editor-header">
+      <span>UNIT EDITOR</span>
+      <div style="margin-left:20px; display: flex; align-items: center; width: 32.8%;">
+        <Tag color="green" size="large" style="display: flex; align-items: center;">UNIT NAME</Tag>
+        <Input type="text" v-model="unitName" style="flex: 1;"></Input>
       </div>
-      <div class="unit-editor">
-        <div>
-          <unit-editor-unit-items v-if="unitItemsData !== null" :unitItemsData="unitItemsData"></unit-editor-unit-items>
-          <unit-editor-raw-unit
-            v-if="unitContent !== null"
-            :unitContent="unitContent"
-            :unitType="unitType"
-            @saveRawUnit="saveRawUnit"
-            style="margin-top: 20px;"
-          ></unit-editor-raw-unit>
-        </div>
-        <div>
-          <unit-editor-item-edit :filesName="filesName" @saveChange="saveChange" :unitType="unitType" ref="itemEdit"></unit-editor-item-edit>
-        </div>
-        <div>
-          <unit-editor-utils></unit-editor-utils>
-        </div>
+    </div>
+    <div class="unit-editor">
+      <div>
+        <unit-editor-unit-items v-if="unitItemsData !== null" :unitItemsData="unitItemsData"></unit-editor-unit-items>
+        <unit-editor-raw-unit
+          v-if="unitContent !== null"
+          :unitContent="unitContent"
+          :unitType="unitType"
+          @saveRawUnit="saveRawUnit"
+          style="margin-top: 20px;"
+        ></unit-editor-raw-unit>
       </div>
+      <div>
+        <unit-editor-item-edit :filesName="filesName" @saveChange="saveChange" :unitType="unitType" ref="itemEdit"></unit-editor-item-edit>
+      </div>
+      <div>
+        <unit-editor-utils></unit-editor-utils>
+      </div>
+    </div>
+    <div slot="footer">
+      <Button @click="closeUnitEditor">取消</Button>
+      <Button @click="editorCompleted" type="primary">保存</Button>
+    </div>
   </Modal>
 </template>
 

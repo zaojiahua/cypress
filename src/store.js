@@ -8,10 +8,10 @@ export default new Vuex.Store({
   state: {
     // 设备信息相关
     selectedDeviceInfo: null,
+    jobInfoValid: false,
     jobInfo: {},
     // 抽屉
-    showDrawer: false,
-    jobInfoValid: false
+    showDrawer: false
   },
   mutations: {
     setSelectedDeviceInfo (state, deviceInfo) {
@@ -29,5 +29,23 @@ export default new Vuex.Store({
   },
   actions: {
 
+  },
+  getters: {
+    selectedDeviceInfo (state) {
+      if (state.selectedDeviceInfo) {
+        return [
+          {
+            device_name: state.selectedDeviceInfo.device_name,
+            phone_model: state.selectedDeviceInfo.phone_model,
+            android_version: state.selectedDeviceInfo.android_version,
+            rom_version: state.selectedDeviceInfo.rom_version,
+            ip_address: state.selectedDeviceInfo.ip_address,
+            device_label: state.selectedDeviceInfo.device_label
+          }
+        ]
+      } else {
+        return []
+      }
+    }
   }
 })

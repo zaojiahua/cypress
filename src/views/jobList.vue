@@ -88,6 +88,7 @@ export default {
             }
           ],
           filterMultiple: false,
+          filteredValue: [ this.jobFilterCondition ],
           filterRemote (value) {
             this.jobFilterCondition = value[0]
             this.jobPageChange(1)
@@ -289,9 +290,9 @@ export default {
             Promise.all(_this.jobIdList.map(id => {
               patchUpdateJob(id, { job_deleted: true })
             })).then(res => {
+              _this.jobPageChange(_this.currentPage)
               _this.$Message.success('用例删除成功')
               _this.selectedJobs = {}
-              _this.jobPageChange()
             }).catch(err => {
               console.log(err)
               _this.$Message.error('用例删除失败')
@@ -313,7 +314,12 @@ export default {
     }
   },
   mounted () {
+    this.jobFilterCondition = localStorage.getItem('joblist-management:DEFAULT_FILTER_CONFIG')
     this.getCurrentPageJobList()
+  },
+  beforeRouteLeave (to, from, next) {
+    localStorage.setItem('joblist-management:DEFAULT_FILTER_CONFIG', this.jobFilterCondition)
+    next()
   }
 }
 </script>

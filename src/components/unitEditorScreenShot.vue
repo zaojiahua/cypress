@@ -1,15 +1,13 @@
 <template>
   <div style="position: relative; margin-bottom: 10px;">
-    <Button @click="deviceRefresh" type="primary" class="refresh">刷新列表</Button>
+    <Button @click="showDeviceSelectPage" type="primary" class="refresh">选取设备</Button>
     <Divider orientation="left">获取图片</Divider>
-    <Table border
+    <Table
+      border
       size="small"
       :loading="loading"
-      highlight-row
-      max-height="556"
-      @on-row-click="onDeviceRowClick"
       :columns="deviceColumns"
-      :data="deviceData">
+      :data="currentDeviceData">
     </Table>
     <div class="get-image">
       <div style="display: flex; align-items: center; width: 66%;">
@@ -18,7 +16,7 @@
         </Input>
       </div>
       <Button type="primary" :loading="loading" @click="getImg">
-        <span v-if="!loading">{{ itemType === 'picInput' ? '获取截图' : 'commit' }}</span>
+        <span v-if="!loading">获取截图</span>
         <span v-else>Loading...</span>
      </Button>
     </div>
@@ -26,28 +24,9 @@
 </template>
 
 <script>
-import { getUsableDeviceList } from '../api/reef/device.js'
 import { getScreenShot } from '../api/coral/jobLibSvc.js'
 
 import { blobToDataURL, suffixAutoRemove, suffixAutoComplete } from '../lib/tools.js'
-
-import util from '../lib/util/validate.js'
-
-const deviceSerializer = [
-  {
-    android_version: {
-      version: 'string'
-    },
-    device_name: 'string',
-    id: 'number',
-    phone_model: {
-      phone_model_name: 'string'
-    },
-    rom_version: {
-      version: 'string'
-    }
-  }
-]
 
 export default {
   props: {
@@ -85,25 +64,19 @@ export default {
           align: 'center'
         }
       ],
-      deviceData: [],
       currentDeviceRow: -1,
       currentImgName: '',
       suffixs: []
     }
   },
+  computed: {
+    currentDeviceData () {
+      return this.$store.getters.selectedDeviceInfo
+    }
+  },
   methods: {
-    onDeviceRowClick (row, index) {
-      this.currentDeviceRow = index
-    },
-    deviceRefresh () {
-      getUsableDeviceList().then(res => {
-        this.deviceData = util.validate(deviceSerializer, res.data['devices'])
-        this.deviceData.forEach(device => {
-          device.phone_model = device.phone_model.phone_model_name
-          device.rom_version = device.rom_version.version
-          device.android_version = device.android_version.version
-        })
-      })
+    showDeviceSelectPage () {
+      this.$bus.emit('showDeviceSelectPage') // 由 jobDeviceSelect 响应
     },
     handleSearch (value) {
       this.suffixs = !value || value.indexOf('.') >= 0 ? [] : [
@@ -112,7 +85,7 @@ export default {
     },
     getImg () {
       let errors = []
-      if (this.currentDeviceRow === -1) errors.push('未选择 device')
+      if (this.currentDeviceData.length === 0) errors.push('未选择 device')
       if (this.itemType === 'jobResourcePicture' && !this.currentImgName) errors.push('请为图片命名')
       if (errors.length) {
         errors.forEach(error => {
@@ -123,7 +96,6 @@ export default {
         })
         return
       }
-      const currentDevice = this.deviceData[this.currentDeviceRow]
       this.loading = true
       this.$bus.emit('isLoading')
 
@@ -136,8 +108,8 @@ export default {
         this.$bus.emit('setFileName', imgName)
       }
       let getScreenShotParams = {
-        device_label: currentDevice.device_label,
-        device_ip: currentDevice.ip_address,
+        device_label: this.currentDeviceData[0].device_label,
+        device_ip: this.currentDeviceData[0].ip_address,
         picture_name: imgName
       }
       var screenShot = new Promise((resolve, reject) => {
@@ -191,7 +163,6 @@ export default {
     }
   },
   mounted () {
-    this.deviceRefresh()
     this.currentImgName = suffixAutoRemove(this.imgName)
   },
   created () {

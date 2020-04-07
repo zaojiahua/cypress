@@ -135,6 +135,7 @@ export default {
   watch: {
     // 选择设备时检测是否和已填信息发生冲突并进行处理
     selectedDeviceInfo (val) {
+      if (val === null) return
       let jobInfo = JSON.parse(JSON.stringify(this.jobInfo), null, 2)
       if (!jobInfo.manufacturer) {
         this.deviceInfoReplace(false)
@@ -225,7 +226,7 @@ export default {
           if (valid) {
             patchUpdateJob(id, this.jobInfo).then(res => {
               console.log(res)
-              this.$Message.info('ok')
+              this.$Message.info('修改成功')
             }).catch(error => {
               console.log(error)
             })

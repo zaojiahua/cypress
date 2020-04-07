@@ -40,7 +40,7 @@
         <Checkbox v-model="saveToFinalResult" v-if="unitItemData && unitItemData.itemContent.type === 'outputPicture' ? true : false" style="float: right;">添加此图片至最终结果</Checkbox>
       </div>
       <div class="save-btn">
-        <Button type="primary" @click="saveItem">保存</Button>
+        <Button type="primary" @click="saveItem">确定</Button>
       </div>
     </div>
   </Card>

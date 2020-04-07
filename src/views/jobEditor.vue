@@ -11,8 +11,8 @@
           </div>
           <div>
             <Button type="primary" size="large" @click="saveJob" style="margin-right: 10px;">保存</Button>
-            <!-- <Button type="error" size="large" style="margin-right: 10px;">存为草稿</Button> -->
             <Button size="large" type="success" @click="saveAs" style="margin-right: 10px;">另存为</Button>
+            <Button type="primary" ghost size="large" @click="_saveJob" style="margin-right: 10px;">存草稿</Button>
             <Button size="large" to="/jobList">退出</Button>
           </div>
         </div>
@@ -72,14 +72,8 @@
         </div>
         <div id="inner-wrap">
           <div id="chart-left" @click="closeContextMenu">
-            <div class="common-palette-container">
-              <div class="common-palette-header">
-                <p>常用工具</p>
-              </div>
-              <div id="common-palette"></div>
-            </div>
             <div class="unit-palette-container">
-              <div class="common-palette-header">
+              <div class="unit-palette-header">
                 <Dropdown trigger="click" @on-click="getSelectedUnit">
                   <Button id="dropdown-btn" type="primary" ghost>
                     {{ unitType }}
@@ -110,8 +104,8 @@
         :switch-block-info="switchBlockInfo"
         v-model="switchBlockModalShow"
         @save="switchBlockSave"
-        @clear="switchBlockInfo = {}"
-      ></switch-block-detail-component>
+        @clear="switchBlockInfo = {}">
+      </switch-block-detail-component>
     </div>
   </div>
 </template>
@@ -313,7 +307,6 @@ export default {
         _this.blockModalShow = true
         if (!_this.blockDiagram) blockDiagramInit()
         if (!_this.blockPalette) blockPaletteInit()
-        if (!_this.commonPalette) commonPaletteInit()
         if (!node.data.unitLists) { // unitList存在则展示
           _this.blockDiagram.model = go.Model.fromJson({
             'class': 'go.GraphLinksModel',
@@ -389,40 +382,6 @@ export default {
           unitContent: JSON.stringify(node.data.unitMsg, null, 2),
           unitItemsData: _this._getUnitItems(node.data.unitMsg)
         })
-        // let units = e.diagram.findNodesByExample(example) // 模糊查找，找到所有的 Unit
-        // units.iterator.each(unit => {
-        //   let unitMsgCmdDict = JSON.stringify(unit.data.unitMsg.execCmdDict, null, 2)
-        //   if (outputFile && unitMsgCmdDict && (unitMsgCmdDict.indexOf('<blkInpPath>' + outputFile[0].split('>')[1]) !== -1)) {
-        //     unit.isSelected = true
-        //   }
-        //   if (inputFile && unitMsgCmdDict && (unitMsgCmdDict.indexOf('<blkOutPath>' + inputFile[0].split('>')[1]) !== -1)) {
-        //     unit.isSelected = true
-        //   }
-        // })
-      }
-
-      unitTemplate.mouseEnter = function (e, node) {
-        // console.log(node)
-        // if (e.diagram instanceof go.Palette) return
-        // console.log(node.data)
-        // _this.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
-        // outputFile = JSON.stringify(node.data.unitMsg, null, 2)
-
-        // if (outputFile) {
-        //   _this.unitOutputFileData = []
-        //   _this.unitOutputFileData.push({
-        //     file_name: outputFile[0].split('>')[1]
-        //   })
-        // }
-        // inputFile = JSON.stringify(node.data.unitMsg, null, 2)
-        // if (inputFile) {
-        //   _this.unitInputFileData = []
-        //   _this.unitInputFileData.push({
-        //     file_name: inputFile[0].split('>')[1]
-        //   })
-        // }
-        // console.log(outputFile, inputFile)
-        // tooltip.style.display = 'block'
       }
 
       unitTemplate.contextClick = function (e, node) {
@@ -460,28 +419,6 @@ export default {
             layout: MAKE(go.GridLayout, { wrappingColumn: 1, alignment: go.GridLayout.Center })
           })
       _this.getSelectedUnit('基础操作')
-    }
-    function commonPaletteInit () {
-      _this.commonPalette =
-        MAKE(go.Palette, 'common-palette',
-          {
-            nodeTemplateMap: _this.blockDiagram.nodeTemplateMap,
-            groupTemplateMap: _this.blockDiagram.groupTemplateMap,
-            layout: MAKE(go.GridLayout, { wrappingColumn: 1, alignment: go.GridLayout.Position })
-          })
-      let basicModule = {
-        'nodeDataArray': [
-          { category: 'Start', text: 'Entry' },
-          { category: 'UnitList', text: 'UnitList', isGroup: true },
-          { category: 'End', text: 'Exit' }
-        ]
-      }
-
-      _this.basicModuleShow = {
-        key: 'basicModule',
-        value: basicModule
-      }
-      _this.commonPalette.model = new go.GraphLinksModel(basicModule.nodeDataArray, basicModule.linkDataArray)
     }
     this.updateUnitAllList()
     this.init()
@@ -718,11 +655,12 @@ export default {
       return new File([u8arr], filename, { type: mime })
     },
     async _createNewTag (tagType) { // 生成新的测试用途、自定义标签条目
+      let target = this.$store.state.jobInfo[tagType]
+      if (!target) return []
       let targetNameDic = {
         'test_area': 'job_test_area',
         'custom_tag': 'custom_tag'
       }
-      let target = this.$store.state.jobInfo[tagType]
       for (let i = 0; i < target.length; i++) {
         if (typeof target[i] !== 'number') {
           let res = await axios.request({
@@ -785,6 +723,7 @@ export default {
         }
       } else { // 新建 job
         info.job_label = this._createJobLabel()
+        info.job_type = 'Joblib'
         jobFlowAndMsgSave(info).then(res => {
           if (res.status === 201) {
             id = res.data.id
@@ -802,7 +741,7 @@ export default {
             }
           })
         }).catch(err => {
-          console.log(err)
+          console.error(err)
         })
       }
     },
@@ -837,6 +776,7 @@ export default {
         let currentJobBlockData = this.myDiagram.findNodeForKey(this.currentJobBlockKey).data
         this.myDiagram.model.setDataProperty(currentJobBlockData, 'text', job.job_name)
         this.myDiagram.model.setDataProperty(currentJobBlockData, 'jobId', job.id)
+        this.myDiagram.model.setDataProperty(currentJobBlockData, 'jobLabel', job.job_label)
         console.log(currentJobBlockData)
       }
     },
@@ -957,6 +897,8 @@ export default {
     setTimeout(() => {
       this.$Notice.destroy()
     }, 600)
+    this.$store.commit('setJobInfo', {})
+    this.$store.commit('setSelectedDeviceInfo', null)
     next()
   }
 }
@@ -1017,34 +959,17 @@ export default {
     background-color: white;
     border: solid 1px rgb(244, 244, 244);
 
-    .common-palette-container {
-      width: 100%;
-
-      .common-palette-header p {
-        text-align: center;
-        font-size: 16px;
-        font-weight: bolder;
-        margin: 6px 0;
-      }
-
-      #common-palette {
-        height: 176px;
-        background-color: white;
-      }
-    }
-
     .unit-palette-container {
       flex: 1;
       display: flex;
       flex-direction: column;
       width: 100%;
-      padding-top: 40px;
 
-      .common-palette-header {
+      .unit-palette-header {
         text-align: center;
 
         #dropdown-btn {
-          margin: 10px 0;
+          margin-bottom: 10px;
         }
       }
 
