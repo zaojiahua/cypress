@@ -116,7 +116,7 @@ export default {
         getScreenShot(getScreenShotParams).then(res => resolve(res)).catch(err => reject(err))
       })
       var getScreenShotTimeOut = new Promise((resolve, reject) => {
-        setTimeout(reject, 10000, 'timeout')
+        setTimeout(reject, 20000, 'timeout')
       })
       Promise.race([screenShot, getScreenShotTimeOut]).then((res) => {
         this.$bus.emit('isLoading')
