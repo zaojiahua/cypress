@@ -86,7 +86,7 @@ export function linkTemplateStyle () {
         {
           textAlign: 'center',
           font: '12pt helvetica, arial, sans-serif',
-          stroke: '#56d8e4',
+          stroke: '#064973',
           editable: true
         },
         new go.Binding('text').makeTwoWay())

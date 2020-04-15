@@ -27,9 +27,9 @@
 </template>
 
 <script>
-import { isJsonString, insertAfterCursor } from '../lib/tools.js'
+import { isJsonString, insertAfterCursor } from 'lib/tools.js'
 
-import { updateJobUnitTemplate, createNewUnitTemplate } from '../api/reef/unit'
+import { updateJobUnitTemplate, createNewUnitTemplate } from 'api/reef/unit'
 
 export default {
   props: {

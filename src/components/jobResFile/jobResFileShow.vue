@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import { isJsonString, insertAfterCursor } from '../lib/tools'
+import { isJsonString, insertAfterCursor } from 'lib/tools'
 
 export default {
   props: {

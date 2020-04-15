@@ -4,7 +4,7 @@
       <strong style="font-size: 18px;">Job--{{ jobName }}的依赖文件：</strong>
     </div>
     <div class="res-file">
-      <job-res-file-table style="width: 45%;" :columns="filesColumn" :data="filesData" :currentFile="currentFile" @removeFile="removeFile" @showFile="showFile"></job-res-file-table>
+      <job-res-file-table style="width: 45%;" :columns="filesColumn" :data="filesData" :currentFile="currentFile" @showFile="showFile"></job-res-file-table>
       <div class="res-file-show">
           <job-res-file-show style="width: 96%;" :filesData="filesData" :currentFile="currentFile" @saveChange="saveChange"></job-res-file-show>
       </div>
@@ -41,9 +41,7 @@
 import jobResFileShow from './jobResFileShow'
 import jobResFileTable from './jobResFileTable'
 
-import { jobResFilesList, jobResFile } from '../api/reef/jobResFileSave'
-
-import { suffixAutoRemove } from '../lib/tools'
+import { suffixAutoRemove } from 'lib/tools'
 
 export default {
   components: { jobResFileShow, jobResFileTable },
@@ -73,7 +71,6 @@ export default {
           title: 'Action'
         }
       ],
-      filesData: [],
       currentFile: 0,
       fileData: null,
       checkDuplicateNameModal: false,
@@ -81,6 +78,11 @@ export default {
       renameModal: false,
       newName: '',
       checkState: null
+    }
+  },
+  computed: {
+    filesData () {
+      return this.$store.state.resFile
     }
   },
   methods: {
@@ -96,39 +98,6 @@ export default {
     },
     showFile (index) { // 展示依赖文件的内容
       this.currentFile = index
-    },
-    removeFile (index) { // 删除依赖文件
-      this.filesData.splice(index, 1)
-    },
-    _getResFile (id) {
-      if (!id) return
-      jobResFilesList(id).then(res => {
-        this.filesData = res.data.job_res_file
-        let filesNameConfigIndex
-        this.filesData.forEach((item, index) => {
-          item.fileUrl = item.file
-          item.file = null
-          if (item.name === 'filesNameConfig.json') {
-            filesNameConfigIndex = index
-          }
-        })
-        Promise.all(this.filesData.map((item) => jobResFile(item.fileUrl))).then(res => {
-          res.forEach((file, index) => {
-            let reader = new FileReader()
-            if (file.data.type.split('/')[0] !== 'image') { // json 则存放 text
-              reader.readAsText(file.data)
-            } else { // 图片则存放 dataURL
-              reader.readAsDataURL(file.data)
-            }
-            reader.onload = () => {
-              this.filesData[index].file = reader.result
-              if (index === filesNameConfigIndex) {
-                this.$bus.emit('setFilesName', reader.result)
-              }
-            }
-          })
-        })
-      })
     },
     overwrite () {
       this.filesData.splice(this.overwriteAt, 1, this.fileData)
@@ -197,11 +166,6 @@ export default {
      * 来自 unitEditorUnitItem 组件
      */
     this.$bus.on('getFileData', this.getFileData)
-  },
-  mounted () {
-    if (this.$route.query.jobId) {
-      this._getResFile(this.$route.query.jobId)
-    }
   },
   beforeDestroy () {
     this.$bus.off('addResFile')

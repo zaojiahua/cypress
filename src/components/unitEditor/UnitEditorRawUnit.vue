@@ -3,11 +3,12 @@
     <p slot="title">Raw Unit &nbsp; ({{ unitType }} Unit)</p>
     <div v-show="!editing" class="raw-unit">
       <div class="unit-msg">
-        <pre>{{ currentUnitContent }}</pre>
+        <pre>{{ unitContent }}</pre>
       </div>
       <div class="btns">
         <Button @click="editCurrentUnitContent"><Icon type="ios-clipboard-outline" />编辑</Button>
       </div>
+    </div>
     </div>
     <div v-show="editing" class="raw-unit">
       <div class="raw-unit-mask"></div>
@@ -23,19 +24,10 @@
 </template>
 
 <script>
-import { isJsonString, insertAfterCursor } from '../lib/tools.js'
+import { isJsonString, insertAfterCursor } from 'lib/tools.js'
 
 export default {
-  props: {
-    unitContent: {
-      type: String,
-      default: ''
-    },
-    unitType: {
-      type: String,
-      default: ''
-    }
-  },
+  name: 'RawUnit',
   data () {
     return {
       editing: false,
@@ -45,6 +37,14 @@ export default {
   watch: {
     unitContent (val) {
       this.currentUnitContent = val
+    }
+  },
+  computed: {
+    unitType () {
+      return this.$store.state.unitEditorData.unitType
+    },
+    unitContent () {
+      return this.$store.getters.unitContent
     }
   },
   methods: {
@@ -65,7 +65,7 @@ export default {
           content: '不是 JSON 格式'
         })
       } else {
-        this.$emit('saveRawUnit', this.currentUnitContent)
+        this.$store.commit('saveUnitContent', this.currentUnitContent)
         this.$Message.success({
           background: true,
           content: '保存成功'

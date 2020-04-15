@@ -37,12 +37,12 @@
 </template>
 
 <script>
-import util from '../lib/util/validate.js'
-import { getSelectedJobs } from '../api/coral/jobLibSvc'
+import util from 'lib/util/validate.js'
+import { getSelectedJobs } from 'api/coral/jobLibSvc'
 import { jobLibSvcURL } from '../config/index'
-import { serializer, jobSerializer } from '../lib/util/jobListSerializer'
+import { serializer, jobSerializer } from 'lib/util/jobListSerializer'
 import jobListFilter from '../components/jobListFilter'
-import { getJobDetail, getJobList, patchUpdateJob } from '../api/reef/job'
+import { getJobDetail, getJobList, patchUpdateJob } from 'api/reef/job'
 
 export default {
   name: 'jobList',

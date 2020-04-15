@@ -12,6 +12,8 @@ module.exports = {
     config.resolve.alias
       .set('@', resolve('src'))
       .set('_c', resolve('src/components'))
+      .set('api', resolve('src/api'))
+      .set('lib', resolve('src/lib'))
   },
   productionSourceMap: false
 }

@@ -39,12 +39,9 @@
         @resFileModalClose="resFileModalClose"
       ></job-res-file>
       <unit-editor
-        :filesName="filesName"
-        :unitContent="unitContent"
-        :unitEditorModalShow="unitEditorModalShow"
-        :nodeKey="nodeKey"
+        :showUnitEditor="showUnitEditor"
         @closeUnitEditor="closeUnitEditor"
-        @updateCanvas="updateCanvas"
+        @changeUnitColor="changeUnitColor"
         @saveUnit="saveUnit"
       ></unit-editor>
       <div id="chart-wrap">
@@ -123,14 +120,14 @@ import {
   baseGroupTemplate,
   basicModel
 } from './jobEditorCommon'
-import jobInJob from '../components/jobInJob'
-import jobResFile from '../components/jobResFile'
-import unitEditor from '../components/unitEditor'
-import unitTemplateEditor from '../components/unitTemplateEditor'
+import jobInJob from '_c/jobInJob'
+import jobResFile from '_c/jobResFile/jobResFile.vue'
+import UnitEditor from '_c/unitEditor/UnitEditor.vue'
+import unitTemplateEditor from '_c/unitTemplateEditor'
 import { getJobUnitsBodyDict, deleteUnitTemplate } from '../api/reef/unit'
 import { getBlockFlowDict4Font, jobFlowAndMsgSave, jobFlowAndMsgUpdate } from '../api/reef/jobFlow'
-import { jobResFilesSave } from '../api/reef/jobResFileSave'
-import SwitchBlockDetailComponent from '../components/SwitchBlockDetailComponent'
+import { jobResFilesSave, getJobResFilesList, getJobResFile } from '../api/reef/jobResFileSave'
+import SwitchBlockDetailComponent from '_c/SwitchBlockDetailComponent'
 import { commonValidation } from '../core/validation/common'
 import {
   startValidation
@@ -138,19 +135,18 @@ import {
 import { unitListValidation } from '../core/validation/operationValidation/block'
 import { jobFlowValidation } from '../core/validation/finalValidation/job'
 import { blockFlowValidation } from '../core/validation/finalValidation/block'
-import axios from '../api'
+import axios from 'api'
 import { baseURL } from '../config'
 
 export default {
   name: 'jobEditor',
-  components: { SwitchBlockDetailComponent, jobInJob, jobResFile, unitEditor, unitTemplateEditor },
+  components: { SwitchBlockDetailComponent, jobInJob, jobResFile, UnitEditor, unitTemplateEditor },
   data () {
     return {
       jobName: '',
       blockModalShow: false,
       switchBlockModalShow: false,
       currentSwitchBlockKey: null,
-      unitName: null,
       unitContent: '',
       blockName: '',
       stageJobLabel: null,
@@ -165,7 +161,7 @@ export default {
       currentJobBlockText: 'Job block',
       resFileModalShow: false,
       unitMsgToogle: true,
-      unitEditorModalShow: false,
+      showUnitEditor: false,
       unitController: null,
       openUnitTemplateEditor: false,
       unitTemplateContent: '',
@@ -181,7 +177,6 @@ export default {
           children: ['snap']
         }
       ],
-      nodeKey: null,
       colors: {
         start: '#064973',
         switch: '#768BB9',
@@ -198,6 +193,14 @@ export default {
       rename: false
     }
   },
+  computed: {
+    unitNodeKey () {
+      return this.$store.state.unitEditorData.unitNodeKey
+    },
+    unitName () {
+      return this.$store.state.unitEditorData.unitName
+    }
+  },
   mounted () {
     this.unitController = document.querySelector('#unit-controller')
 
@@ -206,6 +209,8 @@ export default {
       top: 150,
       duration: 0
     })
+
+    this.handleResFile(this.$route.query.jobId)
 
     myDiagramInit()
     function myDiagramInit () {
@@ -369,18 +374,22 @@ export default {
 
       unitTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
-        _this.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
+        // _this.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
         _this.unitMsgToogle = !_this.unitMsgToogle
-        _this.unitEditorModalShow = true
-        _this.unitName = node.data.text
-        _this.nodeKey = node.data.key
-        _this.$bus.emit('setUnitEditorData', {
+        _this.showUnitEditor = true
+        // _this.$bus.emit('setUnitEditorData', {
+        //   unitNodeKey: node.data.key,
+        //   unitName: node.data.text,
+        //   unitType: node.data.unitMsg.execModName,
+        //   unitMsg: JSON.parse(JSON.stringify(node.data.unitMsg, null, 2)),
+        //   unitContent: JSON.stringify(node.data.unitMsg, null, 2),
+        //   unitItemsData: _this._getUnitItems(node.data.unitMsg)
+        // })
+        _this.$store.commit('setUnitEditorData', {
           unitNodeKey: node.data.key,
           unitName: node.data.text,
           unitType: node.data.unitMsg.execModName,
-          unitMsg: JSON.parse(JSON.stringify(node.data.unitMsg, null, 2)),
-          unitContent: JSON.stringify(node.data.unitMsg, null, 2),
-          unitItemsData: _this._getUnitItems(node.data.unitMsg)
+          unitMsg: JSON.parse(JSON.stringify(node.data.unitMsg, null, 2))
         })
       }
 
@@ -748,12 +757,12 @@ export default {
     saveAs () {
       this.rename = true
     },
-    saveUnit (unitNodeKey, unitName, unitMsg) {
-      let currentUnitNode = this.blockDiagram.findNodeForKey(unitNodeKey)
-      this.unitName = unitName
+    saveUnit () {
+      let unitMsg = this.$store.state.unitEditorData.unitMsg
+      let currentUnitNode = this.blockDiagram.findNodeForKey(this.unitNodeKey)
       this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'unitMsg', unitMsg)
-      this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'text', unitName)
-      this.unitEditorModalShow = false
+      this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'text', this.unitName)
+      this.showUnitEditor = false
     },
     getSelectedUnit (name) {
       let unitCategoryData = {}
@@ -787,7 +796,7 @@ export default {
       this.resFileModalShow = false
     },
     closeUnitEditor () {
-      this.unitEditorModalShow = false
+      this.showUnitEditor = false
     },
     delUnitTemplate () {
       let _this = this
@@ -839,8 +848,8 @@ export default {
         if (name) this.getSelectedUnit(name)
       })
     },
-    updateCanvas (hasCompleted, nodeKey) {
-      let currentNodeData = this.blockDiagram.findNodeForKey(nodeKey).data
+    changeUnitColor (hasCompleted) {
+      let currentNodeData = this.blockDiagram.findNodeForKey(this.unitNodeKey).data
 
       if (hasCompleted) {
         this.blockDiagram.model.setDataProperty(currentNodeData, 'color', this.colors.finish)
@@ -851,32 +860,43 @@ export default {
       }
       // this.blockDiagram.model = go.Model.fromJson(this.blockDiagram.model.toJson())
     },
-    _getUnitItems (unitMsg) {
-      let unitItemsData = []
-      let unitType = unitMsg.execModName
-      if (unitType === 'IMGTOOL') {
-        Object.keys(unitMsg.execCmdDict).forEach(execCmdDictKey => {
-          if (unitMsg.execCmdDict[execCmdDictKey].type !== 'noChange') {
-            unitItemsData.push({
-              'itemName': execCmdDictKey,
-              'itemContent': JSON.parse(JSON.stringify(unitMsg.execCmdDict[execCmdDictKey]))
-            })
-          }
-        })
-      } else {
-        unitMsg.execCmdDict.execCmdList.forEach((val, index) => {
-          if (val.type !== 'noChange') {
-            unitItemsData.push({
-              'itemName': index,
-              'itemContent': JSON.parse(JSON.stringify(val))
-            })
-          }
-        })
-      }
-      return unitItemsData
-    },
     setFilesName (filesNameConfig) {
       this.filesName = JSON.parse(filesNameConfig)
+    },
+    handleResFile (id) {
+      if (!id) {
+        this.$store.commit('handleResFile', [])
+        return
+      }
+      getJobResFilesList(id).then(res => {
+        let filesInfo = res.data.job_res_file
+        let filesNameConfigIndex
+        filesInfo.forEach((item, index) => {
+          item.fileUrl = item.file
+          item.file = null
+          if (item.name === 'FILES_NAME_CONFIG.json') {
+            filesNameConfigIndex = index
+          }
+        })
+        Promise.all(filesInfo.map(item => getJobResFile(item.fileUrl))).then(res => {
+          res.forEach((file, index) => {
+            let reader = new FileReader()
+            if (file.data.type.split('/')[0] !== 'image') { // json 则存放 text
+              reader.readAsText(file.data)
+            } else { // 图片则存放 dataURL
+              reader.readAsDataURL(file.data)
+            }
+            reader.onload = () => {
+              filesInfo[index].file = reader.result
+              if (index === filesNameConfigIndex) {
+                // this.$bus.emit('setFilesName', reader.result)
+              }
+            }
+          })
+        }).then(() => {
+          this.$store.commit('handleResFile', filesInfo)
+        })
+      })
     }
   },
   created () {
