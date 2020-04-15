@@ -168,16 +168,6 @@ export default {
       unitTemplateContent: '',
       unitTemplateId: undefined,
       unitTypes: [],
-      filesName: [
-        {
-          title: '文件名称',
-          children: ['text']
-        },
-        {
-          title: '图片名称',
-          children: ['snap']
-        }
-      ],
       colors: {
         start: '#064973',
         switch: '#768BB9',
@@ -621,29 +611,6 @@ export default {
       return jobLabel
     },
     _setJobResFile (id) {
-      // let filesData = this.$refs.jobResFile.filesData
-      // let filesNameConfig = filesData.find(item => item.name === 'filesNameConfig.json')
-      // if (filesNameConfig) {
-      //   filesNameConfig.file = JSON.stringify(this.filesName, null, 2)
-      // } else {
-      //   filesData.push({
-      //     name: 'filesNameConfig.json',
-      //     type: 'json',
-      //     file: JSON.stringify(this.filesName, null, 2)
-      //   })
-      // }
-      // let data = new FormData()
-      // data.append('job', id)
-      // for (let i = 0; i < filesData.length; i++) {
-      //   let file = null
-      //   if (filesData[i].type === 'jpg' || filesData[i].type === 'png') {
-      //     file = this._dataURLtoFile(filesData[i].file, filesData[i].name)
-      //   } else {
-      //     file = new File([filesData[i].file], filesData[i].name, { type: filesData[i].type })
-      //   }
-      //   data.append('file', file)
-      // }
-      // return data
       this.$store.commit('addResFile', {
         name: 'FILES_NAME_CONFIG.json',
         type: 'json',
@@ -870,9 +837,6 @@ export default {
       }
       // this.blockDiagram.model = go.Model.fromJson(this.blockDiagram.model.toJson())
     },
-    setFilesName (filesNameConfig) {
-      this.filesName = JSON.parse(filesNameConfig)
-    },
     handleResFile (id) {
       if (!id) {
         this.$store.commit('handleResFile', [])
@@ -908,20 +872,6 @@ export default {
         })
       })
     }
-  },
-  created () {
-    this.$bus.on('addFilesName', (type, data) => {
-      if (type === 'file') {
-        this.filesName[0].children = this.filesName[0].children.concat(data)
-      }
-      if (type === 'picture') {
-        this.filesName[1].children = this.filesName[1].children.concat(data)
-      }
-    })
-    this.$bus.on('setFilesName', this.setFilesName)
-  },
-  beforeDestroy () {
-    this.$bus.off('setFilesName', this.setFilesName)
   },
   beforeRouteLeave (to, from, next) {
     setTimeout(() => {

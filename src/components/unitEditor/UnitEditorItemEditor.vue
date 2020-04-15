@@ -40,7 +40,8 @@
           :featurePointFileName="tmachBlanks[0]"
           @setFeaturePointFileName="setName"
         ></FeaturePoint>
-        <p><Tag>操作说明</Tag>{{ currentUnitItemMeaning }}</p>
+        <Checkbox v-model="saveToFinalResult" v-if="showCheckbox" style="float: right;">添加此图片至最终结果</Checkbox>
+        <p class="instructions"><Tag>操作说明</Tag>{{ currentUnitItemMeaning }}</p>
       </div>
       <div class="btn-confirm">
         <Button type="primary" @click="saveItem">确定</Button>
@@ -141,6 +142,9 @@ export default {
     },
     showScreenShot () {
       return this.isJobResourcePicture || this.isPicInput
+    },
+    showCheckbox () {
+      return this.isOutputPicture
     }
   },
   watch: {
@@ -315,6 +319,9 @@ export default {
     }
     .btn-confirm {
       text-align: center;
+    }
+    .instructions {
+      clear: both;
     }
   }
 </style>
