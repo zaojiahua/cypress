@@ -137,6 +137,7 @@ import { jobFlowValidation } from '../core/validation/finalValidation/job'
 import { blockFlowValidation } from '../core/validation/finalValidation/block'
 import axios from 'api'
 import { baseURL } from '../config'
+import { mapState } from 'vuex';
 
 export default {
   name: 'jobEditor',
@@ -194,6 +195,7 @@ export default {
     }
   },
   computed: {
+    ...mapState(['resFile', 'resFilesName']),
     unitNodeKey () {
       return this.$store.state.unitEditorData.unitNodeKey
     },
@@ -374,17 +376,8 @@ export default {
 
       unitTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
-        // _this.unitContent = JSON.stringify(node.data.unitMsg, null, 2)
-        _this.unitMsgToogle = !_this.unitMsgToogle
+        // _this.unitMsgToogle = !_this.unitMsgToogle
         _this.showUnitEditor = true
-        // _this.$bus.emit('setUnitEditorData', {
-        //   unitNodeKey: node.data.key,
-        //   unitName: node.data.text,
-        //   unitType: node.data.unitMsg.execModName,
-        //   unitMsg: JSON.parse(JSON.stringify(node.data.unitMsg, null, 2)),
-        //   unitContent: JSON.stringify(node.data.unitMsg, null, 2),
-        //   unitItemsData: _this._getUnitItems(node.data.unitMsg)
-        // })
         _this.$store.commit('setUnitEditorData', {
           unitNodeKey: node.data.key,
           unitName: node.data.text,
@@ -628,25 +621,42 @@ export default {
       return jobLabel
     },
     _setJobResFile (id) {
-      let filesData = this.$refs.jobResFile.filesData
-      let filesNameConfig = filesData.find(item => item.name === 'filesNameConfig.json')
-      if (filesNameConfig) {
-        filesNameConfig.file = JSON.stringify(this.filesName, null, 2)
-      } else {
-        filesData.push({
-          name: 'filesNameConfig.json',
-          type: 'json',
-          file: JSON.stringify(this.filesName, null, 2)
-        })
-      }
+      // let filesData = this.$refs.jobResFile.filesData
+      // let filesNameConfig = filesData.find(item => item.name === 'filesNameConfig.json')
+      // if (filesNameConfig) {
+      //   filesNameConfig.file = JSON.stringify(this.filesName, null, 2)
+      // } else {
+      //   filesData.push({
+      //     name: 'filesNameConfig.json',
+      //     type: 'json',
+      //     file: JSON.stringify(this.filesName, null, 2)
+      //   })
+      // }
+      // let data = new FormData()
+      // data.append('job', id)
+      // for (let i = 0; i < filesData.length; i++) {
+      //   let file = null
+      //   if (filesData[i].type === 'jpg' || filesData[i].type === 'png') {
+      //     file = this._dataURLtoFile(filesData[i].file, filesData[i].name)
+      //   } else {
+      //     file = new File([filesData[i].file], filesData[i].name, { type: filesData[i].type })
+      //   }
+      //   data.append('file', file)
+      // }
+      // return data
+      this.$store.commit('addResFile', {
+        name: 'FILES_NAME_CONFIG.json',
+        type: 'json',
+        file: JSON.stringify(this.resFilesName, null, 2)
+      })
       let data = new FormData()
       data.append('job', id)
-      for (let i = 0; i < filesData.length; i++) {
+      for (let i = 0; i < this.resFile.length; i++) {
         let file = null
-        if (filesData[i].type === 'jpg' || filesData[i].type === 'png') {
-          file = this._dataURLtoFile(filesData[i].file, filesData[i].name)
+        if (this.resFile[i].type === 'jpg' || this.resFile[i].type === 'png') {
+          file = this._dataURLtoFile(this.resFile[i].file, this.resFile[i].name)
         } else {
-          file = new File([filesData[i].file], filesData[i].name, { type: filesData[i].type })
+          file = new File([this.resFile[i].file], this.resFile[i].name, { type: this.resFile[i].type })
         }
         data.append('file', file)
       }
@@ -758,11 +768,11 @@ export default {
       this.rename = true
     },
     saveUnit () {
-      let unitMsg = this.$store.state.unitEditorData.unitMsg
-      let currentUnitNode = this.blockDiagram.findNodeForKey(this.unitNodeKey)
-      this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'unitMsg', unitMsg)
-      this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'text', this.unitName)
-      this.showUnitEditor = false
+      // let unitMsg = this.$store.state.unitEditorData.unitMsg
+      // let currentUnitNode = this.blockDiagram.findNodeForKey(this.unitNodeKey)
+      // this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'unitMsg', unitMsg)
+      // this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'text', this.unitName)
+      // this.showUnitEditor = false
     },
     getSelectedUnit (name) {
       let unitCategoryData = {}
@@ -889,7 +899,7 @@ export default {
             reader.onload = () => {
               filesInfo[index].file = reader.result
               if (index === filesNameConfigIndex) {
-                // this.$bus.emit('setFilesName', reader.result)
+                this.$store.commit('setResFilesName', reader.result)
               }
             }
           })

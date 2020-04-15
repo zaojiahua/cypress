@@ -94,15 +94,18 @@ export default new Vuex.Store({
     },
     addResFile (state, fileInfo) {
       let resFile = state.resFile
-      for (let i = 0; i < resFile.length; i++) {
-        if (fileInfo.name === resFile[i].name) {
+      let index = resFile.findIndex(file => file.name === fileInfo.name)
+      if (index !== -1) {
+        if (fileInfo.name !== 'FILES_NAME_CONFIG.json') {
           state.isDuplicateName = true
           state.duplicateFile = {
             index: i,
             fileInfo
           }
-          return
+        } else {
+          state.resFile.splice(index, 1, fileInfo)
         }
+        return
       }
       state.resFile.push(fileInfo)
       if (fileInfo.type === 'png') {
@@ -183,6 +186,9 @@ export default new Vuex.Store({
     },
     handleResFilesName (state, data) {
       state.resFilesName[data.index].children.push(data.name)
+    },
+    setResFilesName (state, data) {
+      state.resFilesName = JSON.parse(data)
     }
   },
   actions: {
