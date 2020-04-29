@@ -10,6 +10,7 @@ export default new Vuex.Store({
     selectedDeviceInfo: null,
     jobInfoValid: false,
     jobInfo: {},
+    showDeviceSelect: false,
     // 抽屉
     showDrawer: false,
     // UnitEditor
@@ -40,7 +41,8 @@ export default new Vuex.Store({
         title: '图片名称',
         children: ['snap']
       }
-    ]
+    ],
+    isInnerJob: false
   },
   mutations: {
     setSelectedDeviceInfo (state, deviceInfo) {
@@ -48,6 +50,9 @@ export default new Vuex.Store({
     },
     setJobInfo (state, jobInfo) {
       state.jobInfo = jobInfo
+    },
+    handleShowDeviceSelect (state, toggle) {
+      state.showDeviceSelect = toggle
     },
     handleShowDrawer (state) {
       state.showDrawer = !state.showDrawer
@@ -69,6 +74,7 @@ export default new Vuex.Store({
       state.unitEditorData.unitMsg.execCmdDict.execCmdList.splice(itemIndex, 1)
     },
     saveUnitContent (state, unitContent) {
+      console.log(unitContent)
       state.unitEditorData.unitMsg = JSON.parse(unitContent)
     },
     saveUnitItem (state, data) {
@@ -99,7 +105,7 @@ export default new Vuex.Store({
         if (fileInfo.name !== 'FILES_NAME_CONFIG.json') {
           state.isDuplicateName = true
           state.duplicateFile = {
-            index: i,
+            index,
             fileInfo
           }
         } else {
@@ -189,10 +195,10 @@ export default new Vuex.Store({
     },
     setResFilesName (state, data) {
       state.resFilesName = JSON.parse(data)
+    },
+    handleInnerJob (state) {
+      state.isInnerJob = !state.isInnerJob
     }
-  },
-  actions: {
-
   },
   getters: {
     selectedDeviceInfo (state) {

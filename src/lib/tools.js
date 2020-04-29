@@ -113,4 +113,18 @@ function suffixAutoComplete (str, suffix) {
   return str + suffix
 }
 
-export { findBrothersComponents, findComponentsDownward, fileToDataURL, dataURLtoFile, blobToDataURL, suffixAutoRemove, suffixAutoComplete }
+function createJobLabel (context) {
+  let jobLabel = context.md5(context.myDiagram.model.toJson() + Math.random().toString(36).substr(2))
+  return 'job-' + jobLabel.substr(0, 8) + '-' + jobLabel.substr(8, 4) + '-' + jobLabel.substr(12, 4) + '-' + jobLabel.substr(16, 4) + '-' + jobLabel.substr(20)
+}
+
+export {
+  findBrothersComponents,
+  findComponentsDownward,
+  fileToDataURL,
+  dataURLtoFile,
+  blobToDataURL,
+  suffixAutoRemove,
+  suffixAutoComplete,
+  createJobLabel
+}

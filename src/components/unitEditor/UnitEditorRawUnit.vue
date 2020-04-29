@@ -1,23 +1,22 @@
 <template>
   <Card style="height: 500px; z-index: 10">
     <p slot="title">Raw Unit &nbsp; ({{ unitType }} Unit)</p>
+    <div v-show="editing" class="raw-unit">
+      <div class="raw-unit-mask"></div>
+      <div class="unit-msg unit-msg-edit">
+        <Input type="textarea" :autosize="{minRows: 2,maxRows: 17}" v-model="currentUnitContent"/>
+      </div>
+      <div class="btns" style="justify-content: flex-end;">
+        <Button @click="cancelEditCurrentUnitContent" style="margin-right: 10px;">取消</Button>
+        <Button type="primary" @click="saveCurrentUnitContent">保存</Button>
+      </div>
+    </div>
     <div v-show="!editing" class="raw-unit">
       <div class="unit-msg">
         <pre>{{ unitContent }}</pre>
       </div>
       <div class="btns">
         <Button @click="editCurrentUnitContent"><Icon type="ios-clipboard-outline" />编辑</Button>
-      </div>
-    </div>
-    </div>
-    <div v-show="editing" class="raw-unit">
-      <div class="raw-unit-mask"></div>
-      <div class="unit-msg unit-msg-edit" @keydown.tab="handleKeydown">
-        <Input type="textarea" :autosize="{minRows: 2,maxRows: 17}" v-model="currentUnitContent" />
-      </div>
-      <div class="btns" style="justify-content: flex-end;">
-        <Button @click="cancelEditCurrentUnitContent" style="margin-right: 10px;">取消</Button>
-        <Button type="primary" @click="saveCurrentUnitContent">保存</Button>
       </div>
     </div>
   </Card>

@@ -1,6 +1,6 @@
 <template>
   <Modal
-    v-model="showDeviceSelectPage"
+    v-model="$store.state.showDeviceSelect"
     fullscreen
     :closable="false"
     @on-ok="closeDeviceSelectPage(true)"
@@ -72,7 +72,6 @@ export default {
   data () {
     let _this = this
     return {
-      showDeviceSelectPage: false,
       deviceColumnDictionary: {
         'device_name': {
           title: '自定义名称',
@@ -158,9 +157,6 @@ export default {
     }
   },
   methods: {
-    handleShowDeviceSelectPage () {
-      this.showDeviceSelectPage = !this.showDeviceSelectPage
-    },
     getDeviceColumn () {
       let data = []
       this.deviceColumnChecked.forEach(col => data.push(this.deviceColumnDictionary[col]))
@@ -172,7 +168,7 @@ export default {
       if (save) {
         this.$store.commit('setSelectedDeviceInfo', this.deviceSelected)
       }
-      this.handleShowDeviceSelectPage()
+      this.$store.commit('handleShowDeviceSelect', false)
     },
     selectDevice (currentRow, oldCurrentRow) {
       this.deviceSelected = currentRow
@@ -226,8 +222,13 @@ export default {
       this.refresh()
     }
   },
+  computed: {
+    showDeviceSelect () {
+      return this.$store.state.showDeviceSelect
+    }
+  },
   watch: {
-    showDeviceSelectPage (val) {
+    showDeviceSelect (val) {
       if (val === true) {
         this.refresh()
       }
@@ -236,18 +237,12 @@ export default {
       this.devicesColumns = this.getDeviceColumn()
     },
     pageSize () {
-      if (this.showDeviceSelectPage) this.refresh()
+      if (this.showDeviceSelect) this.refresh()
     }
-  },
-  created () {
-    this.$bus.on('showDeviceSelectPage', this.handleShowDeviceSelectPage) // 响应来自 jobMsgComponent 的动作
   },
   mounted () {
     this.deviceColumnChecked = localStorage.getItem('device-management:DEFAULT_DEVICE_COLUMN').split(',')
     this.pageSize = Number(localStorage.getItem('device-management:DEFAULT_PAGE_SIZE'))
-  },
-  beforeDestroy () {
-    this.$bus.off('showDeviceSelectPage', this.handleShowDeviceSelectPage)
   }
 }
 </script>

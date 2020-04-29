@@ -67,7 +67,7 @@ export default {
   },
   methods: {
     showDeviceSelectPage () {
-      this.$bus.emit('showDeviceSelectPage')
+      this.$store.commit('handleShowDeviceSelect', true)
     },
     handleErrors () {
       let errors = []
