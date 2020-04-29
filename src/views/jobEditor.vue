@@ -137,7 +137,8 @@ import { jobFlowValidation } from '../core/validation/finalValidation/job'
 import { blockFlowValidation } from '../core/validation/finalValidation/block'
 import axios from 'api'
 import { baseURL } from '../config'
-import { mapState } from 'vuex';
+import { mapState } from 'vuex'
+import { createJobLabel } from '../lib/tools'
 
 export default {
   name: 'jobEditor',
@@ -168,24 +169,24 @@ export default {
       unitTemplateContent: '',
       unitTemplateId: undefined,
       unitTypes: [],
-      colors: {
-        start: '#064973',
-        switch: '#768BB9',
-        normal: '#F76132',
-        job: '#50A5F4',
-        end: '#313131',
-        fail: '#818286',
-        success: '#F65A6D',
-        finish: '#29BB87',
-        unfinished: '#F76132',
-        unit: '#338FF0',
-        group: '#50A5F4'
+      COLORS: {
+        START: '#064973',
+        SWITCH: '#768BB9',
+        NORMAL: '#F76132',
+        JOB: '#50A5F4',
+        END: '#313131',
+        FAIL: '#818286',
+        SUCCESS: '#F65A6D',
+        FINISH: '#29BB87',
+        UNFINISHED: '#F76132',
+        UNIT: '#338FF0',
+        GROUP: '#50A5F4'
       },
       rename: false
     }
   },
   computed: {
-    ...mapState(['resFile', 'resFilesName']),
+    ...mapState(['resFile', 'resFilesName', 'isInnerJob']),
     unitNodeKey () {
       return this.$store.state.unitEditorData.unitNodeKey
     },
@@ -195,7 +196,6 @@ export default {
   },
   mounted () {
     this.unitController = document.querySelector('#unit-controller')
-
     const _this = this
     _this.$Notice.config({
       top: 150,
@@ -258,27 +258,27 @@ export default {
         }
       }
 
-      const startTemplate = startNodeTemplate(_this.colors.start)
+      const startTemplate = startNodeTemplate(_this.COLORS.START)
       startTemplate.linkValidation = startValidation
 
-      const endTemplate = endNodeTemplate(_this.colors.end)
+      const endTemplate = endNodeTemplate(_this.COLORS.END)
 
       endTemplate.doubleClick = (e, node) => {
         if (node.data.text === 'End') {
           _this.myDiagram.model.setDataProperty(node.data, 'text', 'Fail')
-          _this.myDiagram.model.setDataProperty(node.data, 'color', _this.colors.fail)
+          _this.myDiagram.model.setDataProperty(node.data, 'color', _this.COLORS.FAIL)
         } else if (node.data.text === 'Fail') {
           _this.myDiagram.model.setDataProperty(node.data, 'text', 'Success')
-          _this.myDiagram.model.setDataProperty(node.data, 'color', _this.colors.success)
+          _this.myDiagram.model.setDataProperty(node.data, 'color', _this.COLORS.SUCCESS)
         } else {
           _this.myDiagram.model.setDataProperty(node.data, 'text', 'End')
-          _this.myDiagram.model.setDataProperty(node.data, 'color', _this.colors.end)
+          _this.myDiagram.model.setDataProperty(node.data, 'color', _this.COLORS.END)
         }
 
         // debugger
       }
 
-      const switchBlockTemplate = baseNodeTemplateForPort(_this.colors.switch, 'Diamond')
+      const switchBlockTemplate = baseNodeTemplateForPort(_this.COLORS.SWITCH, 'Diamond')
       switchBlockTemplate.doubleClick = function (e, node) {
         _this.$Notice.destroy()
         if (e.diagram instanceof go.Palette) return
@@ -293,7 +293,7 @@ export default {
         _this.switchBlockModalShow = true
       }
 
-      const normalBlockTemplate = baseNodeTemplateForPort(_this.colors.normal, 'Rectangle')
+      const normalBlockTemplate = baseNodeTemplateForPort(_this.COLORS.NORMAL, 'Rectangle')
 
       normalBlockTemplate.doubleClick = function (e, node) {
         _this.$Notice.destroy()
@@ -318,7 +318,7 @@ export default {
         }
       }
 
-      const jobBlockTemplate = baseNodeTemplateForPort(_this.colors.job, 'Rectangle')
+      const jobBlockTemplate = baseNodeTemplateForPort(_this.COLORS.JOB, 'Rectangle')
       jobBlockTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
         _this.currentJobBlockText = node.data.text
@@ -362,7 +362,7 @@ export default {
       })
       _this.blockDiagram.linkTemplate = linkTemplateStyle()
 
-      const unitTemplate = unitNodeTemplate(_this.colors.unit)
+      const unitTemplate = unitNodeTemplate(_this.COLORS.UNIT)
 
       unitTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
@@ -394,8 +394,8 @@ export default {
       unitListGroupTemplate.linkValidation = unitListValidation
 
       _this.blockDiagram.nodeTemplateMap.add('Unit', unitTemplate)
-      _this.blockDiagram.nodeTemplateMap.add('Start', startNodeTemplate(_this.colors.start))
-      _this.blockDiagram.nodeTemplateMap.add('End', endNodeTemplate(_this.colors.end))
+      _this.blockDiagram.nodeTemplateMap.add('Start', startNodeTemplate(_this.COLORS.START))
+      _this.blockDiagram.nodeTemplateMap.add('End', endNodeTemplate(_this.COLORS.END))
       _this.blockDiagram.groupTemplateMap.add('UnitList', unitListGroupTemplate)
 
       _this.blockDiagram.toolManager.linkingTool.linkValidation = commonValidation
@@ -540,9 +540,9 @@ export default {
           this.myDiagram.model.setDataProperty(currentNormalBlockData, 'star', false)
         }
         if (units.length === 0 || units.some(item => item.completed === false)) {
-          this.myDiagram.model.setDataProperty(currentNormalBlockData, 'color', this.colors.unfinished)
+          this.myDiagram.model.setDataProperty(currentNormalBlockData, 'color', this.COLORS.UNFINISHED)
         } else {
-          this.myDiagram.model.setDataProperty(currentNormalBlockData, 'color', this.colors.finish)
+          this.myDiagram.model.setDataProperty(currentNormalBlockData, 'color', this.COLORS.FINISH)
         }
         this.myDiagram.model.setDataProperty(currentNormalBlockData, 'unitLists', blockDiagramData)
         this.myDiagram.model.setDataProperty(currentNormalBlockData, 'text', this.blockName)
@@ -602,13 +602,6 @@ export default {
         this.$store.commit('handleShowDrawer')
       }
       return flag
-    },
-    // 生成 jobLabel
-    _createJobLabel () {
-      let randomStr = Math.random().toString(36).substr(2)
-      let jobLabel = this.md5(this.myDiagram.model.toJson() + randomStr)
-      jobLabel = 'job-' + jobLabel.substr(0, 8) + '-' + jobLabel.substr(8, 4) + '-' + jobLabel.substr(12, 4) + '-' + jobLabel.substr(16, 4) + '-' + jobLabel.substr(20)
-      return jobLabel
     },
     _setJobResFile (id) {
       this.$store.commit('addResFile', {
@@ -674,9 +667,14 @@ export default {
       info.test_area = await this._createNewTag('test_area')
       info.custom_tag = await this._createNewTag('custom_tag')
       info.draft = isDraft
+      info.author = localStorage.id
+      if (this.isInnerJob) {
+        console.log('存为 InnerJob')
+        // info.job_type = 'InnerJob'
+      }
       if (id) { // 不是新建 job
         if (saveAs) { // 另存为
-          info.job_label = this._createJobLabel()
+          info.job_label = createJobLabel(this)
           jobFlowAndMsgSave(info).then(res => {
             if (res.status === 201) {
               id = res.data.id
@@ -708,7 +706,7 @@ export default {
           })
         }
       } else { // 新建 job
-        info.job_label = this._createJobLabel()
+        info.job_label = createJobLabel(this)
         info.job_type = 'Joblib'
         jobFlowAndMsgSave(info).then(res => {
           if (res.status === 201) {
@@ -735,11 +733,11 @@ export default {
       this.rename = true
     },
     saveUnit () {
-      // let unitMsg = this.$store.state.unitEditorData.unitMsg
-      // let currentUnitNode = this.blockDiagram.findNodeForKey(this.unitNodeKey)
-      // this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'unitMsg', unitMsg)
-      // this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'text', this.unitName)
-      // this.showUnitEditor = false
+      let unitMsg = this.$store.state.unitEditorData.unitMsg
+      let currentUnitNode = this.blockDiagram.findNodeForKey(this.unitNodeKey)
+      this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'unitMsg', unitMsg)
+      this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'text', this.unitName)
+      this.showUnitEditor = false
     },
     getSelectedUnit (name) {
       let unitCategoryData = {}
@@ -829,10 +827,10 @@ export default {
       let currentNodeData = this.blockDiagram.findNodeForKey(this.unitNodeKey).data
 
       if (hasCompleted) {
-        this.blockDiagram.model.setDataProperty(currentNodeData, 'color', this.colors.finish)
+        this.blockDiagram.model.setDataProperty(currentNodeData, 'color', this.COLORS.FINISH)
         currentNodeData.completed = true
       } else {
-        this.blockDiagram.model.setDataProperty(currentNodeData, 'color', this.colors.unfinished)
+        this.blockDiagram.model.setDataProperty(currentNodeData, 'color', this.COLORS.UNFINISHED)
         currentNodeData.completed = false
       }
       // this.blockDiagram.model = go.Model.fromJson(this.blockDiagram.model.toJson())
@@ -894,10 +892,11 @@ export default {
   .job-name {
     width: 15%;
     font-size: 18px;
+    margin-right: 30px;
   }
 
   .job-editor-header-btns {
-    width: 83.1%;
+    flex: 1;
     display: flex;
     justify-content: space-between;
   }

@@ -1,54 +1,60 @@
 <template>
   <Drawer title="用例详情" :closable="false" v-model="$store.state.showDrawer" width="30" @on-close="closeDrawer">
+    <div  class="inner-job">
+      <Checkbox v-model="isInnerJob">Inner Job</Checkbox>
+    </div>
     <Form ref="jobInfoForm" :label-width="100" :model="$store.state.jobInfo" :rules="jobInfoRules">
       <Divider orientation="left">
         <b>用例信息</b>
       </Divider>
-      <Form-item label="用例名称:" prop="job_name">
+      <FormItem label="用例名称:" prop="job_name">
         <Input v-model="$store.state.jobInfo.job_name" placeholder="请输入"/>
-      </Form-item>
-      <Form-item label="测试用途:" prop="test_area">
+      </FormItem>
+      <FormItem label="测试用途:" prop="test_area">
         <Select v-model="$store.state.jobInfo.test_area" multiple placeholder="请选择" filterable allow-create>
           <Option v-for="item in jobTestArea.jobtestareas" :value="item.id" :key="item.id">{{ item.description }}</Option>
         </Select>
-      </Form-item>
-      <Form-item label="自定义标签:" prop="custom_tag">
+      </FormItem>
+      <FormItem label="自定义标签:" prop="custom_tag">
         <Select v-model="$store.state.jobInfo.custom_tag" multiple placeholder="请选择" filterable allow-create>
           <Option v-for="item in customTag.customtags" :value="item.id" :key="item.id">{{ item.custom_tag_name }}</Option>
         </Select>
-      </Form-item>
-      <Form-item label="用例说明:" prop="description">
+      </FormItem>
+      <FormItem label="用例说明:" prop="description">
         <Input v-model="$store.state.jobInfo.description" placeholder="请输入"/>
-      </Form-item>
+      </FormItem>
       <Divider orientation="left" class="device-info-title" style="margin-top: 60px;">
         <b>设备信息</b>
         <Button type="info" @click="showDeviceSelectPage">选取设备</Button>
       </Divider>
-      <Form-item label="厂商信息:" prop="manufacturers">
+      <FormItem label="厂商信息:" prop="manufacturers">
         <Select v-model="$store.state.jobInfo.manufacturer" placeholder="请选择" @on-change="clear" filterable>
           <Option v-for="item in manufacturer.manufacturers" :value="item.id" :key="item.id">{{ item.manufacturer_name }}</Option>
         </Select>
-      </Form-item>
-      <Form-item label="适配机型:" prop="phone_models">
+      </FormItem>
+      <FormItem label="适配机型:" prop="phone_models">
         <Select v-model="$store.state.jobInfo.phone_models" multiple :disabled="disabled" placeholder="请选择" filterable>
             <Option v-for="item in checkManufacturerList.phonemodel" :value="item.id" :key="item.id">{{ item.phone_model_name }}</Option>
         </Select>
-      </Form-item>
-      <Form-item label="ROM版本:" prop="rom_version">
+      </FormItem>
+      <FormItem label="ROM版本:" prop="rom_version">
         <Select v-model="$store.state.jobInfo.rom_version" multiple :disabled="disabled" placeholder="请选择" filterable>
           <Option v-for="item in checkManufacturerList.romversion" :value="item.id" :key="item.id">{{ item.version }}</Option>
         </Select>
-      </Form-item>
-      <Form-item label="适配系统:" prop="android_version">
+      </FormItem>
+      <FormItem label="适配系统:" prop="android_version">
         <Select v-model="$store.state.jobInfo.android_version" multiple placeholder="请选择">
           <Option v-for="item in androidVersion.androidversions" :value="item.id" :key="item.id">{{ item.version }}</Option>
         </Select>
-      </Form-item>
-      <Form-item v-show="this.$route.name !== 'jobEditor'">
+      </FormItem>
+      <FormItem v-show="this.$route.name !== 'jobEditor'">
         <Button v-show="propEnterBtn" type="info" @click="enterJobEditor" style="float: right;margin-right: 20px">开始编辑</Button>
         <Button v-show="propConfirmBtn" type="success" @click="submit(currentJobId)" style="float: right;margin-right: 20px">保存修改</Button>
-      </Form-item>
+      </FormItem>
     </Form>
+    <pre>
+      {{ JSON.parse(JSON.stringify(this.jobInfo, null, 2)) }}
+    </pre>
     <job-device-select></job-device-select>
     <Modal v-model="deviceInfoConflict" :closable="false" :styles="{top: '42%'}" width="390">
       <div slot="header" style="color:#f60;text-align:center">
@@ -188,6 +194,14 @@ export default {
     },
     jobInfo () {
       return this.$store.state.jobInfo
+    },
+    isInnerJob: {
+      get () {
+        return this.$store.state.isInnerJob
+      },
+      set () {
+        this.$store.commit('handleInnerJob')
+      }
     }
   },
   methods: {
@@ -237,7 +251,7 @@ export default {
       }
     },
     showDeviceSelectPage () {
-      this.$bus.emit('showDeviceSelectPage') // 由 jobDeviceSelect 响应
+      this.$store.commit('handleShowDeviceSelect', true)
 
       // window.open('http://10.80.5.138/job-management', '_blank', 'scrollbars=yes,resizable=1,modal=false,alwaysRaised=yes')
     },
@@ -284,6 +298,14 @@ export default {
 </script>
 
 <style lang="less" scoped>
+  .inner-job {
+    position: absolute;
+    top: 24px;
+    right:8px;
+    z-index: 10;
+    background-color: white;
+    padding: 10px;
+  }
   .device-info-title {
     position: relative;
 
