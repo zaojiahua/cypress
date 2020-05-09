@@ -49,7 +49,7 @@ export default {
       if (this.data.length - 1 === index) {
         this.showFile(index - 1)
       }
-      this.$store.commit('removeResFile', index)
+      this.$store.commit('files/removeResFile', index)
     }
   }
 }

@@ -1,7 +1,6 @@
 <template>
   <div>
     <job-list-filter @getCurrentPageJobList="getCurrentPageJobList"></job-list-filter>
-
     <Divider style="margin-top: -6px">已选用例</Divider>
     <Row>
       <Row>
@@ -28,9 +27,14 @@
     </Row>
     <Divider  style="margin-top: 40px">用例列表</Divider>
 
-    <div>
-      <Table :loading="loading" ref="jobList" :columns="columns" :data="jobData" @on-row-click="onRowClick" @on-selection-change="selectedJobsChange"></Table>
-    </div>
+    <Table
+      :loading="loading"
+      ref="jobList"
+      :columns="columns"
+      :data="jobData"
+      @on-row-click="onRowClick"
+      @on-selection-change="selectedJobsChange"
+    ></Table>
 
     <Page simple :page-size="pageSize" :total="dataCount" :current="this.currentPage" @on-change="jobPageChange" style="text-align: center;margin-top: 20px"></Page>
   </div>
@@ -88,9 +92,31 @@ export default {
             }
           ],
           filterMultiple: false,
-          filteredValue: [ this.jobFilterCondition ],
+          filteredValue: [ this.jobState ],
           filterRemote (value) {
-            this.jobFilterCondition = value[0]
+            this.jobState = value[0] || ''
+            this.jobPageChange(1)
+          }
+        },
+        {
+          title: '用例类型',
+          key: 'job_type',
+          sortable: 'true',
+          align: 'center',
+          filters: [
+            {
+              label: 'Joblib',
+              value: 'Joblib'
+            },
+            {
+              label: 'InnerJob',
+              value: 'InnerJob'
+            }
+          ],
+          filterMultiple: false,
+          filteredValue: [ this.jobType ],
+          filterRemote (value) {
+            this.jobType = value[0] || ''
             this.jobPageChange(1)
           }
         }
@@ -102,23 +128,33 @@ export default {
         requestName: 'importJob'
       },
       loading: false,
-      jobFilterCondition: ''
+      jobState: '',
+      jobType: ''
     }
   },
   methods: {
     getCurrentPageJobList (filterUrlParam = '') { // 每个页面的请求数据
       let jobState
-      if (this.jobFilterCondition === 'draft') {
+      let jobType
+      if (this.jobState === 'draft') {
         jobState = '&draft=True'
-      } else if (this.jobFilterCondition === 'release') {
+      } else if (this.jobState === 'release') {
         jobState = '&draft=False'
       } else {
         jobState = ''
+      }
+      if (this.jobType === 'Joblib') {
+        jobType = '&job_type=Joblib'
+      } else if (this.jobType === 'InnerJob') {
+        jobType = '&job_type=InnerJob'
+      } else {
+        jobType = ''
       }
       getJobList({
         pageSize: this.pageSize,
         offset: this.offset,
         jobState,
+        jobType,
         filterUrlParam
       }).then(res => {
         this.currentPageSelectedJobs = {}
@@ -167,7 +203,7 @@ export default {
           job_flow: job.ui_json_file
 
         }
-        this.$store.commit('setJobInfo', jobInfo)
+        this.$store.commit('job/setJobInfo', jobInfo)
       })
     },
     onRowClick (currentData, index) { // 单击表格某一行
@@ -314,11 +350,11 @@ export default {
     }
   },
   mounted () {
-    this.jobFilterCondition = localStorage.getItem('joblist-management:DEFAULT_FILTER_CONFIG')
+    this.jobState = localStorage.getItem('joblist-management:DEFAULT_FILTER_CONFIG')
     this.getCurrentPageJobList()
   },
   beforeRouteLeave (to, from, next) {
-    localStorage.setItem('joblist-management:DEFAULT_FILTER_CONFIG', this.jobFilterCondition)
+    localStorage.setItem('joblist-management:DEFAULT_FILTER_CONFIG', this.jobState)
     next()
   }
 }

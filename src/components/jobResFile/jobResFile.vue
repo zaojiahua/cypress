@@ -4,9 +4,9 @@
       <strong style="font-size: 18px;">Job--{{ jobName }}的依赖文件：</strong>
     </div>
     <div class="res-file">
-      <job-res-file-table style="width: 45%;" :columns="filesColumn" :data="filesData" :currentFile="currentFile" @showFile="showFile"></job-res-file-table>
+      <job-res-file-table style="width: 45%;" :columns="filesColumn" :data="resFiles" :currentFile="currentFile" @showFile="showFile"></job-res-file-table>
       <div class="res-file-show">
-          <job-res-file-show style="width: 96%;" :filesData="filesData" :currentFile="currentFile" @saveChange="saveChange"></job-res-file-show>
+          <job-res-file-show style="width: 96%;" :filesData="resFiles" :currentFile="currentFile" @saveChange="saveChange"></job-res-file-show>
       </div>
     </div>
     <div slot="footer">
@@ -42,6 +42,8 @@ import jobResFileShow from './jobResFileShow'
 import jobResFileTable from './jobResFileTable'
 
 import { suffixAutoRemove } from 'lib/tools'
+
+import { mapState } from 'vuex'
 
 export default {
   components: { jobResFileShow, jobResFileTable },
@@ -81,16 +83,19 @@ export default {
     }
   },
   computed: {
-    filesData () {
-      return this.$store.state.resFile
-    }
+    ...mapState('files', [
+      'resFiles'
+    ])
+    // resFiles () {
+    //   return this.$store.state.resFile
+    // }
   },
   methods: {
     resFileModalClose () {
       this.$emit('resFileModalClose')
     },
     saveChange (file) { // 保存对依赖文件的修改
-      this.filesData[this.currentFile].file = file
+      this.resFiles[this.currentFile].file = file
       this.$Message.success({
         background: true,
         content: '修改成功'
@@ -100,7 +105,7 @@ export default {
       this.currentFile = index
     },
     overwrite () {
-      this.filesData.splice(this.overwriteAt, 1, this.fileData)
+      this.resFiles.splice(this.overwriteAt, 1, this.fileData)
       this.checkDuplicateNameModal = false
     },
     rename () {
@@ -109,15 +114,15 @@ export default {
     },
     setNewName () {
       this.fileData.name = this.newName + '.' + this.fileData.type
-      this.filesData.push(this.fileData)
+      this.resFiles.push(this.fileData)
       this.renameModal = false
       this.checkState = null
       this.$bus.emit('setNewName', this.newName + '.' + this.fileData.type)
     },
     checkDuplicateName () {
       let flag = true
-      for (let i = 0; i < this.filesData.length; i++) {
-        if (suffixAutoRemove(this.filesData[i].name) === this.newName && this.fileData.type === this.filesData[i].type) {
+      for (let i = 0; i < this.resFiles.length; i++) {
+        if (suffixAutoRemove(this.resFiles[i].name) === this.newName && this.fileData.type === this.resFiles[i].type) {
           flag = false
           break
         }
@@ -126,15 +131,15 @@ export default {
     },
     getFileData (tmachBlanks, itemType) {
       if (!tmachBlanks[0]) return
-      for (let i = 0; i < this.filesData.length; i++) {
-        if (this.filesData[i].name === tmachBlanks[0]) {
+      for (let i = 0; i < this.resFiles.length; i++) {
+        if (this.resFiles[i].name === tmachBlanks[0]) {
           /**
            * 将文件展示在 UnitEditor 中
            * 由 unitEditorUtils 组件响应
            */
           this.$bus.emit('showFile', {
-            'fileToShow': this.filesData[i].file,
-            'fileName': this.filesData[i].name,
+            'fileToShow': this.resFiles[i].file,
+            'fileName': this.resFiles[i].name,
             'itemType': itemType,
             'isScreenShot': true
           })
@@ -145,10 +150,10 @@ export default {
   },
   created () {
     this.$bus.on('addResFile', fileData => {
-      let filesData = this.filesData
+      let resFiles = this.resFiles
       let flag = true
-      for (let i = 0; i < filesData.length; i++) {
-        if (fileData.name === filesData[i].name && fileData.type === filesData[i].type) {
+      for (let i = 0; i < resFiles.length; i++) {
+        if (fileData.name === resFiles[i].name && fileData.type === resFiles[i].type) {
           flag = false
           this.overwriteAt = i
           break
@@ -158,7 +163,7 @@ export default {
         this.fileData = fileData
         this.checkDuplicateNameModal = true
       } else {
-        filesData.push(fileData)
+        resFiles.push(fileData)
       }
     })
     /**

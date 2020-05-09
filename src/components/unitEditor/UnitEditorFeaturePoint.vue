@@ -3,7 +3,7 @@
     <Divider orientation="left">选取特征点</Divider>
     <Table
       :columns="coordinateColumn"
-      :data="coordinateData"
+      :data="coordinates"
       border
       max-height="556"
       size="small"
@@ -11,7 +11,7 @@
       @on-row-click="showLabelArea"
     >
       <template slot-scope="{ row, index }" slot="action">
-        <Button type="error" size="small" @click="remove(index)" :disabled="coordinateData.length === 1">Delete</Button>
+        <Button type="error" size="small" @click="remove(index)" :disabled="coordinates.length === 1">Delete</Button>
       </template>
     </Table>
     <div class="file-info">
@@ -29,7 +29,7 @@
         <InputNumber
           :max="100"
           :min="0"
-          v-model="imageRecognitionRate"
+          v-model="imgRecRate"
           style="flex: 1;"
           placeholder="识别率标准..."
           :formatter="value => `${value}%`"
@@ -41,6 +41,8 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
+
 export default {
   name: 'FeaturePoint',
   props: {
@@ -70,21 +72,21 @@ export default {
     }
   },
   computed: {
-    coordinateData () {
-      return this.$store.state.coordinates
-    },
-    imageRecognitionRate: {
+    ...mapState('img', [
+      'coordinates'
+    ]),
+    imgRecRate: {
       get () {
-        return this.$store.state.imageRecognitionRate * 100
+        return this.$store.state.img.imgRecRate * 100
       },
       set (val) {
-        this.$store.commit('handleImageRecognitionRate', (val / 100).toFixed(4))
+        this.$store.commit('img/setImgRecRate', (val / 100).toFixed(4))
       }
     }
   },
   methods: {
     remove (index) {
-      this.$store.commit('removeCoordinate', index)
+      this.$store.commit('img/removeCoordinate', index)
     },
     setFeaturePointFileName () {
       this.$emit('setFeaturePointFileName', this.currentFeaturePointFileName)

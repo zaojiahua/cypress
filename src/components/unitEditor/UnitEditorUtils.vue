@@ -37,7 +37,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import { toDecimal } from 'lib/tools'
 export default {
   name: 'Utils',
@@ -59,10 +59,20 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['isPicInput', 'isJobResourceFile', 'isLoading', 'isJobResourcePicture', 'imageRecognitionRate']),
-    currentFile () {
-      return this.$store.state.currentFile
-    },
+    ...mapState([
+      'isLoading'
+    ]),
+    ...mapState('files', [
+      'currentFile'
+    ]),
+    ...mapGetters('item', [
+      'isPicInput',
+      'isJobResourceFile',
+      'isJobResourcePicture'
+    ]),
+    ...mapGetters('img', [
+      'imgRecRate'
+    ]),
     empty () {
       return !(this.currentFile || this.isLoading)
     },
@@ -71,7 +81,7 @@ export default {
         return '( 图片名称：' + this.currentFile.name + ' )'
       }
       if (this.currentFile && this.isJobResourceFile) {
-        return '( 图片名称：' + this.currentFile.name + ' | 识别率：' + this.imageRecognitionRate + '% )'
+        return '( 图片名称：' + this.currentFile.name + ' | 识别率：' + this.imgRecRate + '% )'
       }
       return null
     }
@@ -138,7 +148,7 @@ export default {
       startPoint.y = toDecimal((this.selectionAreaData.y - this.imageDomData.y) / this.imageDomData.height)
       endPoint.x = toDecimal((this.selectionAreaData.x + this.selectionAreaData.width - this.imageDomData.x) / this.imageDomData.width)
       endPoint.y = toDecimal((this.selectionAreaData.y + this.selectionAreaData.height - this.imageDomData.y) / this.imageDomData.height)
-      this.$store.commit('addCoordinate', {
+      this.$store.commit('img/addCoordinate', {
         coordinate_a: `${startPoint.x}, ${startPoint.y}`,
         coordinate_b: `${endPoint.x}, ${endPoint.y}`
       })
@@ -146,7 +156,7 @@ export default {
     handleAbsoluteCoordinates () {
       let x = parseInt(toDecimal((this.selectionAreaData.x - this.imageDomData.x) / this.imageDomData.width) * this.imageWidth)
       let y = parseInt(toDecimal((this.selectionAreaData.y - this.imageDomData.y) / this.imageDomData.height) * this.imageHeight)
-      this.$store.commit('handleAbsoluteCoordinates', { x: x.toString(), y: y.toString() })
+      this.$store.commit('img/setAbsoluteCoordinates', { x: x.toString(), y: y.toString() })
     }
   },
   mounted () {

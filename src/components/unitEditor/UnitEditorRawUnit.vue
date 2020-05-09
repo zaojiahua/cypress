@@ -25,6 +25,8 @@
 <script>
 import { isJsonString, insertAfterCursor } from 'lib/tools.js'
 
+import { mapGetters } from 'vuex'
+
 export default {
   name: 'RawUnit',
   data () {
@@ -39,12 +41,10 @@ export default {
     }
   },
   computed: {
-    unitType () {
-      return this.$store.state.unitEditorData.unitType
-    },
-    unitContent () {
-      return this.$store.getters.unitContent
-    }
+    ...mapGetters('unit', [
+      'unitType',
+      'unitContent'
+    ])
   },
   methods: {
     editCurrentUnitContent () {
@@ -64,7 +64,7 @@ export default {
           content: '不是 JSON 格式'
         })
       } else {
-        this.$store.commit('saveUnitContent', this.currentUnitContent)
+        this.$store.commit('unit/setUnitMsg', this.currentUnitContent)
         this.$Message.success({
           background: true,
           content: '保存成功'

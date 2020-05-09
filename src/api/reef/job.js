@@ -13,10 +13,10 @@ export const getJobList = (params) => {
       'job_type,' +
       'draft' +
       '&job_deleted=False' +
-      '&job_type=Joblib' +
       '&limit=' + params.pageSize +
       '&offset=' + params.offset +
       params.jobState +
+      params.jobType +
       '&ordering=id' + params.filterUrlParam
   })
 }

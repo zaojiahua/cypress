@@ -62,10 +62,10 @@ export default {
   computed: {
     unitName: {
       get () {
-        return this.$store.state.unitEditorData.unitName
+        return this.$store.state.unit.unitData.unitName
       },
       set (val) {
-        this.$store.commit('handleUnitName', val)
+        this.$store.commit('unit/setUnitName', val)
       }
     }
   },
@@ -80,8 +80,8 @@ export default {
       this.unitItems.forEach(item => {
         item.isClicked = false
       })
-      this.$store.commit('handleShowItemEditor', false)
-      this.$store.commit('clearCurrentFile')
+      this.$store.commit('item/setShowItemEditor', false)
+      this.$store.commit('files/removeCurrentFile')
     },
     checkWeatherCompleted () {
       return this.unitItems.every(unitItem => unitItem.isCompleted === true)

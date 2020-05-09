@@ -16,13 +16,16 @@
 
 <script>
 import UnitItem from './UnitEditorItem'
+
+import { mapGetters } from 'vuex'
+
 export default {
   name: 'UnitItemList',
   components: { UnitItem },
   computed: {
-    unitItemsData () {
-      return this.$store.getters.unitItemsData
-    },
+    ...mapGetters('unit', [
+      'unitItemsData'
+    ]),
     numOfItems () {
       return this.unitItemsData.length
     }

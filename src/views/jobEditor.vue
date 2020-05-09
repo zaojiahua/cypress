@@ -2,7 +2,7 @@
   <div id="wrap" ref="jobEditor">
     <div>
       <div class="job-editor-header">
-        <Input v-model="$store.state.jobInfo.job_name" class="job-name" placeholder="请输入JOB名称" size="large" />
+        <Input v-model="$store.state.job.jobInfo.job_name" class="job-name" placeholder="请输入JOB名称" size="large" />
 
         <div class="job-editor-header-btns">
           <div>
@@ -22,7 +22,7 @@
           <Icon type="ios-information-circle" style="font-size: 20px;"></Icon>
           <span style="font-size: 18px;">重命名</span>
         </div>
-        <Input placeholder="重命名" v-model="$store.state.jobInfo.job_name" />
+        <Input placeholder="重命名" v-model="$store.state.job.jobInfo.job_name" />
         <div slot="footer" >
           <Button type="primary" @click="_saveJob(true, true, false)">确定</Button>
         </div>
@@ -137,7 +137,7 @@ import { jobFlowValidation } from '../core/validation/finalValidation/job'
 import { blockFlowValidation } from '../core/validation/finalValidation/block'
 import axios from 'api'
 import { baseURL } from '../config'
-import { mapState } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import { createJobLabel } from '../lib/tools'
 
 export default {
@@ -186,12 +186,22 @@ export default {
     }
   },
   computed: {
-    ...mapState(['resFile', 'resFilesName', 'isInnerJob']),
-    unitNodeKey () {
-      return this.$store.state.unitEditorData.unitNodeKey
-    },
+    ...mapState('job', [
+      'jobInfo',
+      'isInnerJob'
+    ]),
+    ...mapState('files', [
+      'resFiles',
+      'resFilesName'
+    ]),
+    ...mapState('unit', [
+      'unitData'
+    ]),
+    ...mapGetters('unit', [
+      'unitNodeKey'
+    ]),
     unitName () {
-      return this.$store.state.unitEditorData.unitName
+      return this.unitData.unitName
     }
   },
   mounted () {
@@ -368,7 +378,7 @@ export default {
         if (e.diagram instanceof go.Palette) return
         // _this.unitMsgToogle = !_this.unitMsgToogle
         _this.showUnitEditor = true
-        _this.$store.commit('setUnitEditorData', {
+        _this.$store.commit('unit/setUnitData', {
           unitNodeKey: node.data.key,
           unitName: node.data.text,
           unitType: node.data.unitMsg.execModName,
@@ -488,13 +498,13 @@ export default {
         { category: 'End', text: 'End' }
       ])
 
-      if (this.$store.state.jobInfo.job_flow) {
-        getBlockFlowDict4Font(this.$store.state.jobInfo.job_flow).then(res => {
+      if (this.jobInfo.job_flow) {
+        getBlockFlowDict4Font(this.jobInfo.job_flow).then(res => {
           if (JSON.stringify(res.data) === '{}') {
             this.$Message.warning('这个job不存在')
             return this.$router.push({ path: '/' })
           }
-          this.stageJobLabel = this.$store.state.jobInfo.jobLabel
+          this.stageJobLabel = this.jobInfo.jobLabel
           this.myDiagram.model = go.Model.fromJson(res.data)
         })
       } else {
@@ -604,19 +614,19 @@ export default {
       return flag
     },
     _setJobResFile (id) {
-      this.$store.commit('addResFile', {
+      this.$store.commit('files/addResFile', {
         name: 'FILES_NAME_CONFIG.json',
         type: 'json',
         file: JSON.stringify(this.resFilesName, null, 2)
       })
       let data = new FormData()
       data.append('job', id)
-      for (let i = 0; i < this.resFile.length; i++) {
+      for (let i = 0; i < this.resFiles.length; i++) {
         let file = null
-        if (this.resFile[i].type === 'jpg' || this.resFile[i].type === 'png') {
-          file = this._dataURLtoFile(this.resFile[i].file, this.resFile[i].name)
+        if (this.resFiles[i].type === 'jpg' || this.resFiles[i].type === 'png') {
+          file = this._dataURLtoFile(this.resFiles[i].file, this.resFiles[i].name)
         } else {
-          file = new File([this.resFile[i].file], this.resFile[i].name, { type: this.resFile[i].type })
+          file = new File([this.resFiles[i].file], this.resFiles[i].name, { type: this.resFiles[i].type })
         }
         data.append('file', file)
       }
@@ -634,7 +644,7 @@ export default {
       return new File([u8arr], filename, { type: mime })
     },
     async _createNewTag (tagType) { // 生成新的测试用途、自定义标签条目
-      let target = this.$store.state.jobInfo[tagType]
+      let target = this.jobInfo[tagType]
       if (!target) return []
       let targetNameDic = {
         'test_area': 'job_test_area',
@@ -662,7 +672,7 @@ export default {
     async _saveJob (e, saveAs = false, isDraft = true) { // render 函数中会向函数传入点击事件参数
       let jobFlow = this.myDiagram.model.toJson()
       let id = this.$route.query.jobId
-      let info = JSON.parse(JSON.stringify(this.$store.state.jobInfo, null, 2))
+      let info = JSON.parse(JSON.stringify(this.jobInfo, null, 2))
       info.ui_json_file = JSON.parse(jobFlow)
       info.test_area = await this._createNewTag('test_area')
       info.custom_tag = await this._createNewTag('custom_tag')
@@ -670,7 +680,7 @@ export default {
       info.author = localStorage.id
       if (this.isInnerJob) {
         console.log('存为 InnerJob')
-        // info.job_type = 'InnerJob'
+        info.job_type = 'InnerJob'
       }
       if (id) { // 不是新建 job
         if (saveAs) { // 另存为
@@ -733,7 +743,7 @@ export default {
       this.rename = true
     },
     saveUnit () {
-      let unitMsg = this.$store.state.unitEditorData.unitMsg
+      let unitMsg = this.unitData.unitMsg
       let currentUnitNode = this.blockDiagram.findNodeForKey(this.unitNodeKey)
       this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'unitMsg', unitMsg)
       this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'text', this.unitName)
@@ -837,7 +847,7 @@ export default {
     },
     handleResFile (id) {
       if (!id) {
-        this.$store.commit('handleResFile', [])
+        this.$store.commit('files/setResFiles', [])
         return
       }
       getJobResFilesList(id).then(res => {
@@ -861,12 +871,12 @@ export default {
             reader.onload = () => {
               filesInfo[index].file = reader.result
               if (index === filesNameConfigIndex) {
-                this.$store.commit('setResFilesName', reader.result)
+                this.$store.commit('files/setResFilesName', reader.result)
               }
             }
           })
         }).then(() => {
-          this.$store.commit('handleResFile', filesInfo)
+          this.$store.commit('files/setResFiles', filesInfo)
         })
       })
     }
@@ -875,8 +885,8 @@ export default {
     setTimeout(() => {
       this.$Notice.destroy()
     }, 600)
-    this.$store.commit('setJobInfo', {})
-    this.$store.commit('setSelectedDeviceInfo', null)
+    this.$store.commit('job/setJobInfo', {})
+    this.$store.commit('device/setDeviceInfo', null)
     next()
   }
 }

@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import { getScreenShot } from 'api/coral/jobLibSvc.js'
 import { blobToDataURL, suffixAutoComplete } from 'lib/tools.js'
 export default {
@@ -60,14 +60,21 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['itemType', 'isPicInput', 'isJobResourcePicture', 'isLoading']),
-    deviceInfo () {
-      return this.$store.getters.selectedDeviceInfo
-    }
+    ...mapState([
+      'isLoading'
+    ]),
+    ...mapGetters('item', [
+      'itemType',
+      'isPicInput',
+      'isJobResourcePicture'
+    ]),
+    ...mapGetters('device', [
+      'deviceInfo'
+    ])
   },
   methods: {
     showDeviceSelectPage () {
-      this.$store.commit('handleShowDeviceSelect', true)
+      this.$store.commit('device/setSelectDevice', true)
     },
     handleErrors () {
       let errors = []
@@ -85,8 +92,8 @@ export default {
     },
     getImage () {
       if (this.handleErrors()) {
-        this.$store.commit('clearCurrentFile')
-        this.$store.commit('handleIsLoading', true)
+        this.$store.commit('files/removeCurrentFile')
+        this.$store.commit('setIsLoading', true)
         let screenShotName = suffixAutoComplete(this.currentImageName, '.png')
         if (this.isJobResourcePicture) {
 
@@ -106,14 +113,14 @@ export default {
           if (res.status === 200) {
             blobToDataURL(res.data).then(res => {
               if (this.isJobResourcePicture) {
-                this.$store.commit('addResFile', {
+                this.$store.commit('files/addResFile', {
                   name: screenShotName,
                   type: 'png',
                   file: res
                 })
               }
               if (this.isPicInput) {
-                this.$store.commit('setCurrentFile', {
+                this.$store.commit('files/setCurrentFile', {
                   byName: false,
                   currentFileInfo: {
                     name: '选点用图',
@@ -124,7 +131,6 @@ export default {
               }
             })
           }
-          this.$store.commit('handleIsLoading', false)
         }).catch(err => {
           console.log('error', err)
           this.$Notice.error({
@@ -132,6 +138,8 @@ export default {
             desc: '请检查您的设备',
             duration: 4
           })
+        }).finally(() => {
+          this.$store.commit('setIsLoading', false)
         })
       }
     },

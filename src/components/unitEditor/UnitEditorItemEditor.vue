@@ -41,13 +41,13 @@
           @setFeaturePointFileName="setName"
         ></FeaturePoint>
         <Checkbox v-model="saveToFinalResult" v-if="showCheckbox" style="float: right;">添加此图片至最终结果</Checkbox>
-        <p class="instructions"><Tag>操作说明</Tag>{{ currentUnitItemMeaning }}</p>
+        <p class="instructions"><Tag>操作说明</Tag>{{ currentItemMeaning }}</p>
       </div>
       <div class="btn-confirm">
         <Button type="primary" @click="saveItem">确定</Button>
       </div>
     </div>
-    <Modal v-model="isDuplicateName" :styles="{top: '48%'}" :mask-closable="false"  :closable="false">
+    <Modal v-model="isDuplicatedFile" :styles="{top: '48%'}" :mask-closable="false"  :closable="false">
       <p slot="header">
         <Icon type="ios-alert-outline" style="color:orange;font-size:1.2em;font-weight:bold;" />
         温馨提示
@@ -89,37 +89,37 @@ export default {
     }
   },
   computed: {
-    ...mapState(
-      [
-        'showItemEditor',
-        'currentUnitItem',
-        'resFile',
-        'coordinates',
-        'absoluteCoordinates',
-        'imageRecognitionRate',
-        'resFilesName'
-      ]
-    ),
-    ...mapGetters(
-      [
-        'itemType',
-        'isUxInput',
-        'isPicInput',
-        'isOutputPicture',
-        'isOutputFile',
-        'isJobResourcePicture',
-        'isJobResourceFile',
-        'isInputFile',
-        'isInputPicture',
-        'currentUnitItemMeaning'
-      ]
-    ),
-    isDuplicateName: {
+    ...mapState('files', [
+      'resFiles',
+      'resFilesName'
+    ]),
+    ...mapState('item', [
+      'showItemEditor',
+      'currentItem'
+    ]),
+    ...mapState('img', [
+      'imgRecRate',
+      'coordinates',
+      'absoulteCoordinates'
+    ]),
+    ...mapGetters('item', [
+      'itemType',
+      'isUxInput',
+      'isPicInput',
+      'isOutputPicture',
+      'isOutputFile',
+      'isJobResourcePicture',
+      'isJobResourceFile',
+      'isInputFile',
+      'isInputPicture',
+      'currentItemMeaning'
+    ]),
+    isDuplicatedFile: {
       get () {
-        return this.$store.state.isDuplicateName
+        return this.$store.state.files.isDuplicatedFile
       },
       set (val) {
-        this.$store.commit('handleIsDuplicateName', val)
+        this.$store.commit('files/setIsDuplicatedFile', val)
       }
     },
     showInput () {
@@ -148,7 +148,7 @@ export default {
     }
   },
   watch: {
-    currentUnitItem (val) {
+    currentItem (val) {
       this.tmachBlanks = this.tmachBlanksPrefixLessen(val.itemContent.content.match(/Tmach.*? /g))
     },
     absoluteCoordinates (val) {
@@ -189,13 +189,13 @@ export default {
           let coordinateRowList = this.coordinates[i].coordinate_a.split(',').concat(this.coordinates[i].coordinate_b.split(',')).map(parseFloat)
           coordinateDataList[area] = coordinateRowList
         }
-        this.$store.commit('addResFile', {
+        this.$store.commit('files/addResFile', {
           name: suffixAutoRemove(this.tmachBlanks[0]) + '.json',
           type: 'json',
           file: JSON.stringify(coordinateDataList, null, 4),
           fileUrl: ''
         })
-        this.$store.commit('clearCoordinate')
+        this.$store.commit('img/clearCoordinates')
       }
       return true
     },
@@ -224,16 +224,16 @@ export default {
       }
     },
     updateCurrentUnitItemData () {
-      let currentUnitItem = JSON.parse(JSON.stringify(this.currentUnitItem))
-      let tmachBlanks = currentUnitItem.itemContent.content.match(/Tmach.*? /g)
+      let currentItem = JSON.parse(JSON.stringify(this.currentItem))
+      let tmachBlanks = currentItem.itemContent.content.match(/Tmach.*? /g)
       for (let i = 0; i < tmachBlanks.length; i++) {
-        currentUnitItem.itemContent.content = currentUnitItem.itemContent.content.replace(tmachBlanks[i], 'Tmach' + this.tmachBlanks[i] + ' ')
+        currentItem.itemContent.content = currentItem.itemContent.content.replace(tmachBlanks[i], 'Tmach' + this.tmachBlanks[i] + ' ')
       }
-      this.$store.commit('saveUnitItem', currentUnitItem)
+      this.$store.commit('unit/setUnitItem', currentItem)
     },
     closeItemEditor () {
       if (!this.isPicInput) {
-        this.$store.commit('handleShowItemEditor', false)
+        this.$store.commit('item/setShowItemEditor', false)
       }
     },
     saveResFilesName () {
@@ -259,7 +259,7 @@ export default {
           return false
         }
       }
-      this.$store.commit('handleResFilesName', {
+      this.$store.commit('files/addResFilesName', {
         name: suffixAutoRemove(this.tmachBlanks[0]),
         index
       })
@@ -276,13 +276,13 @@ export default {
       this.tmachBlanks.splice(0, 1, name)
     },
     overwrite () {
-      this.$store.commit('overwriteDuplicateFile')
+      this.$store.commit('files/setDuplicatedFile')
     },
     rename () {
       this.showRename = true
     },
     setNewName () {
-      this.$store.commit('renameDuplicateFile', this.tmachBlanks[0])
+      this.$store.commit('files/renameDuplicatedFile', this.tmachBlanks[0])
       this.showRename = false
       this.saveItem()
     }

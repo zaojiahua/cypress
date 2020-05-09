@@ -39,12 +39,12 @@ const serializer = {
     }]
   },
   jobSerializer: [{
+    id: 'number',
+    job_name: 'string',
     custom_tag: [{
       id: 'number',
       custom_tag_name: 'string'
     }],
-    id: 'number',
-    job_name: 'string',
     test_area: [{
       id: 'number',
       description: 'string'

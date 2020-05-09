@@ -1,12 +1,12 @@
 <template>
   <Modal v-model="jobModalShow" :closable="false" width="90">
     <div slot="header">
-        <p v-show="currentJobName === 'Job block'">请选择您需要的Job</p>
-        <p v-show="currentJobName !== 'Job block'">当前选中的Job为：<strong>{{ currentJobName }}</strong></p>
+      <p v-show="currentJobName === 'Job'">请选择您需要的InnerJob</p>
+      <p v-show="currentJobName !== 'Job'">当前选中的InnerJob为：<strong>{{ currentJobName }}</strong></p>
     </div>
     <job-list-filter @getMsg="getJobData"></job-list-filter>
-    <Table ref="jobTable" highlight-row border height="520" :columns="columns" :data="data" @on-row-click="selectJob"></Table>
-    <Page simple :page-size="pageSize" :total="dataCount" :current="currentPage" @on-change="pageChange" style="text-align :center; margin-top: 20px;"></Page>
+    <Table ref="jobTable" highlight-row border height="520" :columns="columns" :data="innerJobs" @on-row-click="selectJob"></Table>
+    <Page simple :page-size="pageSize" :total="jobNum" :current="currentPage" @on-change="pageChange" style="text-align :center; margin-top: 20px;"></Page>
     <div slot="footer">
       <Button type="text" size="large" @click="cancel">取消</Button>
       <Button type="primary" size="large" @click="confirm">确定</Button>
@@ -41,25 +41,28 @@ export default {
         },
         {
           title: '测试用途',
-          key: 'text_area'
+          key: 'test_area'
         },
         {
           title: '自定义标签',
           key: 'custom_tag'
         }
       ],
-      data: [],
+      innerJobs: [],
       pageSize: 10,
-      dataCount: 0,
+      jobNum: 0,
       currentPage: 1,
       currentJob: {},
       currentJobIndex: 0,
-      currentJobName: this.currentJobBlockText
+      currentJobName: ''
     }
   },
   computed: {
     offset () {
       return (this.currentPage - 1) * this.pageSize
+    },
+    currentJobID () {
+      return this.$store.getters.jobID
     }
   },
   watch: {
@@ -94,11 +97,12 @@ export default {
         '&limit=' + this.pageSize +
         '&offset=' + this.offset +
         '&job_deleted=False' +
+        '&job_type=InnerJob' +
         '&ordering=id' + filterUrlParam
-      axios.request({ url }).then(res => {
-        this.dataCount = parseInt(res.headers['total-count'])
-        this.data = util.validate(serializer.jobSerializer, res.data.jobs)
-        this.data.forEach(job => {
+      axios.request({ url }).then(({ headers, data: { jobs } }) => { // 获取job列表并过滤掉不必要的项
+        this.jobNum = parseInt(headers['total-count'])
+        this.innerJobs = util.validate(serializer.jobSerializer, jobs).filter((job) => job.id !== this.currentJobID)
+        this.innerJobs.forEach(job => {
           let jobTestAreas = []
           job.test_area.forEach(jobTestArea => {
             jobTestAreas.push(jobTestArea.description)
@@ -109,7 +113,7 @@ export default {
             jobCustomTags.push(jobCustomTag.custom_tag_name)
           })
 
-          job.text_area = jobTestAreas.join(',')
+          job.test_area = jobTestAreas.join(',')
           job.custom_tag = jobCustomTags.join(',')
         })
       })

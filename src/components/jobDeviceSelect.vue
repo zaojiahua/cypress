@@ -1,6 +1,6 @@
 <template>
   <Modal
-    v-model="$store.state.showDeviceSelect"
+    v-model="$store.state.device.selectDevice"
     fullscreen
     :closable="false"
     @on-ok="closeDeviceSelectPage(true)"
@@ -24,7 +24,7 @@
       max-height="1158"
       highlight-row
       size="small"
-      @on-current-change="selectDevice"
+      @on-current-change="select"
     ></Table>
     <Page
       :total="deviceTotalNum"
@@ -40,6 +40,8 @@
 <script>
 import { getDeviceList, getDeviceBatteryLevel } from '../api/reef/device.js'
 import util from '../lib/util/validate'
+
+import { mapState } from 'vuex'
 
 const getDeviceListSerializer = [
   {
@@ -145,7 +147,16 @@ export default {
           sortable: true
         }
       },
-      deviceColumnChecked: [],
+      deviceColumnChecked: [
+        'device_name',
+        'phone_model',
+        'rom_version',
+        'android_version',
+        'device_label',
+        'ip_address',
+        'status',
+        'power'
+      ],
       devicesColumns: [],
       devicesData: [],
       deviceTotalNum: 0,
@@ -166,27 +177,27 @@ export default {
       localStorage.setItem('device-management:DEFAULT_DEVICE_COLUMN', this.deviceColumnChecked.join(','))
       localStorage.setItem('device-management:DEFAULT_PAGE_SIZE', this.pageSize)
       if (save) {
-        this.$store.commit('setSelectedDeviceInfo', this.deviceSelected)
+        this.$store.commit('device/setDeviceInfo', this.deviceSelected)
       }
-      this.$store.commit('handleShowDeviceSelect', false)
+      this.$store.commit('device/setSelectDevice', false)
     },
-    selectDevice (currentRow, oldCurrentRow) {
+    select (currentRow, oldCurrentRow) {
       this.deviceSelected = currentRow
     },
-    refresh () {
+    async refresh () {
       let deviceStatus
       if (this.deviceStatusFilterList.length) {
         deviceStatus = '&status__in=' + 'ReefList[' + this.deviceStatusFilterList.join('{%,%}') + ']'
       }
-      getDeviceList({
+      let { headers, status, data } = await getDeviceList({
         pageSize: this.pageSize,
         pageOffset: this.pageOffset,
         deviceStatus
-      }).then(res => {
-        this.deviceTotalNum = Number(res.headers['total-count'])
-
+      })
+      if (status === 200) {
+        this.deviceTotalNum = Number(headers['total-count'])
         let deviceIdList = []
-        this.devicesData = util.validate(getDeviceListSerializer, res.data['devices'])
+        this.devicesData = util.validate(getDeviceListSerializer, data['devices'])
         this.devicesData.forEach(device => {
           device.cpu_name = device.phone_model.cpu_name
           device.manufacturer_id = device.phone_model.manufacturer.id
@@ -200,8 +211,9 @@ export default {
           deviceIdList.push(device.id)
         })
         if (deviceIdList.length) {
-          getDeviceBatteryLevel(deviceIdList.join(',')).then(res => {
-            res.data.forEach(item => {
+          let { data, status } = await getDeviceBatteryLevel(deviceIdList.join(','))
+          if (status === 200) {
+            data.forEach(item => {
               this.devicesData.forEach(device => {
                 if (device.id === item.device) {
                   if (item.battery_level) {
@@ -212,9 +224,19 @@ export default {
                 }
               })
             })
-          })
+          } else {
+            this.$Message.error({
+              background: true,
+              content: '获取设备电量信息失败'
+            })
+          }
         }
-      })
+      } else {
+        this.$Message.error({
+          background: true,
+          content: '获取设备列表失败'
+        })
+      }
     },
     onPageChange (page) {
       this.pageOffset = this.pageSize * (page - 1)
@@ -223,12 +245,12 @@ export default {
     }
   },
   computed: {
-    showDeviceSelect () {
-      return this.$store.state.showDeviceSelect
-    }
+    ...mapState('device', [
+      'selectDevice'
+    ])
   },
   watch: {
-    showDeviceSelect (val) {
+    selectDevice (val) {
       if (val === true) {
         this.refresh()
       }
@@ -237,10 +259,13 @@ export default {
       this.devicesColumns = this.getDeviceColumn()
     },
     pageSize () {
-      if (this.showDeviceSelect) this.refresh()
+      if (this.selectDevice) this.refresh()
     }
   },
   mounted () {
+    if (!localStorage['device-management:DEFAULT_DEVICE_COLUMN']) {
+      localStorage.setItem('device-management:DEFAULT_DEVICE_COLUMN', this.deviceColumnChecked.join(','))
+    }
     this.deviceColumnChecked = localStorage.getItem('device-management:DEFAULT_DEVICE_COLUMN').split(',')
     this.pageSize = Number(localStorage.getItem('device-management:DEFAULT_PAGE_SIZE'))
   }

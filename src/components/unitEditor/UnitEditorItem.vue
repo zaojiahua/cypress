@@ -17,7 +17,7 @@
 
 <script>
 import { findBrothersComponents } from 'lib/tools.js'
-import { mapGetters } from 'vuex'
+import { mapGetters, mapState } from 'vuex'
 
 export default {
   name: 'UnitItem',
@@ -53,10 +53,17 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['isJobResourcePicture', 'isJobResourceFile', 'currentFile']),
-    coordinates () {
-      return this.$store.state.coordinates
-    },
+    ...mapState('files', [
+      'resFiles',
+      'currentFile'
+    ]),
+    ...mapState('img', [
+      'coordinates'
+    ]),
+    ...mapGetters('item', [
+      'isJobResourcePicture',
+      'isJobResourceFile'
+    ]),
     itemType () {
       return this.currentItemContent.type
     },
@@ -66,7 +73,6 @@ export default {
     isPicInput () {
       return this.itemType === 'picInput'
     },
-
     isCompleted () {
       if (this.isUxInput && this.uxInputDefaultValue) {
         this.setDefaultValue()
@@ -99,39 +105,31 @@ export default {
     }
   },
   methods: {
-    handleItem (flag) {
+    handleItem (flag) { // 当 item 类型 为 picInput 时，可以复制或删除本身
       if (flag) {
-        this.$store.commit('addNewItem', {
+        this.$store.commit('unit/addUnitItem', {
           itemData: this.currentItemContent,
           itemIndex: this.itemData.itemName
         })
       } else {
-        this.$store.commit('removeItem', this.itemData.itemName)
+        this.$store.commit('unit/removeUnitItem', this.itemData.itemName)
       }
     },
-    judgeWhetherEditable () {
-      if (this.isEditable === false) {
-        this.$Modal.warning({
-          title: '温馨提示',
-          content: '请先在 参考标准图片 中获取图片'
-        })
-      }
-    },
-    handleClicked () {
+    handleClicked () { // 点击 item 时取消对兄弟节点的聚焦
       this.isClicked = true
       let unitItemBrothers = findBrothersComponents(this, 'UnitItem')
       unitItemBrothers.forEach(bro => {
         bro.isClicked = false
       })
     },
-    removeLabelArea () {
+    removeLabelArea () { // 移除标示区域
       let imageDom = document.querySelector('.image-dom')
       let areas = document.querySelectorAll('.area')
       areas.forEach(area => {
         imageDom.removeChild(area)
       })
     },
-    addAreas () {
+    addAreas () { // 显示标示区域
       let imageDom = document.querySelector('.image-dom')
       let imageDomData = imageDom.getBoundingClientRect()
       for (let i = 0; i < this.coordinates.length; i++) {
@@ -159,6 +157,27 @@ export default {
         imageDom.appendChild(area)
       }
     },
+    setCoordinateAndImgRecRate (name) { // 点击 类型为 jobResourceFile 的 item 时，如果存在相应文件，则将文件内的数据提取出来
+      this.$store.commit('img/clearCoordinates')
+      let areasData
+      for (let i = 0; i < this.resFiles.length; i++) {
+        if (this.resFiles[i].name === name) {
+          areasData = JSON.parse(this.resFiles[i].file)
+          break
+        }
+      }
+      for (let key in areasData) {
+        if (key === 'threshold') {
+          this.$store.commit('img/setImgRecRate', areasData[key])
+        }
+        if (key.startsWith('area')) {
+          let coordinate = {}
+          coordinate.coordinate_a = areasData[key].splice(0, 2).join(',')
+          coordinate.coordinate_b = areasData[key].join(',')
+          this.$store.commit('img/addCoordinate', coordinate)
+        }
+      }
+    },
     handleItemClick () {
       if (!this.isEditable) {
         this.$Modal.warning({
@@ -168,35 +187,34 @@ export default {
         return
       }
       this.removeLabelArea()
-      // this.judgeWhetherEditable()
       this.handleClicked()
-      this.$store.commit('handleCurrentUnitItem', this.itemData)
-      this.$store.commit('handleShowItemEditor', true)
+      this.$store.commit('item/setCurrentItem', this.itemData)
+      this.$store.commit('item/setShowItemEditor', true)
       if (this.tmachBlanks[0].trim().length !== 0) {
         if (this.isJobResourcePicture) {
-          this.$store.commit('setCurrentFile', {
+          this.$store.commit('files/setCurrentFile', {
             byName: true,
             name: this.tmachBlanks[0].trim().substring(5)
           })
         }
         if (this.isJobResourceFile) {
-          this.$store.commit('setCoordinateAndImageRecognitionRate', this.tmachBlanks[0].trim().substring(5))
+          this.setCoordinateAndImgRecRate(this.tmachBlanks[0].trim().substring(5))
           this.addAreas()
         }
       }
     },
-    setDefaultValue () {
+    setDefaultValue () { // 给某些 item 内的选项设定默认值
       if (this.tmachBlanks.includes('Tmach ')) {
         for (let i = 0; i < this.tmachBlanks.length; i++) {
           this.currentItemContent.content = this.currentItemContent.content.replace(this.tmachBlanks[i], 'Tmach' + this.uxInputDefaultValue[i] + ' ')
         }
-        this.$store.commit('saveUnitItem', {
+        this.$store.commit('unit/setUnitItem', {
           itemName: this.itemData.itemName,
           itemContent: this.currentItemContent
         })
       }
     },
-    handleTmachBlanks () {
+    handleTmachBlanks () { // 获取 item 中需要修改的项
       this.tmachBlanks = this.currentItemContent.content.match(/Tmach.*? /g)
     }
   },

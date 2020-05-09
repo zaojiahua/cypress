@@ -104,7 +104,7 @@ export default {
       })
     },
     createJob () {
-      this.$store.commit('setJobInfo', {})
+      this.$store.commit('job/setJobInfo', {})
       setTimeout(() => {
         this.$store.commit('handleShowDrawer')
       }, 600)
