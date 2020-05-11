@@ -359,6 +359,22 @@ export default {
         'commandHandler.archetypeGroupData': { category: 'UnitList', text: 'UnitList', isGroup: true }
       })
 
+      // 禁止删除 Entry 与 Exit 节点
+      _this.blockDiagram.commandHandler.canDeleteSelection = function (e) {
+        return _this.blockDiagram.selection.all(function (nodeOrLink) {
+          let { data: { category, text } } = nodeOrLink
+          console.log(category, text)
+          if ((category === 'Start' && text === 'Entry') || (category === 'End' && text === 'Exit')) {
+            _this.$Message.error({
+              background: true,
+              content: '禁止删除该节点'
+            })
+            return false
+          }
+          return true
+        })
+      }
+
       // -------------从Palette拖拽节点的触发事件，判断Unit是否被UnitList包含------------
       _this.blockDiagram.addDiagramListener('externalobjectsdropped', function (e) {
         e.subject.each(function (n) {
