@@ -183,7 +183,7 @@ export default {
         }
         let coordinateNum = 1
         let coordinateDataList = {}
-        coordinateDataList.threshold = this.imageRecognitionRate
+        coordinateDataList.threshold = this.imgRecRate
         for (let i = 0; i < this.coordinates.length; i++) {
           let area = 'area' + coordinateNum++
           let coordinateRowList = this.coordinates[i].coordinate_a.split(',').concat(this.coordinates[i].coordinate_b.split(',')).map(parseFloat)

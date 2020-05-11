@@ -438,7 +438,7 @@ export default {
     }
   },
   methods: {
-    init () {
+    async init () {
       this.myPalette = MAKE(
         go.Palette, 'chart-palette', {
           scrollsPageOnFocus: false,
@@ -499,14 +499,23 @@ export default {
       ])
 
       if (this.jobInfo.job_flow) {
-        getBlockFlowDict4Font(this.jobInfo.job_flow).then(res => {
-          if (JSON.stringify(res.data) === '{}') {
-            this.$Message.warning('这个job不存在')
+        let { status, data } = await getBlockFlowDict4Font(this.jobInfo.job_flow)
+        if (status === 200) {
+          if (JSON.stringify(data) === '{}') {
+            this.$Message.err({
+              background: true,
+              content: '这个job不存在'
+            })
             return this.$router.push({ path: '/' })
           }
           this.stageJobLabel = this.jobInfo.jobLabel
-          this.myDiagram.model = go.Model.fromJson(res.data)
-        })
+          this.myDiagram.model = go.Model.fromJson(data)
+        } else {
+          this.$Message.err({
+            background: true,
+            content: '获取 Job 信息失败'
+          })
+        }
       } else {
         // getTemporarySpace().then(res => {
         this.myDiagram.model = basicModel()
@@ -606,7 +615,7 @@ export default {
     },
     _jobMsgRules () {
       let flag = false
-      if (this.$store.state.jobInfoValid) {
+      if (this.$store.state.job.isValidated) {
         flag = true
       } else {
         this.$store.commit('handleShowDrawer')
@@ -669,6 +678,30 @@ export default {
         this._saveJob(saveAs, false, false)
       }
     },
+    async uploadFiles (id, info) {
+      let { status } = await jobFlowAndMsgUpdate(id, info)
+      if (status === 200) {
+        let data = this._setJobResFile(id)
+        let { status } = await jobResFilesSave(data)
+        if (status === 201) {
+          this.$Message.success({
+            background: true,
+            content: 'Job 保存成功'
+          })
+          this.$router.push({ path: '/jobList' })
+        } else {
+          this.$Message.error({
+            background: true,
+            content: '依赖文件上传失败'
+          })
+        }
+      } else {
+        this.$Message.error({
+          background: true,
+          content: 'Job 保存失败'
+        })
+      }
+    },
     async _saveJob (e, saveAs = false, isDraft = true) { // render 函数中会向函数传入点击事件参数
       let jobFlow = this.myDiagram.model.toJson()
       let id = this.$route.query.jobId
@@ -689,31 +722,9 @@ export default {
             if (res.status === 201) {
               id = res.data.id
             }
-          }).then(() => {
-            let data = this._setJobResFile(id)
-            jobFlowAndMsgUpdate(id, info).then(res => {
-              if (res.status === 200) {
-                jobResFilesSave(data).then(res => {
-                  if (res.status === 201) {
-                    this.$Message.info('保存成功')
-                    this.$router.push({ path: '/jobList' })
-                  }
-                })
-              }
-            })
-          })
+          }).then(this.uploadFiles(id, info))
         } else { // 更新
-          let data = this._setJobResFile(id)
-          jobFlowAndMsgUpdate(id, info).then(res => {
-            if (res.status === 200) {
-              jobResFilesSave(data).then(res => {
-                if (res.status === 201) {
-                  this.$Message.info('保存成功')
-                  this.$router.push({ path: '/jobList' })
-                }
-              })
-            }
-          })
+          this.uploadFiles(id, info)
         }
       } else { // 新建 job
         info.job_label = createJobLabel(this)
@@ -722,19 +733,7 @@ export default {
           if (res.status === 201) {
             id = res.data.id
           }
-        }).then(() => {
-          let data = this._setJobResFile(id)
-          jobFlowAndMsgUpdate(id, info).then(res => {
-            if (res.status === 200) {
-              jobResFilesSave(data).then(res => {
-                if (res.status === 201) {
-                  this.$Message.info('保存成功')
-                  this.$router.push({ path: '/jobList' })
-                }
-              })
-            }
-          })
-        }).catch(err => {
+        }).then(this.uploadFiles(id, info)).catch(err => {
           console.error(err)
         })
       }
@@ -790,21 +789,22 @@ export default {
         content: '确定要删除当前 Unit 模板吗？',
         okText: '心意已决',
         cancelText: '我再想想',
-        onOk () {
-          deleteUnitTemplate(_this.unitTemplateId).then((res) => {
-            if (res.status === 204) {
-              _this.$Message.success({
-                background: true,
-                content: '删除成功'
-              })
-              setTimeout(() => {
-                _this.updateUnitAllList(_this.unitType)
-              }, 500)
-            }
-          }).catch((e) => {
-            console.log(e)
-          })
-          console.log('删除')
+        async onOk () {
+          let { status } = await deleteUnitTemplate(_this.unitTemplateId)
+          if (status === 204) {
+            _this.$Message.success({
+              background: true,
+              content: '删除成功'
+            })
+            setTimeout(() => {
+              _this.updateUnitAllList(_this.unitType)
+            }, 500)
+          } else {
+            _this.$Message.error({
+              background: true,
+              content: '删除失败'
+            })
+          }
         }
       })
     },
@@ -817,11 +817,11 @@ export default {
     closeUnitTemplateEditor () {
       this.openUnitTemplateEditor = false
     },
-    updateUnitAllList (name = undefined) {
+    async updateUnitAllList (name = undefined) {
       this.unitAllList = {}
-      getJobUnitsBodyDict().then(res => {
-        // console.log(res)
-        res.data.unit.forEach((unit, index) => {
+      let { status, data: { unit } } = await getJobUnitsBodyDict()
+      if (status === 200) {
+        unit.forEach((unit, index) => {
           if (!(unit.type in this.unitAllList)) {
             this.$set(this.unitAllList, unit.type, {})
           }
@@ -831,7 +831,12 @@ export default {
           })
         })
         if (name) this.getSelectedUnit(name)
-      })
+      } else {
+        this.$Message.error({
+          background: true,
+          content: '获取 Unit 列表失败'
+        })
+      }
     },
     changeUnitColor (hasCompleted) {
       let currentNodeData = this.blockDiagram.findNodeForKey(this.unitNodeKey).data
