@@ -1,7 +1,10 @@
 let state = {
   jobInfo: {},
+  preJobInfo: null,
   isValidated: false,
-  isInnerJob: false
+  isInnerJob: false,
+  diagramModel: null,
+  dataForDiagramModel: null
 }
 
 let mutations = {
@@ -11,10 +14,21 @@ let mutations = {
     if (jobInfo.job_type === 'InnerJob') state.isInnerJob = true
     else state.isInnerJob = false
   },
+  setPreJobInfo (state) {
+    state.preJobInfo = JSON.stringify(state.jobInfo)
+  },
+  clearPreJobInfo (state) {
+    state.preJobInfo = null
+  },
+  renewJobInfo (state) {
+    if (state.preJobInfo) {
+      state.jobInfo = JSON.parse(state.preJobInfo)
+    }
+  },
   setIsValidated (state, isValidated) {
     state.isValidated = isValidated
   },
-  setIsInnerJob (state, isInnerJob) {
+  setIsInnerJob (state) {
     state.isInnerJob = !state.isInnerJob
 
     if (state.isInnerJob) {
@@ -22,6 +36,12 @@ let mutations = {
     } else {
       state.jobInfo.job_type = 'Joblib'
     }
+  },
+  setDiagramModel (state, diagramModel) {
+    state.diagramModel = diagramModel
+  },
+  clearDiagramModel (state) {
+    state.diagramModel = null
   }
 }
 

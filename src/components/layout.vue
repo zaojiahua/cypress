@@ -30,22 +30,19 @@
             <MenuItem
               name="jobList"
               style="border-top: 1px solid darkgrey"
-              to="jobList"
+              @click.native="viewJob"
             >
               <Icon type="logo-buffer"></Icon>
               <span>用例管理</span>
             </MenuItem>
-            <MenuItem name="jobEditor" @click.native="createJob" to="jobEditor">
+            <MenuItem name="jobEditor" @click.native="createJob">
               <Icon type="ios-create"></Icon>
               <span>创建用例</span>
             </MenuItem>
           </Menu>
         </Sider>
         <Content :style="{padding: '15px', minHeight: '280px', background: '#fff' }">
-          <!-- 将需要被缓存的组件的name传入 -->
-          <!-- <keep-alive :include="$store.state.keepAliveComponents"> -->
             <router-view/>
-          <!-- </keep-alive> -->
         </Content>
       </Layout>
     </Layout>
@@ -54,6 +51,8 @@
 </template>
 <script>
 import jobMsgComponent from '../components/jobMsgComponent'
+
+import { mapState } from 'vuex'
 
 export default {
   components: { jobMsgComponent },
@@ -64,6 +63,9 @@ export default {
     }
   },
   computed: {
+    ...mapState('job', [
+      'preJobInfo'
+    ]),
     rotateIcon () {
       return [
         'menu-icon',
@@ -103,11 +105,20 @@ export default {
         }
       })
     },
+    viewJob () {
+      this.$store.commit('job/setPreJobInfo')
+      this.$router.push({ path: '/jobList' })
+    },
     createJob () {
-      this.$store.commit('job/setJobInfo', {})
       setTimeout(() => {
         this.$store.commit('handleShowDrawer')
       }, 600)
+      if (this.preJobInfo) {
+        this.$store.commit('job/renewJobInfo')
+      } else {
+        this.$store.commit('job/setJobInfo', {})
+      }
+      this.$router.push({ path: '/jobEditor' })
     }
   }
 }

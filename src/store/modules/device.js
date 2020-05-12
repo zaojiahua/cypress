@@ -7,6 +7,9 @@ let mutations = {
   setDeviceInfo (state, deviceInfo) {
     state.deviceInfo = deviceInfo
   },
+  clearDeviceInfo (state) {
+    state.deviceInfo = null
+  },
   setSelectDevice (state, toggle = true) {
     state.selectDevice = toggle
   }

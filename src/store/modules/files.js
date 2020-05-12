@@ -42,6 +42,9 @@ let mutations = {
   removeResFile (state, index) {
     state.resFiles.splice(index, 1)
   },
+  clearResFiles (state) {
+    state.resFiles = []
+  },
   setCurrentFile (state, data) {
     if (data.byName) {
       for (let i = 0; i < state.resFiles.length; i++) {

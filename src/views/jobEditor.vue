@@ -13,7 +13,7 @@
             <Button type="primary" size="large" @click="saveJob" style="margin-right: 10px;">保存</Button>
             <Button size="large" type="success" @click="saveAs" style="margin-right: 10px;">另存为</Button>
             <Button type="primary" ghost size="large" @click="_saveJob" style="margin-right: 10px;">存草稿</Button>
-            <Button size="large" to="/jobList">退出</Button>
+            <Button size="large" @click="cancelEdit">退出</Button>
           </div>
         </div>
       </div>
@@ -182,13 +182,19 @@ export default {
         UNIT: '#338FF0',
         GROUP: '#50A5F4'
       },
-      rename: false
+      rename: false,
+      deleteTimer: null,
+      timerStep: 80
     }
   },
   computed: {
     ...mapState('job', [
       'jobInfo',
-      'isInnerJob'
+      'isInnerJob',
+      'diagramModel'
+    ]),
+    ...mapGetters('job', [
+      'jobId'
     ]),
     ...mapState('files', [
       'resFiles',
@@ -212,7 +218,9 @@ export default {
       duration: 0
     })
 
-    this.handleResFile(this.$route.query.jobId)
+    if (!this.resFiles.length) {
+      this.handleResFile(this.jobId)
+    }
 
     myDiagramInit()
     function myDiagramInit () {
@@ -361,18 +369,22 @@ export default {
 
       // 禁止删除 Entry 与 Exit 节点
       _this.blockDiagram.commandHandler.canDeleteSelection = function (e) {
-        return _this.blockDiagram.selection.all(function (nodeOrLink) {
-          let { data: { category, text } } = nodeOrLink
-          console.log(category, text)
-          if ((category === 'Start' && text === 'Entry') || (category === 'End' && text === 'Exit')) {
-            _this.$Message.error({
-              background: true,
-              content: '禁止删除该节点'
-            })
-            return false
-          }
-          return true
-        })
+        if (_this.deleteTimer) {
+          clearTimeout(_this.deleteTimer)
+        }
+        _this.deleteTimer = setTimeout(() => {
+          return _this.blockDiagram.selection.all(function (nodeOrLink) {
+            let { data: { category, text } } = nodeOrLink
+            if ((category === 'Start' && text === 'Entry') || (category === 'End' && text === 'Exit')) {
+              _this.$Message.error({
+                background: true,
+                content: '禁止删除该节点'
+              })
+              return false
+            }
+            return true
+          })
+        }, _this.timerStep)
       }
 
       // -------------从Palette拖拽节点的触发事件，判断Unit是否被UnitList包含------------
@@ -514,28 +526,35 @@ export default {
         { category: 'End', text: 'End' }
       ])
 
-      if (this.jobInfo.job_flow) {
-        let { status, data } = await getBlockFlowDict4Font(this.jobInfo.job_flow)
-        if (status === 200) {
-          if (JSON.stringify(data) === '{}') {
+      if (this.diagramModel && this.diagramModel.nodeDataArray.length) {
+        this.myDiagram.model = go.Model.fromJson(this.diagramModel)
+      } else {
+        if (this.jobInfo.job_flow) {
+          let { status, data } = await getBlockFlowDict4Font(this.jobInfo.job_flow)
+          if (status === 200) {
+            if (JSON.stringify(data) === '{}') {
+              this.$Message.err({
+                background: true,
+                content: '这个job不存在'
+              })
+              return this.$router.push({ path: '/' })
+            }
+            this.stageJobLabel = this.jobInfo.jobLabel
+            this.myDiagram.model = go.Model.fromJson(data)
+            this.$store.commit('job/setDiagramModel', data)
+          } else {
             this.$Message.err({
               background: true,
-              content: '这个job不存在'
+              content: '获取 Job 信息失败'
             })
-            return this.$router.push({ path: '/' })
           }
-          this.stageJobLabel = this.jobInfo.jobLabel
-          this.myDiagram.model = go.Model.fromJson(data)
         } else {
-          this.$Message.err({
-            background: true,
-            content: '获取 Job 信息失败'
-          })
-        }
-      } else {
         // getTemporarySpace().then(res => {
-        this.myDiagram.model = basicModel()
+          let model = basicModel()
+          this.myDiagram.model = model
+          this.$store.commit('job/setDiagramModel', model)
         // })
+        }
       }
     },
     switchBlockSave (msg) {
@@ -720,7 +739,7 @@ export default {
     },
     async _saveJob (e, saveAs = false, isDraft = true) { // render 函数中会向函数传入点击事件参数
       let jobFlow = this.myDiagram.model.toJson()
-      let id = this.$route.query.jobId
+      let id = this.jobId
       let info = JSON.parse(JSON.stringify(this.jobInfo, null, 2))
       info.ui_json_file = JSON.parse(jobFlow)
       info.test_area = await this._createNewTag('test_area')
@@ -753,6 +772,8 @@ export default {
           console.error(err)
         })
       }
+
+      this.clearData()
     },
     saveAs () {
       this.rename = true
@@ -900,14 +921,23 @@ export default {
           this.$store.commit('files/setResFiles', filesInfo)
         })
       })
+    },
+    clearData () {
+      this.$store.commit('job/setJobInfo', {})
+      this.$store.commit('job/clearDiagramModel')
+      this.$store.commit('job/clearPreJobInfo')
+      this.$store.commit('files/clearResFiles')
+      this.$store.commit('device/clearDeviceInfo')
+    },
+    cancelEdit () {
+      this.clearData()
+      this.$router.push({ path: '/jobList' })
     }
   },
   beforeRouteLeave (to, from, next) {
     setTimeout(() => {
       this.$Notice.destroy()
     }, 600)
-    this.$store.commit('job/setJobInfo', {})
-    this.$store.commit('device/setDeviceInfo', null)
     next()
   }
 }

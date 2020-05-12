@@ -1,5 +1,5 @@
 <template>
-  <Modal v-model="jobModalShow" :closable="false" width="90">
+  <Modal v-model="jobModalShow" :closable="false" :mask-closable="false" width="90">
     <div slot="header">
       <p v-show="currentJobName === 'Job'">请选择您需要的InnerJob</p>
       <p v-show="currentJobName !== 'Job'">当前选中的InnerJob为：<strong>{{ currentJobName }}</strong></p>
