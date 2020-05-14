@@ -64,7 +64,8 @@ export default {
   },
   computed: {
     ...mapState('job', [
-      'preJobInfo'
+      'preJobInfo',
+      'isValidated'
     ]),
     rotateIcon () {
       return [
@@ -110,14 +111,16 @@ export default {
       this.$router.push({ path: '/jobList' })
     },
     createJob () {
-      setTimeout(() => {
-        this.$store.commit('handleShowDrawer')
-      }, 600)
       if (this.preJobInfo) {
         this.$store.commit('job/renewJobInfo')
       } else {
         this.$store.commit('job/setJobInfo', {})
       }
+      setTimeout(() => {
+        if (!this.isValidated) {
+          this.$store.commit('handleShowDrawer')
+        }
+      }, 600)
       this.$router.push({ path: '/jobEditor' })
     }
   }

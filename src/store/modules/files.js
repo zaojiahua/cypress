@@ -12,7 +12,8 @@ let state = {
       title: '图片名称',
       children: ['snap']
     }
-  ]
+  ],
+  showResFileModal: false
 }
 
 let mutations = {
@@ -83,6 +84,9 @@ let mutations = {
   },
   setResFilesName (state, filesName) {
     state.resFilesName = JSON.parse(filesName)
+  },
+  setShowResFileModal (state) {
+    state.showResFileModal = !state.showResFileModal
   }
 }
 

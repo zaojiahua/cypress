@@ -195,13 +195,15 @@ export default {
       }
     },
     manufacturerId (val) { // 当厂商发生变动时刷新列表
-      console.log(val)
       this.refreshManufacturer()
     },
     jobInfo (val) { // jobInfo 更新时同步更新 formInfo
       for (let item in this.formInfo) {
         this.formInfo[item] = val[item]
       }
+      this.$refs.formInfo.validate((valid) => {
+        this.$store.commit('job/setIsValidated', valid)
+      })
     }
   },
   methods: {

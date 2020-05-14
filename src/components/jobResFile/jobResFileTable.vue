@@ -2,7 +2,7 @@
     <table>
         <th v-for="column in columns" :key="column.title">{{ column.title}}</th>
         <tr v-for="(row, trIndex) in data" :key="trIndex" @click="showFile(trIndex)" :class="{ active: trIndex === currentRow }">
-            <td>{{ trIndex }}</td>
+            <td>{{ trIndex + 1 }}</td>
             <td>{{ row.name }}</td>
             <td>{{ row.type }}</td>
             <td>

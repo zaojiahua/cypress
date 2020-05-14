@@ -35,8 +35,6 @@
       <job-res-file
         ref="jobResFile"
         :jobName="jobName"
-        :resFileModalShow="resFileModalShow"
-        @resFileModalClose="resFileModalClose"
       ></job-res-file>
       <unit-editor
         :showUnitEditor="showUnitEditor"
@@ -161,7 +159,6 @@ export default {
       jobModalShow: false,
       currentJobBlockKey: null,
       currentJobBlockText: 'Job block',
-      resFileModalShow: false,
       unitMsgToogle: true,
       showUnitEditor: false,
       unitController: null,
@@ -811,10 +808,7 @@ export default {
       }
     },
     viewResFile () {
-      this.resFileModalShow = true
-    },
-    resFileModalClose () {
-      this.resFileModalShow = false
+      this.$store.commit('files/setShowResFileModal')
     },
     closeUnitEditor () {
       this.showUnitEditor = false

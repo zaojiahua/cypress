@@ -1,17 +1,30 @@
 <template>
-  <Modal v-model="resFileModalShow" :closable="false" :mask-closable="false" width="90">
-    <div slot="header">
-      <strong style="font-size: 18px;">Job--{{ jobName }}的依赖文件：</strong>
-    </div>
-    <div class="res-file">
-      <job-res-file-table style="width: 45%;" :columns="filesColumn" :data="resFiles" :currentFile="currentFile" @showFile="showFile"></job-res-file-table>
-      <div class="res-file-show">
-          <job-res-file-show style="width: 96%;" :filesData="resFiles" :currentFile="currentFile" @saveChange="saveChange"></job-res-file-show>
-      </div>
-    </div>
-    <div slot="footer">
-      <Button type="primary" size="large" @click="resFileModalClose">确定</Button>
-    </div>
+  <Modal v-model="showResFileModal" :closable="false" :mask-closable="false" width="90">
+    <Tabs>
+      <TabPane :label="label" name="files">
+        <div class="res-file">
+          <job-res-file-table style="width: 45%;" :columns="filesColumn" :data="resFiles" :currentFile="currentFile" @showFile="showFile"></job-res-file-table>
+          <div class="res-file-show">
+              <job-res-file-show style="width: 96%;" :filesData="resFiles" :currentFile="currentFile" @saveChange="saveChange"></job-res-file-show>
+          </div>
+        </div>
+        <div slot="footer">
+          <Button type="primary" size="large" @click="closeResFileModal">确定</Button>
+        </div>
+      </TabPane>
+      <TabPane label="上传文件" name="upload" icon="ios-cloud-upload-outline" class="upload-wrapper">
+        <Upload
+          multiple
+          type="drag"
+          action="//jsonplaceholder.typicode.com/posts/">
+          <div class="upload-area">
+            <Icon type="ios-cloud-upload" size="300" style="color: #3399ff"></Icon>
+            <p style="font-size: 18px;">Click or drag files here to upload</p>
+          </div>
+        </Upload>
+      </TabPane>
+    </Tabs>
+
     <Modal v-model="checkDuplicateNameModal" :styles="{top: '48%'}" :mask-closable="false"  :closable="false">
       <p slot="header">
         <Icon type="ios-alert-outline" style="color:orange;font-size:1.2em;font-weight:bold;" />
@@ -48,10 +61,6 @@ import { mapState } from 'vuex'
 export default {
   components: { jobResFileShow, jobResFileTable },
   props: {
-    resFileModalShow: {
-      type: Boolean,
-      default: false
-    },
     jobName: {
       type: String,
       default: ''
@@ -79,20 +88,35 @@ export default {
       overwriteAt: null,
       renameModal: false,
       newName: '',
-      checkState: null
+      checkState: null,
+      label: (h) => {
+        return h('div', [
+          h('span', '依赖文件'),
+          h('Badge', {
+            props: {
+              count: this.resFiles.length
+            }
+          })
+        ])
+      }
     }
   },
   computed: {
     ...mapState('files', [
       'resFiles'
-    ])
-    // resFiles () {
-    //   return this.$store.state.resFile
-    // }
+    ]),
+    showResFileModal: {
+      get () {
+        return this.$store.state.files.showResFileModal
+      },
+      set () {
+        this.$store.commit('files/setShowResFileModal')
+      }
+    }
   },
   methods: {
-    resFileModalClose () {
-      this.$emit('resFileModalClose')
+    closeResFileModal () {
+      this.$store.commit('files/setShowResFileModal')
     },
     saveChange (file) { // 保存对依赖文件的修改
       this.resFiles[this.currentFile].file = file
@@ -191,6 +215,14 @@ export default {
       justify-content: center;
       align-items: center;
       width: 45%;
+  }
+}
+.upload-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .upload-area {
+    padding: 20px 200px;
   }
 }
 </style>
