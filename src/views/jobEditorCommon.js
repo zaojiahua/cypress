@@ -199,32 +199,21 @@ export function baseGroupTemplate (context) {
         highlightGroup(e, grp, false)
       },
       memberAdded: function (t, n) { // 判断当前 Unit 是否已经编辑完成，并改变 Unit 状态
-        let unitData = n.data
-        let target = null
-        if (unitData.unitMsg.execModName === 'IMGTOOL') {
-          context.blockDiagram.model.setDataProperty(n.data, 'star', true)
-          target = unitData.unitMsg.execCmdDict
-          for (let key in target) {
-            if (target[key].type !== 'noChange' && target[key].content.includes('Tmach ')) {
-              context.blockDiagram.model.setDataProperty(n.data, 'color', Colors.unfinished)
-              n.data.completed = false
-              return
-            }
-          }
-          context.blockDiagram.model.setDataProperty(n.data, 'color', Colors.finish)
-          n.data.completed = true
-        } else {
-          target = unitData.unitMsg.execCmdDict.execCmdList
-          for (let i = 0; i < target.length; i++) {
-            if (target[i].type !== 'noChange' && target[i].content.includes('Tmach ')) {
-              context.blockDiagram.model.setDataProperty(n.data, 'color', Colors.unfinished)
-              n.data.completed = false
-              return
-            }
-            context.blockDiagram.model.setDataProperty(n.data, 'color', Colors.finish)
-            n.data.completed = true
+        let { data } = n
+        let { unitMsg } = data
+        let { execModName, execCmdDict } = unitMsg
+        let { execCmdList } = execCmdDict
+        let target = execCmdList || execCmdDict
+        if (execModName === 'IMGTOOL') context.blockDiagram.model.setDataProperty(n.data, 'star', true)
+        for (let key in target) {
+          if (target[key].type !== 'noChange' && target[key].content.includes('Tmach ')) {
+            context.blockDiagram.model.setDataProperty(n.data, 'color', Colors.unfinished)
+            n.data.completed = false
+            return
           }
         }
+        context.blockDiagram.model.setDataProperty(n.data, 'color', Colors.finish)
+        n.data.completed = true
       },
       computesBoundsAfterDrag: true,
       // when the selection is dropped into a Group, add the selected Parts into that Group;

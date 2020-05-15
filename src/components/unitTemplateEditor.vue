@@ -8,7 +8,7 @@
           icon="ios-search"
           placeholder="input here"
           style="width:300px">
-          <Option v-for="unitType in unitTemplateTypes" :value="unitType" :key="unitType"></Option>
+          <Option v-for="unitType in unitTypes" :value="unitType" :key="unitType"></Option>
         </AutoComplete>
       </div>
       <div class="edit-area" @keydown="handleKeydown">
@@ -31,6 +31,8 @@ import { isJsonString, insertAfterCursor } from 'lib/tools.js'
 
 import { updateJobUnitTemplate, createNewUnitTemplate } from 'api/reef/unit'
 
+import { mapState } from 'vuex'
+
 export default {
   props: {
     openUnitTemplateEditor: {
@@ -52,12 +54,6 @@ export default {
     unitTemplateId: {
       type: Number,
       default: undefined
-    },
-    unitTemplateTypes: {
-      type: Array,
-      default () {
-        return ['ADBC', 'IMGTOOL', 'LIMBTEMPR', 'MONITCAM']
-      }
     }
   },
   data () {
@@ -69,6 +65,11 @@ export default {
       currentUnitType: this.unitTemplateType,
       newUnitName: ''
     }
+  },
+  computed: {
+    ...mapState('unit', [
+      'unitTypes'
+    ])
   },
   watch: {
     openUnitTemplateEditor (val) {
@@ -126,24 +127,30 @@ export default {
         this.setNewUnitName = true
       }
     },
-    updateUnitTemplate () {
+    async updateUnitTemplate () {
       if (this.jsonFormatCheck(this.currentUnitTemplateContent)) {
         let unitInfo = {
           unit_name: this.unitTemplateName,
           unit_content: JSON.parse(this.currentUnitTemplateContent),
-          type: this.unitTemplateType
+          type: this.currentUnitType
         }
-        updateJobUnitTemplate(this.unitTemplateId, unitInfo).then((res) => {
-          if (res.status === 200) {
+        try {
+          let { status } = await updateJobUnitTemplate(this.unitTemplateId, unitInfo)
+          if (status === 200) {
             this.$Message.success({
               background: true,
               content: '更新成功'
             })
             this.$emit('updateUnitAllList', this.currentUnitType)
+          } else {
+            this.$Message.error({
+              background: true,
+              content: '更新失败'
+            })
           }
-        }).catch(e => {
-          console.log(e)
-        })
+        } catch (error) {
+          console.log(error)
+        }
         this.closeUnitTemplateEditor()
       }
     },

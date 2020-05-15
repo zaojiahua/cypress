@@ -1,4 +1,5 @@
 let state = {
+  unitTypes: [],
   unitData: {
     unitName: '',
     unitType: '',
@@ -7,6 +8,9 @@ let state = {
 }
 
 let mutations = {
+  setUnitTypes (state, unitTypes) {
+    state.unitTypes = unitTypes
+  },
   setUnitData (state, unitData) {
     state.unitData = unitData
   },
@@ -37,27 +41,17 @@ let mutations = {
 let getters = {
   unitItemsData (state) {
     if (!state.unitData.unitMsg) return []
-    let { unitMsg } = state.unitData
+    let { unitMsg: { execCmdDict, execCmdDict: { execCmdList } } } = state.unitData
     let unitItemsData = []
-    let unitType = unitMsg.execModName
-    if (unitType === 'IMGTOOL') {
-      Object.keys(unitMsg.execCmdDict).forEach((execCmdDictKey) => {
-        if (unitMsg.execCmdDict[execCmdDictKey].type !== 'noChange') {
-          unitItemsData.push({
-            'itemName': execCmdDictKey,
-            'itemContent': JSON.parse(JSON.stringify(unitMsg.execCmdDict[execCmdDictKey]))
-          })
-        }
-      })
-    } else {
-      unitMsg.execCmdDict.execCmdList.forEach((val, index) => {
-        if (val.type !== 'noChange') {
-          unitItemsData.push({
-            'itemName': index,
-            'itemContent': JSON.parse(JSON.stringify(val))
-          })
-        }
-      })
+    let source = execCmdList || execCmdDict
+
+    for (let key in source) {
+      if (source[key].type !== 'noChange') {
+        unitItemsData.push({
+          'itemName': key,
+          'itemContent': JSON.parse(JSON.stringify(source[key]))
+        })
+      }
     }
     return unitItemsData
   },

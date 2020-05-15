@@ -50,8 +50,7 @@
         :openUnitTemplateEditor="openUnitTemplateEditor"
         :unitTemplateId="unitTemplateId"
         :unitTemplateType="unitType"
-        :unitTemplateTypes="unitTypes"
-        :unitTemplateName="unitName"
+        :unitTemplateName="unitTemplateName"
         :unitTemplateContent="unitTemplateContent"
         @closeUnitTemplateEditor="closeUnitTemplateEditor"
         @updateUnitAllList="updateUnitAllList"
@@ -165,7 +164,6 @@ export default {
       openUnitTemplateEditor: false,
       unitTemplateContent: '',
       unitTemplateId: undefined,
-      unitTypes: [],
       COLORS: {
         START: '#064973',
         SWITCH: '#768BB9',
@@ -181,7 +179,8 @@ export default {
       },
       rename: false,
       deleteTimer: null,
-      timerStep: 80
+      timerStep: 80,
+      unitTemplateName: ''
     }
   },
   computed: {
@@ -203,8 +202,13 @@ export default {
     ...mapGetters('unit', [
       'unitNodeKey'
     ]),
-    unitName () {
-      return this.unitData.unitName
+    unitName: {
+      get () {
+        return this.unitData.unitName
+      },
+      set () {
+
+      }
     }
   },
   mounted () {
@@ -365,24 +369,26 @@ export default {
       })
 
       // 禁止删除 Entry 与 Exit 节点
-      _this.blockDiagram.commandHandler.canDeleteSelection = function (e) {
-        if (_this.deleteTimer) {
-          clearTimeout(_this.deleteTimer)
-        }
-        _this.deleteTimer = setTimeout(() => {
-          return _this.blockDiagram.selection.all(function (nodeOrLink) {
-            let { data: { category, text } } = nodeOrLink
-            if ((category === 'Start' && text === 'Entry') || (category === 'End' && text === 'Exit')) {
-              _this.$Message.error({
-                background: true,
-                content: '禁止删除该节点'
-              })
-              return false
-            }
-            return true
-          })
-        }, _this.timerStep)
-      }
+      // _this.blockDiagram.commandHandler.canDeleteSelection = function (e) {
+      //   if (_this.deleteTimer) {
+      //     clearTimeout(_this.deleteTimer)
+      //   }
+      //   _this.deleteTimer = setTimeout(() => {
+      //     return _this.blockDiagram.selection.all(nodeOrLink => {
+      //       let { data: { category, text } } = nodeOrLink
+      //       if ((category === 'Start' && text === 'Entry') || (category === 'End' && text === 'Exit')) {
+      //         _this.$Message.error({
+      //           background: true,
+      //           content: '禁止删除该节点'
+      //         })
+      //         return false
+      //       } else {
+      //         console.log(111)
+      //         return true
+      //       }
+      //     })
+      //   }, _this.timerStep)
+      // }
 
       // -------------从Palette拖拽节点的触发事件，判断Unit是否被UnitList包含------------
       _this.blockDiagram.addDiagramListener('externalobjectsdropped', function (e) {
@@ -413,7 +419,7 @@ export default {
 
       unitTemplate.contextClick = function (e, node) {
         if (!(e.diagram instanceof go.Palette) || !sessionStorage.identity.includes('Admin')) return
-        _this.unitName = node.data.text
+        _this.unitTemplateName = node.data.text
         _this.unitTemplateId = node.data.unit_id
         _this.unitTemplateContent = JSON.stringify(node.data.unitMsg, null, 2)
         _this.unitController.style.top = `${e.event.y - 50}px`
@@ -868,6 +874,7 @@ export default {
           content: '获取 Unit 列表失败'
         })
       }
+      this.$store.commit('unit/setUnitTypes', Object.keys(this.unitAllList))
     },
     changeUnitColor (hasCompleted) {
       let currentNodeData = this.blockDiagram.findNodeForKey(this.unitNodeKey).data
