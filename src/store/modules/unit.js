@@ -28,11 +28,11 @@ let mutations = {
     state.unitData.unitMsg.execCmdDict.execCmdList.splice(itemIndex, 1)
   },
   setUnitItem (state, data) {
-    let unitType = state.unitData.unitType
-    if (unitType === 'ADBC') {
+    let { unitMsg: { execCmdDict, execCmdDict: { execCmdList } } } = state.unitData
+    let target = execCmdList || execCmdDict
+    if (Array.isArray(target)) {
       state.unitData.unitMsg.execCmdDict.execCmdList.splice(data.itemName, 1, data.itemContent)
-    }
-    if (unitType === 'IMGTOOL') {
+    } else {
       state.unitData.unitMsg.execCmdDict[data.itemName] = data.itemContent
     }
   }
