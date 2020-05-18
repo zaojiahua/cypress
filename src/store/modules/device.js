@@ -5,6 +5,7 @@ let state = {
 
 let mutations = {
   setDeviceInfo (state, deviceInfo) {
+    console.log(deviceInfo)
     state.deviceInfo = deviceInfo
   },
   clearDeviceInfo (state) {
@@ -19,6 +20,7 @@ let getters = {
   deviceInfo (state) {
     return state.deviceInfo ? [
       {
+        cabinet_ip_address: state.deviceInfo.cabinet.ip_address,
         device_name: state.deviceInfo.device_name,
         phone_model: state.deviceInfo.phone_model,
         android_version: state.deviceInfo.android_version,

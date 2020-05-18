@@ -151,7 +151,7 @@ export default {
     currentItem (val) {
       this.tmachBlanks = this.tmachBlanksPrefixLessen(val.itemContent.content.match(/Tmach.*? /g))
     },
-    absoluteCoordinates (val) {
+    absoulteCoordinates (val) {
       if (this.isPicInput) {
         this.tmachBlanks.splice(0, 1, val.x)
         this.tmachBlanks.splice(1, 1, val.y)

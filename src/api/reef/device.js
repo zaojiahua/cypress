@@ -45,3 +45,19 @@ export const getDeviceBatteryLevel = (parameter) => {
     url: 'api/v1/cedar/get_device_power_battery_level/?device_id=' + parameter
   })
 }
+
+export const controlDevice = (data) => {
+  return axios.request({
+    method: 'post',
+    url: 'api/v1/coral/control_device/',
+    data
+  })
+}
+
+export const releaseOccupyDevice = (data) => {
+  return axios.request({
+    method: 'post',
+    url: 'api/v1/coral/release_occupy_device/',
+    data
+  })
+}

@@ -1,7 +1,7 @@
 import axios from '../index'
 import { jobLibSvcURL, machexecURL } from '../../config'
 
-export const getScreenShot = (data) => {
+export const getScreenShot = (data, cabinetIp) => {
   /*
   * {
           requestName: ...,
@@ -12,6 +12,7 @@ export const getScreenShot = (data) => {
           stageJobLabel: ...
       }
   * */
+  console.log(machexecURL, data, cabinetIp)
   return axios.request({
     url: `${machexecURL}/pane/snap_shot/`,
     method: 'get',

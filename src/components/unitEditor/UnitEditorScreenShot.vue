@@ -104,14 +104,14 @@ export default {
           picture_name: screenShotName
         }
         let screenshot = new Promise((resolve, reject) => {
-          getScreenShot(getScreenShotParams).then(res => resolve(res)).catch(err => reject(err))
+          getScreenShot(getScreenShotParams, this.deviceInfo[0].cabinet_ip_address).then(res => resolve(res)).catch(err => reject(err))
         })
         var timeout = new Promise((resolve, reject) => {
           setTimeout(reject, 20000, 'timeout')
         })
-        Promise.race([screenshot, timeout]).then(res => {
-          if (res.status === 200) {
-            blobToDataURL(res.data).then(res => {
+        Promise.race([screenshot, timeout]).then(({ status, data }) => {
+          if (status === 200) {
+            blobToDataURL(data).then(res => {
               if (this.isJobResourcePicture) {
                 this.$store.commit('files/addResFile', {
                   name: screenShotName,

@@ -79,6 +79,7 @@ import { getManufacturerList } from '../api/reef/manufacturer'
 import { getJobTestAreaList } from '../api/reef/jobTestArea'
 import { getCustomTagList } from '../api/reef/customTag'
 import { getAndroidVersionList } from '../api/reef/androidVersion'
+import { controlDevice, releaseOccupyDevice } from '../api/reef/device'
 import { serializer, jobSerializer } from '../lib/util/jobListSerializer'
 import jobDeviceSelect from '../components/jobDeviceSelect'
 
@@ -191,7 +192,8 @@ export default {
       if (!same) { // 有冲突则进行处理
         this.handleConflict()
       } else {
-        console.log('有啥不一样')
+        console.log('请求占用')
+        this._controlDevice()
       }
     },
     manufacturerId (val) { // 当厂商发生变动时刷新列表
@@ -238,6 +240,18 @@ export default {
         }
       })
     },
+    async _controlDevice () {
+      let { id } = this.deviceInfo
+      // let res = await controlDevice({
+      //   device_id_list: [id],
+      //   occupy_type: 'job_editor'
+      // })
+      // console.log(res)
+      // let a = await releaseOccupyDevice({
+      //   device_id_list: [id]
+      // })
+      // console.log(a)
+    },
     saveChange () { // 保存对当前 Job 的修改
       this.$refs.formInfo.validate((valid) => {
         if (valid) { // 通过验证
@@ -266,6 +280,8 @@ export default {
       if (!this.phoneModelFlag) this.formInfo.phone_models.push(this.deviceInfo.phone_model_id)
       if (!this.romVersionFlag) this.formInfo.rom_version.push(this.deviceInfo.rom_version_id)
       if (!this.androidVersionFlag) this.formInfo.android_version.push(this.deviceInfo.android_version_id)
+      console.log('请求占用')
+      this._controlDevice()
 
       this.handleConflict()
     },
@@ -274,6 +290,8 @@ export default {
       this.formInfo.phone_models = [this.deviceInfo.phone_model_id]
       this.formInfo.rom_version = [this.deviceInfo.rom_version_id]
       this.formInfo.android_version = [this.deviceInfo.android_version_id]
+      console.log('请求占用')
+      this._controlDevice()
 
       if (toggle) this.handleConflict()
     },

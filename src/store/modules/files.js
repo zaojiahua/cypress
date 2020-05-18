@@ -55,7 +55,7 @@ let mutations = {
         }
       }
     } else {
-      state.currentFile = data.currentFile
+      state.currentFile = data.currentFileInfo
     }
   },
   removeCurrentFile (state) {
