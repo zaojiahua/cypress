@@ -313,7 +313,7 @@ export default {
     },
     async checkConflict (formInfo, deviceInfo, formToggle, deviceToggle) {
       if (!formInfo || !deviceInfo) {
-        console.log('wrong')
+        return
       }
       if (deviceToggle) {
         if (!formInfo.manufacturer) { // 当前 formInfo 没有厂商信息时则用设备信息直接替换

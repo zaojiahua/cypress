@@ -136,6 +136,7 @@ import axios from 'api'
 import { baseURL } from '../config'
 import { mapState, mapGetters } from 'vuex'
 import { createJobLabel } from '../lib/tools'
+import { releaseOccupyDevice } from '../api/reef/device'
 
 export default {
   name: 'jobEditor',
@@ -956,10 +957,24 @@ export default {
       })
     },
     async clearData () {
+      if (this.countdown) {
+        let { status } = await releaseOccupyDevice({
+          device_id_list: [this.deviceInfo.id]
+        })
+        if (status === 200) {
+          this.$Message.info({
+            background: true,
+            content: '设备已释放'
+          })
+        }
+        this.$store.commit('device/setCountdown')
+      }
       this.$store.commit('job/setJobInfo', {})
       this.$store.commit('job/clearDiagramModel')
       this.$store.commit('job/clearPreJobInfo')
       this.$store.commit('files/clearResFiles')
+      this.$store.commit('device/clearDeviceInfo')
+      this.$store.commit('device/clearPreDeviceInfo')
       this.$store.commit('files/setResFilesName', JSON.stringify([
         {
           title: '文件名称',
