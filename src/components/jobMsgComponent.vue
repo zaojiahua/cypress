@@ -144,7 +144,9 @@ export default {
       'jobId'
     ]),
     ...mapState('device', [
-      'deviceInfo'
+      'deviceInfo',
+      'preDeviceInfo',
+      'countdown'
     ]),
     manufacturerId () {
       return this.formInfo.manufacturer
@@ -162,39 +164,9 @@ export default {
     }
   },
   watch: {
-    deviceInfo (val) { // 设备信息变化时检测是否和已填信息发生冲突并进行处理
-      if (val === null) return
-      if (!this.formInfo.manufacturer) { // 当前 formInfo 没有厂商信息时则用设备信息直接替换
-        this.deviceInfoReplace(false)
-        return
-      }
-      if (this.formInfo.manufacturer !== val.manufacturer_id) { // 设备厂商与 formInfo 厂商不符合时需要解决冲突
-        this.handleConflict()
-        return
-      }
-
-      let same = true
-      this.phoneModelFlag = true
-      this.romVersionFlag = true
-      this.androidVersionFlag = true
-      if (!this.formInfo.phone_models.includes(val.phone_model_id)) { // 检测适配机型是否冲突
-        this.phoneModelFlag = false
-        same = false
-      }
-      if (!this.formInfo.rom_version.includes(val.rom_version_id)) { // 检测 ROM 版本是否冲突
-        this.romVersionFlag = false
-        same = false
-      }
-      if (!this.formInfo.android_version.includes(val.android_version_id)) { // 检测适配系统是否冲突
-        this.androidVersionFlag = false
-        same = false
-      }
-      if (!same) { // 有冲突则进行处理
-        this.handleConflict()
-      } else {
-        console.log('请求占用')
-        this._controlDevice()
-      }
+    deviceInfo (newVal, oldVal) { // 设备信息变化时检测是否和已填信息发生冲突并进行处理
+      this.$store.commit('device/setPreDeviceInfo', oldVal)
+      this.checkConflict(this.formInfo, newVal, false, true)
     },
     manufacturerId (val) { // 当厂商发生变动时刷新列表
       this.refreshManufacturer()
@@ -219,7 +191,10 @@ export default {
       this.$store.commit('job/clearDiagramModel')
       this.$store.commit('job/clearPreJobInfo')
       this.$store.commit('files/clearResFiles')
-      this.$store.commit('device/clearDeviceInfo')
+
+      if (this.countdown) {
+        this.checkConflict(this.formInfo, this.deviceInfo, true, false)
+      }
 
       this.$router.push({ // 跳转到 JobEditor
         name: 'jobEditor',
@@ -241,28 +216,43 @@ export default {
       })
     },
     async _controlDevice () {
-      // eslint-disable-next-line camelcase
-      // let { id, device_name } = this.deviceInfo
-      // try {
-      //   let { status } = await controlDevice({
-      //     device_id_list: [id],
-      //     occupy_type: 'job_editor'
-      //   })
-      //   if (status === 200) {
-      //     this.$Message.success({
-      //       background: true,
-      //       // eslint-disable-next-line camelcase
-      //       content: `成功占用设备 ${device_name}`
-      //     })
-      //     this.$store.commit('device/setCountdown', true)
-      //   }
-      // } catch (error) {
-      //   console.log(error)
-      // }
-      // let a = await releaseOccupyDevice({
-      //   device_id_list: [id]
-      // })
-      // console.log(a)
+      if (this.preDeviceInfo) {
+        try {
+          // eslint-disable-next-line camelcase
+          let { id, device_name } = this.preDeviceInfo
+          let { status } = await releaseOccupyDevice({
+            device_id_list: [id]
+          })
+          if (status === 200) {
+            this.$Message.success({
+              background: true,
+              // eslint-disable-next-line camelcase
+              content: `成功释放设备 ${device_name}`
+            })
+            this.$store.commit('device/setCountdown')
+          }
+        } catch (error) {
+          console.log(error)
+        }
+      }
+      try {
+        // eslint-disable-next-line camelcase
+        let { id, device_name } = this.deviceInfo
+        let { status } = await controlDevice({
+          device_id_list: [id],
+          occupy_type: 'job_editor'
+        })
+        if (status === 200) {
+          this.$Message.success({
+            background: true,
+            // eslint-disable-next-line camelcase
+            content: `成功占用设备 ${device_name}`
+          })
+          this.$store.commit('device/setCountdown', true)
+        }
+      } catch (error) {
+        console.log(error)
+      }
     },
     saveChange () { // 保存对当前 Job 的修改
       this.$refs.formInfo.validate((valid) => {
@@ -298,6 +288,7 @@ export default {
       this.handleConflict()
     },
     deviceInfoReplace (toggle = true) { // 发生冲突后用选取的设备信息替换原设备信息
+      if (!this.deviceInfo) return
       this.formInfo.manufacturer = this.deviceInfo.manufacturer_id
       this.formInfo.phone_models = [this.deviceInfo.phone_model_id]
       this.formInfo.rom_version = [this.deviceInfo.rom_version_id]
@@ -319,9 +310,69 @@ export default {
       })
 
       this.$store.commit('job/setJobInfo', Object.assign(this.jobInfo, this.formInfo))
+    },
+    async checkConflict (formInfo, deviceInfo, formToggle, deviceToggle) {
+      if (!formInfo || !deviceInfo) {
+        console.log('wrong')
+      }
+      if (deviceToggle) {
+        if (!formInfo.manufacturer) { // 当前 formInfo 没有厂商信息时则用设备信息直接替换
+          this.deviceInfoReplace(false)
+          return
+        }
+        if (formInfo.manufacturer !== deviceInfo.manufacturer_id) { // 设备厂商与 formInfo 厂商不符合时需要解决冲突
+          this.handleConflict()
+          return
+        }
+
+        let same = true
+        this.phoneModelFlag = true
+        this.romVersionFlag = true
+        this.androidVersionFlag = true
+        if (!formInfo.phone_models.includes(deviceInfo.phone_model_id)) { // 检测适配机型是否冲突
+          this.phoneModelFlag = false
+          same = false
+        }
+        if (!formInfo.rom_version.includes(deviceInfo.rom_version_id)) { // 检测 ROM 版本是否冲突
+          this.romVersionFlag = false
+          same = false
+        }
+        if (!formInfo.android_version.includes(deviceInfo.android_version_id)) { // 检测适配系统是否冲突
+          this.androidVersionFlag = false
+          same = false
+        }
+        if (!same) { // 有冲突则进行处理
+          this.handleConflict()
+        } else {
+          this._controlDevice()
+        }
+      }
+      if (formToggle) {
+        if (!deviceInfo) return
+        if (
+          formInfo.manufacturer !== deviceInfo.manufacturer_id ||
+          !formInfo.phone_models.includes(deviceInfo.phone_model_id) ||
+          !formInfo.rom_version.includes(deviceInfo.rom_version_id) ||
+          !formInfo.android_version.includes(deviceInfo.android_version_id)
+        ) {
+          let { status } = await releaseOccupyDevice({
+            device_id_list: [deviceInfo.id]
+          })
+          if (status === 200) {
+            this.$Message.warning({
+              background: true,
+              content: '当前设备与 Job 冲突，已自动释放。'
+            })
+          }
+          this.$store.commit('device/setCountdown')
+        }
+      }
     }
   },
   mounted () {
+    this.$Message.config({
+      duration: 3
+    })
     Promise.all([getManufacturerList(), getAndroidVersionList(), getCustomTagList(), getJobTestAreaList()]).then((res) => {
       this.manufacturer = util.validate(serializer.getManufacturerSerializer, res[0].data)
       this.androidVersion = util.validate(serializer.getAndroidVersionSerializer, res[1].data)

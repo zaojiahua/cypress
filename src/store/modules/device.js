@@ -1,16 +1,22 @@
 let state = {
   selectDevice: false,
   deviceInfo: null,
+  preDeviceInfo: null,
   countdown: false
 }
 
 let mutations = {
   setDeviceInfo (state, deviceInfo) {
-    console.log(deviceInfo)
     state.deviceInfo = deviceInfo
   },
   clearDeviceInfo (state) {
     state.deviceInfo = null
+  },
+  setPreDeviceInfo (state, preDeviceInfo) {
+    state.preDeviceInfo = preDeviceInfo
+  },
+  clearPreDeviceInfo (state) {
+    state.preDeviceInfo = null
   },
   setSelectDevice (state, toggle = true) {
     state.selectDevice = toggle

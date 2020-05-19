@@ -202,6 +202,10 @@ export default {
     ...mapGetters('unit', [
       'unitNodeKey'
     ]),
+    ...mapState('device', [
+      'countdown',
+      'deviceInfo'
+    ]),
     unitName: {
       get () {
         return this.unitData.unitName
@@ -217,6 +221,9 @@ export default {
     _this.$Notice.config({
       top: 150,
       duration: 0
+    })
+    this.$Message.config({
+      duration: 3
     })
 
     if (!this.resFiles.length) {
@@ -948,12 +955,11 @@ export default {
         })
       })
     },
-    clearData () {
+    async clearData () {
       this.$store.commit('job/setJobInfo', {})
       this.$store.commit('job/clearDiagramModel')
       this.$store.commit('job/clearPreJobInfo')
       this.$store.commit('files/clearResFiles')
-      this.$store.commit('device/clearDeviceInfo')
       this.$store.commit('files/setResFilesName', JSON.stringify([
         {
           title: '文件名称',

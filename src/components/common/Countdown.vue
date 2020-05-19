@@ -31,16 +31,12 @@ export default {
       return this.padLeft(Math.floor((this.countdown % 3600) % 60).toString())
     }
   },
-  watch: {
-    totalTime (val) {
-      this.countdown = val * 60
-    }
-  },
   methods: {
     startCount () {
       let totalTimer = window.setInterval(() => {
         if (this.countdown === 0) {
           window.clearInterval(totalTimer)
+          this.$emit('timeout')
         } else {
           this.countdown--
           if (this.remindTime !== 0 && this.countdown === this.remindTime * 60) {
@@ -55,6 +51,9 @@ export default {
       } else {
         return str
       }
+    },
+    restart () {
+      this.countdown = this.totalTime * 60
     }
   },
   mounted () {

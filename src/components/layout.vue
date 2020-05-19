@@ -9,7 +9,22 @@
             <span>®</span>
           </div>
           <div style="display: flex;">
-            <p class="device-countdown" v-if="this.countdown">距设备释放还有：<Countdown :totalTime="totalTime" :remindTime="remindTime" @remind="remind"></Countdown></p>
+            <div class="device-countdown" v-if="this.countdown">
+              距设备释放还有：
+              <Countdown
+                ref="countdown"
+                :totalTime="totalTime"
+                :remindTime="remindTime"
+                @remind="remind"
+                @timeout="releaseDevice"
+              ></Countdown>
+              <div class="device-controller">
+                <ButtonGroup vertical>
+                  <Button icon="ios-trash-outline" @click="releaseDevice(false)">提前释放</Button>
+                  <Button icon="ios-add" @click="extendTime">延期使用</Button>
+                </ButtonGroup>
+              </div>
+            </div>
             <MenuItem name="1">
               {{ username }}
             </MenuItem>
@@ -53,6 +68,7 @@
 <script>
 import jobMsgComponent from '../components/jobMsgComponent'
 import Countdown from './common/Countdown'
+import { controlDevice, releaseOccupyDevice } from '../api/reef/device'
 
 import { mapState } from 'vuex'
 
@@ -62,7 +78,7 @@ export default {
     return {
       isCollapsed: true,
       username: localStorage.username,
-      totalTime: 6,
+      totalTime: 30,
       remindTime: 5
     }
   },
@@ -72,7 +88,8 @@ export default {
       'isValidated'
     ]),
     ...mapState('device', [
-      'countdown'
+      'countdown',
+      'deviceInfo'
     ]),
     rotateIcon () {
       return [
@@ -130,17 +147,75 @@ export default {
       }, 600)
       this.$router.push({ path: '/jobEditor' })
     },
+    async releaseDevice (auto = true) {
+      try {
+        let { status } = await releaseOccupyDevice({
+          device_id_list: [this.deviceInfo.id]
+        })
+        if (status === 200 && auto) {
+          this.$Notice.info({
+            title: '到期提醒',
+            desc: '占用时间耗尽，设备已自动释放',
+            duration: 0
+          })
+        } else if (status === 200 && !auto) {
+          this.$Message.success({
+            background: true,
+            content: '设备释放成功'
+          })
+        }
+      } catch (error) {
+        this.$Notice.error({
+          title: '设备释放失败',
+          duration: 0
+        })
+      } finally {
+        this.$store.commit('device/setCountdown')
+        this.$store.commit('device/clearPreDeviceInfo')
+      }
+    },
+    async extendTime () {
+      // eslint-disable-next-line camelcase
+      let { id, device_name } = this.deviceInfo
+      try {
+        let { status } = await controlDevice({
+          device_id_list: [id],
+          occupy_type: 'job_editor'
+        })
+        if (status === 200) {
+          this.$refs.countdown.restart()
+          this.$Message.success({
+            background: true,
+            // eslint-disable-next-line camelcase
+            content: `延期占用设备 ${device_name}`
+          })
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    },
     remind () {
-      this.$Message.info({
-        background: true,
-        content: '距考试结束还剩5分钟'
+      let _this = this
+      this.$Modal.confirm({
+        title: '延期提醒',
+        content: `距自动释放设备还剩 ${this.remindTime} 分钟，要延长设备占用时间吗？`,
+        okText: '延期',
+        cancelText: '取消',
+        async onOk () {
+          _this.extendTime()
+        }
       })
     }
+  },
+  mounted () {
+    this.$Message.config({
+      duration: 3
+    })
   }
 }
 </script>
 
-<style scoped>
+<style lang="less" scoped>
   .layout{
     background: #f5f7f9;
     position: relative;
@@ -209,9 +284,24 @@ export default {
   .menu {
     display: flex;
     justify-content: space-between;
-  }
-  .device-countdown {
-    color: rgba(255,255,255,.7);
-    margin-right: 20px;
+    .device-countdown {
+      position: relative;
+      color: rgba(255,255,255,.7);
+      margin-right: 20px;
+      .device-controller {
+        display: none;
+        position: absolute;
+        right: 0;
+        box-shadow: 10px 10px 5px #888888;
+        .btn {
+          margin: 0;
+        }
+      }
+      &:hover {
+        .device-controller {
+          display: block;
+        }
+      }
+    }
   }
 </style>
