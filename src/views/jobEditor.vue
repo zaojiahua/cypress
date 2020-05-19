@@ -660,25 +660,6 @@ export default {
       }
       return flag
     },
-    _setJobResFile (id) {
-      this.$store.commit('files/addResFile', {
-        name: 'FILES_NAME_CONFIG.json',
-        type: 'json',
-        file: JSON.stringify(this.resFilesName, null, 2)
-      })
-      let data = new FormData()
-      data.append('job', id)
-      for (let i = 0; i < this.resFiles.length; i++) {
-        let file = null
-        if (this.resFiles[i].type === 'jpg' || this.resFiles[i].type === 'png') {
-          file = this._dataURLtoFile(this.resFiles[i].file, this.resFiles[i].name)
-        } else {
-          file = new File([this.resFiles[i].file], this.resFiles[i].name, { type: this.resFiles[i].type })
-        }
-        data.append('file', file)
-      }
-      return data
-    },
     _dataURLtoFile (dataurl, filename) {
       var arr = dataurl.split(',')
       var mime = arr[0].match(/:(.*?);/)[1]
@@ -716,31 +697,49 @@ export default {
         this._saveJob(saveAs, false, false)
       }
     },
-    async uploadFiles (id, info) {
-      let { status } = await jobFlowAndMsgUpdate(id, info)
-      if (status === 200) {
-        let data = this._setJobResFile(id)
-        let { status } = await jobResFilesSave(data)
-        if (status === 201) {
-          this.$Message.success({
-            background: true,
-            content: 'Job 保存成功'
-          })
-          this.$router.push({ path: '/jobList' })
+    async uploadFiles (id, info, resFiles) {
+      info.job_id = id
+      try {
+        let { status } = await jobFlowAndMsgUpdate(id, info)
+        if (status === 200) {
+          let data = new FormData()
+          data.append('job', id)
+          for (let i = 0; i < resFiles.length; i++) {
+            let { name, type, file } = resFiles[i]
+            if (type === 'png') {
+              data.append('file', this._dataURLtoFile(file, name))
+            } else {
+              data.append('file', new File([file], name, { type }))
+            }
+          }
+          try {
+            let { status } = await jobResFilesSave(data)
+            if (status === 201) {
+              this.$Message.success({
+                background: true,
+                content: 'Job 保存成功'
+              })
+              this.$router.push({ path: '/jobList' })
+            } else {
+              this.$Message.error({
+                background: true,
+                content: '依赖文件上传失败'
+              })
+            }
+          } catch (error) {
+            console.log(error)
+          }
         } else {
           this.$Message.error({
             background: true,
-            content: '依赖文件上传失败'
+            content: 'Job 保存失败'
           })
         }
-      } else {
-        this.$Message.error({
-          background: true,
-          content: 'Job 保存失败'
-        })
+      } catch (error) {
+        console.log(error)
       }
     },
-    async _saveJob (e, saveAs = false, isDraft = true) { // render 函数中会向函数传入点击事件参数
+    async _saveJob (e, saveAs = false, isDraft = true) {
       let jobFlow = this.myDiagram.model.toJson()
       let id = this.jobId
       let info = JSON.parse(JSON.stringify(this.jobInfo, null, 2))
@@ -750,19 +749,28 @@ export default {
       info.draft = isDraft
       info.author = localStorage.id
       if (this.isInnerJob) {
-        console.log('存为 InnerJob')
         info.job_type = 'InnerJob'
       }
+      this.$store.commit('files/addResFile', {
+        name: 'FILES_NAME_CONFIG.json',
+        type: 'json',
+        file: JSON.stringify(this.resFilesName, null, 2)
+      })
+      let resFiles = JSON.parse(JSON.stringify(this.resFiles))
       if (id) { // 不是新建 job
         if (saveAs) { // 另存为
           info.job_label = createJobLabel(this)
-          jobFlowAndMsgSave(info).then(res => {
-            if (res.status === 201) {
-              id = res.data.id
+          try {
+            let { status, data } = await jobFlowAndMsgSave(info)
+            if (status === 201) {
+              id = data.id
             }
-          }).then(this.uploadFiles(id, info))
+            this.uploadFiles(id, info, resFiles)
+          } catch (error) {
+            console.log(error)
+          }
         } else { // 更新
-          this.uploadFiles(id, info)
+          this.uploadFiles(id, info, resFiles)
         }
       } else { // 新建 job
         info.job_label = createJobLabel(this)
@@ -771,7 +779,9 @@ export default {
           if (res.status === 201) {
             id = res.data.id
           }
-        }).then(this.uploadFiles(id, info)).catch(err => {
+        }).then(() => {
+          this.uploadFiles(id, info, resFiles)
+        }).catch(err => {
           console.error(err)
         })
       }
@@ -899,7 +909,7 @@ export default {
         filesInfo.forEach((item, index) => {
           item.fileUrl = item.file
           item.file = null
-          if (item.name === 'FILES_NAME_CONFIG.json') {
+          if (item.name === 'FILES_NAME_CONFIG.json' || item.name === 'filesNameConfig.json') {
             filesNameConfigIndex = index
           }
         })
@@ -929,6 +939,16 @@ export default {
       this.$store.commit('job/clearPreJobInfo')
       this.$store.commit('files/clearResFiles')
       this.$store.commit('device/clearDeviceInfo')
+      this.$store.commit('files/setResFilesName', JSON.stringify([
+        {
+          title: '文件名称',
+          children: ['text']
+        },
+        {
+          title: '图片名称',
+          children: ['snap']
+        }
+      ]))
     },
     cancelEdit () {
       this.clearData()

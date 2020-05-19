@@ -2,13 +2,14 @@
   <div class="layout">
     <Layout  style="height: 100vh">
       <Header>
-        <Menu mode="horizontal" theme="dark">
+        <Menu mode="horizontal" theme="dark" class="menu">
           <!--<Icon @click.native="collapsedSider" :class="rotateIcon" :style="{margin: '0 20px'}" type="md-menu" size="24"></Icon>-->
           <div class="layout-logo">
             <b>ANGELREEF</b>
             <span>®</span>
           </div>
-          <div style="float: right">
+          <div style="display: flex;">
+            <p class="device-countdown" v-if="this.countdown">距设备释放还有：<Countdown :totalTime="totalTime" :remindTime="remindTime" @remind="remind"></Countdown></p>
             <MenuItem name="1">
               {{ username }}
             </MenuItem>
@@ -51,21 +52,27 @@
 </template>
 <script>
 import jobMsgComponent from '../components/jobMsgComponent'
+import Countdown from './common/Countdown'
 
 import { mapState } from 'vuex'
 
 export default {
-  components: { jobMsgComponent },
+  components: { jobMsgComponent, Countdown },
   data () {
     return {
       isCollapsed: true,
-      username: localStorage.username
+      username: localStorage.username,
+      totalTime: 6,
+      remindTime: 5
     }
   },
   computed: {
     ...mapState('job', [
       'preJobInfo',
       'isValidated'
+    ]),
+    ...mapState('device', [
+      'countdown'
     ]),
     rotateIcon () {
       return [
@@ -122,6 +129,12 @@ export default {
         }
       }, 600)
       this.$router.push({ path: '/jobEditor' })
+    },
+    remind () {
+      this.$Message.info({
+        background: true,
+        content: '距考试结束还剩5分钟'
+      })
     }
   }
 }
@@ -192,5 +205,13 @@ export default {
   }
   .ivu-layout-header{
     padding: 0;
+  }
+  .menu {
+    display: flex;
+    justify-content: space-between;
+  }
+  .device-countdown {
+    color: rgba(255,255,255,.7);
+    margin-right: 20px;
   }
 </style>

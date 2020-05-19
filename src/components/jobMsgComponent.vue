@@ -241,12 +241,24 @@ export default {
       })
     },
     async _controlDevice () {
-      let { id } = this.deviceInfo
-      // let res = await controlDevice({
-      //   device_id_list: [id],
-      //   occupy_type: 'job_editor'
-      // })
-      // console.log(res)
+      // eslint-disable-next-line camelcase
+      // let { id, device_name } = this.deviceInfo
+      // try {
+      //   let { status } = await controlDevice({
+      //     device_id_list: [id],
+      //     occupy_type: 'job_editor'
+      //   })
+      //   if (status === 200) {
+      //     this.$Message.success({
+      //       background: true,
+      //       // eslint-disable-next-line camelcase
+      //       content: `成功占用设备 ${device_name}`
+      //     })
+      //     this.$store.commit('device/setCountdown', true)
+      //   }
+      // } catch (error) {
+      //   console.log(error)
+      // }
       // let a = await releaseOccupyDevice({
       //   device_id_list: [id]
       // })

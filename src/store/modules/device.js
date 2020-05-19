@@ -1,6 +1,7 @@
 let state = {
   selectDevice: false,
-  deviceInfo: null
+  deviceInfo: null,
+  countdown: false
 }
 
 let mutations = {
@@ -13,6 +14,9 @@ let mutations = {
   },
   setSelectDevice (state, toggle = true) {
     state.selectDevice = toggle
+  },
+  setCountdown (state, toggle = false) {
+    state.countdown = toggle
   }
 }
 

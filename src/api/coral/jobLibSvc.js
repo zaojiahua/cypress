@@ -12,7 +12,7 @@ export const getScreenShot = (data, cabinetIp) => {
           stageJobLabel: ...
       }
   * */
-  console.log(machexecURL, data, cabinetIp)
+  // console.log(machexecURL, data, cabinetIp)
   return axios.request({
     url: `${machexecURL}/pane/snap_shot/`,
     method: 'get',
