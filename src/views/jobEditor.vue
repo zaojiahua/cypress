@@ -802,15 +802,22 @@ export default {
       let unitCategoryData = {}
       unitCategoryData.nodeDataArray = []
       this.unitType = name
-      Object.entries(this.unitAllList[name]).forEach((unit) => {
-        unitCategoryData.nodeDataArray.push({
-          category: 'Unit',
-          text: unit[0],
-          unit_id: unit[1]['unit_id'],
-          unitMsg: unit[1]['unit_content']
+      if (this.unitAllList[name]) {
+        Object.entries(this.unitAllList[name]).forEach((unit) => {
+          unitCategoryData.nodeDataArray.push({
+            category: 'Unit',
+            text: unit[0],
+            unit_id: unit[1]['unit_id'],
+            unitMsg: unit[1]['unit_content']
+          })
         })
-      })
-      this.blockPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
+        this.blockPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
+      } else {
+        this.$Message.error({
+          background: true,
+          content: 'Unit 列表为空'
+        })
+      }
     },
     jobModalClose (job) {
       this.jobModalShow = false
@@ -866,25 +873,33 @@ export default {
     },
     async updateUnitAllList (name = undefined) {
       this.unitAllList = {}
-      let { status, data: { unit } } = await getJobUnitsBodyDict()
-      if (status === 200) {
-        unit.forEach((unit, index) => {
-          if (!(unit.type in this.unitAllList)) {
-            this.$set(this.unitAllList, unit.type, {})
-          }
-          this.$set(this.unitAllList[unit.type], unit.unit_name, {
-            unit_id: unit.id,
-            unit_content: unit.unit_content
+      try {
+        let { status, data: { unit } } = await getJobUnitsBodyDict()
+        if (status === 200) {
+          unit.forEach((unit, index) => {
+            if (!(unit.type in this.unitAllList)) {
+              this.$set(this.unitAllList, unit.type, {})
+            }
+            this.$set(this.unitAllList[unit.type], unit.unit_name, {
+              unit_id: unit.id,
+              unit_content: unit.unit_content
+            })
           })
-        })
-        if (name) this.getSelectedUnit(name)
-      } else {
+          if (name) this.getSelectedUnit(name)
+        } else {
+          this.$Message.error({
+            background: true,
+            content: '获取 Unit 列表失败'
+          })
+        }
+        this.$store.commit('unit/setUnitTypes', Object.keys(this.unitAllList))
+      } catch (error) {
+        console.log(error)
         this.$Message.error({
           background: true,
-          content: '获取 Unit 列表失败'
+          content: '服务器错误，获取 Unit 列表失败'
         })
       }
-      this.$store.commit('unit/setUnitTypes', Object.keys(this.unitAllList))
     },
     changeUnitColor (hasCompleted) {
       let currentNodeData = this.blockDiagram.findNodeForKey(this.unitNodeKey).data

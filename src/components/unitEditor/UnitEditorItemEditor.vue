@@ -1,6 +1,6 @@
 <template>
   <Card>
-    <p slot="title">Item Editor</p>
+    <p slot="title">Item Editor {{ saveToFinalResult }}</p>
     <div class="item-editor-empty" v-show="!showItemEditor">
       <p class="empty">选择一个 ITEM 开始编辑吧</p>
     </div>
@@ -271,6 +271,7 @@ export default {
       this.tmachBlankSuffixComplete() // 补全后缀
       this.updateCurrentUnitItemData()
       this.closeItemEditor()
+      this.saveToFinalResult = false
     },
     setName (name) {
       this.tmachBlanks.splice(0, 1, name)
