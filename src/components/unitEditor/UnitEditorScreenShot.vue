@@ -24,7 +24,6 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import { getScreenShot } from 'api/coral/jobLibSvc.js'
 import { blobToDataURL, suffixAutoComplete } from 'lib/tools.js'
 export default {
   name: 'ScreenShot',
@@ -99,19 +98,30 @@ export default {
 
         }
         let getScreenShotParams = {
+          cabinet_ip: this.deviceInfo[0].cabinet_ip_address,
           device_label: this.deviceInfo[0].device_label,
           device_ip: this.deviceInfo[0].ip_address,
           picture_name: screenShotName
         }
         let screenshot = new Promise((resolve, reject) => {
-          getScreenShot(getScreenShotParams, this.deviceInfo[0].cabinet_ip_address).then(res => resolve(res)).catch(err => reject(err))
+          let url = `http://${getScreenShotParams.cabinet_ip}:5000/pane/snap_shot/?device_label=${getScreenShotParams.device_label}&device_ip=${getScreenShotParams.device_ip}&picture_name=${getScreenShotParams.picture_name}`
+          let xhr = new XMLHttpRequest()
+          xhr.open('GET', url, true)
+          xhr.responseType = 'blob'
+          xhr.send()
+          xhr.onload = () => {
+            resolve(xhr)
+          }
+          xhr.onerror = (err) => {
+            reject(err)
+          }
         })
         var timeout = new Promise((resolve, reject) => {
           setTimeout(reject, 20000, 'timeout')
         })
-        Promise.race([screenshot, timeout]).then(({ status, data }) => {
+        Promise.race([screenshot, timeout]).then(({ status, response }) => {
           if (status === 200) {
-            blobToDataURL(data).then(res => {
+            blobToDataURL(response).then(res => {
               if (this.isJobResourcePicture) {
                 this.$store.commit('files/addResFile', {
                   name: screenShotName,

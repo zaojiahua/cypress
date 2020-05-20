@@ -688,12 +688,12 @@ export default {
       }
       for (let i = 0; i < target.length; i++) {
         if (typeof target[i] !== 'number') {
-          let res = await axios.request({
+          let { data: { id } } = await axios.request({
             url: `${baseURL}/api/v1/cedar/${targetNameDic[tagType]}/`,
             method: 'post',
             data: tagType === 'test_area' ? { description: target[i] } : { custom_tag_name: target[i] }
           })
-          target.splice(i, 1, res.data.id)
+          target.splice(i, 1, id)
         }
       }
       return target

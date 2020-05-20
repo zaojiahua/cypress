@@ -22,13 +22,13 @@ export default {
   },
   computed: {
     hour () {
-      return this.padLeft(Math.floor(this.countdown / 3600).toString())
+      return Math.floor(this.countdown / 3600).toString().padStart(2, '0')
     },
     minute () {
-      return this.padLeft(Math.floor((this.countdown % 3600) / 60).toString())
+      return Math.floor((this.countdown % 3600) / 60).toString().padStart(2, '0')
     },
     second () {
-      return this.padLeft(Math.floor((this.countdown % 3600) % 60).toString())
+      return Math.floor((this.countdown % 3600) % 60).toString().padStart(2, '0')
     }
   },
   methods: {
@@ -44,13 +44,6 @@ export default {
           }
         }
       }, 1000)
-    },
-    padLeft (str) {
-      if (str.length === 1) {
-        return '0' + str
-      } else {
-        return str
-      }
     },
     restart () {
       this.countdown = this.totalTime * 60

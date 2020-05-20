@@ -1,5 +1,5 @@
 import axios from '../index'
-import { jobLibSvcURL, machexecURL } from '../../config'
+import { jobLibSvcURL } from '../../config'
 
 export const getScreenShot = (data, cabinetIp) => {
   /*
@@ -12,9 +12,12 @@ export const getScreenShot = (data, cabinetIp) => {
           stageJobLabel: ...
       }
   * */
-  // console.log(machexecURL, data, cabinetIp)
+  let { log } = console
+  log('cabinetIp: ', cabinetIp)
+  let url = `${cabinetIp}:5000/pane/snap_shot/`
+  log('url: ', url)
   return axios.request({
-    url: `${machexecURL}/pane/snap_shot/`,
+    url,
     method: 'get',
     params: data,
     responseType: 'blob'
