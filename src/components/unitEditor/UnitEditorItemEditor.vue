@@ -84,6 +84,7 @@ export default {
   data () {
     return {
       tmachBlanks: [],
+      tmachIndex: 0,
       saveToFinalResult: false,
       showRename: false
     }
@@ -152,9 +153,14 @@ export default {
       this.tmachBlanks = this.tmachBlanksPrefixLessen(val.itemContent.content.match(/Tmach.*? /g))
     },
     absoulteCoordinates (val) {
+      let { length } = this.tmachBlanks
       if (this.isPicInput) {
-        this.tmachBlanks.splice(0, 1, val.x)
-        this.tmachBlanks.splice(1, 1, val.y)
+        if (this.tmachIndex + 2 > length) {
+          this.tmachIndex = 0
+        }
+        this.tmachBlanks.splice(this.tmachIndex, 1, val.x)
+        this.tmachBlanks.splice(this.tmachIndex + 1, 1, val.y)
+        this.tmachIndex += 2
       }
     }
   },
@@ -272,6 +278,7 @@ export default {
       this.updateCurrentUnitItemData()
       this.closeItemEditor()
       this.saveToFinalResult = false
+      this.tmachIndex = 0
     },
     setName (name) {
       this.tmachBlanks.splice(0, 1, name)
