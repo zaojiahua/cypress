@@ -37,7 +37,7 @@
         ></ScreenShot>
         <FeaturePoint
           v-if="isJobResourceFile"
-          :featurePointFileName="tmachBlanks[0]"
+          :featurePointFileName="tmachBlanks[0] || randomJSONFileName()"
           @setFeaturePointFileName="setName"
         ></FeaturePoint>
         <Checkbox v-model="saveToFinalResult" v-if="showCheckbox" style="float: right;">添加此图片至最终结果</Checkbox>
@@ -293,6 +293,11 @@ export default {
       this.$store.commit('files/renameDuplicatedFile', this.tmachBlanks[0])
       this.showRename = false
       this.saveItem()
+    },
+    randomJSONFileName () {
+      let fileName = `config_${Math.random().toString(16).slice(2, 6)}.json`
+      this.tmachBlanks[0] = fileName
+      return fileName
     }
   }
 }
