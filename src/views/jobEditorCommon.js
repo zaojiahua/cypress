@@ -100,6 +100,7 @@ export function startNodeTemplate (color, shape = 'RoundedRectangle') {
   startNodeTemplate.add(makePort('L', go.Spot.Left, true, false))
   startNodeTemplate.add(makePort('R', go.Spot.Right, true, false))
   startNodeTemplate.add(makePort('B', go.Spot.Bottom, true, false))
+  startNodeTemplate.deletable = false
   return startNodeTemplate
 }
 
@@ -108,6 +109,7 @@ export function endNodeTemplate (color, shape = 'RoundedRectangle') {
   endNodeTemplate.add(makePort('T', go.Spot.Top, false, true))
   endNodeTemplate.add(makePort('L', go.Spot.Left, false, true))
   endNodeTemplate.add(makePort('R', go.Spot.Right, false, true))
+  endNodeTemplate.deletable = false
   return endNodeTemplate
 }
 

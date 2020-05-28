@@ -376,28 +376,6 @@ export default {
         'commandHandler.archetypeGroupData': { category: 'UnitList', text: 'UnitList', isGroup: true }
       })
 
-      // 禁止删除 Entry 与 Exit 节点
-      // _this.blockDiagram.commandHandler.canDeleteSelection = function (e) {
-      //   if (_this.deleteTimer) {
-      //     clearTimeout(_this.deleteTimer)
-      //   }
-      //   _this.deleteTimer = setTimeout(() => {
-      //     return _this.blockDiagram.selection.all(nodeOrLink => {
-      //       let { data: { category, text } } = nodeOrLink
-      //       if ((category === 'Start' && text === 'Entry') || (category === 'End' && text === 'Exit')) {
-      //         _this.$Message.error({
-      //           background: true,
-      //           content: '禁止删除该节点'
-      //         })
-      //         return false
-      //       } else {
-      //         console.log(111)
-      //         return true
-      //       }
-      //     })
-      //   }, _this.timerStep)
-      // }
-
       // -------------从Palette拖拽节点的触发事件，判断Unit是否被UnitList包含------------
       _this.blockDiagram.addDiagramListener('externalobjectsdropped', function (e) {
         e.subject.each(function (n) {
@@ -668,6 +646,17 @@ export default {
       }
       return flag
     },
+    isNestedInnerJob () { // 是否是嵌套的InnerJob
+      let { count } = this.myDiagram.findNodesByExample({ 'category': 'Job' })
+      if (count > 0 && this.isInnerJob) {
+        this.$Message.error({
+          background: true,
+          content: 'InnerJob 暂不支持嵌套'
+        })
+        return true
+      }
+      return false
+    },
     _dataURLtoFile (dataurl, filename) {
       var arr = dataurl.split(',')
       var mime = arr[0].match(/:(.*?);/)[1]
@@ -700,7 +689,7 @@ export default {
     },
     saveJob (saveAs = false) {
       // 使用 & 保证都运行
-      if (!this._jobMsgRules()) return
+      if (!this._jobMsgRules() || this.isNestedInnerJob()) return
       if (this._jobFlowRules()) {
         this._saveJob(saveAs, false, false)
       }

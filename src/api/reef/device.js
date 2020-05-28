@@ -9,12 +9,12 @@ export const getUsableDeviceList = () => {
       '&status=idle&ai_occupy=False'
   })
 }
-
 export const getDeviceList = (queryParameters) => {
   return axios.request({
     url: 'api/v1/cedar/device/?fields=' +
       'id,' +
       'device_label,' +
+      'occupy_type,' +
       'phone_model,' +
       'phone_model.id,' +
       'phone_model.phone_model_name,' +
