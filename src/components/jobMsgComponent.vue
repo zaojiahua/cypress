@@ -3,7 +3,7 @@
     <Divider orientation="left">
       <b>用例信息</b>
       <div  class="inner-job">
-        <Checkbox v-model="isInnerJob">Inner Job</Checkbox>
+        <Checkbox v-model="isInnerJob" :disabled="!isJobEditor">Inner Job</Checkbox>
       </div>
     </Divider>
     <Form ref="formInfo" :label-width="100" :model='formInfo' :rules='jobInfoRules'>

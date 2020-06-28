@@ -1,10 +1,12 @@
 export function commonValidation (fromnode, fromport, tonode, toport) {
-  if (tonode.data.category === 'Start') return false
-  if (fromnode.data.category === 'End') return false
+  let { category: fromCategory } = fromnode.data
+  let { category: toCategory } = tonode.data
+  if (toCategory === 'Start') return false
+  if (fromCategory === 'End') return false
   // 只有switchBlock可以多指向
-  if (fromnode.data.category !== 'switchBlock' && fromnode.findNodesOutOf().count > 0) return false
+  if (fromCategory !== 'switchBlock' && fromnode.findNodesOutOf().count > 0) return false
 
-  if (fromnode.data.category === 'Start' && tonode.data.category === 'End') return false
+  if (fromCategory === 'Start' && toCategory === 'End') return false
 
   // 保证所有节点不可以重复指向
   let flag = true

@@ -150,7 +150,7 @@ export default {
       unitContent: '',
       blockName: '',
       stageJobLabel: null,
-      getCurrentNormalBlockByKey: null,
+      currentNormalBlockKey: null,
       unitType: '请选择组件类型',
       switchBlockInfo: {},
       unitAllList: {},
@@ -327,7 +327,7 @@ export default {
         if (e.diagram instanceof go.Palette) return
         _this.unitType = '请选择组件类型'
         _this.blockName = node.data.text
-        _this.getCurrentNormalBlockByKey = node.data.key
+        _this.currentNormalBlockKey = node.data.key
         _this.blockModalShow = true
         if (!_this.blockDiagram) blockDiagramInit()
         if (!_this.blockPalette) blockPaletteInit()
@@ -553,13 +553,17 @@ export default {
       this.myDiagram.model.setDataProperty(node, 'explain', msg.explain)
     },
     saveNormalBlock () { // normalBlock点击确定进行校验
-      let currentNormalBlockData = this.myDiagram.findNodeForKey(this.getCurrentNormalBlockByKey).data
+      let currentNormalBlockData = this.myDiagram.findNodeForKey(this.currentNormalBlockKey).data
 
       let blockDiagramData = JSON.parse(this.blockDiagram.model.toJson())
 
       const blockDiagramHint = blockFlowValidation(this)
 
       this.$Notice.destroy()
+
+      function setDataProperty (context, data, propname, val) {
+        context.myDiagram.model.setDataProperty(data, propname, val)
+      }
 
       if (blockDiagramHint.size !== 0) {
         this.blockModalShow = true
@@ -570,7 +574,6 @@ export default {
           errorNum++
         })
         // message提示
-
         this.$Notice.error({
           title: '当前block出现以下错误',
           desc: errorMessage
@@ -578,17 +581,18 @@ export default {
       } else {
         let units = blockDiagramData.nodeDataArray.filter(item => item.category === 'Unit')
         if (units.some(item => item.unitMsg.execModName === 'IMGTOOL')) {
-          this.myDiagram.model.setDataProperty(currentNormalBlockData, 'star', true)
+          setDataProperty(this, currentNormalBlockData, 'star', true)
         } else {
-          this.myDiagram.model.setDataProperty(currentNormalBlockData, 'star', false)
+          setDataProperty(this, currentNormalBlockData, 'star', false)
         }
         if (units.length === 0 || units.some(item => item.completed === false)) {
-          this.myDiagram.model.setDataProperty(currentNormalBlockData, 'color', this.COLORS.UNFINISHED)
+          setDataProperty(this, currentNormalBlockData, 'color', this.COLORS.UNFINISHED)
         } else {
-          this.myDiagram.model.setDataProperty(currentNormalBlockData, 'color', this.COLORS.FINISH)
+          setDataProperty(this, currentNormalBlockData, 'color', this.COLORS.FINISH)
         }
-        this.myDiagram.model.setDataProperty(currentNormalBlockData, 'unitLists', blockDiagramData)
-        this.myDiagram.model.setDataProperty(currentNormalBlockData, 'text', this.blockName)
+        setDataProperty(this, currentNormalBlockData, 'unitLists', blockDiagramData)
+        setDataProperty(this, currentNormalBlockData, 'text', this.blockName)
+        this.myDiagram.model = go.Model.fromJson(this.myDiagram.model.toJson())
         this.blockModalShow = false
       }
     },
