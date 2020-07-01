@@ -1,6 +1,18 @@
 <template>
-  <Card style="height: 500px; z-index: 10">
+  <Card style="height: 500px" class="raw-unit-card">
     <p slot="title">Raw Unit &nbsp; ({{ unitType }} Unit)</p>
+    <Icon
+      type="ios-arrow-up"
+      slot="extra" size="20"
+      v-show="!openRawUnit"
+      @click="open(true)"
+    />
+    <Icon
+      type="ios-arrow-down"
+      slot="extra" size="20"
+      v-show="openRawUnit"
+      @click="open(false)"
+    />
     <div v-show="editing" class="raw-unit">
       <div class="raw-unit-mask"></div>
       <div class="unit-msg unit-msg-edit">
@@ -25,10 +37,13 @@
 <script>
 import { isJsonString, insertAfterCursor } from 'lib/tools.js'
 
-import { mapGetters } from 'vuex'
+import { mapState } from 'vuex'
 
 export default {
   name: 'RawUnit',
+  props: {
+    unitData: Object
+  },
   data () {
     return {
       editing: false,
@@ -38,13 +53,35 @@ export default {
   watch: {
     unitContent (val) {
       this.currentUnitContent = val
+    },
+    openRawUnit (val) {
+      let rawUnitCard = document.querySelector('.raw-unit-card')
+      if (val) {
+        rawUnitCard.style.height = '500px'
+      } else {
+        rawUnitCard.style.height = '52px'
+      }
     }
   },
   computed: {
-    ...mapGetters('unit', [
-      'unitType',
-      'unitContent'
-    ])
+    ...mapState('unit', [
+      'openRawUnit'
+    ]),
+    unitType () {
+      return this.unitData ? this.unitData.unitType : ''
+    },
+    unitContent () {
+      if (this.unitData) {
+        let { unitMsg, unitMsg: { execCmdDict: { execCmdList } } } = this._.cloneDeep(this.unitData)
+        if (execCmdList) {
+          execCmdList.forEach((val) => {
+            delete val.itemID
+          })
+        }
+        return JSON.stringify(unitMsg, null, 2)
+      }
+      return ''
+    }
   },
   methods: {
     editCurrentUnitContent () {
@@ -64,7 +101,7 @@ export default {
           content: '不是 JSON 格式'
         })
       } else {
-        this.$store.commit('unit/setUnitMsg', this.currentUnitContent)
+        this.$emit('updateRawUnit', this.currentUnitContent)
         this.$Message.success({
           background: true,
           content: '保存成功'
@@ -76,42 +113,49 @@ export default {
       let insertStr = '  '
       event.preventDefault()
       insertAfterCursor(event.target, insertStr)
+    },
+    open (open) {
+      this.$store.commit('unit/handleOpenRawUnit', open)
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
-.raw-unit {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 420px;
-
-  .raw-unit-mask {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 3000px;
-    height: 3000px;
-    background-color: rgba(0, 0, 0, .8);
-    z-index: 1;
-  }
-
-  .unit-msg {
-    // max-height: 88%;
-    overflow: auto;
-    z-index: 10;
-  }
-  .unit-msg-edit {
-    max-width: 1600px;
-  }
-
-  .btns {
-    height: 10%;
+.raw-unit-card {
+  z-index: 10;
+  overflow: hidden;
+  .raw-unit {
     display: flex;
-    align-items: center;
-    z-index: 10;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 420px;
+
+    .raw-unit-mask {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 3000px;
+      height: 3000px;
+      background-color: rgba(0, 0, 0, .8);
+      z-index: 1;
+    }
+
+    .unit-msg {
+      // max-height: 88%;
+      overflow: auto;
+      z-index: 10;
+    }
+    .unit-msg-edit {
+      max-width: 1600px;
+    }
+
+    .btns {
+      height: 10%;
+      display: flex;
+      align-items: center;
+      z-index: 10;
+    }
   }
 }
 </style>

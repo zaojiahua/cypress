@@ -38,9 +38,11 @@
       ></job-res-file>
       <unit-editor
         :showUnitEditor="showUnitEditor"
+        :unitData="unitData"
         @closeUnitEditor="closeUnitEditor"
         @changeUnitColor="changeUnitColor"
         @saveUnit="saveUnit"
+        @setUnitName="setUnitName"
       ></unit-editor>
       <div id="chart-wrap">
         <div id="chart-palette"></div>
@@ -161,6 +163,7 @@ export default {
       currentJobBlockText: 'Job block',
       unitMsgToogle: true,
       showUnitEditor: false,
+      unitData: undefined,
       unitController: null,
       openUnitTemplateEditor: false,
       unitTemplateContent: '',
@@ -196,12 +199,6 @@ export default {
     ...mapState('files', [
       'resFiles',
       'resFilesName'
-    ]),
-    ...mapState('unit', [
-      'unitData'
-    ]),
-    ...mapGetters('unit', [
-      'unitNodeKey'
     ]),
     ...mapState('device', [
       'countdown',
@@ -395,12 +392,19 @@ export default {
         if (e.diagram instanceof go.Palette) return
         // _this.unitMsgToogle = !_this.unitMsgToogle
         _this.showUnitEditor = true
-        _this.$store.commit('unit/setUnitData', {
-          unitNodeKey: node.data.key,
-          unitName: node.data.text,
-          unitType: node.data.unitMsg.execModName,
-          unitMsg: JSON.parse(JSON.stringify(node.data.unitMsg, null, 2))
-        })
+        let { key, text, unitMsg, unitMsg: { execModName } } = node.data
+        _this.unitData = {
+          unitNodeKey: key,
+          unitName: text,
+          unitType: execModName,
+          unitMsg: _this._.cloneDeep(unitMsg)
+        }
+        // _this.$store.commit('unit/setUnitData', {
+        //   unitNodeKey: node.data.key,
+        //   unitName: node.data.text,
+        //   unitType: node.data.unitMsg.execModName,
+        //   unitMsg: JSON.parse(JSON.stringify(node.data.unitMsg, null, 2))
+        // })
       }
 
       unitTemplate.contextClick = function (e, node) {
@@ -792,12 +796,14 @@ export default {
     saveAs () {
       this.rename = true
     },
-    saveUnit () {
-      let unitMsg = this.unitData.unitMsg
-      let currentUnitNode = this.blockDiagram.findNodeForKey(this.unitNodeKey)
-      this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'unitMsg', unitMsg)
-      this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'text', this.unitName)
+    saveUnit (unitData) {
+      let currentUnitNode = this.blockDiagram.findNodeForKey(unitData.unitNodeKey)
+      this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'unitMsg', unitData.unitMsg)
+      this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'text', unitData.unitName)
       this.showUnitEditor = false
+    },
+    setUnitName (val) {
+      this.unitData.unitName = val
     },
     getSelectedUnit (name) {
       let unitCategoryData = {}
@@ -903,7 +909,7 @@ export default {
       }
     },
     changeUnitColor (hasCompleted) {
-      let currentNodeData = this.blockDiagram.findNodeForKey(this.unitNodeKey).data
+      let currentNodeData = this.blockDiagram.findNodeForKey(this.unitData.unitNodeKey).data
 
       if (hasCompleted) {
         this.blockDiagram.model.setDataProperty(currentNodeData, 'color', this.COLORS.FINISH)

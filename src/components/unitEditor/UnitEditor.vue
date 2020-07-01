@@ -4,7 +4,7 @@
     width="90"
     :closable="false"
     :mask-closable="false"
-    v-model="currentShowUnitEditor"
+    v-model="curShowUnitEditor"
   >
     <div slot="header" class="header">
       <span>UNIT EDITOR</span>
@@ -16,11 +16,19 @@
     <div>
     <div class="body">
       <div style="height:840px;">
-        <ItemList></ItemList>
-        <RawUnit></RawUnit>
+        <ItemList
+          :unitItemsData="unitItemsData"
+          @updateUnitItem="updateUnitItem"
+        ></ItemList>
+        <RawUnit
+          :unitData="curUnitData"
+          @updateRawUnit="updateRawUnit"
+        ></RawUnit>
       </div>
       <div style="height:840px;">
-        <ItemEditor></ItemEditor>
+        <ItemEditor
+          @updateUnitItem="updateUnitItem"
+        ></ItemEditor>
       </div>
       <div style="height:840px;">
         <Utils></Utils>
@@ -42,30 +50,76 @@ import Utils from './UnitEditorUtils'
 
 import { findComponentsDownward } from 'lib/tools.js'
 
+import { mapState } from 'vuex'
+
 export default {
   name: 'UnitEditor',
   components: { ItemList, RawUnit, ItemEditor, Utils },
   props: {
-    showUnitEditor: Boolean
+    showUnitEditor: Boolean,
+    unitData: Object
   },
   data () {
     return {
-      currentShowUnitEditor: this.showUnitEditor,
+      curShowUnitEditor: this.showUnitEditor,
+      curUnitData: this.unitData,
       unitItems: []
+    }
+  },
+  computed: {
+    ...mapState('unit', [
+      'itemHandBook'
+    ]),
+    unitName: {
+      get () {
+        return this.unitData ? this.unitData.unitName : ''
+      },
+      set (val) {
+        this.$emit('setUnitName', val)
+      }
+    },
+    unitItemsData () {
+      if (!this.curUnitData) return
+
+      let { unitMsg: { execCmdDict, execCmdDict: { execCmdList } } } = this._.cloneDeep(this.curUnitData)
+      let src = execCmdList || execCmdDict
+      let unitItemsData = []
+      for (let key in src) {
+        if (src[key].type !== 'noChange') {
+          unitItemsData.push({
+            'itemName': key,
+            'itemContent': this._.cloneDeep(src[key])
+          })
+        }
+      }
+      return unitItemsData
     }
   },
   watch: {
     showUnitEditor (val) {
-      this.currentShowUnitEditor = val
-    }
-  },
-  computed: {
-    unitName: {
-      get () {
-        return this.$store.state.unit.unitData.unitName
-      },
-      set (val) {
-        this.$store.commit('unit/setUnitName', val)
+      this.curShowUnitEditor = val
+    },
+    unitData: {
+      deep: true,
+      handler (newVal) {
+        let copyOfVal = this._.cloneDeep(newVal)
+        let { unitMsg: { execCmdDict: { execCmdList } } } = copyOfVal
+        if (execCmdList) {
+          execCmdList.forEach((val, idx) => {
+            val.itemID = Math.random().toString(16).slice(2, 8)
+          })
+          copyOfVal.unitMsg.execCmdDict.execCmdList = execCmdList
+        }
+        this.curUnitData = copyOfVal
+      }
+    },
+    itemHandBook (val) {
+      if (val.methods === 'add') {
+        val.data.itemID = Math.random().toString(16).slice(2, 8)
+        val.data.content = val.data.content.replace(/Tmach.*? /g, 'Tmach ')
+        this.curUnitData.unitMsg.execCmdDict.execCmdList.splice(val.index + 1, 0, val.data)
+      } else if (val.methods === 'remove') {
+        this.curUnitData.unitMsg.execCmdDict.execCmdList.splice(val.index, 1)
       }
     }
   },
@@ -74,7 +128,14 @@ export default {
       this.unitItems = [...findComponentsDownward(this, 'UnitItem')]
       if (save) {
         this.$emit('changeUnitColor', this.checkWeatherCompleted())
-        this.$emit('saveUnit')
+        let unitData = this._.cloneDeep(this.curUnitData)
+        let { unitMsg: { execCmdDict: { execCmdList } } } = unitData
+        if (execCmdList) {
+          execCmdList.forEach((val) => {
+            delete val.itemID
+          })
+        }
+        this.$emit('saveUnit', unitData)
       }
       this.$emit('closeUnitEditor')
       this.unitItems.forEach(item => {
@@ -85,6 +146,14 @@ export default {
     },
     checkWeatherCompleted () {
       return this.unitItems.every(unitItem => unitItem.isCompleted === true)
+    },
+    updateUnitItem (item) {
+      let { unitMsg: { execCmdDict, execCmdDict: { execCmdList } } } = this.curUnitData
+      let src = execCmdList || execCmdDict
+      Object.assign(src[item.itemName], item.itemContent)
+    },
+    updateRawUnit (unitContent) {
+      this.curUnitData.unitMsg = JSON.parse(unitContent)
     }
   }
 }

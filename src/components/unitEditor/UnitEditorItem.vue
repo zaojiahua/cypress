@@ -1,8 +1,8 @@
 <template>
   <div class="item" :class="{active: isClicked, disabled: !isEditable}" @click="handleItemClick">
     <p class="item-content" >
-      <Tag :color="tagColor">
-        {{ tagText }}
+      <Tag :color="tagColor" style="border-radius: 50%">
+        {{ itemIndex + 1 }}
       </Tag>
       <span>
         {{ itemDesc[this.itemType] }}
@@ -22,12 +22,13 @@ import { mapGetters, mapState } from 'vuex'
 export default {
   name: 'UnitItem',
   props: {
-    itemData: Object
+    itemData: Object,
+    itemIndex: Number
   },
   data () {
     return {
       isClicked: false,
-      currentItemContent: this.itemData.itemContent,
+      currentItem: this.itemData.itemContent,
       tmachBlanks: [],
       itemDesc: {
         'jobResourceFile': '图片配置文件',
@@ -44,7 +45,7 @@ export default {
   watch: {
     itemData (val) {
       if (val) {
-        this.currentItemContent = val.itemContent
+        this.currentItem = val.itemContent
         this.handleTmachBlanks()
         // if (this.isClicked) {
         //   this.$el.click()
@@ -65,7 +66,7 @@ export default {
       'isJobResourceFile'
     ]),
     itemType () {
-      return this.currentItemContent.type
+      return this.currentItem.type
     },
     isUxInput () {
       return this.itemType === 'uxInput'
@@ -86,8 +87,8 @@ export default {
       return true
     },
     uxInputDefaultValue () {
-      if ('defaultValue' in this.currentItemContent) {
-        return this.currentItemContent.defaultValue.split(' ')
+      if ('defaultValue' in this.currentItem) {
+        return this.currentItem.defaultValue.split(' ')
       }
       return null
     },
@@ -107,12 +108,16 @@ export default {
   methods: {
     handleItem (flag) { // 当 item 类型 为 picInput 时，可以复制或删除本身
       if (flag) {
-        this.$store.commit('unit/addUnitItem', {
-          itemData: this.currentItemContent,
-          itemIndex: this.itemData.itemName
+        this.$store.commit('unit/setItemHandBook', {
+          methods: 'add',
+          index: Number(this.itemData.itemName),
+          data: this._.cloneDeep(this.currentItem)
         })
       } else {
-        this.$store.commit('unit/removeUnitItem', this.itemData.itemName)
+        this.$store.commit('unit/setItemHandBook', {
+          methods: 'remove',
+          index: Number(this.itemData.itemName)
+        })
       }
     },
     handleClicked () { // 点击 item 时取消对兄弟节点的聚焦
@@ -206,16 +211,13 @@ export default {
     setDefaultValue () { // 给某些 item 内的选项设定默认值
       if (this.tmachBlanks.includes('Tmach ')) {
         for (let i = 0; i < this.tmachBlanks.length; i++) {
-          this.currentItemContent.content = this.currentItemContent.content.replace(this.tmachBlanks[i], 'Tmach' + this.uxInputDefaultValue[i] + ' ')
+          this.currentItem.content = this.currentItem.content.replace(this.tmachBlanks[i], 'Tmach' + this.uxInputDefaultValue[i] + ' ')
         }
-        this.$store.commit('unit/setUnitItem', {
-          itemName: this.itemData.itemName,
-          itemContent: this.currentItemContent
-        })
+        this.$emit('updateUnitItem', this._.cloneDeep(this.itemData))
       }
     },
     handleTmachBlanks () { // 获取 item 中需要修改的项
-      this.tmachBlanks = this.currentItemContent.content.match(/Tmach.*? /g)
+      this.tmachBlanks = this.currentItem.content.match(/Tmach.*? /g)
     }
   },
   mounted () {
@@ -263,19 +265,22 @@ export default {
 
   .btn-list {
     display: flex;
-    flex-direction: column;
     float: right;
 
     .add-new-item, .remove-item {
       display: inline-block;
       text-align: center;
-      width: 16px;
-      height: 16px;
-      line-height: 16px;
-      text-align: center;
+      width: 20px;
+      height: 20px;
+      line-height: 20px;
+      font-size: 18px;
+      border-radius: 4px;
+      color: white;
+      user-select: none;
     }
     .add-new-item {
       background: rgb(48, 207, 61);
+      margin-right: 6px;
       cursor: copy;
     }
     .remove-item {
