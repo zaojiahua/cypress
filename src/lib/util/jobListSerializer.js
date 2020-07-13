@@ -107,8 +107,19 @@ const jobSerializer = {
   }],
   ui_json_file: 'string'
 }
+const formInfoSerializer = {
+  job_name: 'string',
+  test_area: [],
+  custom_tag: [],
+  description: 'string',
+  manufacturer: 'string',
+  phone_models: [],
+  rom_version: [],
+  android_version: []
+}
 
 export {
   serializer,
-  jobSerializer
+  jobSerializer,
+  formInfoSerializer
 }

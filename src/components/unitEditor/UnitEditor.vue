@@ -72,10 +72,10 @@ export default {
     ]),
     unitName: {
       get () {
-        return this.unitData ? this.unitData.unitName : ''
+        return this.curUnitData ? this.curUnitData.unitName : ''
       },
       set (val) {
-        this.$emit('setUnitName', val)
+        this.curUnitData.unitName = val
       }
     },
     unitItemsData () {
@@ -143,6 +143,7 @@ export default {
       })
       this.$store.commit('item/setShowItemEditor', false)
       this.$store.commit('files/removeCurrentFile')
+      this.curUnitData = null
     },
     checkWeatherCompleted () {
       return this.unitItems.every(unitItem => unitItem.isCompleted === true)

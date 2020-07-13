@@ -72,15 +72,15 @@
   </Drawer>
 </template>
 <script>
-import util from '../lib/util/validate.js'
+import util from 'lib/util/validate.js'
+import { serializer, jobSerializer, formInfoSerializer } from 'lib/util/jobListSerializer'
 
-import { patchUpdateJob } from '../api/reef/job'
-import { getManufacturerList } from '../api/reef/manufacturer'
-import { getJobTestAreaList } from '../api/reef/jobTestArea'
-import { getCustomTagList } from '../api/reef/customTag'
-import { getAndroidVersionList } from '../api/reef/androidVersion'
+import { patchUpdateJob } from 'api/reef/job'
+import { getManufacturerList } from 'api/reef/manufacturer'
+import { getJobTestAreaList } from 'api/reef/jobTestArea'
+import { getCustomTagList } from 'api/reef/customTag'
+import { getAndroidVersionList } from 'api/reef/androidVersion'
 import { controlDevice, releaseOccupyDevice } from '../api/reef/device'
-import { serializer, jobSerializer } from '../lib/util/jobListSerializer'
 import jobDeviceSelect from '../components/jobDeviceSelect'
 
 import { mapState, mapGetters } from 'vuex'
@@ -92,16 +92,6 @@ export default {
     return {
       checkManufacturerList: {},
       disabled: true,
-      formInfo: {
-        job_name: '',
-        test_area: [],
-        custom_tag: [],
-        description: '',
-        manufacturer: '',
-        phone_models: [],
-        rom_version: [],
-        android_version: []
-      },
       jobInfoRules: {
         job_name: [
           { required: true, message: '请输入用例名称', trigger: 'blur,change' }
@@ -129,6 +119,7 @@ export default {
         ]
       },
       job: util.validate(jobSerializer, {}),
+      formInfo: util.validate(formInfoSerializer, {}),
       manufacturer: util.validate(serializer.getManufacturerSerializer, {}),
       androidVersion: util.validate(serializer.getAndroidVersionSerializer, {}),
       customTag: util.validate(serializer.getCustomTagSerializer, {}),
@@ -178,6 +169,7 @@ export default {
       this.$refs.formInfo.validate((valid) => {
         this.$store.commit('job/setIsValidated', valid)
       })
+      this.getInfo()
     }
   },
   methods: {
@@ -367,18 +359,21 @@ export default {
           this.$store.commit('device/setCountdown')
         }
       }
+    },
+    getInfo () {
+      Promise.all([getManufacturerList(), getAndroidVersionList(), getCustomTagList(), getJobTestAreaList()]).then((res) => {
+        this.manufacturer = util.validate(serializer.getManufacturerSerializer, res[0].data)
+        this.androidVersion = util.validate(serializer.getAndroidVersionSerializer, res[1].data)
+        this.customTag = util.validate(serializer.getCustomTagSerializer, res[2].data)
+        this.jobTestArea = util.validate(serializer.getJobTestAreaSerializer, res[3].data)
+      })
     }
   },
   mounted () {
     this.$Message.config({
       duration: 3
     })
-    Promise.all([getManufacturerList(), getAndroidVersionList(), getCustomTagList(), getJobTestAreaList()]).then((res) => {
-      this.manufacturer = util.validate(serializer.getManufacturerSerializer, res[0].data)
-      this.androidVersion = util.validate(serializer.getAndroidVersionSerializer, res[1].data)
-      this.customTag = util.validate(serializer.getCustomTagSerializer, res[2].data)
-      this.jobTestArea = util.validate(serializer.getJobTestAreaSerializer, res[3].data)
-    })
+    this.getInfo()
   }
 }
 </script>

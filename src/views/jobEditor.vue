@@ -425,8 +425,8 @@ export default {
       unitListGroupTemplate.linkValidation = unitListValidation
 
       _this.blockDiagram.nodeTemplateMap.add('Unit', unitTemplate)
-      _this.blockDiagram.nodeTemplateMap.add('Start', startNodeTemplate(_this.COLORS.START))
-      _this.blockDiagram.nodeTemplateMap.add('End', endNodeTemplate(_this.COLORS.END))
+      _this.blockDiagram.nodeTemplateMap.add('Start', startNodeTemplate(_this.COLORS.START, true))
+      _this.blockDiagram.nodeTemplateMap.add('End', endNodeTemplate(_this.COLORS.END, true))
       _this.blockDiagram.groupTemplateMap.add('UnitList', unitListGroupTemplate)
 
       _this.blockDiagram.toolManager.linkingTool.linkValidation = commonValidation
@@ -747,10 +747,11 @@ export default {
     async _saveJob (e, saveAs = false, isDraft = true) {
       let jobFlow = this.myDiagram.model.toJson()
       let id = this.jobId
-      let info = JSON.parse(JSON.stringify(this.jobInfo, null, 2))
+      let info = this._.cloneDeep(this.jobInfo)
       info.ui_json_file = JSON.parse(jobFlow)
       info.test_area = await this._createNewTag('test_area')
       info.custom_tag = await this._createNewTag('custom_tag')
+      console.log(info)
       info.draft = isDraft
       info.author = localStorage.id
       if (this.isInnerJob) {
@@ -761,7 +762,7 @@ export default {
         type: 'json',
         file: JSON.stringify(this.resFilesName, null, 2)
       })
-      let resFiles = JSON.parse(JSON.stringify(this.resFiles))
+      let resFiles = this._.cloneDeep(this.resFiles)
       if (id) { // 不是新建 job
         if (saveAs) { // 另存为
           info.job_label = createJobLabel(this)

@@ -136,7 +136,6 @@ export default {
                 break
               }
             }
-            console.log(idToggle, andVerToggle, phoModToggle, romVerToggle)
             return idToggle && andVerToggle && phoModToggle && romVerToggle
           })
         this.innerJobs.forEach(job => {
