@@ -25,6 +25,7 @@
 <script>
 import { mapState, mapGetters } from 'vuex'
 import { blobToDataURL, suffixAutoComplete } from 'lib/tools.js'
+import CONST from 'config/const'
 export default {
   name: 'ScreenShot',
   props: {
@@ -122,7 +123,7 @@ export default {
         Promise.race([screenshot, timeout]).then(({ status, response }) => {
           if (status === 200) {
             blobToDataURL(response).then(res => {
-              if (this.isJobResourcePicture) {
+              if (CONST.WILL_TOUCH_FILE.has(this.itemType)) { // this.isJobResourcePicture
                 this.$store.commit('files/addResFile', {
                   name: screenShotName,
                   type: 'png',

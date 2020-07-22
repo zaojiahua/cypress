@@ -1,21 +1,8 @@
 import go from 'gojs'
+import CONST from 'config/const'
 export const MAKE = go.GraphObject.make
 
 const lightText = 'whitesmoke'
-
-const Colors = {
-  start: '#064973',
-  switch: '#768BB9',
-  normal: '#F76132',
-  job: '#50A5F4',
-  end: '#313131',
-  fail: '#818286',
-  success: '#F65A6D',
-  finish: '#29BB87',
-  unfinished: '#F76132',
-  unit: '#338FF0',
-  group: '#50A5F4'
-}
 
 export function showLinkLabel (e) {
   /*
@@ -206,15 +193,15 @@ export function baseGroupTemplate (context) {
         let { execModName, execCmdDict } = unitMsg
         let { execCmdList } = execCmdDict
         let target = execCmdList || execCmdDict
-        if (execModName === 'IMGTOOL') context.blockDiagram.model.setDataProperty(n.data, 'star', true)
+        if (CONST.STAR.has(execModName)) context.blockDiagram.model.setDataProperty(n.data, 'star', true)
         for (let key in target) {
           if (target[key].type !== 'noChange' && target[key].content.includes('Tmach ')) {
-            context.blockDiagram.model.setDataProperty(n.data, 'color', Colors.unfinished)
+            context.blockDiagram.model.setDataProperty(n.data, 'color', CONST.COLORS.UNFINISHED)
             n.data.completed = false
             return
           }
         }
-        context.blockDiagram.model.setDataProperty(n.data, 'color', Colors.finish)
+        context.blockDiagram.model.setDataProperty(n.data, 'color', CONST.COLORS.FINISH)
         n.data.completed = true
       },
       computesBoundsAfterDrag: true,
@@ -238,7 +225,7 @@ export function baseGroupTemplate (context) {
     MAKE(go.Shape, 'Rectangle',
       {
         fill: null,
-        stroke: Colors.group,
+        stroke: CONST.COLORS.GROUP,
         strokeWidth: 2,
         // 设置link的port  使其连线
         portId: '',
@@ -246,7 +233,7 @@ export function baseGroupTemplate (context) {
       }),
     MAKE(go.Panel, 'Vertical', // title above Placeholder
       MAKE(go.Panel, 'Horizontal', // button next to TextBlock
-        { stretch: go.GraphObject.Horizontal, background: Colors.group },
+        { stretch: go.GraphObject.Horizontal, background: CONST.COLORS.GROUP },
         MAKE('SubGraphExpanderButton',
           { alignment: go.Spot.Right, margin: 5 }),
         MAKE(go.TextBlock,
@@ -318,7 +305,7 @@ function showPorts (node, show) {
   let diagram = node.diagram
   if (!diagram || diagram.isReadOnly || !diagram.allowLink) return
   node.ports.each(function (port) {
-    port.stroke = (show ? 'yellow' : Colors.group)
+    port.stroke = (show ? 'yellow' : CONST.COLORS.GROUP)
   })
 }
 

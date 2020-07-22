@@ -18,6 +18,7 @@
 <script>
 import { findBrothersComponents } from 'lib/tools.js'
 import { mapGetters, mapState } from 'vuex'
+import CONST from 'config/const'
 
 export default {
   name: 'UnitItem',
@@ -30,16 +31,7 @@ export default {
       isClicked: false,
       currentItem: this.itemData.itemContent,
       tmachBlanks: [],
-      itemDesc: {
-        'jobResourceFile': '图片配置文件',
-        'jobResourcePicture': '参考标准图片',
-        'inputPicture': '输入图片名称',
-        'inputFile': '输入文件名称',
-        'outputPicture': '输出图片名称',
-        'outputFile': '输出文件名称',
-        'uxInput': '手动输入参数',
-        'picInput': '从图片选取坐标点'
-      }
+      itemDesc: CONST.ITEM_DESC
     }
   },
   watch: {
@@ -47,9 +39,6 @@ export default {
       if (val) {
         this.currentItem = val.itemContent
         this.handleTmachBlanks()
-        // if (this.isClicked) {
-        //   this.$el.click()
-        // }
       }
     }
   },

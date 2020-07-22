@@ -77,6 +77,7 @@ import { mapState, mapGetters } from 'vuex'
 import { suffixAutoComplete, suffixAutoRemove } from 'lib/tools.js'
 import ScreenShot from './UnitEditorScreenShot'
 import FeaturePoint from './UnitEditorFeaturePoint'
+import CONST from 'config/const'
 
 export default {
   name: 'ItemEditor',
@@ -86,7 +87,8 @@ export default {
       tmachBlanks: [],
       tmachIndex: 0,
       saveToFinalResult: false,
-      showRename: false
+      showRename: false,
+      preFileName: null
     }
   },
   computed: {
@@ -146,11 +148,15 @@ export default {
     },
     showCheckbox () {
       return this.isOutputPicture
+    },
+    willTouchFile () {
+      return CONST.WILL_TOUCH_FILE.has(this.itemType)
     }
   },
   watch: {
     currentItem (val) {
       this.tmachBlanks = this.tmachBlanksPrefixLessen(val.itemContent.content.match(/Tmach.*? /g))
+      this.setPreFileName()
     },
     absoulteCoordinates (val) {
       let { length } = this.tmachBlanks
@@ -179,7 +185,7 @@ export default {
       return tmachBlanks
     },
     saveFeaturePoint () {
-      if (this.isJobResourceFile && this.coordinates.length) {
+      if (this.willTouchFile && this.coordinates.length) {
         if (!this.tmachBlanks[0]) {
           this.$Message.error({
             background: true,
@@ -275,6 +281,9 @@ export default {
       if (!this.saveResFilesName()) return
       if (!this.saveFeaturePoint()) return
       this.tmachBlankSuffixComplete() // 补全后缀
+      if (this.willTouchFile) {
+        this.arrangeFileName(this.tmachBlanks[0])
+      }
       this.updateCurrentUnitItemData()
       this.closeItemEditor()
       this.saveToFinalResult = false
@@ -298,6 +307,23 @@ export default {
       let fileName = `config_${Math.random().toString(16).slice(2, 6)}.json`
       this.tmachBlanks[0] = fileName
       return fileName
+    },
+    setPreFileName () {
+      if (this.willTouchFile) {
+        this.preFileName = this.tmachBlanks[0]
+      } else {
+        this.preFileName = null
+      }
+    },
+    arrangeFileName (newFileName) {
+      if (newFileName !== this.preFileName) {
+        console.log('不一样哦QAQ')
+        this.$emit('arrangeFileName', {
+          oldName: this.preFileName,
+          newName: newFileName
+        })
+        this.preFileName = null
+      }
     }
   }
 }

@@ -140,6 +140,8 @@ import { mapState, mapGetters } from 'vuex'
 import { createJobLabel } from '../lib/tools'
 import { releaseOccupyDevice } from '../api/reef/device'
 
+import CONST from 'config/const'
+
 export default {
   name: 'jobEditor',
   components: { SwitchBlockDetailComponent, jobInJob, jobResFile, UnitEditor, unitTemplateEditor },
@@ -168,19 +170,6 @@ export default {
       openUnitTemplateEditor: false,
       unitTemplateContent: '',
       unitTemplateId: undefined,
-      COLORS: {
-        START: '#064973',
-        SWITCH: '#768BB9',
-        NORMAL: '#F76132',
-        JOB: '#50A5F4',
-        END: '#313131',
-        FAIL: '#818286',
-        SUCCESS: '#F65A6D',
-        FINISH: '#29BB87',
-        UNFINISHED: '#F76132',
-        UNIT: '#338FF0',
-        GROUP: '#50A5F4'
-      },
       rename: false,
       deleteTimer: null,
       timerStep: 80,
@@ -282,27 +271,27 @@ export default {
         }
       }
 
-      const startTemplate = startNodeTemplate(_this.COLORS.START)
+      const startTemplate = startNodeTemplate(CONST.COLORS.START)
       startTemplate.linkValidation = startValidation
 
-      const endTemplate = endNodeTemplate(_this.COLORS.END)
+      const endTemplate = endNodeTemplate(CONST.COLORS.END)
 
       endTemplate.doubleClick = (e, node) => {
         if (node.data.text === 'End') {
           _this.myDiagram.model.setDataProperty(node.data, 'text', 'Fail')
-          _this.myDiagram.model.setDataProperty(node.data, 'color', _this.COLORS.FAIL)
+          _this.myDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.FAIL)
         } else if (node.data.text === 'Fail') {
           _this.myDiagram.model.setDataProperty(node.data, 'text', 'Success')
-          _this.myDiagram.model.setDataProperty(node.data, 'color', _this.COLORS.SUCCESS)
+          _this.myDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.SUCCESS)
         } else {
           _this.myDiagram.model.setDataProperty(node.data, 'text', 'End')
-          _this.myDiagram.model.setDataProperty(node.data, 'color', _this.COLORS.END)
+          _this.myDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.END)
         }
 
         // debugger
       }
 
-      const switchBlockTemplate = baseNodeTemplateForPort(_this.COLORS.SWITCH, 'Diamond')
+      const switchBlockTemplate = baseNodeTemplateForPort(CONST.COLORS.SWITCH, 'Diamond')
       switchBlockTemplate.doubleClick = function (e, node) {
         _this.$Notice.destroy()
         if (e.diagram instanceof go.Palette) return
@@ -317,7 +306,7 @@ export default {
         _this.switchBlockModalShow = true
       }
 
-      const normalBlockTemplate = baseNodeTemplateForPort(_this.COLORS.NORMAL, 'Rectangle')
+      const normalBlockTemplate = baseNodeTemplateForPort(CONST.COLORS.NORMAL, 'Rectangle')
 
       normalBlockTemplate.doubleClick = function (e, node) {
         _this.$Notice.destroy()
@@ -342,7 +331,7 @@ export default {
         }
       }
 
-      const jobBlockTemplate = baseNodeTemplateForPort(_this.COLORS.JOB, 'Rectangle')
+      const jobBlockTemplate = baseNodeTemplateForPort(CONST.COLORS.JOB, 'Rectangle')
       jobBlockTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
         _this.currentJobBlockText = node.data.text
@@ -386,7 +375,7 @@ export default {
       })
       _this.blockDiagram.linkTemplate = linkTemplateStyle()
 
-      const unitTemplate = unitNodeTemplate(_this.COLORS.UNIT)
+      const unitTemplate = unitNodeTemplate(CONST.COLORS.UNIT)
 
       unitTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
@@ -399,12 +388,6 @@ export default {
           unitType: execModName,
           unitMsg: _this._.cloneDeep(unitMsg)
         }
-        // _this.$store.commit('unit/setUnitData', {
-        //   unitNodeKey: node.data.key,
-        //   unitName: node.data.text,
-        //   unitType: node.data.unitMsg.execModName,
-        //   unitMsg: JSON.parse(JSON.stringify(node.data.unitMsg, null, 2))
-        // })
       }
 
       unitTemplate.contextClick = function (e, node) {
@@ -425,8 +408,8 @@ export default {
       unitListGroupTemplate.linkValidation = unitListValidation
 
       _this.blockDiagram.nodeTemplateMap.add('Unit', unitTemplate)
-      _this.blockDiagram.nodeTemplateMap.add('Start', startNodeTemplate(_this.COLORS.START, true))
-      _this.blockDiagram.nodeTemplateMap.add('End', endNodeTemplate(_this.COLORS.END, true))
+      _this.blockDiagram.nodeTemplateMap.add('Start', startNodeTemplate(CONST.COLORS.START, true))
+      _this.blockDiagram.nodeTemplateMap.add('End', endNodeTemplate(CONST.COLORS.END, true))
       _this.blockDiagram.groupTemplateMap.add('UnitList', unitListGroupTemplate)
 
       _this.blockDiagram.toolManager.linkingTool.linkValidation = commonValidation
@@ -584,18 +567,26 @@ export default {
         })
       } else {
         let units = blockDiagramData.nodeDataArray.filter(item => item.category === 'Unit')
-        if (units.some(item => item.unitMsg.execModName === 'IMGTOOL')) {
+        if (units.some(item => CONST.STAR.has(item.unitMsg.execModName))) {
           setDataProperty(this, currentNormalBlockData, 'star', true)
         } else {
           setDataProperty(this, currentNormalBlockData, 'star', false)
         }
         if (units.length === 0 || units.some(item => item.completed === false)) {
-          setDataProperty(this, currentNormalBlockData, 'color', this.COLORS.UNFINISHED)
+          setDataProperty(this, currentNormalBlockData, 'color', CONST.COLORS.UNFINISHED)
         } else {
-          setDataProperty(this, currentNormalBlockData, 'color', this.COLORS.FINISH)
+          setDataProperty(this, currentNormalBlockData, 'color', CONST.COLORS.FINISH)
         }
         setDataProperty(this, currentNormalBlockData, 'unitLists', blockDiagramData)
         setDataProperty(this, currentNormalBlockData, 'text', this.blockName)
+        let resFile = {}
+        units.forEach((val) => {
+          if (val.resFile) {
+            Object.assign(resFile, val.resFile)
+          }
+        })
+        setDataProperty(this, currentNormalBlockData, 'resFile', resFile)
+
         this.myDiagram.model = go.Model.fromJson(this.myDiagram.model.toJson())
         this.blockModalShow = false
       }
@@ -744,6 +735,18 @@ export default {
         console.log(error)
       }
     },
+    removeInvalidFile (job) {
+      let normalBlocks = job.nodeDataArray.filter(item => item.category === 'normalBlock')
+      let resFile = {}
+      normalBlocks.forEach(val => {
+        Object.assign(resFile, val.resFile)
+      })
+      for (let i = this.resFiles.length - 1; i >= 0; i--) {
+        if (!resFile[this.resFiles[i].name]) {
+          this.$store.commit('files/removeResFile', i)
+        }
+      }
+    },
     async _saveJob (e, saveAs = false, isDraft = true) {
       let jobFlow = this.myDiagram.model.toJson()
       let id = this.jobId
@@ -751,12 +754,12 @@ export default {
       info.ui_json_file = JSON.parse(jobFlow)
       info.test_area = await this._createNewTag('test_area')
       info.custom_tag = await this._createNewTag('custom_tag')
-      console.log(info)
       info.draft = isDraft
       info.author = localStorage.id
       if (this.isInnerJob) {
         info.job_type = 'InnerJob'
       }
+      this.removeInvalidFile(info.ui_json_file)
       this.$store.commit('files/addResFile', {
         name: 'FILES_NAME_CONFIG.json',
         type: 'json',
@@ -797,11 +800,21 @@ export default {
     saveAs () {
       this.rename = true
     },
-    saveUnit (unitData) {
-      let currentUnitNode = this.blockDiagram.findNodeForKey(unitData.unitNodeKey)
-      this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'unitMsg', unitData.unitMsg)
-      this.blockDiagram.model.setDataProperty(currentUnitNode.data, 'text', unitData.unitName)
+    saveUnit (unitData, unitResFileList) {
       this.showUnitEditor = false
+      let curUnitNode = this.blockDiagram.findNodeForKey(unitData.unitNodeKey)
+      this.blockDiagram.model.setDataProperty(curUnitNode.data, 'unitMsg', unitData.unitMsg)
+      this.blockDiagram.model.setDataProperty(curUnitNode.data, 'text', unitData.unitName)
+      if (unitResFileList.length) {
+        if (!curUnitNode.data.resFile) {
+          this.blockDiagram.model.setDataProperty(curUnitNode.data, 'resFile', {})
+        }
+        let { resFile } = curUnitNode.data
+        for (let item of unitResFileList) {
+          delete resFile[item.oldName]
+          resFile[item.newName] = true
+        }
+      }
     },
     setUnitName (val) {
       this.unitData.unitName = val
@@ -913,10 +926,10 @@ export default {
       let currentNodeData = this.blockDiagram.findNodeForKey(this.unitData.unitNodeKey).data
 
       if (hasCompleted) {
-        this.blockDiagram.model.setDataProperty(currentNodeData, 'color', this.COLORS.FINISH)
+        this.blockDiagram.model.setDataProperty(currentNodeData, 'color', CONST.COLORS.FINISH)
         currentNodeData.completed = true
       } else {
-        this.blockDiagram.model.setDataProperty(currentNodeData, 'color', this.COLORS.UNFINISHED)
+        this.blockDiagram.model.setDataProperty(currentNodeData, 'color', CONST.COLORS.UNFINISHED)
         currentNodeData.completed = false
       }
       // this.blockDiagram.model = go.Model.fromJson(this.blockDiagram.model.toJson())

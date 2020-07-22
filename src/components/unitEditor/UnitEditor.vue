@@ -16,6 +16,7 @@
     <div>
     <div class="body">
       <div style="height:840px;">
+        {{ unitResFileList }}
         <ItemList
           :unitItemsData="unitItemsData"
           @updateUnitItem="updateUnitItem"
@@ -28,6 +29,7 @@
       <div style="height:840px;">
         <ItemEditor
           @updateUnitItem="updateUnitItem"
+          @arrangeFileName="arrangeFileName"
         ></ItemEditor>
       </div>
       <div style="height:840px;">
@@ -63,7 +65,8 @@ export default {
     return {
       curShowUnitEditor: this.showUnitEditor,
       curUnitData: this.unitData,
-      unitItems: []
+      unitItems: [],
+      unitResFileList: []
     }
   },
   computed: {
@@ -129,13 +132,15 @@ export default {
       if (save) {
         this.$emit('changeUnitColor', this.checkWeatherCompleted())
         let unitData = this._.cloneDeep(this.curUnitData)
+        let unitResFileList = this._.cloneDeep(this.unitResFileList)
+        this.unitResFileList = []
         let { unitMsg: { execCmdDict: { execCmdList } } } = unitData
         if (execCmdList) {
           execCmdList.forEach((val) => {
             delete val.itemID
           })
         }
-        this.$emit('saveUnit', unitData)
+        this.$emit('saveUnit', unitData, unitResFileList)
       }
       this.$emit('closeUnitEditor')
       this.unitItems.forEach(item => {
@@ -155,6 +160,9 @@ export default {
     },
     updateRawUnit (unitContent) {
       this.curUnitData.unitMsg = JSON.parse(unitContent)
+    },
+    arrangeFileName (nameData) {
+      this.unitResFileList.push(nameData)
     }
   }
 }
