@@ -811,7 +811,9 @@ export default {
         }
         let { resFile } = curUnitNode.data
         for (let item of unitResFileList) {
-          delete resFile[item.oldName]
+          if (item.oldname !== item.newname) {
+            delete resFile[item.oldName]
+          }
           resFile[item.newName] = true
         }
       }

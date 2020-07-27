@@ -316,14 +316,11 @@ export default {
       }
     },
     arrangeFileName (newFileName) {
-      if (newFileName !== this.preFileName) {
-        console.log('不一样哦QAQ')
-        this.$emit('arrangeFileName', {
-          oldName: this.preFileName,
-          newName: newFileName
-        })
-        this.preFileName = null
-      }
+      this.$emit('arrangeFileName', {
+        oldName: this.preFileName,
+        newName: newFileName
+      })
+      this.preFileName = null
     }
   }
 }

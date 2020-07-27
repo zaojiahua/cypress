@@ -16,7 +16,6 @@
     <div>
     <div class="body">
       <div style="height:840px;">
-        {{ unitResFileList }}
         <ItemList
           :unitItemsData="unitItemsData"
           @updateUnitItem="updateUnitItem"
