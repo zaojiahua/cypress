@@ -15,6 +15,7 @@ module.exports = {
       .set('api', resolve('src/api'))
       .set('lib', resolve('src/lib'))
       .set('config', resolve('src/config'))
+      .set('constant', resolve('src/constant'))
   },
   productionSourceMap: false
 }

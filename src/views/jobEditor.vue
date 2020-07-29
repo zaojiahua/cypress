@@ -140,7 +140,7 @@ import { mapState, mapGetters } from 'vuex'
 import { createJobLabel } from '../lib/tools'
 import { releaseOccupyDevice } from '../api/reef/device'
 
-import CONST from 'config/const'
+import CONST from 'constant/constant'
 
 export default {
   name: 'jobEditor',

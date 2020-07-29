@@ -25,7 +25,7 @@
 <script>
 import { mapState, mapGetters } from 'vuex'
 import { blobToDataURL, suffixAutoComplete } from 'lib/tools.js'
-import CONST from 'config/const'
+import CONST from 'constant/constant'
 export default {
   name: 'ScreenShot',
   props: {

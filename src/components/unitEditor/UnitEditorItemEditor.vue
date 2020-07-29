@@ -77,7 +77,7 @@ import { mapState, mapGetters } from 'vuex'
 import { suffixAutoComplete, suffixAutoRemove } from 'lib/tools.js'
 import ScreenShot from './UnitEditorScreenShot'
 import FeaturePoint from './UnitEditorFeaturePoint'
-import CONST from 'config/const'
+import CONST from 'constant/constant'
 
 export default {
   name: 'ItemEditor',
@@ -115,7 +115,9 @@ export default {
       'isJobResourceFile',
       'isInputFile',
       'isInputPicture',
-      'currentItemMeaning'
+      'currentItemMeaning',
+      'isOutputVideo',
+      'isInputVideo'
     ]),
     isDuplicatedFile: {
       get () {
@@ -140,7 +142,8 @@ export default {
         this.isPicInput ||
         this.isUxInput ||
         this.isOutputFile ||
-        this.isOutputPicture
+        this.isOutputPicture ||
+        this.isOutputVideo
       )
     },
     showScreenShot () {
@@ -226,6 +229,12 @@ export default {
         for (let i = 0; i < this.tmachBlanks.length; i++) {
           if (this.tmachBlanks[i].length === 0) continue
           this.tmachBlanks[i] = suffixAutoComplete(this.tmachBlanks[i], '.txt')
+        }
+      }
+      if (this.isOutputVideo || this.isInputVideo) {
+        for (let i = 0; i < this.tmachBlanks.length; i++) {
+          if (this.tmachBlanks[i].length === 0) continue
+          this.tmachBlanks[i] = suffixAutoComplete(this.tmachBlanks[i], '.mp4')
         }
       }
       if (this.isJobResourceFile) {

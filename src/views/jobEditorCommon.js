@@ -1,5 +1,5 @@
 import go from 'gojs'
-import CONST from 'config/const'
+import CONST from 'constant/constant'
 export const MAKE = go.GraphObject.make
 
 const lightText = 'whitesmoke'

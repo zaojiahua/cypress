@@ -18,7 +18,7 @@
 <script>
 import { findBrothersComponents } from 'lib/tools.js'
 import { mapGetters, mapState } from 'vuex'
-import CONST from 'config/const'
+import CONST from 'constant/constant'
 
 export default {
   name: 'UnitItem',

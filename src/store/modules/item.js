@@ -43,6 +43,12 @@ let getters = {
   isInputPicture (state) {
     return state.currentItem.itemContent.type === 'inputPicture'
   },
+  isOutputVideo (state) {
+    return state.currentItem.itemContent.type === 'outputVideo'
+  },
+  isInputVideo (state) {
+    return state.currentItem.itemContent.type === 'inputVideo'
+  },
   currentItemMeaning (state) {
     return state.currentItem.itemContent.meaning
   }
