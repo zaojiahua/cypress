@@ -1,3 +1,5 @@
+import CONST from 'constant/constant'
+
 export function isJsonString (str) {
   try {
     if (Object.prototype.toString.call(JSON.parse(str)) === '[object Object]') {
@@ -118,6 +120,16 @@ function createJobLabel (context) {
   return 'job-' + jobLabel.substr(0, 8) + '-' + jobLabel.substr(8, 4) + '-' + jobLabel.substr(12, 4) + '-' + jobLabel.substr(16, 4) + '-' + jobLabel.substr(20)
 }
 
+function suffixComplete (str, type) {
+  let suffix
+  for (let key in CONST.FILL) {
+    if (CONST.FILL[key].has(type)) {
+      suffix = `.${key.toLowerCase()}`
+      return suffixAutoComplete(str, suffix)
+    }
+  }
+}
+
 export {
   findBrothersComponents,
   findComponentsDownward,
@@ -126,5 +138,6 @@ export {
   blobToDataURL,
   suffixAutoRemove,
   suffixAutoComplete,
-  createJobLabel
+  createJobLabel,
+  suffixComplete
 }

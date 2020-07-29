@@ -31,5 +31,42 @@ export default {
     'outputFile': '输出文件名称',
     'uxInput': '手动输入参数',
     'picInput': '从图片选取坐标点'
-  }
+  },
+  FILL: {
+    JSON: new Set([
+      'jobResourceFile'
+    ]),
+    TXT: new Set([
+      'inputFile',
+      'outputFile'
+    ]),
+    PNG: new Set([
+      'inputPicture',
+      'outputPicture',
+      'jobResourcePicture'
+    ]),
+    MP4: new Set([
+      'inputVideo',
+      'outputVideo'
+    ])
+  },
+  NOT_SHOW_AUTO_COMPLETE: new Set([
+    'inputFile',
+    'jobResourceFile',
+    'jobResourcePicture',
+    'picInput',
+    'uxInput',
+    'outputFile',
+    'outputPicture',
+    'outputVideo'
+  ]),
+  NOT_SHOW_INPUT: new Set([
+    'inputPicture',
+    'jobResourceFile',
+    'jobResourcePicture'
+  ]),
+  SHOW_SCREEN_SHOOT: new Set([
+    'jobResourcePicture',
+    'picInput'
+  ])
 }

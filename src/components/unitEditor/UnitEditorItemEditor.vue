@@ -74,7 +74,7 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import { suffixAutoComplete, suffixAutoRemove } from 'lib/tools.js'
+import { suffixComplete, suffixAutoRemove } from 'lib/tools.js'
 import ScreenShot from './UnitEditorScreenShot'
 import FeaturePoint from './UnitEditorFeaturePoint'
 import CONST from 'constant/constant'
@@ -107,17 +107,11 @@ export default {
     ]),
     ...mapGetters('item', [
       'itemType',
-      'isUxInput',
       'isPicInput',
       'isOutputPicture',
       'isOutputFile',
-      'isJobResourcePicture',
       'isJobResourceFile',
-      'isInputFile',
-      'isInputPicture',
-      'currentItemMeaning',
-      'isOutputVideo',
-      'isInputVideo'
+      'currentItemMeaning'
     ]),
     isDuplicatedFile: {
       get () {
@@ -128,26 +122,13 @@ export default {
       }
     },
     showInput () {
-      return !(
-        this.isInputPicture ||
-        this.isJobResourceFile ||
-        this.isJobResourcePicture
-      )
+      return !CONST.NOT_SHOW_INPUT.has(this.itemType)
     },
     showAutoComplete () {
-      return !(
-        this.isInputFile ||
-        this.isJobResourceFile ||
-        this.isJobResourcePicture ||
-        this.isPicInput ||
-        this.isUxInput ||
-        this.isOutputFile ||
-        this.isOutputPicture ||
-        this.isOutputVideo
-      )
+      return !CONST.NOT_SHOW_AUTO_COMPLETE.has(this.itemType)
     },
     showScreenShot () {
-      return this.isJobResourcePicture || this.isPicInput
+      return CONST.SHOW_SCREEN_SHOOT.has(this.itemType)
     },
     showCheckbox () {
       return this.isOutputPicture
@@ -215,32 +196,12 @@ export default {
       return true
     },
     tmachBlankSuffixComplete () {
-      if (this.isOutputPicture || this.isInputPicture || this.isJobResourcePicture) {
-        let commandOfSaveToFinal = '<copy2rdsDatPath>'
-        for (let i = 0; i < this.tmachBlanks.length; i++) {
-          if (this.tmachBlanks[i].length === 0) continue
-          this.tmachBlanks[i] = suffixAutoComplete(this.tmachBlanks[i], '.png')
-          if (this.saveToFinalResult) {
-            this.tmachBlanks[i] += commandOfSaveToFinal
-          }
-        }
-      }
-      if (this.isOutputFile || this.isInputFile) {
-        for (let i = 0; i < this.tmachBlanks.length; i++) {
-          if (this.tmachBlanks[i].length === 0) continue
-          this.tmachBlanks[i] = suffixAutoComplete(this.tmachBlanks[i], '.txt')
-        }
-      }
-      if (this.isOutputVideo || this.isInputVideo) {
-        for (let i = 0; i < this.tmachBlanks.length; i++) {
-          if (this.tmachBlanks[i].length === 0) continue
-          this.tmachBlanks[i] = suffixAutoComplete(this.tmachBlanks[i], '.mp4')
-        }
-      }
-      if (this.isJobResourceFile) {
-        for (let i = 0; i < this.tmachBlanks.length; i++) {
-          if (this.tmachBlanks[i].length === 0) continue
-          this.tmachBlanks[i] = suffixAutoComplete(this.tmachBlanks[i], '.json')
+      let commandOfSaveToFinal = '<copy2rdsDatPath>'
+      for (let i = 0; i < this.tmachBlanks.length; i++) {
+        if (this.tmachBlanks[i].length === 0) continue
+        this.tmachBlanks[i] = suffixComplete(this.tmachBlanks[i], this.itemType)
+        if (this.saveToFinalResult) {
+          this.tmachBlanks[i] += commandOfSaveToFinal
         }
       }
     },
