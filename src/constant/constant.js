@@ -63,7 +63,8 @@ export default {
   NOT_SHOW_INPUT: new Set([
     'inputPicture',
     'jobResourceFile',
-    'jobResourcePicture'
+    'jobResourcePicture',
+    'inputVideo'
   ]),
   SHOW_SCREEN_SHOOT: new Set([
     'jobResourcePicture',
