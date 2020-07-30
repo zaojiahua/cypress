@@ -122,12 +122,15 @@ function createJobLabel (context) {
 
 function suffixComplete (str, type) {
   let suffix
+  let flag = true
   for (let key in CONST.FILL) {
     if (CONST.FILL[key].has(type)) {
       suffix = `.${key.toLowerCase()}`
+      flag = false
       return suffixAutoComplete(str, suffix)
     }
   }
+  if (flag) return str
 }
 
 export {
