@@ -43,7 +43,13 @@ export default {
   },
   watch: {
     unitItemsData (val) {
-      this.curUnitItemsData = val
+      this.curUnitItemsData = []
+      if (val) {
+        for (let i = 0; i < val.length; i++) {
+          let order = Number(val[i].itemContent.order) || i + 1
+          this.curUnitItemsData[order - 1] = val[i]
+        }
+      }
     },
     openRawUnit (val) {
       let list = document.querySelector('.item-list')
