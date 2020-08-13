@@ -20,6 +20,11 @@ export default {
     'jobResourceFile',
     'jobResourcePicture'
   ]),
+  WILL_TOUCH_NAME: {
+    'outputFile': '文件名称',
+    'outputPicture': '图片名称',
+    'outputVideo': '视频名称'
+  },
   ITEM_DESC: {
     'jobResourceFile': '图片配置文件',
     'jobResourcePicture': '参考标准图片',

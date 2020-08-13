@@ -219,32 +219,38 @@ export default {
       }
     },
     saveResFilesName () {
-      if (this.isOutputPicture && (this.tmachBlanks[0] === undefined || this.tmachBlanks[0] === '')) {
-        this.$Message.error({
-          content: '名字不能为空',
-          background: true
-        })
-        return false
-      }
-
-      let index
-      if (this.isOutputFile) index = 0
-      else if (this.isOutputPicture) index = 1
-      else return true
-      let outputFilesName = this.resFilesName[index].children
-      for (let i = 0; i < outputFilesName.length; i++) {
-        if (suffixAutoRemove(this.tmachBlanks[0]) === outputFilesName[i]) {
+      if (CONST.WILL_TOUCH_NAME[this.itemType]) {
+        if (this.tmachBlanks[0] === undefined || this.tmachBlanks[0] === '') {
           this.$Message.error({
-            content: '这个名字已经被占用了',
+            content: '名字不能为空',
             background: true
           })
           return false
         }
+
+        let index
+        let outputFilesName
+        for (let i = 0; i < this.resFilesName.length; i++) {
+          if (this.resFilesName[i].key === this.itemType) {
+            outputFilesName = this.resFilesName[i].children
+            index = i
+            break
+          }
+        }
+        for (let i = 0; i < outputFilesName.length; i++) {
+          if (suffixAutoRemove(this.tmachBlanks[0]) === outputFilesName[i]) {
+            this.$Message.error({
+              content: '这个名字已经被占用了',
+              background: true
+            })
+            return false
+          }
+        }
+        this.$store.commit('files/addResFilesName', {
+          name: suffixAutoRemove(this.tmachBlanks[0]),
+          index
+        })
       }
-      this.$store.commit('files/addResFilesName', {
-        name: suffixAutoRemove(this.tmachBlanks[0]),
-        index
-      })
       return true
     },
     saveItem () {

@@ -1,18 +1,20 @@
+import CONST from 'constant/constant'
+
+let resFilesName = []
+for (let key in CONST.WILL_TOUCH_NAME) {
+  resFilesName.push({
+    title: CONST.WILL_TOUCH_NAME[key],
+    key,
+    children: []
+  })
+}
+
 let state = {
   resFiles: [],
   currentFile: null,
   isDuplicatedFile: false,
   duplicatedFile: null,
-  resFilesName: [
-    {
-      title: '文件名称',
-      children: ['text']
-    },
-    {
-      title: '图片名称',
-      children: ['snap']
-    }
-  ],
+  resFilesName,
   showResFileModal: false
 }
 
@@ -83,7 +85,14 @@ let mutations = {
     state.resFilesName[data.index].children.push(data.name)
   },
   setResFilesName (state, filesName) {
-    state.resFilesName = JSON.parse(filesName)
+    let preNames = JSON.parse(filesName)
+    for (let i = 0; i < state.resFilesName.length; i++) {
+      if (preNames[i]) {
+        Object.assign(state.resFilesName[i], preNames[i])
+      } else {
+        state.resFilesName[i].children = []
+      }
+    }
   },
   setShowResFileModal (state) {
     state.showResFileModal = !state.showResFileModal
