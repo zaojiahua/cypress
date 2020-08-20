@@ -171,8 +171,6 @@ export default {
       unitTemplateContent: '',
       unitTemplateId: undefined,
       rename: false,
-      deleteTimer: null,
-      timerStep: 80,
       unitTemplateName: ''
     }
   },

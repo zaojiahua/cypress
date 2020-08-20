@@ -92,7 +92,7 @@ export default {
       this.$emit('setFeaturePointFileName', this.currentFeaturePointFileName)
     },
     removeLabelArea () {
-      let imageDom = document.querySelector('.image-dom')
+      let imageDom = document.querySelector('.selector')
       let areas = document.querySelectorAll('.area')
       areas.forEach(area => {
         imageDom.removeChild(area)
@@ -100,7 +100,7 @@ export default {
     },
     showLabelArea (currentRowData, index) {
       this.removeLabelArea()
-      let imageDom = document.querySelector('.image-dom')
+      let imageDom = document.querySelector('.selector')
       let imageDomData = imageDom.getBoundingClientRect()
       let coordinateA = currentRowData.coordinate_a.split(',')
       let coordinateB = currentRowData.coordinate_b.split(',')

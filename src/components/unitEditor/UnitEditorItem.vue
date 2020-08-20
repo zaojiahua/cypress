@@ -117,14 +117,14 @@ export default {
       })
     },
     removeLabelArea () { // 移除标示区域
-      let imageDom = document.querySelector('.image-dom')
+      let imageDom = document.querySelector('.selector')
       let areas = document.querySelectorAll('.area')
       areas.forEach(area => {
         imageDom.removeChild(area)
       })
     },
     addAreas () { // 显示标示区域
-      let imageDom = document.querySelector('.image-dom')
+      let imageDom = document.querySelector('.selector')
       let imageDomData = imageDom.getBoundingClientRect()
       for (let i = 0; i < this.coordinates.length; i++) {
         let coordinateA = this.coordinates[i].coordinate_a.split(',')
