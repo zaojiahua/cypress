@@ -26,6 +26,10 @@ export default {
     closable: {
       type: Boolean,
       default: true
+    },
+    maskKey: {
+      type: [String, Number],
+      default: 'Control'
     }
   },
   data () {
@@ -163,13 +167,13 @@ export default {
     },
     handleShowMask (event) {
       switch (event.type) {
-        case 'keypress':
-          if (event.key === ' ') {
+        case 'keydown':
+          if (event.key === this.maskKey || event.keyCode === this.maskKey) {
             this.showMask = true
           }
           break
         case 'keyup':
-          if (event.key === ' ') {
+          if (event.key === this.maskKey || event.keyCode === this.maskKey) {
             this.showMask = false
           }
           break
@@ -187,6 +191,7 @@ export default {
       this.curArea.style.display = 'none'
       this.curArea.style.width = '0px'
       this.curArea.style.height = '0px'
+      this.$emit('on-select', {})
     },
     setImg (src) {
       let image = new Image()
@@ -215,13 +220,13 @@ export default {
     this.selector.addEventListener('mousemove', this.selectLabelArea)
     this.selector.addEventListener('mouseup', this.selectLabelArea)
     this.selector.addEventListener('mouseleave', this.selectLabelArea)
-    window.addEventListener('keypress', this.handleShowMask)
+    window.addEventListener('keydown', this.handleShowMask)
     window.addEventListener('keyup', this.handleShowMask)
 
     if (this.imgSrc) this.setImg(this.imgSrc)
   },
   beforeDestroy () {
-    window.removeEventListener('keypress', this.handleShowMask)
+    window.removeEventListener('keydown', this.handleShowMask)
     window.removeEventListener('keyup', this.handleShowMask)
   }
 }
