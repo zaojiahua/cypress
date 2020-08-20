@@ -11,7 +11,7 @@
         <div class="selector__curarea__b"></div>
         <div class="selector__curarea__bl"></div>
         <div class="selector__curarea__l"></div>
-        <button class="selector__curarea__close" @click="closeArea" v-show="closable">关闭</button>
+        <button class="selector__curarea__close" @click="closeArea" v-show="showClose">关闭</button>
       </div>
     </div>
     <div class="selector_mask" v-show="showMask"></div>
@@ -34,7 +34,8 @@ export default {
       mouseStartX: null,
       mouseStartY: null,
       selector: null,
-      selectorRect: null,
+      selectorImg: null,
+      selectorImgRect: null,
       curArea: null,
       curAreaRect: null,
       imageWidth: null,
@@ -49,23 +50,12 @@ export default {
   watch: {
     imgSrc (val) {
       if (!val) return
-      let image = new Image()
-      image.src = val
-      image.onload = () => {
-        this.imageWidth = image.width
-        this.imageHeight = image.height
-        let img = document.querySelector('.selector__img')
-        if (this.imageWidth > this.imageHeight) {
-          this.selector.style.width = '100%'
-          this.selector.style.height = 'auto'
-          img.style.maxWidth = this.selector.style.width
-        } else {
-          this.selector.style.height = '100%'
-          this.selector.style.width = 'auto'
-          img.style.maxHeight = this.selector.style.height
-        }
-        img.src = val
-      }
+      this.setImg(val)
+    }
+  },
+  computed: {
+    showClose () {
+      return this.closable && !this.isDragging
     }
   },
   methods: {
@@ -78,10 +68,10 @@ export default {
           this.mouseStartY = event.pageY
           if (event.target.classList.contains('selector__img')) {
             this.selector = document.querySelector('.selector')
-            this.selectorRect = this.selector.getBoundingClientRect()
+            this.selectorImgRect = this.selectorImg.getBoundingClientRect()
 
-            this.curArea.style.left = this.mouseStartX - this.selectorRect.x + 'px'
-            this.curArea.style.top = this.mouseStartY - this.selectorRect.y + 'px'
+            this.curArea.style.left = this.mouseStartX - this.selectorImgRect.x + 'px'
+            this.curArea.style.top = this.mouseStartY - this.selectorImgRect.y + 'px'
             this.curArea.style.width = '0px'
             this.curArea.style.height = '0px'
             this.curArea.style.display = 'flex'
@@ -96,6 +86,8 @@ export default {
             this.expandBottom = true
           } else if (event.target.classList.contains('selector__curarea__r')) {
             this.expandRight = true
+          } else if (event.target.classList.contains('selector__curarea__close')) {
+            this.isDragging = false
           }
           break
         case 'mousemove':
@@ -104,30 +96,30 @@ export default {
             let moveY = event.pageY - this.mouseStartY
             this.mouseStartX = event.pageX
             this.mouseStartY = event.pageY
-            let rect = this.curArea.getBoundingClientRect()
+            let curAreaRect = this.curArea.getBoundingClientRect()
             if (this.moveArea) {
               let top = Math.max(0, parseInt(this.curArea.style.top) + moveY)
               let left = Math.max(0, parseInt(this.curArea.style.left) + moveX)
-              if (top + parseInt(this.curArea.style.height) > this.selectorRect.height) {
-                top = this.selectorRect.height - parseInt(this.curArea.style.height)
+              if (top + parseInt(this.curArea.style.height) > this.selectorImgRect.height) {
+                top = this.selectorImgRect.height - parseInt(this.curArea.style.height)
               }
-              if (left + parseInt(this.curArea.style.width) > this.selectorRect.width) {
-                left = this.selectorRect.width - parseInt(this.curArea.style.width)
+              if (left + parseInt(this.curArea.style.width) > this.selectorImgRect.width) {
+                left = this.selectorImgRect.width - parseInt(this.curArea.style.width)
               }
               this.curArea.style.top = top + 'px'
               this.curArea.style.left = left + 'px'
             }
             if (this.expandRight) {
-              let width = Math.min(this.selectorRect.width, rect.width + moveX)
+              let width = Math.min(this.selectorImgRect.width, curAreaRect.width + moveX)
               this.curArea.style.width = width + 'px'
             }
             if (this.expandBottom) {
-              let height = Math.min(this.selectorRect.height, rect.height + moveY)
+              let height = Math.min(this.selectorImgRect.height, curAreaRect.height + moveY)
               this.curArea.style.height = height + 'px'
             }
             if (!this.moveArea && !this.expandRight && !this.expandBottom) {
-              let width = Math.min(this.selectorRect.width, rect.width + moveX)
-              let height = Math.min(this.selectorRect.height, rect.height + moveY)
+              let width = Math.min(this.selectorImgRect.width, curAreaRect.width + moveX)
+              let height = Math.min(this.selectorImgRect.height, curAreaRect.height + moveY)
               this.curArea.style.width = width + 'px'
               this.curArea.style.height = height + 'px'
             }
@@ -142,12 +134,12 @@ export default {
           let coordinate = {}
           coordinate.relativeCoordinate = {
             topLeft: {
-              x: this.toDecimal((this.curAreaRect.x - this.selectorRect.x) / this.selectorRect.width),
-              y: this.toDecimal((this.curAreaRect.y - this.selectorRect.y) / this.selectorRect.height)
+              x: this.toDecimal((this.curAreaRect.x - this.selectorImgRect.x) / this.selectorImgRect.width),
+              y: this.toDecimal((this.curAreaRect.y - this.selectorImgRect.y) / this.selectorImgRect.height)
             },
             bottomRight: {
-              x: this.toDecimal((this.curAreaRect.x + this.curAreaRect.width - this.selectorRect.x) / this.selectorRect.width),
-              y: this.toDecimal((this.curAreaRect.y + this.curAreaRect.height - this.selectorRect.y) / this.selectorRect.height)
+              x: this.toDecimal((this.curAreaRect.x + this.curAreaRect.width - this.selectorImgRect.x) / this.selectorImgRect.width),
+              y: this.toDecimal((this.curAreaRect.y + this.curAreaRect.height - this.selectorImgRect.y) / this.selectorImgRect.height)
             }
           }
           coordinate.absoluteCoordinate = {
@@ -191,14 +183,32 @@ export default {
       f = Math.round(num * 100) / 100
       return f
     },
-    closeArea () {
+    closeArea (event) {
       this.curArea.style.display = 'none'
       this.curArea.style.width = '0px'
       this.curArea.style.height = '0px'
+    },
+    setImg (src) {
+      let image = new Image()
+      image.src = src
+      image.onload = () => {
+        this.imageWidth = image.width
+        this.imageHeight = image.height
+        let img = document.querySelector('.selector__img')
+        if (this.imageWidth > this.imageHeight) {
+          this.selector.style.width = '100%'
+          img.style.maxWidth = this.selector.style.width
+        } else {
+          this.selector.style.height = '100%'
+          img.style.maxHeight = this.selector.style.height
+        }
+        img.src = src
+      }
     }
   },
   mounted () {
     this.selector = document.querySelector('.selector')
+    this.selectorImg = document.querySelector('.selector__img')
     this.curArea = document.querySelector('.selector__curarea')
 
     this.selector.addEventListener('mousedown', this.selectLabelArea)
@@ -207,6 +217,8 @@ export default {
     this.selector.addEventListener('mouseleave', this.selectLabelArea)
     window.addEventListener('keypress', this.handleShowMask)
     window.addEventListener('keyup', this.handleShowMask)
+
+    if (this.imgSrc) this.setImg(this.imgSrc)
   },
   beforeDestroy () {
     window.removeEventListener('keypress', this.handleShowMask)
