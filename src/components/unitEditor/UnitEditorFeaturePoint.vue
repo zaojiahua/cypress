@@ -124,8 +124,8 @@ export default {
       area.style.top = `${top}px`
       area.style.width = `${width}px`
       area.style.height = `${height}px`
+      area.style.zIndex = '900'
       area.style.background = 'rgba(87, 250, 255, .4)'
-      area.style.border = '1px dashed #0099FF'
       area.innerText = index + 1
       selector.appendChild(area)
     }

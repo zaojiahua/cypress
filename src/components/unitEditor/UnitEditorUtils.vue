@@ -82,8 +82,8 @@ export default {
       let startPoint = this.coordinate.relativeCoordinate.topLeft
       let endPoint = this.coordinate.relativeCoordinate.bottomRight
       this.$store.commit('img/addCoordinate', {
-        coordinate_a: `${startPoint.x}, ${startPoint.y}`,
-        coordinate_b: `${endPoint.x}, ${endPoint.y}`
+        coordinate_a: `${startPoint.x.toFixed(4)}, ${startPoint.y.toFixed(4)}`,
+        coordinate_b: `${endPoint.x.toFixed(4)}, ${endPoint.y.toFixed(4)}`
       })
     },
     handleAbsoluteCoordinates () {
