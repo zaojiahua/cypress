@@ -1,6 +1,6 @@
 <template>
   <div>
-    <job-list-filter @getCurrentPageJobList="getCurrentPageJobList"></job-list-filter>
+    <job-list-filter @getFilteredJobs="getFilteredJobs"></job-list-filter>
     <Divider style="margin-top: -6px">已选用例</Divider>
     <Row>
       <Row>
@@ -26,7 +26,6 @@
       </Row>
     </Row>
     <Divider  style="margin-top: 40px">用例列表</Divider>
-
     <Table
       :loading="loading"
       ref="jobList"
@@ -105,11 +104,15 @@ export default {
           align: 'center',
           filters: [
             {
-              label: 'Joblib',
+              label: '功能测试',
               value: 'Joblib'
             },
             {
-              label: 'InnerJob',
+              label: '性能测试',
+              value: 'PerfJob'
+            },
+            {
+              label: '内嵌用例',
               value: 'InnerJob'
             }
           ],
@@ -133,7 +136,7 @@ export default {
     }
   },
   methods: {
-    getCurrentPageJobList (filterUrlParam = '') { // 每个页面的请求数据
+    getFilteredJobs (filterUrlParam = '') { // 每个页面的请求数据
       let jobState
       let jobType
       if (this.jobState === 'draft') {
@@ -147,6 +150,8 @@ export default {
         jobType = '&job_type=Joblib'
       } else if (this.jobType === 'InnerJob') {
         jobType = '&job_type=InnerJob'
+      } else if (this.jobType === 'PerfJob') {
+        jobType = '&job_type=PerfJob'
       } else {
         jobType = ''
       }
@@ -179,7 +184,7 @@ export default {
     jobPageChange (page) { // 切换页面
       this.loading = true
       this.currentPage = page
-      this.getCurrentPageJobList()
+      this.getFilteredJobs()
       this.loading = false
     },
     getJobInfo (jobId) {
@@ -188,6 +193,7 @@ export default {
         let jobInfo = {
           job_name: job.job_name,
           job_type: job.job_type,
+          job_second_type: job.job_second_type,
           job_label: job.job_label,
           description: job.description,
           manufacturer: job.phone_models[0].manufacturer.id,
@@ -351,7 +357,7 @@ export default {
   },
   mounted () {
     this.jobState = localStorage.getItem('joblist-management:DEFAULT_FILTER_CONFIG')
-    this.getCurrentPageJobList()
+    this.getFilteredJobs()
   },
   beforeRouteLeave (to, from, next) {
     localStorage.setItem('joblist-management:DEFAULT_FILTER_CONFIG', this.jobState)

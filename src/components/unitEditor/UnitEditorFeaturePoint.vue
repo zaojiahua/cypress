@@ -100,14 +100,18 @@ export default {
     },
     showLabelArea (currentRowData, index) {
       this.removeLabelArea()
-      let imageDom = document.querySelector('.selector')
-      let imageDomData = imageDom.getBoundingClientRect()
       let coordinateA = currentRowData.coordinate_a.split(',')
       let coordinateB = currentRowData.coordinate_b.split(',')
-      let left = Math.floor(coordinateA[0] * imageDomData.width) + 1
-      let top = Math.floor(coordinateA[1] * imageDomData.height) + 2
-      let width = Math.floor((coordinateB[0] - coordinateA[0]) * imageDomData.width)
-      let height = Math.floor((coordinateB[1] - coordinateA[1]) * imageDomData.height)
+      let selector = document.querySelector('.selector')
+      let selectorRect = selector.getBoundingClientRect()
+      let selectorImgRect = document.querySelector('.selector__img').getBoundingClientRect()
+      let offsetX = (selectorRect.width - selectorImgRect.width) / 2
+      let offsetY = (selectorRect.height - selectorImgRect.height) / 2
+      let left = offsetX + coordinateA[0] * selectorImgRect.width
+      let top = offsetY + coordinateA[1] * selectorImgRect.height
+      let width = (coordinateB[0] - coordinateA[0]) * selectorImgRect.width
+      let height = (coordinateB[1] - coordinateA[1]) * selectorImgRect.height
+
       let area = document.createElement('div')
       area.classList.add('area')
       area.style.display = 'flex'
@@ -123,7 +127,7 @@ export default {
       area.style.background = 'rgba(87, 250, 255, .4)'
       area.style.border = '1px dashed #0099FF'
       area.innerText = index + 1
-      imageDom.appendChild(area)
+      selector.appendChild(area)
     }
   }
 }

@@ -15,6 +15,9 @@
           <Option v-for="item in jobTestArea.jobtestareas" :value="item.id" :key="item.id">{{ item.description }}</Option>
         </Select>
       </FormItem>
+      <FormItem label="用例类型:" prop="job_type">
+        <Cascader :data="jobTypes" v-model="curJobType"></Cascader>
+      </FormItem>
       <FormItem label="自定义标签:" prop="custom_tag">
         <Select v-model="formInfo.custom_tag" multiple placeholder="请选择" filterable allow-create>
           <Option v-for="item in customTag.customtags" :value="item.id" :key="item.id">{{ item.custom_tag_name }}</Option>
@@ -80,7 +83,7 @@ import { getManufacturerList } from 'api/reef/manufacturer'
 import { getJobTestAreaList } from 'api/reef/jobTestArea'
 import { getCustomTagList } from 'api/reef/customTag'
 import { getAndroidVersionList } from 'api/reef/androidVersion'
-import { controlDevice, releaseOccupyDevice } from '../api/reef/device'
+import { controlDevice, releaseOccupyDevice } from 'api/reef/device'
 import jobDeviceSelect from '../components/jobDeviceSelect'
 
 import { mapState, mapGetters } from 'vuex'
@@ -108,6 +111,9 @@ export default {
         // manufacturer: [
         //   { required: true, type: 'string', message: '请输入厂商信息', trigger: 'change' }
         // ],
+        // job_type: [
+        //   { required: true, type: 'array', min: 1, message: '请选择用例类型', trigger: 'change' }
+        // ],
         phone_models: [
           { required: true, type: 'array', min: 1, message: '请输入适配机型', trigger: 'change' }
         ],
@@ -124,7 +130,32 @@ export default {
       androidVersion: util.validate(serializer.getAndroidVersionSerializer, {}),
       customTag: util.validate(serializer.getCustomTagSerializer, {}),
       jobTestArea: util.validate(serializer.getJobTestAreaSerializer, {}),
-      isConflicted: false
+      isConflicted: false,
+      jobTypes: [
+        {
+          value: 'Joblib',
+          label: '功能测试',
+          children: [
+
+          ]
+        },
+        {
+          value: 'InnerJob',
+          label: '内嵌用例',
+          children: []
+        },
+        {
+          value: 'PerfJob',
+          label: '性能测试',
+          children: [
+            {
+              value: 'TimeJob',
+              label: '启动时间'
+            }
+          ]
+        }
+      ],
+      curJobType: []
     }
   },
   computed: {
@@ -163,13 +194,23 @@ export default {
       this.refreshManufacturer()
     },
     jobInfo (val) { // jobInfo 更新时同步更新 formInfo
-      for (let item in this.formInfo) {
-        this.formInfo[item] = val[item]
+      Object.assign(this.formInfo, val)
+      if (this.formInfo.job_type) {
+        this.curJobType.splice(0, 1, this.formInfo.job_type)
+      }
+      if (this.formInfo.job_second_type) {
+        this.curJobType.splice(1, 1, this.formInfo.job_second_type)
+      } else {
+        this.curJobType.splice(1, 1)
       }
       this.$refs.formInfo.validate((valid) => {
         this.$store.commit('job/setIsValidated', valid)
       })
       this.getInfo()
+    },
+    curJobType (val) {
+      this.formInfo.job_type = val[0]
+      this.formInfo.job_second_type = val[1]
     }
   },
   methods: {

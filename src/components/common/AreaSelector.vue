@@ -38,6 +38,7 @@ export default {
       mouseStartX: null,
       mouseStartY: null,
       selector: null,
+      selectorRect: null,
       selectorImg: null,
       selectorImgRect: null,
       curArea: null,
@@ -48,7 +49,9 @@ export default {
       curAreaBRBox: null,
       moveArea: false,
       expandRight: false,
-      expandBottom: false
+      expandBottom: false,
+      expandTop: false,
+      expandLeft: false
     }
   },
   watch: {
@@ -70,12 +73,12 @@ export default {
           this.isDragging = true
           this.mouseStartX = event.pageX
           this.mouseStartY = event.pageY
+          this.selector = document.querySelector('.selector')
+          this.selectorRect = this.selector.getBoundingClientRect()
+          this.selectorImgRect = this.selectorImg.getBoundingClientRect()
           if (event.target.classList.contains('selector__img')) {
-            this.selector = document.querySelector('.selector')
-            this.selectorImgRect = this.selectorImg.getBoundingClientRect()
-
-            this.curArea.style.left = this.mouseStartX - this.selectorImgRect.x + 'px'
-            this.curArea.style.top = this.mouseStartY - this.selectorImgRect.y + 'px'
+            this.curArea.style.left = this.mouseStartX - this.selectorImgRect.x + (this.selectorRect.width - this.selectorImgRect.width) / 2.0 + 'px'
+            this.curArea.style.top = this.mouseStartY - this.selectorImgRect.y + (this.selectorRect.height - this.selectorImgRect.height) / 2.0 + 'px'
             this.curArea.style.width = '0px'
             this.curArea.style.height = '0px'
             this.curArea.style.display = 'flex'
@@ -86,10 +89,14 @@ export default {
             })
           } else if (event.target.classList.contains('selector__curarea')) {
             this.moveArea = true
-          } else if (event.target.classList.contains('selector__curarea__b')) {
-            this.expandBottom = true
+          } else if (event.target.classList.contains('selector__curarea__t')) {
+            this.expandTop = true
           } else if (event.target.classList.contains('selector__curarea__r')) {
             this.expandRight = true
+          } else if (event.target.classList.contains('selector__curarea__b')) {
+            this.expandBottom = true
+          } else if (event.target.classList.contains('selector__curarea__l')) {
+            this.expandLeft = true
           } else if (event.target.classList.contains('selector__curarea__close')) {
             this.isDragging = false
           }
@@ -100,18 +107,29 @@ export default {
             let moveY = event.pageY - this.mouseStartY
             this.mouseStartX = event.pageX
             this.mouseStartY = event.pageY
+            let offsetX = (this.selectorRect.width - this.selectorImgRect.width) / 2.0
+            let offsetY = (this.selectorRect.height - this.selectorImgRect.height) / 2.0
             let curAreaRect = this.curArea.getBoundingClientRect()
             if (this.moveArea) {
-              let top = Math.max(0, parseInt(this.curArea.style.top) + moveY)
-              let left = Math.max(0, parseInt(this.curArea.style.left) + moveX)
-              if (top + parseInt(this.curArea.style.height) > this.selectorImgRect.height) {
-                top = this.selectorImgRect.height - parseInt(this.curArea.style.height)
+              let top = Math.max(offsetY, parseInt(this.curArea.style.top) + moveY)
+              let left = Math.max(offsetX, parseInt(this.curArea.style.left) + moveX)
+              if (top + parseInt(this.curArea.style.height) > this.selectorImgRect.height + offsetY) {
+                top = this.selectorImgRect.height + offsetY - parseInt(this.curArea.style.height)
               }
-              if (left + parseInt(this.curArea.style.width) > this.selectorImgRect.width) {
-                left = this.selectorImgRect.width - parseInt(this.curArea.style.width)
+              if (left + parseInt(this.curArea.style.width) > this.selectorImgRect.width + offsetX) {
+                left = this.selectorImgRect.width + offsetX - parseInt(this.curArea.style.width)
               }
               this.curArea.style.top = top + 'px'
               this.curArea.style.left = left + 'px'
+            }
+            if (this.expandTop) {
+              let top = Math.max(offsetY, parseInt(this.curArea.style.top) + moveY)
+              if (top + parseInt(this.curArea.style.height) > this.selectorImgRect.height + offsetY) {
+                top = this.selectorImgRect.height + offsetY - parseInt(this.curArea.style.height)
+              }
+              this.curArea.style.top = top + 'px'
+              let height = Math.min(this.selectorImgRect.height, curAreaRect.height - moveY)
+              this.curArea.style.height = height + 'px'
             }
             if (this.expandRight) {
               let width = Math.min(this.selectorImgRect.width, curAreaRect.width + moveX)
@@ -121,7 +139,16 @@ export default {
               let height = Math.min(this.selectorImgRect.height, curAreaRect.height + moveY)
               this.curArea.style.height = height + 'px'
             }
-            if (!this.moveArea && !this.expandRight && !this.expandBottom) {
+            if (this.expandLeft) {
+              let left = Math.max(offsetX, parseInt(this.curArea.style.left) + moveX)
+              if (left + parseInt(this.curArea.style.width) > this.selectorImgRect.width + offsetX) {
+                left = this.selectorImgRect.width + offsetX - parseInt(this.curArea.style.width)
+              }
+              this.curArea.style.left = left + 'px'
+              let width = Math.min(this.selectorImgRect.width, curAreaRect.width - moveX)
+              this.curArea.style.width = width + 'px'
+            }
+            if (!this.moveArea && !this.expandTop && !this.expandRight && !this.expandBottom && !this.expandLeft) {
               let width = Math.min(this.selectorImgRect.width, curAreaRect.width + moveX)
               let height = Math.min(this.selectorImgRect.height, curAreaRect.height + moveY)
               this.curArea.style.width = width + 'px'
@@ -132,18 +159,20 @@ export default {
         case 'mouseup':
           this.isDragging = false
           this.moveArea = false
+          this.expandTop = false
           this.expandRight = false
           this.expandBottom = false
+          this.expandLeft = false
           this.curAreaRect = this.curArea.getBoundingClientRect()
           let coordinate = {}
           coordinate.relativeCoordinate = {
             topLeft: {
-              x: this.toDecimal((this.curAreaRect.x - this.selectorImgRect.x) / this.selectorImgRect.width),
-              y: this.toDecimal((this.curAreaRect.y - this.selectorImgRect.y) / this.selectorImgRect.height)
+              x: (this.curAreaRect.x - this.selectorImgRect.x) / this.selectorImgRect.width,
+              y: (this.curAreaRect.y - this.selectorImgRect.y) / this.selectorImgRect.height
             },
             bottomRight: {
-              x: this.toDecimal((this.curAreaRect.x + this.curAreaRect.width - this.selectorImgRect.x) / this.selectorImgRect.width),
-              y: this.toDecimal((this.curAreaRect.y + this.curAreaRect.height - this.selectorImgRect.y) / this.selectorImgRect.height)
+              x: (this.curAreaRect.x + this.curAreaRect.width - this.selectorImgRect.x) / this.selectorImgRect.width,
+              y: (this.curAreaRect.y + this.curAreaRect.height - this.selectorImgRect.y) / this.selectorImgRect.height
             }
           }
           coordinate.absoluteCoordinate = {
@@ -161,8 +190,10 @@ export default {
         case 'mouseleave':
           this.isDragging = false
           this.moveArea = false
+          this.expandTop = false
           this.expandRight = false
           this.expandBottom = false
+          this.expandLeft = false
       }
     },
     handleShowMask (event) {
@@ -179,14 +210,6 @@ export default {
           break
       }
     },
-    toDecimal (num) {
-      let f = parseFloat(num)
-      if (isNaN(f)) {
-        return
-      }
-      f = Math.round(num * 100) / 100
-      return f
-    },
     closeArea (event) {
       this.curArea.style.display = 'none'
       this.curArea.style.width = '0px'
@@ -199,6 +222,10 @@ export default {
       image.onload = () => {
         this.imageWidth = image.width
         this.imageHeight = image.height
+        this.$emit('on-load', {
+          width: this.imageWidth,
+          height: this.imageHeight
+        })
         let img = document.querySelector('.selector__img')
         if (this.imageWidth > this.imageHeight) {
           this.selector.style.width = '100%'
@@ -234,23 +261,28 @@ export default {
 
 <style lang="less" scoped>
   .selector-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 100%;
     height: 100%;
-    position: relative;
     .selector {
       position: relative;
+      display: flex;
       z-index: 200;
+      width: 100%;
+      height: 100%;
+      justify-content: center;
+      align-items: center;
       .selector__img {
         user-select: none;
+        z-index: 200;
+        max-height: 100%;
+        max-width: 100%;
       }
       .selector__curarea {
         display: none;
         position:absolute;
         width:100px;
         height:100px;
-        background: url('../../assets/image/selctionbg.png') repeat scroll 0 0 transparent;
+        background: repeating-linear-gradient(-45deg, rgba(11, 182, 182, 0.4), rgba(11, 182, 182, 0.4) 10px, rgba(60, 199, 199, 0.4) 10px, rgba(21, 123, 182, 0.4) 20px);
         z-index: 1000;
         box-sizing: border-box;
         .selector__curarea__tl,
@@ -275,6 +307,7 @@ export default {
         .selector__curarea__t {
           width: 100%;
           top: 0;
+          cursor: n-resize;
         }
         .selector__curarea__tr{
           top: 0;
@@ -308,6 +341,7 @@ export default {
         .selector__curarea__l {
           left: 0;
           height: 100%;
+          cursor: w-resize;
         }
         .selector__curarea__close {
           position: absolute;

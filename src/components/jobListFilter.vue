@@ -2,9 +2,15 @@
   <div>
     <Row>
       <Divider>用例筛选</Divider>
-      <Tabs type="card" class="tabs">
-        <TabPane v-for="(column, index) in filterColumn" :key="column.title" :label="label(column)" :class="column.key">
-          <CheckboxGroup v-model="filterRules" @on-change="onJobFilterChange">
+      <Input
+        clearable
+        v-model="keyword"
+        @on-change="getFilteredJob"
+        placeholder="Enter something..."
+        style="margin-bottom: 1em;"/>
+      <Tabs type="card" class="tabs" :value="curTab" @on-click="changeTab">
+        <TabPane v-for="(column, index) in filterColumn" :key="column.title" :label="column.title" :class="column.key" :name="index.toString()">
+          <CheckboxGroup v-model="filterConditions">
             <Row type="flex">
               <Col span="4" v-for="(item, index) in filterData[column.key]" :key="index">
                 <Checkbox :label="column.key + ':' + index + ':' + item[column.item_key]">
@@ -16,14 +22,17 @@
         </TabPane>
       </Tabs>
     </Row>
-
-    <Row>
-      <Row style="margin-top: 20px; min-height: 30px;">
-        <Tag v-for="(label, index) in filterRules" :key="index" :color="colors[label.split(':')[0]][2]" closable @on-close="close(index)">{{ label.split(':')[2] }}</Tag>
-      </Row>
-      <Button style="margin: 30px 0px;" @click="clear()">清空</Button>
+    <Row class="filter__container">
+      <!-- <span class="filter__title">筛选条件</span> -->
+      <div class="filter__content">
+        <div v-for="(val, key, idx) in filterFactors" :key="val.title" v-show="val.values.length !== 0" class="filter-factor">
+          <span class="filter-factor__title" @click="changeTab(idx + '')">{{val.title}}</span>
+          <div class="filter-factor__content">
+            <Tag v-for="(factor, index) in val.values" :key="factor" closable @on-close="close(key, index)">{{ factor.split(':')[2] }}</Tag>
+          </div>
+        </div>
+      </div>
     </Row>
-
   </div>
 </template>
 
@@ -68,63 +77,79 @@ export default {
         }
       ],
       filterData: {}, // 提供的筛选条件
-      filterRules: [], // 已选的筛选条件
-      filterUrlParam: '', // 根据已选的筛选条件生成的url参数
-      colors: {
-        phone_model: ['#515a6e', 'f7f7f7', 'default'],
-        job_test_area: ['#f5222d', '#fff1f0', 'red'],
-        android_version: ['#fa8c16', '#fff7e6', 'orange'],
-        rom_version: ['#13c2c2', '#e6fffb', 'cyan'],
-        reefuser: ['#1890ff', '#e6f7ff', 'blue'],
-        custom_tag: ['#722ed1', '#f9f0ff', 'purple']
+      filterConditions: [], // 已选的筛选条件
+      filterFactors: {
+        'phone_model': {
+          title: '适用机型',
+          values: []
+        },
+        'job_test_area': {
+          title: '测试用途',
+          values: []
+        },
+        'android_version': {
+          title: '安卓版本',
+          values: []
+        },
+        'rom_version': {
+          title: 'ROM版本',
+          values: []
+        },
+        'reefuser': {
+          title: '维护人员',
+          values: []
+        },
+        'custom_tag': {
+          title: '自定义标签',
+          values: []
+        }
+      },
+      curTab: '0',
+      filterFactorNum: new Array(6).fill(0),
+      keyword: ''
+    }
+  },
+  watch: {
+    filterConditions (newVal, oldVal) {
+      if (newVal.length > oldVal.length) {
+        let data = newVal[newVal.length - 1].split(':')
+        this.filterFactors[data[0]].values.push(newVal[newVal.length - 1])
+        this.filterFactorNum[this.curTab]++
+      } else {
+        for (let i = 0; i < oldVal.length; i++) {
+          if (newVal[i] !== oldVal[i]) {
+            let data = oldVal[i].split(':')
+            let preFactorNum = 0
+            for (let j = 0; j < this.curTab; j++) {
+              preFactorNum += this.filterFactorNum[j]
+            }
+            this.filterFactors[data[0]].values.splice(i - preFactorNum, 1)
+            this.filterFactorNum[this.curTab]--
+            break
+          }
+        }
       }
+      this.getFilteredJob()
     }
   },
   methods: {
-    label (params) {
-      return (h) => {
-        return h('div', [
-          h('span', {
-            'style': {
-              'display': 'flex',
-              'justify-content': 'center',
-              'align-items': 'center',
-              'position': 'absolute',
-              'top': '0',
-              'right': '0',
-              'width': '99.8%',
-              'height': '99.8%',
-              'border-radius': '6px',
-              'background-color': this.colors[params.key][1]
-            }
-          }, [
-            h('span', {
-              'style': {
-                'color': this.colors[params.key][0],
-                'line-height': '100%'
-              }
-            }, params.title)
-          ]),
-          params.title
-        ])
-      }
-    },
-    _jobRender () { // 将filterRules数组整理为筛选条件
-      let selectedData = {}
-      this.filterRules.forEach(item => {
+    getFilterFactors () { // 将filterConditions数组整理为筛选条件
+      let filterFactors = {}
+      this.filterConditions.forEach(item => {
         let info = item.split(':')
         let type = info[0]
         let index = info[1]
-        if (selectedData[type] === undefined) selectedData[type] = []
-        selectedData[type].push(this.filterData[type][index])
+        if (filterFactors[type] === undefined) filterFactors[type] = []
+        filterFactors[type].push(this.filterData[type][index])
       })
-      return selectedData
+      return filterFactors
     },
-    selectedDetail (selectedData) { // 将筛选条件整理为符合格式的url参数
-      let conditions = []
-      Object.keys(selectedData).forEach(key => {
+    getUrlParam () { // 将筛选条件整理为符合格式的url参数
+      let filterFactors = this.getFilterFactors()
+      let factors = []
+      Object.keys(filterFactors).forEach(key => {
         let condition = []
-        selectedData[key].forEach(item => {
+        filterFactors[key].forEach(item => {
           condition.push(item.id)
         })
         if (key === 'job_test_area') key = 'test_area' // 使命名一致
@@ -134,25 +159,29 @@ export default {
         condition.forEach(item => {
           item = key + '__id=' + item
         })
-
         let conditionStr = key + '__id__in=' + 'ReefList[' + condition.join('{%,%}') + ']'
-        conditions.push(conditionStr)
+        factors.push(conditionStr)
       })
-
-      return conditions.join('&')
+      return `&job_name__icontains=${this.keyword}&${factors.join('&')}`
     },
-    onJobFilterChange () { // 筛选条件改变时触发该函数，获取符合条件的job
-      let selectedData = this._jobRender()
-      this.filterUrlParam = '&' + this.selectedDetail(selectedData)
-      this.$emit('getMsg', this.filterUrlParam)
+    getFilteredJob () { // 筛选条件改变时触发该函数，获取符合条件的job
+      this.$emit('getFilteredJobs', this.getUrlParam())
     },
     clear () { // 清空已选筛选条件
-      this.filterRules = []
-      this.onJobFilterChange()
+      this.filterConditions = []
+      this.getFilteredJob()
     },
-    close (index) {
-      this.filterRules.splice(index, 1)
-      this.onJobFilterChange()
+    close (key, index) {
+      let temp = this.filterFactors[key].values[index]
+      this.filterFactors[key].values.splice(index, 1)
+      let tempIndex = this.filterConditions.findIndex((val, idx) => {
+        return val === temp
+      })
+      this.filterConditions.splice(tempIndex, 1)
+      this.getFilteredJob()
+    },
+    changeTab (index) {
+      this.curTab = index
     }
   },
   beforeCreate () {
@@ -189,3 +218,30 @@ export default {
   }
 }
 </script>
+
+<style lang="less" scoped>
+.filter__container {
+  display: flex;
+  align-items: center;
+  margin: 1em 0 3em;
+  .filter__title {
+    writing-mode: vertical-lr;
+    margin: 1em;
+  }
+  .filter-factor {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 0.2em;
+    &__title {
+      width: 6em;
+      cursor: pointer;
+    }
+    &__content {
+      flex: 1;
+      display: flex;
+      flex-wrap: wrap;
+    }
+  }
+}
+</style>

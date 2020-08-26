@@ -754,9 +754,6 @@ export default {
       info.custom_tag = await this._createNewTag('custom_tag')
       info.draft = isDraft
       info.author = localStorage.id
-      if (this.isInnerJob) {
-        info.job_type = 'InnerJob'
-      }
       this.removeInvalidFile(info.ui_json_file)
       this.$store.commit('files/addResFile', {
         name: 'FILES_NAME_CONFIG.json',

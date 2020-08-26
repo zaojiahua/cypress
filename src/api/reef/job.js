@@ -11,6 +11,7 @@ export const getJobList = (params) => {
       'ui_json_file,' +
       'job_name,' +
       'job_type,' +
+      'job_second_type,' +
       'draft' +
       '&job_deleted=False' +
       '&limit=' + params.pageSize +
@@ -29,6 +30,7 @@ export const getJobDetail = (id) => {
       'description,' +
       'job_name,' +
       'job_type,' +
+      'job_second_type,' +
       'rom_version,rom_version.version,rom_version.id,' +
       'rom_version.manufacturer,rom_version.manufacturer.manufacturer_name,rom_version.manufacturer.id,' +
       'android_version,android_version.version,android_version.id,' +

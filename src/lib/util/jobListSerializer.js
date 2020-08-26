@@ -109,6 +109,8 @@ const jobSerializer = {
 }
 const formInfoSerializer = {
   job_name: 'string',
+  job_type: 'string',
+  job_second_type: 'string',
   test_area: [],
   custom_tag: [],
   description: 'string',
