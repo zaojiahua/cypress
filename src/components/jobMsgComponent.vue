@@ -2,9 +2,6 @@
   <Drawer title="用例详情" :closable="false" v-model="$store.state.showDrawer" width="30" @on-close="closeDrawer">
     <Divider orientation="left">
       <b>用例信息</b>
-      <div  class="inner-job">
-        <Checkbox v-model="isInnerJob" :disabled="!isJobEditor">Inner Job</Checkbox>
-      </div>
     </Divider>
     <Form ref="formInfo" :label-width="100" :model='formInfo' :rules='jobInfoRules'>
       <FormItem label="用例名称:" prop="job_name">
@@ -175,14 +172,6 @@ export default {
     },
     isJobEditor () { // 是否在 JobEditor 页面
       return this.$route.name === 'jobEditor'
-    },
-    isInnerJob: { // 是否是 InnerJob
-      get () {
-        return this.$store.state.job.isInnerJob
-      },
-      set () {
-        this.$store.commit('job/setIsInnerJob')
-      }
     }
   },
   watch: {
@@ -424,14 +413,6 @@ export default {
 </script>
 
 <style lang="less" scoped>
-  .inner-job {
-    position: absolute;
-    top: -9px;
-    right:-10px;
-    z-index: 10;
-    background-color: white;
-    padding: 10px;
-  }
   .device-info-title {
     position: relative;
 

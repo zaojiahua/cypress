@@ -177,7 +177,6 @@ export default {
   computed: {
     ...mapState('job', [
       'jobInfo',
-      'isInnerJob',
       'diagramModel'
     ]),
     ...mapGetters('job', [
@@ -450,7 +449,6 @@ export default {
       )
 
       this.myPalette.model = new go.GraphLinksModel([
-        { category: 'Start', text: 'Start' },
         { category: 'switchBlock', text: 'Switch' },
         {
           category: 'normalBlock',
@@ -463,21 +461,18 @@ export default {
               {
                 'category': 'Start',
                 'text': 'Entry',
-                'key': -1,
-                'loc': '-914.2500000000001 -64.00000000000001'
+                'key': -1
               },
               {
                 'category': 'UnitList',
                 'text': 'UnitList',
                 'isGroup': true,
-                'key': -2,
-                'loc': '-700.5 -49'
+                'key': -2
               },
               {
                 'category': 'End',
                 'text': 'Exit',
-                'key': -3,
-                'loc': '-423.5 -65'
+                'key': -3
               }
             ],
             'linkDataArray': [
@@ -645,7 +640,7 @@ export default {
     },
     isNestedInnerJob () { // 是否是嵌套的InnerJob
       let { count } = this.myDiagram.findNodesByExample({ 'category': 'Job' })
-      if (count > 0 && this.isInnerJob) {
+      if (count > 0 && this.jobInfo.job_type === 'InnerJob') {
         this.$Message.error({
           background: true,
           content: 'InnerJob 暂不支持嵌套'
@@ -755,6 +750,11 @@ export default {
       info.draft = isDraft
       info.author = localStorage.id
       this.removeInvalidFile(info.ui_json_file)
+      info.inner_job = []
+      let innerJobs = this.myDiagram.findNodesByExample({ 'category': 'Job' })
+      innerJobs.each(node => {
+        info.inner_job.push(node.data.jobId)
+      })
       this.$store.commit('files/addResFile', {
         name: 'FILES_NAME_CONFIG.json',
         type: 'json',
@@ -840,7 +840,6 @@ export default {
     jobModalClose (job) {
       this.jobModalShow = false
       if (job.id) {
-        console.log('您选中的job为：', job.id)
         let currentJobBlockData = this.myDiagram.findNodeForKey(this.currentJobBlockKey).data
         this.myDiagram.model.setDataProperty(currentJobBlockData, 'text', job.job_name)
         this.myDiagram.model.setDataProperty(currentJobBlockData, 'jobId', job.id)

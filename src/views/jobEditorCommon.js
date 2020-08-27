@@ -329,10 +329,10 @@ function highlightGroup (e, grp, show) {
 export function basicModel () {
   return go.Model.fromJson(
     {
-      'class': 'go.GraphLinksModel',
+      'class': 'GraphLinksModel',
       'linkFromPortIdProperty': 'fromPort',
       'linkToPortIdProperty': 'toPort',
-      'nodeDataArray': [],
+      'nodeDataArray': [ { 'category': 'Start', 'text': 'Start', 'key': -1 } ],
       'linkDataArray': []
     }
   )
