@@ -29,7 +29,7 @@ import CONST from 'constant/constant'
 export default {
   name: 'ScreenShot',
   props: {
-    imageName: String
+    imageName: [String, Number]
   },
   data () {
     return {

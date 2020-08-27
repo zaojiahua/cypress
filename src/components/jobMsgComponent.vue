@@ -194,9 +194,13 @@ export default {
       this.refreshManufacturer()
     },
     jobInfo (val) { // jobInfo 更新时同步更新 formInfo
-      Object.assign(this.formInfo, val)
+      for (let key in this.formInfo) {
+        this.formInfo[key] = val[key]
+      }
       if (this.formInfo.job_type) {
         this.curJobType.splice(0, 1, this.formInfo.job_type)
+      } else {
+        this.curJobType.splice(0, 1)
       }
       if (this.formInfo.job_second_type) {
         this.curJobType.splice(1, 1, this.formInfo.job_second_type)
