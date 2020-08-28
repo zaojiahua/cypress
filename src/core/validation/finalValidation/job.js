@@ -1,3 +1,4 @@
+import CONSTANT from 'constant/constant'
 export function jobFlowValidation (vueObj) {
   const self = vueObj
   // 事件校验提示
@@ -34,7 +35,7 @@ export function jobFlowValidation (vueObj) {
             let preNormalBlockData = link.fromNode.data
             if (preNormalBlockData.category === 'normalBlock') {
               // self.myDiagram.model.setDataProperty(preNormalBlockData, 'star', true)
-              let imgToolUnits = preNormalBlockData.unitLists.nodeDataArray.filter(item => item.category === 'Unit' && item.unitMsg.execModName === 'IMGTOOL')
+              let imgToolUnits = preNormalBlockData.unitLists.nodeDataArray.filter(item => item.category === 'Unit' && CONSTANT.IMGTOOL.has(item.unitMsg.execModName))
               if (!imgToolUnits.length) {
                 myDiagramEventValidationHint.add('End 节点前的 NormalBlock 未包含类型为 "图像识别" 的 Unit（如果必须要这么做，请将 End 节点更换为 Success 或 Fail 节点）')
               }

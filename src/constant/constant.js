@@ -74,5 +74,9 @@ export default {
   SHOW_SCREEN_SHOOT: new Set([
     'jobResourcePicture',
     'picInput'
+  ]),
+  IMGTOOL: new Set([
+    'IMGTOOL',
+    'COMPLEX'
   ])
 }
