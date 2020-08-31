@@ -755,6 +755,7 @@ export default {
       innerJobs.each(node => {
         info.inner_job.push(node.data.jobId)
       })
+      console.log(info)
       this.$store.commit('files/addResFile', {
         name: 'FILES_NAME_CONFIG.json',
         type: 'json',
@@ -778,7 +779,6 @@ export default {
         }
       } else { // 新建 job
         info.job_label = createJobLabel(this)
-        info.job_type = 'Joblib'
         jobFlowAndMsgSave(info).then(res => {
           if (res.status === 201) {
             id = res.data.id
