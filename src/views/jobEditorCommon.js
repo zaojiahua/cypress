@@ -134,12 +134,17 @@ export function baseNodeTemplate (fill, shape) {
       MAKE(go.Shape, shape,
         {
           parameter1: 10,
-          minSize: new go.Size(100, 40),
+          minSize: new go.Size(96, 36),
           fill: fill,
           stroke: null,
-          margin: 4
+          margin: 2,
+          strokeWidth: 4
         },
-        new go.Binding('fill', 'color')
+        new go.Binding('fill', 'color'),
+        new go.Binding('stroke', 'color'),
+        new go.Binding('strokeDashArray', 'main', function (v) {
+          return v ? [8, 6] : [0, 0]
+        })
       ),
       MAKE(go.TextBlock,
         {

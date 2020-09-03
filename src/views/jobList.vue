@@ -1,6 +1,6 @@
 <template>
   <div>
-    <job-list-filter @getFilteredJobs="getFilteredJobs"></job-list-filter>
+    <job-list-filter @getFilterParam="getFilterParam"></job-list-filter>
     <Divider style="margin-top: -6px">已选用例</Divider>
     <Row>
       <Row>
@@ -132,11 +132,12 @@ export default {
       },
       loading: false,
       jobState: '',
-      jobType: ''
+      jobType: '',
+      filterUrlParam: ''
     }
   },
   methods: {
-    getFilteredJobs (filterUrlParam = '') { // 每个页面的请求数据
+    getFilteredJobs () { // 每个页面的请求数据
       let jobState
       let jobType
       if (this.jobState === 'draft') {
@@ -160,7 +161,7 @@ export default {
         offset: this.offset,
         jobState,
         jobType,
-        filterUrlParam
+        filterUrlParam: this.filterUrlParam
       }).then(res => {
         this.currentPageSelectedJobs = {}
         this.dataCount = parseInt(res.headers['total-count'])
@@ -261,11 +262,6 @@ export default {
       this.currentPageSelectedJobs = {}
       this.filterRules = []
     },
-    /**
-     * 导入用例模块
-     * author: lc
-     * lastEditTime: 2019年11月27日10:56:50
-     */
     handleFormatError () {
       this.$Notice.error({
         title: '文件上传失败',
@@ -278,11 +274,6 @@ export default {
         this.$Message.success('文件上传成功！')
       }
     },
-    /**
-     * 导出用例
-     * author lc
-     * lastEditTime 2019年11月26日18:56:24
-     */
     exportJobs () {
       if (this.jobIdList.length === 0) {
         this.$Modal.error({
@@ -312,11 +303,6 @@ export default {
         })
       }
     },
-    /**
-     * 删除用例
-     * author lc
-     * lastEditTime 2020年4月2日17:15:52
-     */
     delSelectedJobs () {
       if (this.jobIdList.length === 0) {
         this.$Modal.error({
@@ -342,6 +328,10 @@ export default {
           }
         })
       }
+    },
+    getFilterParam (val) {
+      this.filterUrlParam = val
+      this.getFilteredJobs()
     }
   },
   computed: {

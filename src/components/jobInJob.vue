@@ -4,7 +4,7 @@
       <p v-show="currentJobName === 'Job'">请选择您需要的InnerJob</p>
       <p v-show="currentJobName !== 'Job'">当前选中的InnerJob为：<strong>{{ currentJobName }}</strong></p>
     </div>
-    <job-list-filter @getFilteredJobs="getFilteredJobs"></job-list-filter>
+    <job-list-filter @getFilterParam="getFilterParam"></job-list-filter>
     <Table ref="jobTable" highlight-row border height="520" :columns="columns" :data="innerJobs" @on-row-click="selectJob"></Table>
     <Page simple :page-size="pageSize" :total="jobNum" :current="currentPage" @on-change="pageChange" style="text-align :center; margin-top: 20px;"></Page>
     <div slot="footer">
@@ -56,7 +56,8 @@ export default {
       currentPage: 1,
       currentJob: {},
       currentJobIndex: 0,
-      currentJobName: ''
+      currentJobName: '',
+      filterUrlParam: ''
     }
   },
   computed: {
@@ -87,7 +88,7 @@ export default {
     confirm () {
       this.$emit('jobModalClose', this.currentJob)
     },
-    async getFilteredJobs (filterUrlParam) {
+    async getFilteredJobs () {
       let url =
         'api/v1/cedar/job/?fields=' +
         'id,' +
@@ -107,7 +108,7 @@ export default {
         '&job_type=InnerJob' +
         '&limit=' + this.pageSize +
         '&offset=' + this.offset +
-        '&ordering=id' + filterUrlParam
+        '&ordering=id' + this.filterUrlParam
       let { headers, status, data: { jobs } } = await axios.request({ url })
       if (status === 200) {
         this.jobNum = parseInt(headers['total-count'])
@@ -171,6 +172,10 @@ export default {
         job_name: data.job_name,
         job_label: data.job_label
       }
+    },
+    getFilterParam (val) {
+      this.filterUrlParam = val
+      this.getFilteredJobs()
     }
   },
   mounted () {

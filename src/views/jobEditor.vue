@@ -87,11 +87,21 @@
               <div id="unit-palette"></div>
             </div>
             <div id="unit-controller">
-              <Button type="error" long @click="delUnitTemplate">删除</Button>
-              <Button type="primary" long style="margin-top: 2px;" @click="editUnitTemplate">编辑</Button>
+              <div v-if="!isDiagram">
+                <Button type="error" long @click="delUnitTemplate">删除</Button>
+                <Button type="primary" long style="margin-top: 2px;" @click="editUnitTemplate">编辑</Button>
+              </div>
+              <div v-else>
+                <ButtonGroup vertical size="default">
+                  <Button type="primary">主机</Button>
+                  <Button>1</Button>
+                  <Button>2</Button>
+                  <Button>3</Button>
+                </ButtonGroup>
+              </div>
             </div>
           </div>
-          <div id="inner-diagram"></div>
+          <div id="inner-diagram" @click="closeContextMenu"></div>
         </div>
       </Modal>
       <!-- <job-editor-job-flow-editor :blockModalShow="blockModalShow" @blockModalClose="blockModalClose"></job-editor-job-flow-editor> -->
@@ -171,7 +181,8 @@ export default {
       unitTemplateContent: '',
       unitTemplateId: undefined,
       rename: false,
-      unitTemplateName: ''
+      unitTemplateName: '',
+      isDiagram: false
     }
   },
   computed: {
@@ -388,13 +399,22 @@ export default {
       }
 
       unitTemplate.contextClick = function (e, node) {
-        if (!(e.diagram instanceof go.Palette) || !sessionStorage.identity.includes('Admin')) return
-        _this.unitTemplateName = node.data.text
-        _this.unitTemplateId = node.data.unit_id
-        _this.unitTemplateContent = JSON.stringify(node.data.unitMsg, null, 2)
-        _this.unitController.style.top = `${e.event.y - 50}px`
-        _this.unitController.style.left = `${e.event.x}px`
-        _this.unitController.style.display = 'block'
+        if (e.diagram instanceof go.Palette && sessionStorage.identity.includes('Admin')) {
+          _this.isDiagram = false
+          _this.unitTemplateName = node.data.text
+          _this.unitTemplateId = node.data.unit_id
+          _this.unitTemplateContent = JSON.stringify(node.data.unitMsg, null, 2)
+          _this.unitController.style.top = `${e.event.y - 50}px`
+          _this.unitController.style.left = `${e.event.x}px`
+          _this.unitController.style.display = 'block'
+        } else {
+          // _this.isDiagram = true
+          // console.log(e, node.data)
+          // _this.blockDiagram.model.setDataProperty(node.data, 'main', true)
+          // _this.unitController.style.top = `${e.event.y - 50}px`
+          // _this.unitController.style.left = `${e.event.x}px`
+          // _this.unitController.style.display = 'block'
+        }
       }
 
       const unitListGroupTemplate = baseGroupTemplate(_this)

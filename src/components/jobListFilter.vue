@@ -1,38 +1,50 @@
 <template>
-  <div>
-    <Row>
-      <Divider>用例筛选</Divider>
+  <div class="collapse">
+    <div class="collapse__header">
+      <span class="collapse__header-tip">搜索</span>
       <Input
         clearable
         v-model="keyword"
         @on-change="getFilteredJob"
         placeholder="Enter something..."
-        style="margin-bottom: 1em;"/>
-      <Tabs type="card" class="tabs" :value="curTab" @on-click="changeTab">
-        <TabPane v-for="(column, index) in filterColumn" :key="column.title" :label="column.title" :class="column.key" :name="index.toString()">
-          <CheckboxGroup v-model="filterConditions">
-            <Row type="flex">
-              <Col span="4" v-for="(item, index) in filterData[column.key]" :key="index">
-                <Checkbox :label="column.key + ':' + index + ':' + item[column.item_key]">
-                  <span>{{ item[column.item_key] }}</span>
-                </Checkbox>
-              </Col>
-            </Row>
-          </CheckboxGroup>
-        </TabPane>
-      </Tabs>
-    </Row>
-    <Row class="filter__container">
-      <!-- <span class="filter__title">筛选条件</span> -->
-      <div class="filter__content">
-        <div v-for="(val, key, idx) in filterFactors" :key="val.title" v-show="val.values.length !== 0" class="filter-factor">
-          <span class="filter-factor__title" @click="changeTab(idx + '')">{{val.title}}</span>
-          <div class="filter-factor__content">
-            <Tag v-for="(factor, index) in val.values" :key="factor" closable @on-close="close(key, index)">{{ factor.split(':')[2] }}</Tag>
+        class="collapse__header-input"
+      />
+      <Icon type="ios-arrow-up" class="collapse__header-arrow-up" v-show="collapseIsOpen" />
+      <Icon type="ios-arrow-down" class="collapse__header-arrow-down" v-show="!collapseIsOpen" />
+    </div>
+    <transition name="slide-fade">
+      <div class="collapse__content" v-show="collapseIsOpen">
+        <Row>
+          <Tabs type="card" class="tabs" :value="curTab" @on-click="changeTab">
+            <TabPane v-for="(column, index) in filterColumn" :key="column.title" :label="column.title" :class="column.key" :name="index.toString()">
+              <CheckboxGroup v-model="filterConditions">
+                <Row type="flex">
+                  <Col span="4" v-for="(item, index) in filterData[column.key]" :key="index">
+                    <Checkbox :label="column.key + ':' + index + ':' + item[column.item_key]">
+                      <span>{{ item[column.item_key] }}</span>
+                    </Checkbox>
+                  </Col>
+                </Row>
+              </CheckboxGroup>
+            </TabPane>
+          </Tabs>
+        </Row>
+      </div>
+    </transition>
+    <div class="collapse__footer">
+      <Row class="filter__container">
+        <!-- <span class="filter__title">筛选条件</span> -->
+        <div class="filter__content" v-show="filterConditions.length !== 0">
+          <Button icon="ios-close" class="filter__clear" @click="clearFilterFactor">清除</Button>
+          <div v-for="(val, key, idx) in filterFactors" :key="val.title" v-show="val.values.length !== 0" class="filter-factor">
+            <span class="filter-factor__title" @click="changeTab(idx + '')">{{val.title}}</span>
+            <div class="filter-factor__content">
+              <Tag v-for="(factor, index) in val.values" :key="factor" closable @on-close="close(key, index)">{{ factor.split(':')[2] }}</Tag>
+            </div>
           </div>
         </div>
-      </div>
-    </Row>
+      </Row>
+    </div>
   </div>
 </template>
 
@@ -106,7 +118,8 @@ export default {
       },
       curTab: '0',
       filterFactorNum: new Array(6).fill(0),
-      keyword: ''
+      keyword: '',
+      collapseIsOpen: false
     }
   },
   watch: {
@@ -165,7 +178,7 @@ export default {
       return `&job_name__icontains=${this.keyword}&${factors.join('&')}`
     },
     getFilteredJob () { // 筛选条件改变时触发该函数，获取符合条件的job
-      this.$emit('getFilteredJobs', this.getUrlParam())
+      this.$emit('getFilterParam', this.getUrlParam())
     },
     clear () { // 清空已选筛选条件
       this.filterConditions = []
@@ -182,6 +195,12 @@ export default {
     },
     changeTab (index) {
       this.curTab = index
+    },
+    clearFilterFactor () {
+      this.filterConditions = []
+      for (let key in this.filterFactors) {
+        this.filterFactors[key].values = []
+      }
     }
   },
   beforeCreate () {
@@ -215,32 +234,95 @@ export default {
     }).catch(error => {
       console.log(error)
     })
+  },
+  mounted () {
+    let collapseHeaderArrowDown = document.querySelector('.collapse__header-arrow-down')
+    collapseHeaderArrowDown.addEventListener('mouseenter', () => {
+      this.collapseIsOpen = true
+    })
+
+    let collapse = document.querySelector('.collapse')
+    collapse.addEventListener('mouseleave', () => {
+      this.collapseIsOpen = false
+    })
   }
 }
 </script>
 
 <style lang="less" scoped>
-.filter__container {
+.collapse {
   display: flex;
-  align-items: center;
-  margin: 1em 0 3em;
-  .filter__title {
-    writing-mode: vertical-lr;
-    margin: 1em;
+  flex-direction: column;
+  margin-bottom: 1.6em;
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+  .slide-fade-enter-active {
+    transition: all .3s ease;
   }
-  .filter-factor {
+  .slide-fade-leave-active {
+    transition: all .3s ease;
+  }
+  .slide-fade-enter, .slide-fade-leave-to {
+    opacity: 0;
+  }
+  &__header {
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
-    margin: 0.2em;
-    &__title {
-      width: 6em;
-      cursor: pointer;
+    padding: 0.6em 0;
+    width: 100%;
+    background-color: #eeeeee;
+    border-radius: 6px;
+    &-tip {
+      width: 3.6em;
+      text-align: center;
     }
-    &__content {
-      flex: 1;
+    &-arrow-up, &-arrow-down {
+      padding: 0.6em;
+      margin: 0 0.6em;
+      border-radius: 50%;
+      cursor: pointer;
+      &:hover {
+        background-color: #cccccc;
+      }
+    }
+  }
+  &__content {
+    padding: 1em;
+  }
+  &__footer {
+    .filter__container {
       display: flex;
-      flex-wrap: wrap;
+      justify-content: flex-start;
+      align-items: center;
+      .filter__title {
+        writing-mode: vertical-lr;
+        margin: 1em;
+      }
+      .filter__content {
+        padding: 1em;
+        .filter__clear {
+          position: absolute;
+          top: 1em;
+          right: 1em;
+        }
+        .filter-factor {
+          display: flex;
+          justify-content: flex-start;
+          align-items: center;
+          margin: 0.2em;
+          min-height: 26px;
+          &__title {
+            width: 6em;
+            cursor: pointer;
+          }
+          &__content {
+            flex: 1;
+            display: flex;
+            flex-wrap: wrap;
+          }
+        }
+      }
     }
   }
 }

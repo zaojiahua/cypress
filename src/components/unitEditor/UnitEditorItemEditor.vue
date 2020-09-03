@@ -44,7 +44,10 @@
         <p class="instructions"><Tag>操作说明</Tag>{{ currentItemMeaning }}</p>
       </div>
       <div class="btn-confirm">
-        <Button type="primary" @click="saveItem">确定</Button>
+        <Button type="primary" @click="saveItem" :loading="saving">
+          <span v-if="!saving">确定</span>
+          <span v-else>saving...</span>
+        </Button>
       </div>
     </div>
     <Modal v-model="isDuplicatedFile" :styles="{top: '48%'}" :mask-closable="false"  :closable="false">
@@ -88,7 +91,8 @@ export default {
       tmachIndex: 0,
       saveToFinalResult: false,
       showRename: false,
-      preFileName: null
+      preFileName: null,
+      saving: false
     }
   },
   computed: {
@@ -256,6 +260,7 @@ export default {
     saveItem () {
       if (!this.saveResFilesName()) return
       if (!this.saveFeaturePoint()) return
+      this.saving = true
       this.tmachBlankSuffixComplete() // 补全后缀
       if (this.willTouchFile) {
         this.arrangeFileName(this.tmachBlanks[0])
@@ -264,6 +269,9 @@ export default {
       this.closeItemEditor()
       this.saveToFinalResult = false
       this.tmachIndex = 0
+      setTimeout(() => {
+        this.saving = false
+      }, 200)
     },
     setName (name) {
       this.tmachBlanks.splice(0, 1, name)
