@@ -16,7 +16,7 @@
     <transition name="slide-fade">
       <div class="collapse__content" v-show="collapseIsOpen">
         <Row>
-          <Tabs type="card" class="tabs" :value="curTab" @on-click="changeTab">
+          <Tabs class="tabs" :value="curTab" @on-click="changeTab">
             <TabPane v-for="(column, index) in filterColumn" :key="column.title" :label="column.title" :class="column.key" :name="index.toString()">
               <CheckboxGroup v-model="filterConditions">
                 <Row type="flex">
@@ -243,14 +243,7 @@ export default {
 
     let collapse = document.querySelector('.collapse')
     collapse.addEventListener('mouseleave', () => {
-      setTimeout(() => {
-        this.collapseIsOpen = false
-      }, 600)
-    })
-
-    let filterContent = document.querySelector('.filter__content')
-    filterContent.addEventListener('mouseenter', () => {
-      this.collapseIsOpen = true
+      this.collapseIsOpen = false
     })
   }
 }
@@ -318,7 +311,6 @@ export default {
           align-items: center;
           margin: 0.2em;
           min-height: 26px;
-          max-width: calc(100vw - 280px);
           &__title {
             width: 6em;
             cursor: pointer;
