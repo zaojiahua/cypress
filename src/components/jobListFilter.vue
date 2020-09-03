@@ -11,6 +11,7 @@
       />
       <Icon type="ios-arrow-up" class="collapse__header-arrow-up" v-show="collapseIsOpen" />
       <Icon type="ios-arrow-down" class="collapse__header-arrow-down" v-show="!collapseIsOpen" />
+      <Button icon="ios-close" class="filter__clear" @click="clearFilterFactor" v-show="filterConditions.length !== 0">清除</Button>
     </div>
     <transition name="slide-fade">
       <div class="collapse__content" v-show="collapseIsOpen">
@@ -35,7 +36,6 @@
       <Row class="filter__container">
         <!-- <span class="filter__title">筛选条件</span> -->
         <div class="filter__content" v-show="filterConditions.length !== 0">
-          <Button icon="ios-close" class="filter__clear" @click="clearFilterFactor">清除</Button>
           <div v-for="(val, key, idx) in filterFactors" :key="val.title" v-show="val.values.length !== 0" class="filter-factor">
             <span class="filter-factor__title" @click="changeTab(idx + '')">{{val.title}}</span>
             <div class="filter-factor__content">
@@ -243,7 +243,14 @@ export default {
 
     let collapse = document.querySelector('.collapse')
     collapse.addEventListener('mouseleave', () => {
-      this.collapseIsOpen = false
+      setTimeout(() => {
+        this.collapseIsOpen = false
+      }, 600)
+    })
+
+    let filterContent = document.querySelector('.filter__content')
+    filterContent.addEventListener('mouseenter', () => {
+      this.collapseIsOpen = true
     })
   }
 }
@@ -286,6 +293,9 @@ export default {
         background-color: #cccccc;
       }
     }
+    .filter__clear {
+      margin: 0 0.6em;
+    }
   }
   &__content {
     padding: 1em;
@@ -295,23 +305,20 @@ export default {
       display: flex;
       justify-content: flex-start;
       align-items: center;
+      overflow: hidden;
       .filter__title {
         writing-mode: vertical-lr;
         margin: 1em;
       }
       .filter__content {
         padding: 1em;
-        .filter__clear {
-          position: absolute;
-          top: 1em;
-          right: 1em;
-        }
         .filter-factor {
           display: flex;
           justify-content: flex-start;
           align-items: center;
           margin: 0.2em;
           min-height: 26px;
+          max-width: calc(100vw - 280px);
           &__title {
             width: 6em;
             cursor: pointer;
