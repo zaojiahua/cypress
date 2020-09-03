@@ -142,7 +142,7 @@ export function baseNodeTemplate (fill, shape) {
         },
         new go.Binding('fill', 'color'),
         new go.Binding('stroke', 'color'),
-        new go.Binding('strokeDashArray', 'main', function (v) {
+        new go.Binding('strokeDashArray', 'assistDevice', function (v) {
           return v ? [8, 6] : [0, 0]
         })
       ),
@@ -150,7 +150,7 @@ export function baseNodeTemplate (fill, shape) {
         {
           font: 'bold 11pt Helvetica, Arial, sans-serif',
           stroke: lightText,
-          margin: 8,
+          margin: new go.Margin(8, 24, 8, 24),
           maxSize: new go.Size(160, NaN),
           wrap: go.TextBlock.WrapFit,
           editable: false
@@ -165,6 +165,23 @@ export function baseNodeTemplate (fill, shape) {
           opacity: 0.0
         },
         new go.Binding('opacity', 'star', function (v) { return v ? 1.0 : 0.0 })
+      ),
+      MAKE(go.Panel, 'Spot',
+        new go.Binding('opacity', 'assistDevice', function (t) {
+          return t ? 1 : 0
+        }),
+        {
+          opacity: 0,
+          alignment: new go.Spot(0, 0, 5, 5),
+          alignmentFocus: go.Spot.TopLeft
+        },
+        MAKE(go.TextBlock,
+          new go.Binding('text', 'assistDevice'), {
+            angle: 0,
+            stroke: 'white',
+            font: 'bold 13px sans-serif',
+            textAlign: 'center'
+          })
       )
     )
   )

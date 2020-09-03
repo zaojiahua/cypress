@@ -9,8 +9,8 @@
         placeholder="Enter something..."
         class="collapse__header-input"
       />
-      <Icon type="ios-arrow-up" class="collapse__header-arrow-up" v-show="collapseIsOpen" />
-      <Icon type="ios-arrow-down" class="collapse__header-arrow-down" v-show="!collapseIsOpen" />
+      <Icon type="ios-arrow-up" class="collapse__header-arrow-up" v-show="collapseIsOpen" @click="handleCollapse"/>
+      <Icon type="ios-arrow-down" class="collapse__header-arrow-down" v-show="!collapseIsOpen" @click="handleCollapse"/>
       <Button icon="ios-close" class="filter__clear" @click="clearFilterFactor" v-show="filterConditions.length !== 0">清除</Button>
     </div>
     <transition name="slide-fade">
@@ -119,7 +119,7 @@ export default {
       curTab: '0',
       filterFactorNum: new Array(6).fill(0),
       keyword: '',
-      collapseIsOpen: false
+      collapseIsOpen: true
     }
   },
   watch: {
@@ -201,6 +201,9 @@ export default {
       for (let key in this.filterFactors) {
         this.filterFactors[key].values = []
       }
+    },
+    handleCollapse () {
+      this.collapseIsOpen = !this.collapseIsOpen
     }
   },
   beforeCreate () {
@@ -233,17 +236,6 @@ export default {
       this.$set(this.filterData, 'custom_tag', util.validate(serializer.getCustomTagSerializer, res.data).customtags)
     }).catch(error => {
       console.log(error)
-    })
-  },
-  mounted () {
-    let collapseHeaderArrowDown = document.querySelector('.collapse__header-arrow-down')
-    collapseHeaderArrowDown.addEventListener('mouseenter', () => {
-      this.collapseIsOpen = true
-    })
-
-    let collapse = document.querySelector('.collapse')
-    collapse.addEventListener('mouseleave', () => {
-      this.collapseIsOpen = false
     })
   }
 }

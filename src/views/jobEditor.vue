@@ -93,10 +93,8 @@
               </div>
               <div v-else>
                 <ButtonGroup vertical size="default">
-                  <Button type="primary">主机</Button>
-                  <Button>1</Button>
-                  <Button>2</Button>
-                  <Button>3</Button>
+                  <Button type="primary" @click="setWingman(0)">主机</Button>
+                  <Button v-for="wingman in wingmans" :key="wingman" @click="setWingman(wingman)">{{wingman}} 号机</Button>
                 </ButtonGroup>
               </div>
             </div>
@@ -182,7 +180,9 @@ export default {
       unitTemplateId: undefined,
       rename: false,
       unitTemplateName: '',
-      isDiagram: false
+      isDiagram: false,
+      wingmans: 3,
+      curUnitKey: null
     }
   },
   computed: {
@@ -408,12 +408,12 @@ export default {
           _this.unitController.style.left = `${e.event.x}px`
           _this.unitController.style.display = 'block'
         } else {
-          // _this.isDiagram = true
-          // console.log(e, node.data)
-          // _this.blockDiagram.model.setDataProperty(node.data, 'main', true)
-          // _this.unitController.style.top = `${e.event.y - 50}px`
-          // _this.unitController.style.left = `${e.event.x}px`
-          // _this.unitController.style.display = 'block'
+          _this.isDiagram = true
+          _this.curUnitKey = node.data.key
+          console.log(e, node.data)
+          _this.unitController.style.top = `${e.event.y - 50}px`
+          _this.unitController.style.left = `${e.event.x}px`
+          _this.unitController.style.display = 'block'
         }
       }
 
@@ -1018,6 +1018,17 @@ export default {
     cancelEdit () {
       this.clearData()
       this.$router.push({ path: '/jobList' })
+    },
+    setWingman (wingmanId) {
+      let curUnit = this.blockDiagram.findNodeForKey(this.curUnitKey)
+      if (wingmanId) {
+        this.blockDiagram.model.setDataProperty(curUnit.data, 'assistDevice', wingmanId)
+        this.blockDiagram.model.setDataProperty(curUnit.data.unitMsg, 'assistDevice', wingmanId)
+      } else {
+        this.blockDiagram.model.setDataProperty(curUnit.data, 'assistDevice', null)
+        delete curUnit.data.assistDevice
+        delete curUnit.data.unitMsg.assistDevice
+      }
     }
   },
   beforeRouteLeave (to, from, next) {
