@@ -410,7 +410,6 @@ export default {
         } else {
           _this.isDiagram = true
           _this.curUnitKey = node.data.key
-          console.log(e, node.data)
           _this.unitController.style.top = `${e.event.y - 50}px`
           _this.unitController.style.left = `${e.event.x}px`
           _this.unitController.style.display = 'block'
@@ -445,6 +444,11 @@ export default {
     }
     this.updateUnitAllList()
     this.init()
+
+    window.addEventListener('contextmenu', this.contextMenuPreventDefault)
+  },
+  beforeDestroy () {
+    window.removeEventListener('contextmenu', this.contextMenuPreventDefault)
   },
   beforeCreate () {
     const _this = this
@@ -775,7 +779,6 @@ export default {
       innerJobs.each(node => {
         info.inner_job.push(node.data.jobId)
       })
-      console.log(info)
       this.$store.commit('files/addResFile', {
         name: 'FILES_NAME_CONFIG.json',
         type: 'json',
@@ -1029,6 +1032,9 @@ export default {
         delete curUnit.data.assistDevice
         delete curUnit.data.unitMsg.assistDevice
       }
+    },
+    contextMenuPreventDefault (evt) {
+      evt.preventDefault()
     }
   },
   beforeRouteLeave (to, from, next) {
