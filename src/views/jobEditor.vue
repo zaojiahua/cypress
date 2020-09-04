@@ -790,10 +790,10 @@ export default {
         file: JSON.stringify(this.resFilesName, null, 2)
       })
       let resFiles = this._.cloneDeep(this.resFiles)
-      if (this.draftId) {
-        this.uploadFiles(this.draftId, info, resFiles)
-      } else {
-        if (saveAs || !id) {
+      if (saveAs) {
+        if (this.draftId) {
+          this.uploadFiles(this.draftId, info, resFiles)
+        } else {
           try {
             let { status, data } = await jobFlowAndMsgSave(info)
             if (status === 201) id = data.id
@@ -801,8 +801,25 @@ export default {
           } catch (error) {
             console.log(error)
           }
-        } else {
+        }
+      } else {
+        if (id) {
           this.uploadFiles(id, info, resFiles)
+          if (this.draftId) {
+            patchUpdateJob(this.draftId, { job_deleted: true })
+          }
+        } else {
+          if (this.draftId) {
+            this.uploadFiles(this.draftId, info, resFiles)
+          } else {
+            try {
+              let { status, data } = await jobFlowAndMsgSave(info)
+              if (status === 201) id = data.id
+              this.uploadFiles(id, info, resFiles)
+            } catch (error) {
+              console.log(error)
+            }
+          }
         }
       }
       this.$router.push({ path: '/jobList' })
