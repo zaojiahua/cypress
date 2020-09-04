@@ -134,6 +134,7 @@ import unitTemplateEditor from '_c/unitTemplateEditor'
 import { getJobUnitsBodyDict, deleteUnitTemplate } from '../api/reef/unit'
 import { getBlockFlowDict4Font, jobFlowAndMsgSave, jobFlowAndMsgUpdate } from '../api/reef/jobFlow'
 import { jobResFilesSave, getJobResFilesList, getJobResFile } from '../api/reef/jobResFileSave'
+import { patchUpdateJob } from 'api/reef/job'
 import SwitchBlockDetailComponent from '_c/SwitchBlockDetailComponent'
 import { commonValidation } from '../core/validation/common'
 import {
@@ -182,7 +183,8 @@ export default {
       unitTemplateName: '',
       isDiagram: false,
       wingmans: 3,
-      curUnitKey: null
+      curUnitKey: null,
+      draftId: null
     }
   },
   computed: {
@@ -301,7 +303,6 @@ export default {
 
       const switchBlockTemplate = baseNodeTemplateForPort(CONST.COLORS.SWITCH, 'Diamond')
       switchBlockTemplate.doubleClick = function (e, node) {
-        _this.$Notice.destroy()
         if (e.diagram instanceof go.Palette) return
 
         _this.switchBlockInfo = {
@@ -317,7 +318,6 @@ export default {
       const normalBlockTemplate = baseNodeTemplateForPort(CONST.COLORS.NORMAL, 'Rectangle')
 
       normalBlockTemplate.doubleClick = function (e, node) {
-        _this.$Notice.destroy()
         if (e.diagram instanceof go.Palette) return
         _this.unitType = '请选择组件类型'
         _this.blockName = node.data.text
@@ -446,9 +446,11 @@ export default {
     this.init()
 
     window.addEventListener('contextmenu', this.contextMenuPreventDefault)
+    this.autoSaveInterval = window.setInterval(this.autoSave, 600000)
   },
   beforeDestroy () {
     window.removeEventListener('contextmenu', this.contextMenuPreventDefault)
+    window.clearInterval(this.autoSaveInterval)
   },
   beforeCreate () {
     const _this = this
@@ -563,8 +565,6 @@ export default {
 
       const blockDiagramHint = blockFlowValidation(this)
 
-      this.$Notice.destroy()
-
       function setDataProperty (context, data, propname, val) {
         context.myDiagram.model.setDataProperty(data, propname, val)
       }
@@ -610,8 +610,6 @@ export default {
     },
     _jobFlowRules () {
       const myDiagramEventValidationHint = jobFlowValidation(this)
-
-      this.$Notice.destroy()
 
       // 错误提示
       if (myDiagramEventValidationHint.size !== 0) {
@@ -732,7 +730,6 @@ export default {
                 background: true,
                 content: 'Job 保存成功'
               })
-              this.$router.push({ path: '/jobList' })
             } else {
               this.$Message.error({
                 background: true,
@@ -784,8 +781,8 @@ export default {
       }
       return info
     },
-    async _saveJob (e, saveAs = false, isDraft = true) {
-      let id = this.jobId
+    async _saveJob (e, saveAs = false, isDraft = true, autoSave = false) {
+      let id = this.draftId || this.jobId
       let info = await this.prepareJobInfo(saveAs, id, isDraft)
       this.$store.commit('files/addResFile', {
         name: 'FILES_NAME_CONFIG.json',
@@ -803,8 +800,36 @@ export default {
         }
       }
       if (id && !saveAs) this.uploadFiles(id, info, resFiles)
-
+      this.$router.push({ path: '/jobList' })
       this.clearData()
+    },
+    async autoSave () {
+      let info = await this.prepareJobInfo(true, true, true)
+      info.job_name = info.job_name + '_autosave'
+      this.$store.commit('files/addResFile', {
+        name: 'FILES_NAME_CONFIG.json',
+        type: 'json',
+        file: JSON.stringify(this.resFilesName, null, 2)
+      })
+      let resFiles = this._.cloneDeep(this.resFiles)
+      if (this.draftId === null || this.draftId === undefined) {
+        try {
+          let { status, data } = await jobFlowAndMsgSave(info)
+          if (status === 201) {
+            this.draftId = data.id
+          }
+          this.uploadFiles(this.draftId, info, resFiles)
+        } catch (error) {
+          console.log(error)
+        }
+      } else {
+        this.uploadFiles(this.draftId, info, resFiles)
+      }
+      this.$Notice.success({
+        title: '温馨提示',
+        desc: `已为您自动保存当前内容, 用例名称为 ${info.job_name}`,
+        duration: 6
+      })
     },
     saveAs () {
       this.rename = true
@@ -1010,6 +1035,17 @@ export default {
       ]))
     },
     cancelEdit () {
+      if (this.draftId) {
+        patchUpdateJob(this.draftId, { job_deleted: true }).then(({ status }) => {
+          if (status === 200) {
+            this.$Notice.warning({
+              title: '温馨提示',
+              desc: `已为您将自动保存的草稿删除`,
+              duration: 6
+            })
+          }
+        })
+      }
       this.clearData()
       this.$router.push({ path: '/jobList' })
     },
@@ -1027,12 +1063,6 @@ export default {
     contextMenuPreventDefault (evt) {
       evt.preventDefault()
     }
-  },
-  beforeRouteLeave (to, from, next) {
-    setTimeout(() => {
-      this.$Notice.destroy()
-    }, 600)
-    next()
   }
 }
 </script>
