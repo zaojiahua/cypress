@@ -81,13 +81,13 @@ export function linkTemplateStyle () {
   )
 }
 
-export function startNodeTemplate (color, isUnit = false, shape = 'RoundedRectangle') {
+export function startNodeTemplate (color, shape = 'RoundedRectangle') {
   const startNodeTemplate = baseNodeTemplate(color, shape)
   // parameter1: 20,
   startNodeTemplate.add(makePort('L', go.Spot.Left, true, false))
   startNodeTemplate.add(makePort('R', go.Spot.Right, true, false))
   startNodeTemplate.add(makePort('B', go.Spot.Bottom, true, false))
-  if (isUnit) startNodeTemplate.deletable = false
+  startNodeTemplate.deletable = false
   return startNodeTemplate
 }
 

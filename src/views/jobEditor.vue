@@ -424,7 +424,7 @@ export default {
       unitListGroupTemplate.linkValidation = unitListValidation
 
       _this.blockDiagram.nodeTemplateMap.add('Unit', unitTemplate)
-      _this.blockDiagram.nodeTemplateMap.add('Start', startNodeTemplate(CONST.COLORS.START, true))
+      _this.blockDiagram.nodeTemplateMap.add('Start', startNodeTemplate(CONST.COLORS.START))
       _this.blockDiagram.nodeTemplateMap.add('End', endNodeTemplate(CONST.COLORS.END, true))
       _this.blockDiagram.groupTemplateMap.add('UnitList', unitListGroupTemplate)
 
