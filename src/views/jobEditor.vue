@@ -781,8 +781,8 @@ export default {
       }
       return info
     },
-    async _saveJob (e, saveAs = false, isDraft = true, autoSave = false) {
-      let id = this.draftId || this.jobId
+    async _saveJob (e, saveAs = false, isDraft = true) {
+      let id = this.jobId
       let info = await this.prepareJobInfo(saveAs, id, isDraft)
       this.$store.commit('files/addResFile', {
         name: 'FILES_NAME_CONFIG.json',
@@ -790,16 +790,21 @@ export default {
         file: JSON.stringify(this.resFilesName, null, 2)
       })
       let resFiles = this._.cloneDeep(this.resFiles)
-      if ((id && saveAs) || !id) {
-        try {
-          let { status, data } = await jobFlowAndMsgSave(info)
-          if (status === 201) id = data.id
+      if (this.draftId) {
+        this.uploadFiles(this.draftId, info, resFiles)
+      } else {
+        if (saveAs || !id) {
+          try {
+            let { status, data } = await jobFlowAndMsgSave(info)
+            if (status === 201) id = data.id
+            this.uploadFiles(id, info, resFiles)
+          } catch (error) {
+            console.log(error)
+          }
+        } else {
           this.uploadFiles(id, info, resFiles)
-        } catch (error) {
-          console.log(error)
         }
       }
-      if (id && !saveAs) this.uploadFiles(id, info, resFiles)
       this.$router.push({ path: '/jobList' })
       this.clearData()
     },
