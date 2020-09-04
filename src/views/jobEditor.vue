@@ -764,14 +764,11 @@ export default {
         }
       }
     },
-    async _saveJob (e, saveAs = false, isDraft = true) {
-      let jobFlow = this.myDiagram.model.toJson()
-      let id = this.jobId
+    async prepareJobInfo (saveAs, createNew, isDraft) {
       let info = this._.cloneDeep(this.jobInfo)
-      info.ui_json_file = JSON.parse(jobFlow)
+      info.ui_json_file = JSON.parse(this.myDiagram.model.toJson())
       info.test_area = await this._createNewTag('test_area')
       info.custom_tag = await this._createNewTag('custom_tag')
-      info.draft = isDraft
       info.author = localStorage.id
       this.removeInvalidFile(info.ui_json_file)
       info.inner_job = []
@@ -779,39 +776,33 @@ export default {
       innerJobs.each(node => {
         info.inner_job.push(node.data.jobId)
       })
+      if (saveAs || createNew) {
+        info.job_label = createJobLabel(this)
+      }
+      if (!saveAs) {
+        info.draft = isDraft
+      }
+      return info
+    },
+    async _saveJob (e, saveAs = false, isDraft = true) {
+      let id = this.jobId
+      let info = await this.prepareJobInfo(saveAs, id, isDraft)
       this.$store.commit('files/addResFile', {
         name: 'FILES_NAME_CONFIG.json',
         type: 'json',
         file: JSON.stringify(this.resFilesName, null, 2)
       })
       let resFiles = this._.cloneDeep(this.resFiles)
-      if (id) { // 不是新建 job
-        if (saveAs) { // 另存为
-          info.job_label = createJobLabel(this)
-          try {
-            let { status, data } = await jobFlowAndMsgSave(info)
-            if (status === 201) {
-              id = data.id
-            }
-            this.uploadFiles(id, info, resFiles)
-          } catch (error) {
-            console.log(error)
-          }
-        } else { // 更新
+      if ((id && saveAs) || !id) {
+        try {
+          let { status, data } = await jobFlowAndMsgSave(info)
+          if (status === 201) id = data.id
           this.uploadFiles(id, info, resFiles)
+        } catch (error) {
+          console.log(error)
         }
-      } else { // 新建 job
-        info.job_label = createJobLabel(this)
-        jobFlowAndMsgSave(info).then(res => {
-          if (res.status === 201) {
-            id = res.data.id
-          }
-        }).then(() => {
-          this.uploadFiles(id, info, resFiles)
-        }).catch(err => {
-          console.error(err)
-        })
       }
+      if (id && !saveAs) this.uploadFiles(id, info, resFiles)
 
       this.clearData()
     },

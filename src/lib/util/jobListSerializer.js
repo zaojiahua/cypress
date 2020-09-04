@@ -82,6 +82,7 @@ const jobSerializer = {
   }],
   description: 'string',
   id: 'number',
+  draft: 'boolean',
   job_label: 'string',
   job_name: 'string',
   job_type: 'string',

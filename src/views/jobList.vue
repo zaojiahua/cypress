@@ -207,8 +207,8 @@ export default {
           rom_version: job.rom_version.map(item => item.id),
 
           job_id: job.id,
-          job_flow: job.ui_json_file
-
+          job_flow: job.ui_json_file,
+          draft: job.draft
         }
         this.$store.commit('job/setJobInfo', jobInfo)
       })
