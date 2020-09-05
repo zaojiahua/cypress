@@ -5,9 +5,12 @@ docker-deploy:
   stage: deploy
   script:
     - whoami
-    - ssh root@10.80.11.138 python3 cypress_build.py
-    - ssh root@10.80.5.138 python3 cypress_build.py
-    - cd ~
-    - python3 cypress_build.py
+    - pwd
+#    - ssh root@10.80.11.138 python3 cypress_build.py
+#    - ssh root@10.80.5.138 python3 cypress_build.py
+#    - cd ~
+#    - python3 cypress_build.py
   only:
-    - master
+    - test
+
+
