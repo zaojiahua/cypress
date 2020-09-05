@@ -111,7 +111,7 @@
         @clear="switchBlockInfo = {}">
       </switch-block-detail-component>
       <div class="context-menu">
-        <ButtonGroup>
+        <ButtonGroup vertical>
           <Button long>NormalBlock</Button>
           <Button long>结果Block</Button>
         </ButtonGroup>
@@ -190,7 +190,10 @@ export default {
       isDiagram: false,
       wingmans: 3,
       curUnitKey: null,
-      draftId: null
+      draftId: null,
+      lastActiveTime: null,
+      activeTimeInterval: 240000,
+      autoSaveInterval: 300000
     }
   },
   computed: {
@@ -451,12 +454,13 @@ export default {
     this.updateUnitAllList()
     this.init()
 
-    window.addEventListener('contextmenu', this.contextMenuPreventDefault)
-    this.autoSaveInterval = window.setInterval(this.autoSave, 300000)
+    window.addEventListener('contextmenu', this.dispatchMouseEvent)
+    window.addEventListener('mousemove', this.dispatchMouseEvent)
+    this.autoSaveTimer = window.setInterval(this.autoSave, this.autoSaveInterval) // 300000
   },
   beforeDestroy () {
-    window.removeEventListener('contextmenu', this.contextMenuPreventDefault)
-    window.clearInterval(this.autoSaveInterval)
+    window.removeEventListener('contextmenu', this.dispatchMouseEvent)
+    window.clearInterval(this.autoSaveTimer)
   },
   beforeCreate () {
     const _this = this
@@ -832,6 +836,8 @@ export default {
       this.clearData()
     },
     async autoSave () {
+      let curTime = Date.now()
+      if (curTime - this.lastActiveTime >= this.activeTimeInterval || !this._jobMsgRules()) return
       let info = await this.prepareJobInfo(true, true, true)
       info.job_name = info.job_name + '_autosave'
       this.$store.commit('files/addResFile', {
@@ -1088,8 +1094,13 @@ export default {
         delete curUnit.data.unitMsg.assistDevice
       }
     },
-    contextMenuPreventDefault (evt) {
+    dispatchMouseEvent (evt) {
       evt.preventDefault()
+      switch (evt.type) {
+        case 'mousemove':
+          this.lastActiveTime = Date.now()
+          break
+      }
     }
   }
 }
@@ -1219,9 +1230,8 @@ export default {
 
 .context-menu {
   position: absolute;
-  top: 100px;
-  left: 100px;
-  width: 200px;
-  background-color: violet;
+  top: 600px;
+  left: 600px;
+  z-index: 100;
 }
 </style>
