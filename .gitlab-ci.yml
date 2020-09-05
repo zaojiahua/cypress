@@ -11,6 +11,6 @@ docker-deploy:
 #    - cd ~
 #    - python3 cypress_build.py
   only:
-    - master
+    - test
 
 
