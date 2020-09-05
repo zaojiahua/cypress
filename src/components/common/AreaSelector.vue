@@ -2,6 +2,10 @@
   <div class="selector-container">
     <div class="selector">
       <img draggable="false" v-show="imgSrc" class="selector__img">
+      <div class="selector__magnifier" v-show="showMagnifier">
+        <canvas width="200" height="200" class="selector__magnifier__canvas"></canvas>
+        <div class="selector__magnifier__center"></div>
+      </div>
       <div class="selector__curarea" v-show="imgSrc">
         <div class="selector__curarea__tl"></div>
         <div class="selector__curarea__t"></div>
@@ -14,7 +18,6 @@
         <button class="selector__curarea__close" @click="closeArea" v-show="showClose">关闭</button>
       </div>
     </div>
-    <div class="selector_mask" v-show="showMask"></div>
   </div>
 </template>
 
@@ -45,13 +48,17 @@ export default {
       curAreaRect: null,
       imageWidth: null,
       imageHeight: null,
-      showMask: false,
+      showMagnifier: false,
       curAreaBRBox: null,
       moveArea: false,
       expandRight: false,
       expandBottom: false,
       expandTop: false,
-      expandLeft: false
+      expandLeft: false,
+      selectorMagnifier: null,
+      canvasContext: null,
+      offscreenCanvas: null,
+      offscreenContext: null
     }
   },
   watch: {
@@ -196,16 +203,11 @@ export default {
           this.expandLeft = false
       }
     },
-    handleShowMask (event) {
+    handleshowMagnifier (event) {
       switch (event.type) {
         case 'keydown':
           if (event.key === this.maskKey || event.keyCode === this.maskKey) {
-            this.showMask = true
-          }
-          break
-        case 'keyup':
-          if (event.key === this.maskKey || event.keyCode === this.maskKey) {
-            this.showMask = false
+            this.showMagnifier = !this.showMagnifier
           }
           break
       }
@@ -226,6 +228,13 @@ export default {
           width: this.imageWidth,
           height: this.imageHeight
         })
+
+        this.offscreenCanvas = document.createElement('canvas')
+        this.offscreenContext = this.offscreenCanvas.getContext('2d')
+        this.offscreenCanvas.width = this.imageWidth
+        this.offscreenCanvas.height = this.imageHeight
+        this.offscreenContext.drawImage(image, 0, 0, this.offscreenCanvas.width, this.offscreenCanvas.height)
+
         let img = document.querySelector('.selector__img')
         if (this.imageWidth > this.imageHeight) {
           this.selector.style.width = '100%'
@@ -236,114 +245,151 @@ export default {
         }
         img.src = src
       }
+    },
+    magnifier (evt) {
+      if (!this.showMagnifier) return
+      if (this.selectorImgRect === null) {
+        this.selectorImgRect = this.selectorImg.getBoundingClientRect()
+      }
+      let sx = evt.offsetX / this.selectorImgRect.width * this.imageWidth - 100
+      let sy = evt.offsetY / this.selectorImgRect.height * this.imageHeight - 100
+      let imgData = this.offscreenContext.getImageData(sx, sy, 200, 200)
+      this.canvasContext.putImageData(imgData, 0, 0)
     }
   },
   mounted () {
     this.selector = document.querySelector('.selector')
     this.selectorImg = document.querySelector('.selector__img')
+    this.selectorMagnifier = document.querySelector('.selector__magnifier__canvas')
+    this.canvasContext = this.selectorMagnifier.getContext('2d')
     this.curArea = document.querySelector('.selector__curarea')
 
     this.selector.addEventListener('mousedown', this.selectLabelArea)
     this.selector.addEventListener('mousemove', this.selectLabelArea)
     this.selector.addEventListener('mouseup', this.selectLabelArea)
     this.selector.addEventListener('mouseleave', this.selectLabelArea)
-    window.addEventListener('keydown', this.handleShowMask)
-    window.addEventListener('keyup', this.handleShowMask)
+    this.selectorImg.addEventListener('mousemove', this.magnifier)
+    window.addEventListener('keydown', this.handleshowMagnifier)
+    window.addEventListener('keyup', this.handleshowMagnifier)
 
     if (this.imgSrc) this.setImg(this.imgSrc)
   },
   beforeDestroy () {
-    window.removeEventListener('keydown', this.handleShowMask)
-    window.removeEventListener('keyup', this.handleShowMask)
+    window.removeEventListener('keydown', this.handleshowMagnifier)
+    window.removeEventListener('keyup', this.handleshowMagnifier)
   }
 }
 </script>
 
 <style lang="less" scoped>
   .selector-container {
+    --selector-mask-zindex: 100;
+    --selector-common-zindex: 200;
+    --area-border-zindex: 1000;
+    --area-corner-zindex: 1100;
     width: 100%;
     height: 100%;
     .selector {
       position: relative;
       display: flex;
-      z-index: 200;
+      z-index: var(--selector-common-zindex);
       width: 100%;
       height: 100%;
       justify-content: center;
       align-items: center;
-      .selector__img {
+      &__img {
         user-select: none;
-        z-index: 200;
+        z-index: var(--selector-common-zindex);
         max-height: 100%;
         max-width: 100%;
+        transition: all 0.3s;
+        &:hover {
+          box-shadow: 0 0 6px 2px #cccccc;
+        }
       }
-      .selector__curarea {
+      &__magnifier {
+        position: absolute;
+        left: -200px;
+        z-index: var(--selector-common-zindex);
+        font-size: 0;
+        background-color: white;
+        box-shadow: 2px 2px 8px 2px #bbb8b8;
+        &__center {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          border: 6px solid red;
+          border-radius: 50%;
+          transform: translate(-50%, -50%);
+        }
+      }
+      &__curarea {
         display: none;
         position:absolute;
         width:100px;
         height:100px;
         background: repeating-linear-gradient(-45deg, rgba(11, 182, 182, 0.4), rgba(11, 182, 182, 0.4) 10px, rgba(60, 199, 199, 0.4) 10px, rgba(21, 123, 182, 0.4) 20px);
-        z-index: 1000;
+        z-index: var(--area-border-zindex);
         box-sizing: border-box;
-        .selector__curarea__tl,
-        .selector__curarea__t,
-        .selector__curarea__tr,
-        .selector__curarea__r,
-        .selector__curarea__br,
-        .selector__curarea__b,
-        .selector__curarea__bl,
-        .selector__curarea__l {
+        &__tl,
+        &__t,
+        &__tr,
+        &__r,
+        &__br,
+        &__b,
+        &__bl,
+        &__l {
           position: absolute;
           width: 4px;
           height: 4px;
-          z-index: 1000;
+          z-index: var(--area-border-zindex);
         }
-        .selector__curarea__tl {
+        &__tl {
           top: 0;
           left: 0;
           background-color: red;
-          z-index: 1100;
+          z-index: var(--area-corner-zindex);
         }
-        .selector__curarea__t {
+        &__t {
           width: 100%;
           top: 0;
           cursor: n-resize;
         }
-        .selector__curarea__tr{
+        &__tr{
           top: 0;
           right: 0;
           background-color: red;
-          z-index: 1100;
+          z-index: var(--area-corner-zindex);
         }
-        .selector__curarea__r {
+        &__r {
           right: 0;
           height: 100%;
           cursor: e-resize;
         }
-        .selector__curarea__br {
+        &__br {
           bottom: 0;
           right: 0;
           background-color: red;
           cursor: se-resize;
-          z-index: 1100;
+          z-index: var(--area-corner-zindex);
         }
-        .selector__curarea__b {
+        &__b {
           bottom: 0;
           width: 100%;
           cursor: s-resize;
         }
-        .selector__curarea__bl {
+        &__bl {
           bottom: 0;
           left: 0;
           background-color: red;
-          z-index: 1100;
+          z-index: var(--area-corner-zindex);
         }
-        .selector__curarea__l {
+        &__l {
           left: 0;
           height: 100%;
           cursor: w-resize;
         }
-        .selector__curarea__close {
+        &__close {
           position: absolute;
           top: 8px;
           right: 8px;
@@ -356,7 +402,7 @@ export default {
           height: 0.8em;
           // background-color: transparent;
         }
-        .selector__curarea__close::after {
+        &__close::after {
           display: block;
           content: "\00D7";
           position: absolute;
@@ -372,7 +418,7 @@ export default {
       bottom: 0;
       left: 0;
       background-color: rgba(0, 0, 0, 0.5);
-      z-index: 100;
+      z-index: var(--selector-mask-zindex);
     }
   }
 </style>

@@ -446,7 +446,7 @@ export default {
     this.init()
 
     window.addEventListener('contextmenu', this.contextMenuPreventDefault)
-    this.autoSaveInterval = window.setInterval(this.autoSave, 600000)
+    this.autoSaveInterval = window.setInterval(this.autoSave, 60000000)
   },
   beforeDestroy () {
     window.removeEventListener('contextmenu', this.contextMenuPreventDefault)
