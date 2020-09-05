@@ -110,6 +110,12 @@
         @save="switchBlockSave"
         @clear="switchBlockInfo = {}">
       </switch-block-detail-component>
+      <div class="context-menu">
+        <ButtonGroup>
+          <Button long>NormalBlock</Button>
+          <Button long>结果Block</Button>
+        </ButtonGroup>
+      </div>
     </div>
   </div>
 </template>
@@ -446,7 +452,7 @@ export default {
     this.init()
 
     window.addEventListener('contextmenu', this.contextMenuPreventDefault)
-    this.autoSaveInterval = window.setInterval(this.autoSave, 60000)
+    this.autoSaveInterval = window.setInterval(this.autoSave, 300000)
   },
   beforeDestroy () {
     window.removeEventListener('contextmenu', this.contextMenuPreventDefault)
@@ -783,7 +789,7 @@ export default {
     },
     async _saveJob (e, saveAs = false, isDraft = true) {
       let id = this.jobId
-      let info = await this.prepareJobInfo(saveAs, id, isDraft)
+      let info = await this.prepareJobInfo(saveAs, !id, isDraft)
       this.$store.commit('files/addResFile', {
         name: 'FILES_NAME_CONFIG.json',
         type: 'json',
@@ -1209,5 +1215,13 @@ export default {
     background-color: white;
     border: solid 1px rgb(244, 244, 244);
   }
+}
+
+.context-menu {
+  position: absolute;
+  top: 100px;
+  left: 100px;
+  width: 200px;
+  background-color: violet;
 }
 </style>
