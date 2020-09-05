@@ -312,7 +312,7 @@ export default {
         left: -200px;
         z-index: var(--selector-common-zindex);
         font-size: 0;
-        background-color: white;
+        background-color: #eeeeee;
         box-shadow: 2px 2px 8px 2px #bbb8b8;
         &__center {
           position: absolute;
