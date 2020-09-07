@@ -29,7 +29,7 @@ tmach03-docker-deploy:
     - cp -rf src/assets/js/go.js node_modules/gojs/release
     - npm run build
     - rm -rf /root/cypress-vue/
-    - cp ../cypress-vue /root/cypress-vue/
+    - rsync -av --exclude={node_modules,public,src,.git} . /root/cypress-vue/
     - . /root/cypress-vue/cypress_build_images.sh
   only:
     - tmach03
