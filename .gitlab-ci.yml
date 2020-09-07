@@ -1,16 +1,35 @@
 stages:
   - deploy
 
+variables:
+  TMach03: "root@10.80.3.138"
+  TMach05: "root@10.80.5.138"
+  TMach11: "root@10.80.11.138"
+
 docker-deploy:
   stage: deploy
   script:
-    - whoami
-    - pwd
-#    - ssh root@10.80.11.138 python3 cypress_build.py
-#    - ssh root@10.80.5.138 python3 cypress_build.py
-#    - cd ~
-#    - python3 cypress_build.py
+    - npm install
+    - cp -rf src/assets/js/go.js node_modules/gojs/release
+    - npm run build
+    - ssh $TMach05 rm -rf /root/cypress-vue/
+    - rsync -av -e ssh --exclude={node_modules,public,src,.git} . $TMach05:/root/cypress-vue/
+    - ssh $TMach05 . /root/cypress-vue/cypress_build_images.sh
+    - ssh $TMach11 rm -rf /root/cypress-vue/
+    - rsync -av -e ssh --exclude={node_modules,public,src,.git} . $TMach11:/root/cypress-vue/
+    - ssh $TMach11 . /root/cypress-vue/cypress_build_images.sh
   only:
-    - test
+    - master
 
 
+tmach03-docker-deploy:
+  stage: deploy
+  script:
+    - npm install
+    - cp -rf src/assets/js/go.js node_modules/gojs/release
+    - npm run build
+    - ssh $TMach03 rm -rf /root/cypress-vue/
+    - rsync -av -e ssh --exclude={node_modules,public,src,.git} . $TMach03:/root/cypress-vue/
+    - ssh $TMach03 . /root/cypress-vue/cypress_build_images.sh
+  only:
+    - tmach03
