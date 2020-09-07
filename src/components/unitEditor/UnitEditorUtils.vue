@@ -106,7 +106,7 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 755px;
+    height: 655px;
 
     .file-none {
       padding: 40px;

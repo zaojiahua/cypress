@@ -15,7 +15,7 @@
     </div>
     <div>
     <div class="body">
-      <div style="height:840px;">
+      <div style="height:740px;">
         <ItemList
           :unitItemsData="unitItemsData"
           @updateUnitItem="updateUnitItem"
@@ -25,13 +25,13 @@
           @updateRawUnit="updateRawUnit"
         ></RawUnit>
       </div>
-      <div style="height:840px;">
+      <div style="height:740px;">
         <ItemEditor
           @updateUnitItem="updateUnitItem"
           @arrangeFileName="arrangeFileName"
         ></ItemEditor>
       </div>
-      <div style="height:840px;">
+      <div style="height:740px;">
         <Utils></Utils>
       </div>
     </div>
