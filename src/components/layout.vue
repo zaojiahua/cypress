@@ -58,7 +58,9 @@
           </Menu>
         </Sider>
         <Content :style="{padding: '15px', minHeight: '280px', background: '#fff' }">
+          <keep-alive include="jobList">
             <router-view/>
+          </keep-alive>
         </Content>
       </Layout>
     </Layout>
