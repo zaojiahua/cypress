@@ -3,7 +3,8 @@ let state = {
   preJobInfo: null,
   isValidated: false,
   diagramModel: null,
-  dataForDiagramModel: null
+  dataForDiagramModel: null,
+  finalResultBlockKey: null
 }
 
 let mutations = {
@@ -26,6 +27,13 @@ let mutations = {
   },
   setDiagramModel (state, diagramModel) {
     state.diagramModel = diagramModel
+    let finalResultBlock = diagramModel.nodeDataArray.filter((val) => {
+      return val.category === 'normalBlock' && val.star === 'purple'
+    })[0]
+    if (finalResultBlock) state.finalResultBlockKey = finalResultBlock.key
+  },
+  setFinalResultBlock (state, key) {
+    state.finalResultBlockKey = key
   },
   clearDiagramModel (state) {
     state.diagramModel = null

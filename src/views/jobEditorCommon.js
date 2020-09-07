@@ -164,6 +164,7 @@ export function baseNodeTemplate (fill, shape) {
           alignment: new go.Spot(1, 0, -1, 1),
           opacity: 0.0
         },
+        new go.Binding('fill', 'star'),
         new go.Binding('opacity', 'star', function (v) { return v ? 1.0 : 0.0 })
       ),
       MAKE(go.Panel, 'Spot',
@@ -210,12 +211,15 @@ export function baseGroupTemplate (context) {
         highlightGroup(e, grp, false)
       },
       memberAdded: function (t, n) { // 判断当前 Unit 是否已经编辑完成，并改变 Unit 状态
-        let { data } = n
-        let { unitMsg } = data
-        let { execModName, execCmdDict } = unitMsg
-        let { execCmdList } = execCmdDict
+        let { data: { unitMsg: { execModName, execCmdDict, execCmdDict: { execCmdList } } } } = n
         let target = execCmdList || execCmdDict
-        if (CONST.STAR.has(execModName)) context.blockDiagram.model.setDataProperty(n.data, 'star', true)
+        if (CONST.STAR.has(execModName)) {
+          if (n.data.star) {
+            context.blockDiagram.model.setDataProperty(n.data, 'star', n.data.star)
+          } else {
+            context.blockDiagram.model.setDataProperty(n.data, 'star', 'yellow')
+          }
+        }
         for (let key in target) {
           if (target[key].type !== 'noChange' && target[key].content.includes('Tmach ')) {
             context.blockDiagram.model.setDataProperty(n.data, 'color', CONST.COLORS.UNFINISHED)

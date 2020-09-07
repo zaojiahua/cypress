@@ -110,12 +110,6 @@
         @save="switchBlockSave"
         @clear="switchBlockInfo = {}">
       </switch-block-detail-component>
-      <div class="context-menu">
-        <ButtonGroup vertical>
-          <Button long>NormalBlock</Button>
-          <Button long>结果Block</Button>
-        </ButtonGroup>
-      </div>
     </div>
   </div>
 </template>
@@ -199,7 +193,8 @@ export default {
   computed: {
     ...mapState('job', [
       'jobInfo',
-      'diagramModel'
+      'diagramModel',
+      'finalResultBlockKey'
     ]),
     ...mapGetters('job', [
       'jobId'
@@ -219,6 +214,19 @@ export default {
       set () {
 
       }
+    }
+  },
+  watch: {
+    jobInfo: {
+      handler: function (val) {
+        if (val.job_type === 'InnerJob' && this.finalResultBlockKey) {
+          this.$Message.error({
+            background: true,
+            content: '无法为内嵌用例指定结果Block'
+          })
+        }
+      },
+      deep: true
     }
   },
   mounted () {
@@ -326,6 +334,28 @@ export default {
 
       const normalBlockTemplate = baseNodeTemplateForPort(CONST.COLORS.NORMAL, 'Rectangle')
 
+      normalBlockTemplate.contextMenu = MAKE('ContextMenu',
+        MAKE('ContextMenuButton',
+          MAKE(go.TextBlock, 'NormalBlock', {
+            margin: 8
+          }),
+          {
+            click: function (e, obj) {
+              _this.setOutputNormalBlock(_this, false)
+            }
+          }
+        ),
+        MAKE('ContextMenuButton',
+          MAKE(go.TextBlock, '结果Block', {
+            margin: 8
+          }),
+          {
+            click: function (e, obj) {
+              _this.setOutputNormalBlock(_this, true)
+            }
+          }
+        ))
+
       normalBlockTemplate.doubleClick = function (e, node) {
         if (e.diagram instanceof go.Palette) return
         _this.unitType = '请选择组件类型'
@@ -347,6 +377,8 @@ export default {
           _this.blockDiagram.model = go.Model.fromJson(_this._.cloneDeep(node.data.unitLists))
         }
       }
+
+      // normalBlockTemplate.contextMenu
 
       const jobBlockTemplate = baseNodeTemplateForPort(CONST.COLORS.JOB, 'Rectangle')
       jobBlockTemplate.doubleClick = function (e, node) {
@@ -595,7 +627,11 @@ export default {
       } else {
         let units = blockDiagramData.nodeDataArray.filter(item => item.category === 'Unit')
         if (units.some(item => CONST.STAR.has(item.unitMsg.execModName))) {
-          setDataProperty(this, currentNormalBlockData, 'star', true)
+          if (units.some(item => item.star === 'purple')) {
+            setDataProperty(this, currentNormalBlockData, 'star', 'purple')
+          } else {
+            setDataProperty(this, currentNormalBlockData, 'star', 'yellow')
+          }
         } else {
           setDataProperty(this, currentNormalBlockData, 'star', false)
         }
@@ -670,16 +706,27 @@ export default {
       }
       return flag
     },
-    isNestedInnerJob () { // 是否是嵌套的InnerJob
+    isInvalidInnerJob () {
+      // 是否是嵌套的InnerJob
+      let flag = false
       let { count } = this.myDiagram.findNodesByExample({ 'category': 'Job' })
-      if (count > 0 && this.jobInfo.job_type === 'InnerJob') {
-        this.$Message.error({
-          background: true,
-          content: 'InnerJob 暂不支持嵌套'
-        })
-        return true
+      if (this.jobInfo.job_type === 'InnerJob') {
+        if (this.finalResultBlockKey) {
+          this.$Message.error({
+            background: true,
+            content: '无法为内嵌用例指定结果Block'
+          })
+          flag = true
+        }
+        if (count > 0) {
+          this.$Message.error({
+            background: true,
+            content: '内嵌用例暂不支持嵌套'
+          })
+          flag = true
+        }
       }
-      return false
+      return flag
     },
     _dataURLtoFile (dataurl, filename) {
       var arr = dataurl.split(',')
@@ -713,7 +760,7 @@ export default {
     },
     saveJob (saveAs = false) {
       // 使用 & 保证都运行
-      if (!this._jobMsgRules() || this.isNestedInnerJob()) return
+      if (!this._jobMsgRules() || this.isInvalidInnerJob()) return
       if (this._jobFlowRules()) {
         this._saveJob(saveAs, false, false)
       }
@@ -1101,6 +1148,94 @@ export default {
           this.lastActiveTime = Date.now()
           break
       }
+    },
+    setOutputNormalBlock (context, isOutput) {
+      if (isOutput && context.jobInfo.job_type === 'InnerJob') {
+        context.$Message.error({
+          content: '无法为内嵌用例指定结果Block'
+        })
+        return
+      }
+      let iterator = context.myDiagram.selection
+      if (iterator.count > 1) {
+        context.$Message.error({
+          content: '仅可选取一个Block'
+        })
+        return
+      }
+      context.myDiagram.selection.each(({ data, data: { unitLists: { linkDataArray, nodeDataArray } } }) => {
+        // 找到最后一个有star属性的unit
+        let starUnitDataArray = nodeDataArray.filter((val, index) => {
+          return val.category === 'Unit' && val.star
+        })
+        let lastStarUnit = null
+        if (starUnitDataArray.length === 1) {
+          lastStarUnit = starUnitDataArray[0]
+        } else if (starUnitDataArray.length > 1) {
+          let linkDataMap = new Map()
+          linkDataArray.forEach((val) => {
+            linkDataMap.set(val.from, val.to)
+          })
+          let startKey = nodeDataArray.filter(val => {
+            return val.category === 'Start'
+          })[0].key
+          let next = linkDataMap.get(startKey)
+          let nodeOrderArray = []
+          while (true) {
+            if (next) {
+              nodeOrderArray.push(next)
+              next = linkDataMap.get(next)
+            } else {
+              nodeOrderArray.splice(nodeOrderArray.length - 1, 1)
+              break
+            }
+          }
+          let lastStarUnitIndex = 0
+          starUnitDataArray.forEach((val, idx, arr) => {
+            arr[idx].star = 'yellow'
+            delete arr[idx].unitMsg.finalResult
+            let tempIndex = nodeOrderArray.indexOf(val.group)
+            if (tempIndex >= lastStarUnitIndex) {
+              lastStarUnitIndex = tempIndex
+              lastStarUnit = val
+            }
+          })
+        } else {
+          context.$Message.error({
+            content: '无法对该Block进行右键操作'
+          })
+          return
+        }
+        // 设定结果Block
+        if (data.star) {
+          if (context.finalResultBlockKey && context.finalResultBlockKey !== data.key) {
+            context.$Message.error({
+              content: '结果Block有且只能有一个'
+            })
+          } else {
+            if (isOutput) {
+              lastStarUnit.star = 'purple'
+              lastStarUnit.unitMsg.finalResult = true
+              context.$store.commit('job/setFinalResultBlock', data.key)
+              context.$Message.success({
+                content: '已将该Block设为结果Block'
+              })
+            } else {
+              lastStarUnit.star = 'yellow'
+              delete lastStarUnit.unitMsg.finalResult
+              context.$store.commit('job/setFinalResultBlock', null)
+              context.$Message.success({
+                content: '已将该Block设为NormalBlock'
+              })
+            }
+            context.myDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
+          }
+        } else {
+          context.$Message.error({
+            content: '无法对该Block进行右键操作'
+          })
+        }
+      })
     }
   }
 }
@@ -1226,12 +1361,5 @@ export default {
     background-color: white;
     border: solid 1px rgb(244, 244, 244);
   }
-}
-
-.context-menu {
-  position: absolute;
-  top: 600px;
-  left: 600px;
-  z-index: 100;
 }
 </style>
