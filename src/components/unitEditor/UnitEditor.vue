@@ -10,7 +10,7 @@
       <span>UNIT EDITOR</span>
       <div class="unit-name">
         <Tag class="unit-name-tag" color="green" size="large">UNIT NAME</Tag>
-        <Input class="unit-name-input" v-model="unitName"></Input>
+        <Input class="unit-name-input" v-model="unitName" clearable></Input>
       </div>
     </div>
     <div>

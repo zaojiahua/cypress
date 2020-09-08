@@ -22,6 +22,7 @@
           @input="setFeaturePointFileName"
           v-model="currentFeaturePointFileName"
           style="flex: 1;"
+          clearable
         ></Input>
       </div>
       <div class="recognition-rate">

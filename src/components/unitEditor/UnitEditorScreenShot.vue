@@ -10,7 +10,7 @@
     ></Table>
     <div class="get-image">
       <div>
-        <Input v-model="currentImageName" v-if="!isPicInput" @input="setImageName">
+        <Input v-model="currentImageName" v-if="!isPicInput" @input="setImageName" clearable>
           <span slot="prepend">图片名称</span>
         </Input>
       </div>

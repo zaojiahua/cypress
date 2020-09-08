@@ -12,6 +12,7 @@
             :key="index"
             v-model="tmachBlanks[index]"
             class="mb-1"
+            clearable
           >
           </Input>
         </div>
@@ -21,6 +22,7 @@
             :key="index"
             v-model="tmachBlanks[index]"
             class="mb-1"
+            clearable
           >
             <div v-for="names in resFilesName" :key="names.title">
               <div class="auto-complete-title">
@@ -66,7 +68,7 @@
         <Icon type="ios-clipboard-outline" style="color:orange;font-size:1.2em;font-weight:bold;" />
         请填写新的名字
       </p>
-      <Input v-model="tmachBlanks[0]"/>
+      <Input v-model="tmachBlanks[0]" clearable />
       <div slot="footer">
         <!-- <Button type="info" @click="checkDuplicateName">检测名称是否可用</Button> -->
         <Button type="success" @click="setNewName">确定</Button>

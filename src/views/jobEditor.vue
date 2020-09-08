@@ -2,7 +2,7 @@
   <div id="wrap" ref="jobEditor">
     <div>
       <div class="job-editor-header">
-        <Input v-model="$store.state.job.jobInfo.job_name" class="job-name" placeholder="请输入JOB名称" size="large" />
+        <Input v-model="$store.state.job.jobInfo.job_name" clearable class="job-name" placeholder="请输入JOB名称" size="large" />
 
         <div class="job-editor-header-btns">
           <div>
@@ -22,7 +22,7 @@
           <Icon type="ios-information-circle" style="font-size: 20px;"></Icon>
           <span style="font-size: 18px;">重命名</span>
         </div>
-        <Input placeholder="重命名" v-model="$store.state.job.jobInfo.job_name" />
+        <Input placeholder="重命名" clearable v-model="$store.state.job.jobInfo.job_name" />
         <div slot="footer" >
           <Button type="primary" @click="_saveJob(true, true, false)">确定</Button>
         </div>
@@ -60,7 +60,7 @@
 
       <Modal v-model="blockModalShow" :closable="false" fullscreen>
         <div slot="header">
-          <Input v-model="blockName" size="large" placeholder="large size" />
+          <Input v-model="blockName" clearable size="large" placeholder="large size" />
         </div>
         <div slot="footer">
           <Button type="text" size="large" @click="blockModalShow=false">取消</Button>

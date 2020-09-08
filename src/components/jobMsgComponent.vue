@@ -5,7 +5,7 @@
     </Divider>
     <Form ref="formInfo" :label-width="100" :model='formInfo' :rules='jobInfoRules'>
       <FormItem label="用例名称:" prop="job_name">
-        <Input v-model="formInfo.job_name" placeholder="请输入"/>
+        <Input v-model="formInfo.job_name" placeholder="请输入" clearable/>
       </FormItem>
       <FormItem label="测试用途:" prop="test_area">
         <Select v-model="formInfo.test_area" multiple placeholder="请选择" filterable allow-create>
@@ -21,7 +21,7 @@
         </Select>
       </FormItem>
       <FormItem label="用例说明:" prop="description">
-        <Input v-model="formInfo.description" placeholder="请输入"/>
+        <Input v-model="formInfo.description" clearable placeholder="请输入"/>
       </FormItem>
       <Divider orientation="left" class="device-info-title" style="margin-top: 60px;">
         <b>设备信息</b>
