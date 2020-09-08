@@ -184,17 +184,19 @@ export default {
       isDiagram: false,
       wingmans: 3,
       curUnitKey: null,
-      draftId: null,
       lastActiveTime: null,
-      activeTimeInterval: 240000,
-      autoSaveInterval: 300000
+      activeTimeInterval: 120000,
+      autoSaveInterval: 180000,
+      autoSaveTimer: null,
+      autoSaveToggle: true
     }
   },
   computed: {
     ...mapState('job', [
       'jobInfo',
       'diagramModel',
-      'finalResultBlockKey'
+      'finalResultBlockKey',
+      'draftId'
     ]),
     ...mapGetters('job', [
       'jobId'
@@ -839,6 +841,7 @@ export default {
       return info
     },
     async _saveJob (e, saveAs = false, isDraft = true) {
+      this.autoSaveToggle = false
       let id = this.jobId
       let info = await this.prepareJobInfo(saveAs, !id, isDraft)
       this.$store.commit('files/addResFile', {
@@ -884,22 +887,22 @@ export default {
     },
     async autoSave () {
       let curTime = Date.now()
-      if (curTime - this.lastActiveTime >= this.activeTimeInterval || !this._jobMsgRules()) return
+      if (curTime - this.lastActiveTime >= this.activeTimeInterval || !this._jobMsgRules() || !this.autoSaveToggle) return
       let info = await this.prepareJobInfo(true, true, true)
-      info.job_name = info.job_name + '_autosave'
+      info.job_name = info.job_name + '_AUTOSAVE'
       this.$store.commit('files/addResFile', {
         name: 'FILES_NAME_CONFIG.json',
         type: 'json',
         file: JSON.stringify(this.resFilesName, null, 2)
       })
       let resFiles = this._.cloneDeep(this.resFiles)
-      if (this.draftId === null || this.draftId === undefined) {
+      if (!this.draftId) {
         try {
           let { status, data } = await jobFlowAndMsgSave(info)
           if (status === 201) {
-            this.draftId = data.id
+            this.$store.commit('job/setDraftId', data.id)
+            this.uploadFiles(this.draftId, info, resFiles)
           }
-          this.uploadFiles(this.draftId, info, resFiles)
         } catch (error) {
           console.log(error)
         }
@@ -1101,6 +1104,8 @@ export default {
       this.$store.commit('job/setJobInfo', {})
       this.$store.commit('job/clearDiagramModel')
       this.$store.commit('job/clearPreJobInfo')
+      this.$store.commit('job/setDraftId', null)
+      this.$store.commit('job/setFinalResultBlock', null)
       this.$store.commit('files/clearResFiles')
       this.$store.commit('device/clearDeviceInfo')
       this.$store.commit('device/clearPreDeviceInfo')

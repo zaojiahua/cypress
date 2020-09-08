@@ -4,7 +4,8 @@ let state = {
   isValidated: false,
   diagramModel: null,
   dataForDiagramModel: null,
-  finalResultBlockKey: null
+  finalResultBlockKey: null,
+  draftId: null
 }
 
 let mutations = {
@@ -27,16 +28,21 @@ let mutations = {
   },
   setDiagramModel (state, diagramModel) {
     state.diagramModel = diagramModel
-    let finalResultBlock = diagramModel.nodeDataArray.filter((val) => {
-      return val.category === 'normalBlock' && val.star === 'purple'
-    })[0]
-    if (finalResultBlock) state.finalResultBlockKey = finalResultBlock.key
+    if (diagramModel) {
+      let finalResultBlock = diagramModel.nodeDataArray.filter((val) => {
+        return val.category === 'normalBlock' && val.star === 'purple'
+      })[0]
+      if (finalResultBlock) state.finalResultBlockKey = finalResultBlock.key
+    }
   },
   setFinalResultBlock (state, key) {
     state.finalResultBlockKey = key
   },
   clearDiagramModel (state) {
     state.diagramModel = null
+  },
+  setDraftId (state, id) {
+    state.draftId = id
   }
 }
 

@@ -27,15 +27,13 @@
     </Row>
     <Divider  style="margin-top: 40px">用例列表</Divider>
     <Table
-      :loading="loading"
       ref="jobList"
       :columns="columns"
       :data="jobData"
       @on-row-click="onRowClick"
       @on-selection-change="selectedJobsChange"
     ></Table>
-
-    <Page simple :page-size="pageSize" :total="dataCount" :current="this.currentPage" @on-change="jobPageChange" style="text-align: center;margin-top: 20px"></Page>
+    <Page simple :page-size="pageSize" :total="dataCount" :current.sync="currentPage" @on-change="jobPageChange" style="text-align: center;margin-top: 20px"></Page>
   </div>
 </template>
 
@@ -130,42 +128,21 @@ export default {
       uploadData: { // 上传时附带的额外参数
         requestName: 'importJob'
       },
-      loading: false,
       jobState: '',
       jobType: '',
       filterUrlParam: ''
     }
   },
   methods: {
-    getFilteredJobs () { // 每个页面的请求数据
-      let jobState
-      let jobType
-      if (this.jobState === 'draft') {
-        jobState = '&draft=True'
-      } else if (this.jobState === 'release') {
-        jobState = '&draft=False'
-      } else {
-        jobState = ''
-      }
-      if (this.jobType === 'Joblib') {
-        jobType = '&job_type=Joblib'
-      } else if (this.jobType === 'InnerJob') {
-        jobType = '&job_type=InnerJob'
-      } else if (this.jobType === 'PerfJob') {
-        jobType = '&job_type=PerfJob'
-      } else {
-        jobType = ''
-      }
+    getFilteredJobs () {
+      let filterUrlParam = `${this.jobState ? `&draft=${this.jobState === 'draft' ? 'True' : 'False'}` : ''}${this.jobType ? `&job_type=${this.jobType}` : ''}${this.filterUrlParam}`
       getJobList({
         pageSize: this.pageSize,
         offset: this.offset,
-        jobState,
-        jobType,
-        filterUrlParam: this.filterUrlParam
+        filterUrlParam
       }).then(res => {
         this.currentPageSelectedJobs = {}
-        this.dataCount = parseInt(res.headers['total-count'])
-
+        this.dataCount = Number(res.headers['total-count'])
         this.jobData = res.data.jobs
         this.jobData.forEach(job => {
           job.test_area = job.test_area.map(item => item.description).join(',')
@@ -183,10 +160,10 @@ export default {
       })
     },
     jobPageChange (page) { // 切换页面
-      this.loading = true
-      this.currentPage = page
+      if (page) {
+        this.currentPage = page
+      }
       this.getFilteredJobs()
-      this.loading = false
     },
     getJobInfo (jobId) {
       getJobDetail(jobId).then(res => {
@@ -310,28 +287,29 @@ export default {
           content: '请先选择要删除的用例！'
         })
       } else {
-        let _this = this
         this.$Modal.confirm({
           title: '提示',
           content: '您真的要删除这些用例吗？',
-          onOk () {
-            Promise.all(_this.jobIdList.map(id => {
-              patchUpdateJob(id, { job_deleted: true })
-            })).then(res => {
-              _this.jobPageChange(_this.currentPage)
-              _this.$Message.success('用例删除成功')
-              _this.selectedJobs = {}
-            }).catch(err => {
-              console.log(err)
-              _this.$Message.error('用例删除失败')
+          onOk: () => {
+            this.jobIdList.forEach(async (id) => {
+              await patchUpdateJob(id, { job_deleted: true })
             })
+            setTimeout(() => {
+              if (this.jobData.length - this.jobIdList.length === 0 && this.currentPage > 1) {
+                this.jobPageChange(this.currentPage - 1)
+              } else {
+                this.jobPageChange(this.currentPage)
+              }
+              this.$Message.success('用例删除成功')
+              this.selectedJobs = {}
+            }, 300)
           }
         })
       }
     },
     getFilterParam (val) {
       this.filterUrlParam = val
-      this.getFilteredJobs()
+      this.jobPageChange()
     }
   },
   computed: {
@@ -347,7 +325,9 @@ export default {
   },
   mounted () {
     this.jobState = localStorage.getItem('joblist-management:DEFAULT_FILTER_CONFIG')
-    this.getFilteredJobs()
+  },
+  activated () {
+    this.jobPageChange()
   },
   beforeRouteLeave (to, from, next) {
     localStorage.setItem('joblist-management:DEFAULT_FILTER_CONFIG', this.jobState)

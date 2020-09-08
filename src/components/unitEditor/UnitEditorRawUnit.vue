@@ -1,5 +1,5 @@
 <template>
-  <Card style="height: 400px" class="raw-unit-card">
+  <Card style="height: 500px" class="raw-unit-card">
     <p slot="title">Raw Unit &nbsp; ({{ unitType }} Unit)</p>
     <Icon
       type="ios-arrow-up"
@@ -16,7 +16,7 @@
     <div v-show="editing" class="raw-unit">
       <div class="raw-unit-mask"></div>
       <div class="unit-msg unit-msg-edit">
-        <Input type="textarea" :autosize="{minRows: 2,maxRows: 13}" v-model="currentUnitContent"/>
+        <Input type="textarea" :autosize="{minRows: 2,maxRows: 17}" v-model="currentUnitContent"/>
       </div>
       <div class="btns" style="justify-content: flex-end;">
         <Button @click="cancelEditCurrentUnitContent" style="margin-right: 10px;">取消</Button>
@@ -129,7 +129,7 @@ export default {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    height: 320px;
+    height: 420px;
 
     .raw-unit-mask {
       position: fixed;

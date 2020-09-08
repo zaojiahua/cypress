@@ -157,7 +157,8 @@ export default {
   },
   computed: {
     ...mapState('job', [
-      'jobInfo'
+      'jobInfo',
+      'draftId'
     ]),
     ...mapGetters('job', [
       'jobId'
@@ -212,6 +213,18 @@ export default {
         this.$store.commit('handleShowDrawer')
         this.closeDrawer()
       }, 800)
+
+      if (this.draftId) {
+        patchUpdateJob(this.draftId, { job_deleted: true }).then(({ status }) => {
+          if (status === 200) {
+          } else {
+            console.log('删除自动备份文件失败，错误码: ' + status)
+          }
+          this.commit('job/setDraftId', null)
+        }).catch(err => {
+          console.log(err)
+        })
+      }
 
       // 清空失效的数据
       this.$store.commit('job/clearDiagramModel')

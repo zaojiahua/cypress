@@ -316,7 +316,7 @@ export default {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 655px;
+    height: 755px;
     .empty {
       padding: 40px;
       border: 1px dashed #dddddd;
@@ -329,7 +329,7 @@ export default {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    height: 655px;
+    height: 755px;
     .mb-1 {
       margin-bottom: 10px;
     }
