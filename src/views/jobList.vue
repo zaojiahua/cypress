@@ -1,7 +1,6 @@
 <template>
-  <div>
+  <div class="container">
     <job-list-filter @getFilterParam="getFilterParam"></job-list-filter>
-    <Divider style="margin-top: -6px">已选用例</Divider>
     <Row>
       <Row>
         <Col span="12" style="height: 40px;">
@@ -25,15 +24,17 @@
         <Tag v-for="job in selectedJobs" :key="job.id" closable @on-close="close(job.id)">{{ job.name }}</Tag>
       </Row>
     </Row>
-    <Divider  style="margin-top: 40px">用例列表</Divider>
-    <Table
-      ref="jobList"
-      :columns="columns"
-      :data="jobData"
-      @on-row-click="onRowClick"
-      @on-selection-change="selectedJobsChange"
-    ></Table>
-    <Page simple :page-size="pageSize" :total="dataCount" :current.sync="currentPage" @on-change="jobPageChange" style="text-align: center;margin-top: 20px"></Page>
+    <div>
+      <Table
+        ref="jobList"
+        :columns="columns"
+        :data="jobData"
+        height="520"
+        @on-row-click="onRowClick"
+        @on-selection-change="selectedJobsChange"
+      ></Table>
+      <Page simple :page-size="pageSize" :total="dataCount" :current.sync="currentPage" @on-change="jobPageChange" style="text-align: center;margin-top: 20px"></Page>
+    </div>
   </div>
 </template>
 
@@ -336,6 +337,11 @@ export default {
 }
 </script>
 
-<style scoped>
-
+<style lang="less" scoped>
+  .container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+  }
 </style>

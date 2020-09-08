@@ -119,7 +119,39 @@ export default {
       curTab: '0',
       filterFactorNum: new Array(6).fill(0),
       keyword: '',
-      collapseIsOpen: true
+      collapseIsOpen: true,
+      keys: [
+        {
+          mainKey: 'phone_model',
+          subKey: 'phone_model_name',
+          serializerKey: 'PhoneModel'
+        },
+        {
+          mainKey: 'job_test_area',
+          subKey: 'description',
+          serializerKey: 'JobTestArea'
+        },
+        {
+          mainKey: 'android_version',
+          subKey: 'version',
+          serializerKey: 'AndroidVersion'
+        },
+        {
+          mainKey: 'rom_version',
+          subKey: 'version',
+          serializerKey: 'RomVersion'
+        },
+        {
+          mainKey: 'reefuser',
+          subKey: 'username',
+          serializerKey: 'ReefUser'
+        },
+        {
+          mainKey: 'custom_tag',
+          subKey: 'custom_tag_name',
+          serializerKey: 'CustomTag'
+        }
+      ]
     }
   },
   watch: {
@@ -204,38 +236,21 @@ export default {
     },
     handleCollapse () {
       this.collapseIsOpen = !this.collapseIsOpen
+    },
+    setFilterdata (mainKey, serializerKey, data) {
+      let validatedData = util.validate(serializer[`get${serializerKey}Serializer`], data)
+      this.$set(this.filterData, mainKey, validatedData[Object.keys(validatedData)[0]])
+    },
+    orderFilterData (mainKey, subKey) {
+      this.filterData[mainKey] = this._.orderBy(this.filterData[mainKey], [subKey])
     }
   },
   beforeCreate () {
-    getPhoneModelList().then(res => {
-      this.$set(this.filterData, 'phone_model', util.validate(serializer.getPhoneModelSerializer, res.data).phonemodels)
-    }).catch(error => {
-      console.log(error)
-    })
-    getJobTestAreaList().then(res => {
-      this.$set(this.filterData, 'job_test_area', util.validate(serializer.getJobTestAreaSerializer, res.data).jobtestareas)
-    }).catch(error => {
-      console.log(error)
-    })
-    getAndroidVersionList().then(res => {
-      this.$set(this.filterData, 'android_version', util.validate(serializer.getAndroidVersionSerializer, res.data).androidversions)
-    }).catch(error => {
-      console.log(error)
-    })
-    getRomVersionList().then(res => {
-      this.$set(this.filterData, 'rom_version', util.validate(serializer.getRomVersionSerializer, res.data).romversions)
-    }).catch(error => {
-      console.log(error)
-    })
-    getReefUserList().then(res => {
-      this.$set(this.filterData, 'reefuser', util.validate(serializer.getReefUserSerializer, res.data).reefusers)
-    }).catch(error => {
-      console.log(error)
-    })
-    getCustomTagList().then(res => {
-      this.$set(this.filterData, 'custom_tag', util.validate(serializer.getCustomTagSerializer, res.data).customtags)
-    }).catch(error => {
-      console.log(error)
+    Promise.all([getPhoneModelList(), getJobTestAreaList(), getAndroidVersionList(), getRomVersionList(), getReefUserList(), getCustomTagList()]).then(res => {
+      res.forEach((val, idx) => {
+        this.setFilterdata(this.keys[idx].mainKey, this.keys[idx].serializerKey, val.data)
+        this.orderFilterData(this.keys[idx].mainKey, this.keys[idx].subKey)
+      })
     })
   }
 }
@@ -265,6 +280,7 @@ export default {
     width: 100%;
     background-color: #eeeeee;
     border-radius: 6px;
+
     &-tip {
       width: 3.6em;
       text-align: center;
