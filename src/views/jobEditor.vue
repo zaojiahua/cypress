@@ -130,7 +130,7 @@ import { blockFlowValidation } from '../core/validation/finalValidation/block'
 import axios from 'api'
 import { baseURL } from '../config'
 import { mapState, mapGetters } from 'vuex'
-import { createJobLabel } from '../lib/tools'
+import { createJobLabel, dataURLtoFile } from '../lib/tools'
 import { releaseOccupyDevice } from '../api/reef/device'
 
 import CONST from 'constant/constant'
@@ -144,18 +144,14 @@ export default {
       blockModalShow: false,
       switchBlockModalShow: false,
       currentSwitchBlockKey: null,
-      unitContent: '',
       blockName: '',
       currentNormalBlockKey: null,
       unitType: '请选择组件类型',
       switchBlockInfo: {},
       unitAllList: {},
-      basicModuleShow: {},
-      screenWidth: 1400,
       jobModalShow: false,
       currentJobBlockKey: null,
       currentJobBlockText: 'Job block',
-      unitMsgToogle: true,
       showUnitEditor: false,
       unitData: undefined,
       unitController: null,
@@ -169,7 +165,7 @@ export default {
       curUnitKey: null,
       lastActiveTime: null,
       activeTimeInterval: 120000,
-      autoSaveInterval: 10000, // 180000
+      autoSaveInterval: 180000,
       autoSaveTimer: null,
       autoSaveToggle: true
     }
@@ -241,18 +237,6 @@ export default {
     window.removeEventListener('contextmenu', this.dispatchMouseEvent)
     window.clearInterval(this.autoSaveTimer)
   },
-  beforeCreate () {
-    const _this = this
-    window.onload = () => {
-      _this.screenWidth = document.body.clientWidth
-    }
-    window.onresize = () => {
-      return (() => {
-        window.screenWidth = document.body.clientWidth
-        _this.screenWidth = window.screenWidth
-      })()
-    }
-  },
   methods: {
     switchBlockSave (msg) {
       let node = this.outerDiagram.model.findNodeDataForKey(this.currentSwitchBlockKey)
@@ -262,15 +246,11 @@ export default {
     },
     saveNormalBlock () { // normalBlock点击确定进行校验
       let currentNormalBlockData = this.outerDiagram.findNodeForKey(this.currentNormalBlockKey).data
-
       let blockDiagramData = JSON.parse(this.innerDiagram.model.toJson())
-
       const blockDiagramHint = blockFlowValidation(this)
-
       function setDataProperty (context, data, propname, val) {
         context.outerDiagram.model.setDataProperty(data, propname, val)
       }
-
       if (blockDiagramHint.size !== 0) {
         this.blockModalShow = true
         let errorNum = 1
@@ -279,7 +259,6 @@ export default {
           errorMessage += errorNum + '.' + element + '<br/>'
           errorNum++
         })
-        // message提示
         this.$Notice.error({
           title: '当前block出现以下错误',
           desc: errorMessage
@@ -287,10 +266,10 @@ export default {
       } else {
         let units = blockDiagramData.nodeDataArray.filter(item => item.category === 'Unit')
         if (units.some(item => CONST.STAR.has(item.unitMsg.execModName))) {
-          if (units.some(item => item.star === 'purple')) {
-            setDataProperty(this, currentNormalBlockData, 'star', 'purple')
+          if (units.some(item => item.star === CONST.COLORS.RESULT)) {
+            setDataProperty(this, currentNormalBlockData, 'star', CONST.COLORS.RESULT)
           } else {
-            setDataProperty(this, currentNormalBlockData, 'star', 'yellow')
+            setDataProperty(this, currentNormalBlockData, 'star', CONST.COLORS.STAR)
           }
         } else {
           setDataProperty(this, currentNormalBlockData, 'star', false)
@@ -367,7 +346,6 @@ export default {
       return flag
     },
     isInvalidInnerJob () {
-      // 是否是嵌套的InnerJob
       let flag = false
       let { count } = this.outerDiagram.findNodesByExample({ 'category': 'Job' })
       if (this.jobInfo.job_type === 'InnerJob') {
@@ -387,17 +365,6 @@ export default {
         }
       }
       return flag
-    },
-    _dataURLtoFile (dataurl, filename) {
-      var arr = dataurl.split(',')
-      var mime = arr[0].match(/:(.*?);/)[1]
-      var dec = atob(arr[1]) // window atob() 方法用于解码使用 base-64 编码的字符串，base-64 编码使用的是 btoa，该方法使用 "A-Z", "a-z", "0-9", "+", "/" 和 "=" 字符来编码字符串。
-      var n = dec.length
-      var u8arr = new Uint8Array(n) // 8位无符号整数数组 0~255
-      while (n--) {
-        u8arr[n] = dec.charCodeAt(n) // charCodeAt() 方法可返回指定位置的字符的 Unicode 编码
-      }
-      return new File([u8arr], filename, { type: mime })
     },
     async _createNewTag (tagType) { // 生成新的测试用途、自定义标签条目
       let target = this.jobInfo[tagType]
@@ -427,16 +394,16 @@ export default {
     },
     async uploadFiles (id, info) {
       info.job_id = id
+      let resFiles = this._.cloneDeep(this.resFiles)
       try {
         let { status } = await jobFlowAndMsgUpdate(id, info)
         if (status === 200) {
           let data = new FormData()
           data.append('job', id)
-          let resFiles = this._.cloneDeep(this.resFiles)
           for (let i = 0; i < resFiles.length; i++) {
             let { name, type, file } = resFiles[i]
             if (type === 'png') {
-              data.append('file', this._dataURLtoFile(file, name))
+              data.append('file', dataURLtoFile(file, name))
             } else {
               data.append('file', new File([file], name, { type }))
             }
@@ -857,7 +824,7 @@ export default {
           }
           let lastStarUnitIndex = 0
           starUnitDataArray.forEach((val, idx, arr) => {
-            arr[idx].star = 'yellow'
+            arr[idx].star = CONST.COLORS.STAR
             delete arr[idx].unitMsg.finalResult
             let tempIndex = nodeOrderArray.indexOf(val.group)
             if (tempIndex >= lastStarUnitIndex) {
@@ -879,14 +846,14 @@ export default {
             })
           } else {
             if (isOutput) {
-              lastStarUnit.star = 'purple'
+              lastStarUnit.star = CONST.COLORS.RESULT
               lastStarUnit.unitMsg.finalResult = true
               context.$store.commit('job/setFinalResultBlock', data.key)
               context.$Message.success({
                 content: '已将该Block设为结果Block'
               })
             } else {
-              lastStarUnit.star = 'yellow'
+              lastStarUnit.star = CONST.COLORS.STAR
               delete lastStarUnit.unitMsg.finalResult
               context.$store.commit('job/setFinalResultBlock', null)
               context.$Message.success({

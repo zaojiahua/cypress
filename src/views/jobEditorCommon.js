@@ -160,7 +160,7 @@ export function baseNodeTemplate (fill, shape) {
       MAKE(go.Shape, 'Diamond',
         {
           desiredSize: new go.Size(12, 12),
-          fill: 'yellow',
+          fill: CONST.COLORS.STAR,
           alignment: new go.Spot(1, 0, -1, 1),
           opacity: 0.0
         },
@@ -217,7 +217,7 @@ export function baseGroupTemplate (context) {
           if (n.data.star) {
             context.innerDiagram.model.setDataProperty(n.data, 'star', n.data.star)
           } else {
-            context.innerDiagram.model.setDataProperty(n.data, 'star', 'yellow')
+            context.innerDiagram.model.setDataProperty(n.data, 'star', CONST.COLORS.STAR)
           }
         }
         for (let key in target) {
@@ -331,7 +331,7 @@ function showPorts (node, show) {
   let diagram = node.diagram
   if (!diagram || diagram.isReadOnly || !diagram.allowLink) return
   node.ports.each(function (port) {
-    port.stroke = (show ? 'yellow' : CONST.COLORS.GROUP)
+    port.stroke = (show ? CONST.COLORS.STAR : CONST.COLORS.GROUP)
   })
 }
 

@@ -1,3 +1,5 @@
+import CONST from 'constant/constant'
+
 let state = {
   jobInfo: {},
   preJobInfo: null,
@@ -28,7 +30,7 @@ let mutations = {
     state.outerDiagramModel = diagramModel
     if (diagramModel) {
       let finalResultBlock = JSON.parse(diagramModel).nodeDataArray.filter((val) => {
-        return val.category === 'normalBlock' && val.star === 'purple'
+        return val.category === 'normalBlock' && val.star === CONST.COLORS.RESULT
       })[0]
       if (finalResultBlock) state.finalResultBlockKey = finalResultBlock.key
     }
