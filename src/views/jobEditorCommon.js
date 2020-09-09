@@ -215,19 +215,19 @@ export function baseGroupTemplate (context) {
         let target = execCmdList || execCmdDict
         if (CONST.STAR.has(execModName)) {
           if (n.data.star) {
-            context.blockDiagram.model.setDataProperty(n.data, 'star', n.data.star)
+            context.innerDiagram.model.setDataProperty(n.data, 'star', n.data.star)
           } else {
-            context.blockDiagram.model.setDataProperty(n.data, 'star', 'yellow')
+            context.innerDiagram.model.setDataProperty(n.data, 'star', 'yellow')
           }
         }
         for (let key in target) {
           if (target[key].type !== 'noChange' && target[key].content.includes('Tmach ')) {
-            context.blockDiagram.model.setDataProperty(n.data, 'color', CONST.COLORS.UNFINISHED)
+            context.innerDiagram.model.setDataProperty(n.data, 'color', CONST.COLORS.UNFINISHED)
             n.data.completed = false
             return
           }
         }
-        context.blockDiagram.model.setDataProperty(n.data, 'color', CONST.COLORS.FINISH)
+        context.innerDiagram.model.setDataProperty(n.data, 'color', CONST.COLORS.FINISH)
         n.data.completed = true
       },
       computesBoundsAfterDrag: true,
@@ -350,16 +350,4 @@ function highlightGroup (e, grp, show) {
     }
   }
   grp.isHighlighted = false
-}
-
-export function basicModel () {
-  return go.Model.fromJson(
-    {
-      'class': 'GraphLinksModel',
-      'linkFromPortIdProperty': 'fromPort',
-      'linkToPortIdProperty': 'toPort',
-      'nodeDataArray': [ { 'category': 'Start', 'text': 'Start', 'key': -1 } ],
-      'linkDataArray': []
-    }
-  )
 }

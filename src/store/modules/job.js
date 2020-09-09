@@ -2,7 +2,7 @@ let state = {
   jobInfo: {},
   preJobInfo: null,
   isValidated: false,
-  diagramModel: null,
+  outerDiagramModel: null,
   dataForDiagramModel: null,
   finalResultBlockKey: null,
   draftId: null
@@ -12,13 +12,11 @@ let mutations = {
   setJobInfo (state, jobInfo) {
     state.jobInfo = jobInfo
   },
-  setPreJobInfo (state) {
-    state.preJobInfo = JSON.stringify(state.jobInfo)
+  setPreJobInfo (state, notClear) {
+    if (!notClear) state.preJobInfo = null
+    else state.preJobInfo = JSON.stringify(state.jobInfo)
   },
-  clearPreJobInfo (state) {
-    state.preJobInfo = null
-  },
-  renewJobInfo (state) {
+  recoverJobInfo (state) {
     if (state.preJobInfo) {
       state.jobInfo = JSON.parse(state.preJobInfo)
     }
@@ -26,10 +24,10 @@ let mutations = {
   setIsValidated (state, isValidated) {
     state.isValidated = isValidated
   },
-  setDiagramModel (state, diagramModel) {
-    state.diagramModel = diagramModel
+  setOuterDiagramModel (state, diagramModel) {
+    state.outerDiagramModel = diagramModel
     if (diagramModel) {
-      let finalResultBlock = diagramModel.nodeDataArray.filter((val) => {
+      let finalResultBlock = JSON.parse(diagramModel).nodeDataArray.filter((val) => {
         return val.category === 'normalBlock' && val.star === 'purple'
       })[0]
       if (finalResultBlock) state.finalResultBlockKey = finalResultBlock.key
@@ -37,9 +35,6 @@ let mutations = {
   },
   setFinalResultBlock (state, key) {
     state.finalResultBlockKey = key
-  },
-  clearDiagramModel (state) {
-    state.diagramModel = null
   },
   setDraftId (state, id) {
     state.draftId = id

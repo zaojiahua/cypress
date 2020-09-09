@@ -4,7 +4,7 @@ export function blockFlowValidation (vueObj) {
   let blockDiagramHint = new Set()
 
   const entryValidation = () => {
-    let entryAll = self.blockDiagram.findNodesByExample({ 'category': 'Start' })
+    let entryAll = self.innerDiagram.findNodesByExample({ 'category': 'Start' })
 
     if (entryAll.count !== 1) {
       blockDiagramHint.add('有且只有一个Entry')
@@ -19,7 +19,7 @@ export function blockFlowValidation (vueObj) {
   }
 
   const exitValidation = () => {
-    let exitAll = self.blockDiagram.findNodesByExample({ 'category': 'End' })
+    let exitAll = self.innerDiagram.findNodesByExample({ 'category': 'End' })
 
     if (exitAll.count !== 1) {
       blockDiagramHint.add('有且只有一个Exit')
@@ -34,7 +34,7 @@ export function blockFlowValidation (vueObj) {
   }
 
   const unitListValidation = () => {
-    let unitListAll = self.blockDiagram.findNodesByExample({ 'category': 'UnitList' })
+    let unitListAll = self.innerDiagram.findNodesByExample({ 'category': 'UnitList' })
 
     if (unitListAll.count < 1) {
       blockDiagramHint.add('缺少UnitList')
@@ -63,7 +63,7 @@ export function blockFlowValidation (vueObj) {
   }
 
   const unitValidation = () => {
-    let unitAll = self.blockDiagram.findNodesByExample({ 'category': 'Unit' })
+    let unitAll = self.innerDiagram.findNodesByExample({ 'category': 'Unit' })
 
     if (unitAll.count === 0) {
       blockDiagramHint.add('缺少Unit')
@@ -76,10 +76,10 @@ export function blockFlowValidation (vueObj) {
     }
   }
 
-  if (self.blockDiagram.links.count === 0) {
+  if (self.innerDiagram.links.count === 0) {
     blockDiagramHint.add('缺少链接关系')
   }
-  if (self.blockDiagram.nodes.length === 0) {
+  if (self.innerDiagram.nodes.length === 0) {
     blockDiagramHint.add('还未对流程图进行编辑！')
   } else {
     entryValidation()

@@ -5,7 +5,7 @@ export function jobFlowValidation (vueObj) {
   let myDiagramEventValidationHint = new Set()
 
   const startValidation = () => {
-    let startAll = self.myDiagram.findNodesByExample({ 'category': 'Start' })
+    let startAll = self.outerDiagram.findNodesByExample({ 'category': 'Start' })
 
     if (startAll.count !== 1) {
       myDiagramEventValidationHint.add('有且只有一个Start')
@@ -20,7 +20,7 @@ export function jobFlowValidation (vueObj) {
   }
 
   const endValidation = () => {
-    let endAll = self.myDiagram.findNodesByExample({ 'category': 'End' })
+    let endAll = self.outerDiagram.findNodesByExample({ 'category': 'End' })
 
     if (endAll.count <= 0) {
       myDiagramEventValidationHint.add('缺少End')
@@ -34,7 +34,7 @@ export function jobFlowValidation (vueObj) {
           endLinksInto.each(link => {
             let preNormalBlockData = link.fromNode.data
             if (preNormalBlockData.category === 'normalBlock') {
-              // self.myDiagram.model.setDataProperty(preNormalBlockData, 'star', true)
+              // self.outerDiagram.model.setDataProperty(preNormalBlockData, 'star', true)
               let imgToolUnits = preNormalBlockData.unitLists.nodeDataArray.filter(item => item.category === 'Unit' && CONSTANT.IMGTOOL.has(item.unitMsg.execModName))
               if (!imgToolUnits.length) {
                 myDiagramEventValidationHint.add('End 节点前的 NormalBlock 未包含类型为 "图像识别" 的 Unit（如果必须要这么做，请将 End 节点更换为 Success 或 Fail 节点）')
@@ -47,7 +47,7 @@ export function jobFlowValidation (vueObj) {
   }
 
   const switchBlockValidation = () => {
-    let switchBlockAll = self.myDiagram.findNodesByExample({ 'category': 'switchBlock' })
+    let switchBlockAll = self.outerDiagram.findNodesByExample({ 'category': 'switchBlock' })
 
     switchBlockAll.iterator.each(node => {
       let switchBlockLinksInto = node.findLinksInto()
@@ -62,7 +62,7 @@ export function jobFlowValidation (vueObj) {
       switchBlockLinksInto.each(link => {
         let preNormalBlockData = link.fromNode.data
         if (preNormalBlockData.category === 'normalBlock') {
-          // self.myDiagram.model.setDataProperty(preNormalBlockData, 'star', true)
+          // self.outerDiagram.model.setDataProperty(preNormalBlockData, 'star', true)
           let imgToolUnits = preNormalBlockData.unitLists.nodeDataArray.filter(item => item.category === 'Unit' && item.unitMsg.execModName === 'IMGTOOL')
           if (!imgToolUnits.length) {
             myDiagramEventValidationHint.add('SwitchBlock 节点前的 NormalBlock 未包含类型为 "图像识别" 的 Unit')
@@ -88,7 +88,7 @@ export function jobFlowValidation (vueObj) {
   }
 
   const normalBlockValidation = () => {
-    let normalBlockAll = self.myDiagram.findNodesByExample({ 'category': 'normalBlock' })
+    let normalBlockAll = self.outerDiagram.findNodesByExample({ 'category': 'normalBlock' })
 
     if (normalBlockAll.count === 0) {
       myDiagramEventValidationHint.add('缺少Normal block')
@@ -109,10 +109,10 @@ export function jobFlowValidation (vueObj) {
     }
   }
 
-  if (self.myDiagram.links.count === 0) {
+  if (self.outerDiagram.links.count === 0) {
     myDiagramEventValidationHint.add('缺少链接关系')
   }
-  if (self.myDiagram.nodes.count === 0) {
+  if (self.outerDiagram.nodes.count === 0) {
     myDiagramEventValidationHint.add('还未对流程图进行编辑！')
   } else {
     startValidation()

@@ -116,7 +116,7 @@ function suffixAutoComplete (str, suffix) {
 }
 
 function createJobLabel (context) {
-  let jobLabel = context.md5(context.myDiagram.model.toJson() + Math.random().toString(36).substr(2))
+  let jobLabel = context.md5(context.outerDiagram.model.toJson() + Math.random().toString(36).substr(2))
   return 'job-' + jobLabel.substr(0, 8) + '-' + jobLabel.substr(8, 4) + '-' + jobLabel.substr(12, 4) + '-' + jobLabel.substr(16, 4) + '-' + jobLabel.substr(20)
 }
 

@@ -220,15 +220,15 @@ export default {
           } else {
             console.log('删除自动备份文件失败，错误码: ' + status)
           }
-          this.commit('job/setDraftId', null)
+          this.$store.commit('job/setDraftId', null)
         }).catch(err => {
           console.log(err)
         })
       }
 
       // 清空失效的数据
-      this.$store.commit('job/clearDiagramModel')
-      this.$store.commit('job/clearPreJobInfo')
+      this.$store.commit('job/setOuterDiagramModel', null)
+      this.$store.commit('job/setPreJobInfo', false)
       this.$store.commit('files/clearResFiles')
 
       if (this.countdown) {

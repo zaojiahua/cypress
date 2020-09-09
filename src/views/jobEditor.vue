@@ -45,8 +45,8 @@
         @setUnitName="setUnitName"
       ></unit-editor>
       <div id="chart-wrap">
-        <div id="chart-palette"></div>
-        <div id="chart-diagram"></div>
+        <div id="outer-palette"></div>
+        <div id="outer-diagram"></div>
       </div>
       <unit-template-editor
         :openUnitTemplateEditor="openUnitTemplateEditor"
@@ -68,8 +68,8 @@
         </div>
         <div id="inner-wrap">
           <div id="chart-left" @click="closeContextMenu">
-            <div class="unit-palette-container">
-              <div class="unit-palette-header">
+            <div class="inner-palette-container">
+              <div class="inner-palette-header">
                 <Dropdown trigger="click" @on-click="getSelectedUnit">
                   <Button id="dropdown-btn" type="primary" ghost>
                     {{ unitType }}
@@ -84,7 +84,7 @@
                   </DropdownMenu>
                 </Dropdown>
               </div>
-              <div id="unit-palette"></div>
+              <div id="inner-palette"></div>
             </div>
             <div id="unit-controller">
               <div v-if="!isDiagram">
@@ -115,32 +115,16 @@
 </template>
 <script>
 import go from 'gojs'
-import {
-  MAKE,
-  showLinkLabel,
-  finishDrop,
-  linkTemplateStyle,
-  startNodeTemplate,
-  endNodeTemplate,
-  unitNodeTemplate,
-  baseNodeTemplateForPort,
-  baseGroupTemplate,
-  basicModel
-} from './jobEditorCommon'
+import { init } from './JobEditorGoInit'
 import jobInJob from '_c/jobInJob'
 import jobResFile from '_c/jobResFile/jobResFile.vue'
 import UnitEditor from '_c/unitEditor/UnitEditor.vue'
 import unitTemplateEditor from '_c/unitTemplateEditor'
 import { getJobUnitsBodyDict, deleteUnitTemplate } from '../api/reef/unit'
-import { getBlockFlowDict4Font, jobFlowAndMsgSave, jobFlowAndMsgUpdate } from '../api/reef/jobFlow'
+import { jobFlowAndMsgSave, jobFlowAndMsgUpdate } from '../api/reef/jobFlow'
 import { jobResFilesSave, getJobResFilesList, getJobResFile } from '../api/reef/jobResFileSave'
 import { patchUpdateJob } from 'api/reef/job'
 import SwitchBlockDetailComponent from '_c/SwitchBlockDetailComponent'
-import { commonValidation } from '../core/validation/common'
-import {
-  startValidation
-} from '../core/validation/operationValidation/job'
-import { unitListValidation } from '../core/validation/operationValidation/block'
 import { jobFlowValidation } from '../core/validation/finalValidation/job'
 import { blockFlowValidation } from '../core/validation/finalValidation/block'
 import axios from 'api'
@@ -162,7 +146,6 @@ export default {
       currentSwitchBlockKey: null,
       unitContent: '',
       blockName: '',
-      stageJobLabel: null,
       currentNormalBlockKey: null,
       unitType: '请选择组件类型',
       switchBlockInfo: {},
@@ -186,7 +169,7 @@ export default {
       curUnitKey: null,
       lastActiveTime: null,
       activeTimeInterval: 120000,
-      autoSaveInterval: 180000,
+      autoSaveInterval: 10000, // 180000
       autoSaveTimer: null,
       autoSaveToggle: true
     }
@@ -194,7 +177,7 @@ export default {
   computed: {
     ...mapState('job', [
       'jobInfo',
-      'diagramModel',
+      'outerDiagramModel',
       'finalResultBlockKey',
       'draftId'
     ]),
@@ -233,11 +216,6 @@ export default {
   },
   mounted () {
     this.unitController = document.querySelector('#unit-controller')
-    const _this = this
-    _this.$Notice.config({
-      top: 150,
-      duration: 0
-    })
     this.$Message.config({
       duration: 3
     })
@@ -246,251 +224,18 @@ export default {
       this.handleResFile(this.jobId)
     }
 
-    myDiagramInit()
-    function myDiagramInit () {
-      _this.myDiagram = MAKE(go.Diagram, 'chart-diagram', {
-        initialContentAlignment: go.Spot.Center,
-        allowDrop: true,
-        // layout: MAKE(go.LayeredDigraphLayout, { direction: 90, layerSpacing: 40, columnSpacing: 30, setsPortSpots: true }),
-        // 设置网格
-        // grid: MAKE(go.Panel, 'Grid',
-        //   MAKE(go.Shape, 'LineH', {
-        //     stroke: 'lightgray',
-        //     strokeWidth: 0.5
-        //   }),
-        //   MAKE(go.Shape, 'LineH', {
-        //     stroke: 'gray',
-        //     strokeWidth: 0.5,
-        //     interval: 10
-        //   }),
-        //   MAKE(go.Shape, 'LineV', {
-        //     stroke: 'lightgray',
-        //     strokeWidth: 0.5
-        //   }),
-        //   MAKE(go.Shape, 'LineV', {
-        //     stroke: 'gray',
-        //     strokeWidth: 0.5,
-        //     interval: 10
-        //   })
-        // ),
-        // 拖动时是否捕捉网格点
-        'draggingTool.isGridSnapEnabled': true,
-        // 初次链接时，以链接（link）头部距离目标节点的某个Port的距离小于linkingTool.portGravity时，链接会自动吸附到目标节点的Port上
-        'linkingTool.portGravity': 40,
-        // 修改链接时，以链接（link）头部距离目标节点的某个Port的距离小于linkingTool.portGravity时，链接会自动吸附到目标节点的Port上
-        'relinkingTool.portGravity': 40,
-        'toolManager.mouseWheelBehavior': go.ToolManager.WheelZoom,
-        'LinkDrawn': showLinkLabel,
-        'LinkRelinked': showLinkLabel,
-        mouseDrop: function (e) {
-          finishDrop(e, null)
-        },
-        'undoManager.isEnabled': true
-      })
-
-      _this.myDiagram.linkTemplate = linkTemplateStyle()
-
-      _this.myDiagram.linkTemplate.doubleClick = function (e, node) {
-        if (e.diagram instanceof go.Palette) return
-        let block = _this.myDiagram.findNodeForKey(node.data.from).data
-
-        if (block.category === 'normalBlock') {
-          // vm.showDrawerOperation('linkOperation')
-          // currentLinkObj = node
-        }
-      }
-
-      const startTemplate = startNodeTemplate(CONST.COLORS.START)
-      startTemplate.linkValidation = startValidation
-
-      const endTemplate = endNodeTemplate(CONST.COLORS.END)
-
-      endTemplate.doubleClick = (e, node) => {
-        if (node.data.text === 'End') {
-          _this.myDiagram.model.setDataProperty(node.data, 'text', 'Fail')
-          _this.myDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.FAIL)
-        } else if (node.data.text === 'Fail') {
-          _this.myDiagram.model.setDataProperty(node.data, 'text', 'Success')
-          _this.myDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.SUCCESS)
-        } else {
-          _this.myDiagram.model.setDataProperty(node.data, 'text', 'End')
-          _this.myDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.END)
-        }
-
-        // debugger
-      }
-
-      const switchBlockTemplate = baseNodeTemplateForPort(CONST.COLORS.SWITCH, 'Diamond')
-      switchBlockTemplate.doubleClick = function (e, node) {
-        if (e.diagram instanceof go.Palette) return
-
-        _this.switchBlockInfo = {
-          switchBlockName: node.data.text,
-          fileName: node.data.fileName,
-          explain: node.data.explain
-        }
-        _this.currentSwitchBlockKey = node.data.key
-
-        _this.switchBlockModalShow = true
-      }
-
-      const normalBlockTemplate = baseNodeTemplateForPort(CONST.COLORS.NORMAL, 'Rectangle')
-
-      normalBlockTemplate.contextMenu = MAKE('ContextMenu',
-        MAKE('ContextMenuButton',
-          MAKE(go.TextBlock, 'NormalBlock', {
-            margin: 8
-          }),
-          {
-            click: function (e, obj) {
-              _this.setOutputNormalBlock(_this, false)
-            }
-          }
-        ),
-        MAKE('ContextMenuButton',
-          MAKE(go.TextBlock, '结果Block', {
-            margin: 8
-          }),
-          {
-            click: function (e, obj) {
-              _this.setOutputNormalBlock(_this, true)
-            }
-          }
-        ))
-
-      normalBlockTemplate.doubleClick = function (e, node) {
-        if (e.diagram instanceof go.Palette) return
-        _this.unitType = '请选择组件类型'
-        _this.blockName = node.data.text
-        _this.currentNormalBlockKey = node.data.key
-        _this.blockModalShow = true
-        if (!_this.blockDiagram) blockDiagramInit()
-        if (!_this.blockPalette) blockPaletteInit()
-        if (!node.data.unitLists) { // unitList存在则展示
-          _this.blockDiagram.model = go.Model.fromJson({
-            'class': 'go.GraphLinksModel',
-            'linkFromPortIdProperty': 'fromPort',
-            'linkToPortIdProperty': 'toPort',
-            'nodeDataArray': [],
-            'linkDataArray': []
-          })
-        } else {
-          // 通过 lodbash deepCopy 一份数据并传递给 _this.blockDiagram.model
-          _this.blockDiagram.model = go.Model.fromJson(_this._.cloneDeep(node.data.unitLists))
-        }
-      }
-
-      // normalBlockTemplate.contextMenu
-
-      const jobBlockTemplate = baseNodeTemplateForPort(CONST.COLORS.JOB, 'Rectangle')
-      jobBlockTemplate.doubleClick = function (e, node) {
-        if (e.diagram instanceof go.Palette) return
-        _this.currentJobBlockText = node.data.text
-        _this.currentJobBlockKey = node.data.key
-        _this.jobModalShow = true
-      }
-
-      _this.myDiagram.nodeTemplateMap.add('normalBlock', normalBlockTemplate)
-      _this.myDiagram.nodeTemplateMap.add('switchBlock', switchBlockTemplate)
-      _this.myDiagram.nodeTemplateMap.add('Start', startTemplate)
-      _this.myDiagram.nodeTemplateMap.add('End', endTemplate)
-      _this.myDiagram.nodeTemplateMap.add('Job', jobBlockTemplate)
-
-      _this.myDiagram.toolManager.linkingTool.linkValidation = commonValidation
-      _this.myDiagram.toolManager.relinkingTool.linkValidation = commonValidation
-    }
-
-    function blockDiagramInit () {
-      _this.blockDiagram = MAKE(go.Diagram, 'inner-diagram', {
-        initialContentAlignment: go.Spot.Center,
-        allowDrop: true,
-        layout: MAKE(go.LayeredDigraphLayout, { direction: 0, layerSpacing: 40, columnSpacing: 30, setsPortSpots: false }),
-        'toolManager.mouseWheelBehavior': go.ToolManager.WheelZoom,
-        mouseDrop: function (e) {
-          finishDrop(e, null)
-        },
-        'undoManager.isEnabled': true,
-        'commandHandler.archetypeGroupData': { category: 'UnitList', text: 'UnitList', isGroup: true }
-      })
-
-      // -------------从Palette拖拽节点的触发事件，判断Unit是否被UnitList包含------------
-      _this.blockDiagram.addDiagramListener('externalobjectsdropped', function (e) {
-        e.subject.each(function (n) {
-          // 得到从Palette拖过来的节点 判断节点如果没有group则删除节点
-          if (n.data.category === 'Unit') {
-            if (!n.data.group) { // 判断Unit是否被UnitList包含
-              _this.blockDiagram.commandHandler.groupSelection()
-            }
-          }
-        })
-      })
-      _this.blockDiagram.linkTemplate = linkTemplateStyle()
-
-      const unitTemplate = unitNodeTemplate(CONST.COLORS.UNIT)
-
-      unitTemplate.doubleClick = function (e, node) {
-        if (e.diagram instanceof go.Palette) return
-        // _this.unitMsgToogle = !_this.unitMsgToogle
-        _this.showUnitEditor = true
-        let { key, text, unitMsg, unitMsg: { execModName } } = node.data
-        _this.unitData = {
-          unitNodeKey: key,
-          unitName: text,
-          unitType: execModName,
-          unitMsg: _this._.cloneDeep(unitMsg)
-        }
-      }
-
-      unitTemplate.contextClick = function (e, node) {
-        if (e.diagram instanceof go.Palette && sessionStorage.identity.includes('Admin')) {
-          _this.isDiagram = false
-          _this.unitTemplateName = node.data.text
-          _this.unitTemplateId = node.data.unit_id
-          _this.unitTemplateContent = JSON.stringify(node.data.unitMsg, null, 2)
-          _this.unitController.style.top = `${e.event.y - 50}px`
-          _this.unitController.style.left = `${e.event.x}px`
-          _this.unitController.style.display = 'block'
-        } else {
-          _this.isDiagram = true
-          _this.curUnitKey = node.data.key
-          _this.unitController.style.top = `${e.event.y - 50}px`
-          _this.unitController.style.left = `${e.event.x}px`
-          _this.unitController.style.display = 'block'
-        }
-      }
-
-      const unitListGroupTemplate = baseGroupTemplate(_this)
-      unitListGroupTemplate.memberValidation = function groupValidation (group, node) {
-        return node.data.category === 'Unit'// 当节点的category值为Unit时
-      }
-
-      unitListGroupTemplate.linkValidation = unitListValidation
-
-      _this.blockDiagram.nodeTemplateMap.add('Unit', unitTemplate)
-      _this.blockDiagram.nodeTemplateMap.add('Start', startNodeTemplate(CONST.COLORS.START))
-      _this.blockDiagram.nodeTemplateMap.add('End', endNodeTemplate(CONST.COLORS.END, true))
-      _this.blockDiagram.groupTemplateMap.add('UnitList', unitListGroupTemplate)
-
-      _this.blockDiagram.toolManager.linkingTool.linkValidation = commonValidation
-      _this.blockDiagram.toolManager.relinkingTool.linkValidation = commonValidation
-    }
-
-    function blockPaletteInit () {
-      _this.blockPalette =
-        MAKE(go.Palette, 'unit-palette',
-          {
-            nodeTemplateMap: _this.blockDiagram.nodeTemplateMap,
-            groupTemplateMap: _this.blockDiagram.groupTemplateMap,
-            layout: MAKE(go.GridLayout, { wrappingColumn: 1, alignment: go.GridLayout.Center })
-          })
-      _this.getSelectedUnit('基础操作')
-    }
     this.updateUnitAllList()
-    this.init()
+    init(this)
 
     window.addEventListener('contextmenu', this.dispatchMouseEvent)
     window.addEventListener('mousemove', this.dispatchMouseEvent)
-    this.autoSaveTimer = window.setInterval(this.autoSave, this.autoSaveInterval) // 300000
+    this.autoSaveTimer = setInterval(this.autoSave, this.autoSaveInterval) // 300000
+  },
+  beforeRouteLeave  (to, from, next) {
+    if (to.name === 'jobList' && this.autoSaveToggle) {
+      this.$store.commit('job/setOuterDiagramModel', this.outerDiagram.model.toJson())
+    }
+    next()
   },
   beforeDestroy () {
     window.removeEventListener('contextmenu', this.dispatchMouseEvent)
@@ -509,108 +254,21 @@ export default {
     }
   },
   methods: {
-    async init () {
-      this.myPalette = MAKE(
-        go.Palette, 'chart-palette', {
-          scrollsPageOnFocus: false,
-          nodeTemplateMap: this.myDiagram.nodeTemplateMap,
-          layout: MAKE(go.GridLayout, { wrappingColumn: 1, alignment: go.GridLayout.Location })
-        }
-      )
-
-      this.myPalette.model = new go.GraphLinksModel([
-        { category: 'switchBlock', text: 'Switch' },
-        {
-          category: 'normalBlock',
-          text: 'Normal',
-          unitLists: {
-            'class': 'GraphLinksModel',
-            'linkFromPortIdProperty': 'fromPort',
-            'linkToPortIdProperty': 'toPort',
-            'nodeDataArray': [
-              {
-                'category': 'Start',
-                'text': 'Entry',
-                'key': -1
-              },
-              {
-                'category': 'UnitList',
-                'text': 'UnitList',
-                'isGroup': true,
-                'key': -2
-              },
-              {
-                'category': 'End',
-                'text': 'Exit',
-                'key': -3
-              }
-            ],
-            'linkDataArray': [
-              {
-                'from': -1,
-                'to': -2,
-                'fromPort': 'R',
-                'toPort': 'L'
-              },
-              {
-                'from': -2,
-                'to': -3,
-                'fromPort': 'R',
-                'toPort': 'L'
-              }
-            ]
-          }
-        },
-        { category: 'Job', text: 'Job' },
-        { category: 'End', text: 'End' }
-      ])
-
-      if (this.diagramModel && this.diagramModel.nodeDataArray.length) {
-        this.myDiagram.model = go.Model.fromJson(this.diagramModel)
-      } else {
-        if (this.jobInfo.job_flow) {
-          let { status, data } = await getBlockFlowDict4Font(this.jobInfo.job_flow)
-          if (status === 200) {
-            if (JSON.stringify(data) === '{}') {
-              this.$Message.err({
-                background: true,
-                content: '这个job不存在'
-              })
-              return this.$router.push({ path: '/' })
-            }
-            this.stageJobLabel = this.jobInfo.jobLabel
-            this.myDiagram.model = go.Model.fromJson(data)
-            this.$store.commit('job/setDiagramModel', data)
-          } else {
-            this.$Message.err({
-              background: true,
-              content: '获取 Job 信息失败'
-            })
-          }
-        } else {
-        // getTemporarySpace().then(res => {
-          let model = basicModel()
-          this.myDiagram.model = model
-          this.$store.commit('job/setDiagramModel', model)
-        // })
-        }
-      }
-    },
     switchBlockSave (msg) {
-      let node = this.myDiagram.model.findNodeDataForKey(this.currentSwitchBlockKey)
-      this.myDiagram.model.setDataProperty(node, 'text', msg.switchBlockName)
-      this.myDiagram.model.setDataProperty(node, 'fileName', msg.fileName)
-      this.myDiagram.model.setDataProperty(node, 'explain', msg.explain)
+      let node = this.outerDiagram.model.findNodeDataForKey(this.currentSwitchBlockKey)
+      this.outerDiagram.model.setDataProperty(node, 'text', msg.switchBlockName)
+      this.outerDiagram.model.setDataProperty(node, 'fileName', msg.fileName)
+      this.outerDiagram.model.setDataProperty(node, 'explain', msg.explain)
     },
     saveNormalBlock () { // normalBlock点击确定进行校验
-      let currentNormalBlockData = this.myDiagram.findNodeForKey(this.currentNormalBlockKey).data
+      let currentNormalBlockData = this.outerDiagram.findNodeForKey(this.currentNormalBlockKey).data
 
-      let blockDiagramData = JSON.parse(this.blockDiagram.model.toJson())
+      let blockDiagramData = JSON.parse(this.innerDiagram.model.toJson())
 
       const blockDiagramHint = blockFlowValidation(this)
 
       function setDataProperty (context, data, propname, val) {
-        context.myDiagram.model.setDataProperty(data, propname, val)
+        context.outerDiagram.model.setDataProperty(data, propname, val)
       }
 
       if (blockDiagramHint.size !== 0) {
@@ -652,7 +310,7 @@ export default {
         })
         setDataProperty(this, currentNormalBlockData, 'resFile', resFile)
 
-        this.myDiagram.model = go.Model.fromJson(this.myDiagram.model.toJson())
+        this.outerDiagram.model = go.Model.fromJson(this.outerDiagram.model.toJson())
         this.blockModalShow = false
       }
     },
@@ -711,7 +369,7 @@ export default {
     isInvalidInnerJob () {
       // 是否是嵌套的InnerJob
       let flag = false
-      let { count } = this.myDiagram.findNodesByExample({ 'category': 'Job' })
+      let { count } = this.outerDiagram.findNodesByExample({ 'category': 'Job' })
       if (this.jobInfo.job_type === 'InnerJob') {
         if (this.finalResultBlockKey) {
           this.$Message.error({
@@ -767,13 +425,14 @@ export default {
         this._saveJob(saveAs, false, false)
       }
     },
-    async uploadFiles (id, info, resFiles) {
+    async uploadFiles (id, info) {
       info.job_id = id
       try {
         let { status } = await jobFlowAndMsgUpdate(id, info)
         if (status === 200) {
           let data = new FormData()
           data.append('job', id)
+          let resFiles = this._.cloneDeep(this.resFiles)
           for (let i = 0; i < resFiles.length; i++) {
             let { name, type, file } = resFiles[i]
             if (type === 'png') {
@@ -822,13 +481,13 @@ export default {
     },
     async prepareJobInfo (saveAs, createNew, isDraft) {
       let info = this._.cloneDeep(this.jobInfo)
-      info.ui_json_file = JSON.parse(this.myDiagram.model.toJson())
+      info.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
       info.test_area = await this._createNewTag('test_area')
       info.custom_tag = await this._createNewTag('custom_tag')
       info.author = localStorage.id
       this.removeInvalidFile(info.ui_json_file)
       info.inner_job_list = []
-      let innerJobs = this.myDiagram.findNodesByExample({ 'category': 'Job' })
+      let innerJobs = this.outerDiagram.findNodesByExample({ 'category': 'Job' })
       innerJobs.each(node => {
         if (node.data.jobLabel) {
           info.inner_job_list.push(node.data.jobLabel)
@@ -851,33 +510,32 @@ export default {
         type: 'json',
         file: JSON.stringify(this.resFilesName, null, 2)
       })
-      let resFiles = this._.cloneDeep(this.resFiles)
       if (saveAs) {
         if (this.draftId) {
-          this.uploadFiles(this.draftId, info, resFiles)
+          this.uploadFiles(this.draftId, info)
         } else {
           try {
             let { status, data } = await jobFlowAndMsgSave(info)
             if (status === 201) id = data.id
-            this.uploadFiles(id, info, resFiles)
+            this.uploadFiles(id, info)
           } catch (error) {
             console.log(error)
           }
         }
       } else {
         if (id) {
-          this.uploadFiles(id, info, resFiles)
+          this.uploadFiles(id, info)
           if (this.draftId) {
             patchUpdateJob(this.draftId, { job_deleted: true })
           }
         } else {
           if (this.draftId) {
-            this.uploadFiles(this.draftId, info, resFiles)
+            this.uploadFiles(this.draftId, info)
           } else {
             try {
               let { status, data } = await jobFlowAndMsgSave(info)
               if (status === 201) id = data.id
-              this.uploadFiles(id, info, resFiles)
+              this.uploadFiles(id, info)
             } catch (error) {
               console.log(error)
             }
@@ -890,26 +548,25 @@ export default {
     async autoSave () {
       let curTime = Date.now()
       if (curTime - this.lastActiveTime >= this.activeTimeInterval || !this._jobMsgRules() || !this.autoSaveToggle) return
-      let info = await this.prepareJobInfo(true, true, true)
+      let info = this.draftId ? await this.prepareJobInfo(false, false, true) : await this.prepareJobInfo(false, true, true)
       info.job_name = info.job_name + '_AUTOSAVE'
       this.$store.commit('files/addResFile', {
         name: 'FILES_NAME_CONFIG.json',
         type: 'json',
         file: JSON.stringify(this.resFilesName, null, 2)
       })
-      let resFiles = this._.cloneDeep(this.resFiles)
       if (!this.draftId) {
         try {
           let { status, data } = await jobFlowAndMsgSave(info)
           if (status === 201) {
             this.$store.commit('job/setDraftId', data.id)
-            this.uploadFiles(this.draftId, info, resFiles)
+            this.uploadFiles(this.draftId, info)
           }
         } catch (error) {
           console.log(error)
         }
       } else {
-        this.uploadFiles(this.draftId, info, resFiles)
+        this.uploadFiles(this.draftId, info)
       }
       this.$Notice.success({
         title: '温馨提示',
@@ -922,12 +579,12 @@ export default {
     },
     saveUnit (unitData, unitResFileList) {
       this.showUnitEditor = false
-      let curUnitNode = this.blockDiagram.findNodeForKey(unitData.unitNodeKey)
-      this.blockDiagram.model.setDataProperty(curUnitNode.data, 'unitMsg', unitData.unitMsg)
-      this.blockDiagram.model.setDataProperty(curUnitNode.data, 'text', unitData.unitName)
+      let curUnitNode = this.innerDiagram.findNodeForKey(unitData.unitNodeKey)
+      this.innerDiagram.model.setDataProperty(curUnitNode.data, 'unitMsg', unitData.unitMsg)
+      this.innerDiagram.model.setDataProperty(curUnitNode.data, 'text', unitData.unitName)
       if (unitResFileList.length) {
         if (!curUnitNode.data.resFile) {
-          this.blockDiagram.model.setDataProperty(curUnitNode.data, 'resFile', {})
+          this.innerDiagram.model.setDataProperty(curUnitNode.data, 'resFile', {})
         }
         let { resFile } = curUnitNode.data
         for (let item of unitResFileList) {
@@ -954,7 +611,7 @@ export default {
             unitMsg: unit[1]['unit_content']
           })
         })
-        this.blockPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
+        this.innerPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
       } else {
         this.$Message.error({
           background: true,
@@ -965,10 +622,10 @@ export default {
     jobModalClose (job) {
       this.jobModalShow = false
       if (job.id) {
-        let currentJobBlockData = this.myDiagram.findNodeForKey(this.currentJobBlockKey).data
-        this.myDiagram.model.setDataProperty(currentJobBlockData, 'text', job.job_name)
-        this.myDiagram.model.setDataProperty(currentJobBlockData, 'jobId', job.id)
-        this.myDiagram.model.setDataProperty(currentJobBlockData, 'jobLabel', job.job_label)
+        let currentJobBlockData = this.outerDiagram.findNodeForKey(this.currentJobBlockKey).data
+        this.outerDiagram.model.setDataProperty(currentJobBlockData, 'text', job.job_name)
+        this.outerDiagram.model.setDataProperty(currentJobBlockData, 'jobId', job.id)
+        this.outerDiagram.model.setDataProperty(currentJobBlockData, 'jobLabel', job.job_label)
         console.log(currentJobBlockData)
       }
     },
@@ -1044,16 +701,16 @@ export default {
       }
     },
     changeUnitColor (hasCompleted) {
-      let currentNodeData = this.blockDiagram.findNodeForKey(this.unitData.unitNodeKey).data
+      let currentNodeData = this.innerDiagram.findNodeForKey(this.unitData.unitNodeKey).data
 
       if (hasCompleted) {
-        this.blockDiagram.model.setDataProperty(currentNodeData, 'color', CONST.COLORS.FINISH)
+        this.innerDiagram.model.setDataProperty(currentNodeData, 'color', CONST.COLORS.FINISH)
         currentNodeData.completed = true
       } else {
-        this.blockDiagram.model.setDataProperty(currentNodeData, 'color', CONST.COLORS.UNFINISHED)
+        this.innerDiagram.model.setDataProperty(currentNodeData, 'color', CONST.COLORS.UNFINISHED)
         currentNodeData.completed = false
       }
-      // this.blockDiagram.model = go.Model.fromJson(this.blockDiagram.model.toJson())
+      // this.innerDiagram.model = go.Model.fromJson(this.innerDiagram.model.toJson())
     },
     handleResFile (id) {
       if (!id) {
@@ -1104,8 +761,8 @@ export default {
         this.$store.commit('device/setCountdown')
       }
       this.$store.commit('job/setJobInfo', {})
-      this.$store.commit('job/clearDiagramModel')
-      this.$store.commit('job/clearPreJobInfo')
+      this.$store.commit('job/setOuterDiagramModel', null)
+      this.$store.commit('job/setPreJobInfo', false)
       this.$store.commit('job/setDraftId', null)
       this.$store.commit('job/setFinalResultBlock', null)
       this.$store.commit('files/clearResFiles')
@@ -1123,6 +780,7 @@ export default {
       ]))
     },
     cancelEdit () {
+      this.autoSaveToggle = false
       if (this.draftId) {
         patchUpdateJob(this.draftId, { job_deleted: true }).then(({ status }) => {
           if (status === 200) {
@@ -1138,12 +796,12 @@ export default {
       this.$router.push({ path: '/jobList' })
     },
     setWingman (wingmanId) {
-      let curUnit = this.blockDiagram.findNodeForKey(this.curUnitKey)
+      let curUnit = this.innerDiagram.findNodeForKey(this.curUnitKey)
       if (wingmanId) {
-        this.blockDiagram.model.setDataProperty(curUnit.data, 'assistDevice', wingmanId)
-        this.blockDiagram.model.setDataProperty(curUnit.data.unitMsg, 'assistDevice', wingmanId)
+        this.innerDiagram.model.setDataProperty(curUnit.data, 'assistDevice', wingmanId)
+        this.innerDiagram.model.setDataProperty(curUnit.data.unitMsg, 'assistDevice', wingmanId)
       } else {
-        this.blockDiagram.model.setDataProperty(curUnit.data, 'assistDevice', null)
+        this.innerDiagram.model.setDataProperty(curUnit.data, 'assistDevice', null)
         delete curUnit.data.assistDevice
         delete curUnit.data.unitMsg.assistDevice
       }
@@ -1163,14 +821,14 @@ export default {
         })
         return
       }
-      let iterator = context.myDiagram.selection
+      let iterator = context.outerDiagram.selection
       if (iterator.count > 1) {
         context.$Message.error({
           content: '仅可选取一个Block'
         })
         return
       }
-      context.myDiagram.selection.each(({ data, data: { unitLists: { linkDataArray, nodeDataArray } } }) => {
+      context.outerDiagram.selection.each(({ data, data: { unitLists: { linkDataArray, nodeDataArray } } }) => {
         // 找到最后一个有star属性的unit
         let starUnitDataArray = nodeDataArray.filter((val, index) => {
           return val.category === 'Unit' && val.star
@@ -1235,7 +893,7 @@ export default {
                 content: '已将该Block设为NormalBlock'
               })
             }
-            context.myDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
+            context.outerDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
           }
         } else {
           context.$Message.error({
@@ -1275,14 +933,14 @@ export default {
   justify-content: space-between;
   // margin-bottom: 22px;
 
-  #chart-palette {
+  #outer-palette {
     width: 15%;
     margin-right: 30px;
     background-color: white;
     border: solid 1px rgb(244, 244, 244);
   }
 
-  #chart-diagram {
+  #outer-diagram {
     flex-grow: 1;
     background-color: white;
     border: solid 1px rgb(244, 244, 244);
@@ -1304,13 +962,13 @@ export default {
     background-color: white;
     border: solid 1px rgb(244, 244, 244);
 
-    .unit-palette-container {
+    .inner-palette-container {
       flex: 1;
       display: flex;
       flex-direction: column;
       width: 100%;
 
-      .unit-palette-header {
+      .inner-palette-header {
         text-align: center;
 
         #dropdown-btn {
@@ -1318,7 +976,7 @@ export default {
         }
       }
 
-      #unit-palette {
+      #inner-palette {
         flex: 1;
         background-color: white;
       }

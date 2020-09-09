@@ -133,12 +133,12 @@ export default {
       })
     },
     viewJob () {
-      this.$store.commit('job/setPreJobInfo')
+      this.$store.commit('job/setPreJobInfo', true)
       this.$router.push({ path: '/jobList' })
     },
     createJob () {
       if (this.preJobInfo) {
-        this.$store.commit('job/renewJobInfo')
+        this.$store.commit('job/recoverJobInfo')
       } else {
         this.$store.commit('job/setJobInfo', {})
       }
