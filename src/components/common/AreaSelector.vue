@@ -174,12 +174,12 @@ export default {
           let coordinate = {}
           coordinate.relativeCoordinate = {
             topLeft: {
-              x: (this.curAreaRect.x - this.selectorImgRect.x) / this.selectorImgRect.width,
-              y: (this.curAreaRect.y - this.selectorImgRect.y) / this.selectorImgRect.height
+              x: Math.max(0, (this.curAreaRect.x - this.selectorImgRect.x) / this.selectorImgRect.width),
+              y: Math.max(0, (this.curAreaRect.y - this.selectorImgRect.y) / this.selectorImgRect.height)
             },
             bottomRight: {
-              x: (this.curAreaRect.x + this.curAreaRect.width - this.selectorImgRect.x) / this.selectorImgRect.width,
-              y: (this.curAreaRect.y + this.curAreaRect.height - this.selectorImgRect.y) / this.selectorImgRect.height
+              x: Math.min(this.imageWidth, (this.curAreaRect.x + this.curAreaRect.width - this.selectorImgRect.x) / this.selectorImgRect.width),
+              y: Math.min(this.imageHeight, (this.curAreaRect.y + this.curAreaRect.height - this.selectorImgRect.y) / this.selectorImgRect.height)
             }
           }
           coordinate.absoluteCoordinate = {
