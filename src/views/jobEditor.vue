@@ -827,10 +827,12 @@ export default {
       info.custom_tag = await this._createNewTag('custom_tag')
       info.author = localStorage.id
       this.removeInvalidFile(info.ui_json_file)
-      info.inner_job = []
+      info.inner_job_list = []
       let innerJobs = this.myDiagram.findNodesByExample({ 'category': 'Job' })
       innerJobs.each(node => {
-        info.inner_job.push(node.data.jobId)
+        if (node.data.jobLabel) {
+          info.inner_job_list.push(node.data.jobLabel)
+        }
       })
       if (saveAs || createNew) {
         info.job_label = createJobLabel(this)

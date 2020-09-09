@@ -53,6 +53,11 @@ export default {
     return {
       coordinateColumn: [
         {
+          type: 'index',
+          width: 60,
+          align: 'center'
+        },
+        {
           title: 'coordinate_A',
           key: 'coordinate_a',
           align: 'center'
