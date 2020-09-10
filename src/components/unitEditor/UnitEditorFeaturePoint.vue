@@ -120,18 +120,7 @@ export default {
 
       let area = document.createElement('div')
       area.classList.add('area')
-      area.style.display = 'flex'
-      area.style.justifyContent = 'center'
-      area.style.alignItems = 'center'
-      area.style.fontSize = '24px'
-      area.style.fontWeight = 'bolder'
-      area.style.position = 'absolute'
-      area.style.left = `${left}px`
-      area.style.top = `${top}px`
-      area.style.width = `${width}px`
-      area.style.height = `${height}px`
-      area.style.zIndex = '900'
-      area.style.background = 'rgba(87, 250, 255, .4)'
+      area.setAttribute('style', `display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bolder; position: absolute; left: ${left}px; top: ${top}px; width: ${width}px; height: ${height}px; z-index: 900; background: rgba(87, 250, 255, .4);`)
       area.innerText = index + 1
       selector.appendChild(area)
     }

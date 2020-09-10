@@ -12,11 +12,12 @@ export const getJobList = (params) => {
       'job_name,' +
       'job_type,' +
       'job_second_type,' +
-      'draft' +
+      'draft,' +
+      'updated_time' +
       '&job_deleted=False' +
       '&limit=' + params.pageSize +
       '&offset=' + params.offset +
-      '&ordering=id' + params.filterUrlParam
+      '&ordering=-updated_time' + params.filterUrlParam
   })
 }
 
