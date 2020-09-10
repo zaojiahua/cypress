@@ -20,7 +20,8 @@ export default new Vuex.Store({
   },
   state: {
     showDrawer: false,
-    isLoading: false
+    isLoading: false,
+    curPage: 1
   },
   mutations: {
     handleShowDrawer (state) {
@@ -28,6 +29,9 @@ export default new Vuex.Store({
     },
     setIsLoading (state, isLoading) {
       state.isLoading = isLoading
+    },
+    setCurPage (state, page) {
+      state.curPage = page
     }
   }
 })

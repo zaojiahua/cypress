@@ -58,9 +58,11 @@
           </Menu>
         </Sider>
         <Content :style="{padding: '15px', minHeight: '280px', background: '#fff' }">
-          <keep-alive include="jobList">
-            <router-view/>
-          </keep-alive>
+          <transition name="fade" mode="out-in">
+            <keep-alive include="jobList">
+              <router-view/>
+            </keep-alive>
+          </transition>
         </Content>
       </Layout>
     </Layout>

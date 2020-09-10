@@ -33,7 +33,7 @@
         @on-row-click="onRowClick"
         @on-selection-change="selectedJobsChange"
       ></Table>
-      <Page simple :page-size="pageSize" :total="dataCount" :current.sync="currentPage" @on-change="jobPageChange" style="text-align: center;margin-top: 20px"></Page>
+      <Page simple :page-size="pageSize" :total="dataCount" :current.sync="curPage" @on-change="jobPageChange" style="text-align: center;margin-top: 20px"></Page>
     </div>
   </div>
 </template>
@@ -54,7 +54,6 @@ export default {
   data () {
     return {
       pageSize: 10, // 每页条数
-      currentPage: 1, // 当前页数
       dataCount: 0,
       columns: [
         {
@@ -162,7 +161,7 @@ export default {
     },
     jobPageChange (page) { // 切换页面
       if (page) {
-        this.currentPage = page
+        this.$store.commit('setCurPage', page)
       }
       this.getFilteredJobs()
     },
@@ -296,10 +295,10 @@ export default {
               await patchUpdateJob(id, { job_deleted: true })
             })
             setTimeout(() => {
-              if (this.jobData.length - this.jobIdList.length === 0 && this.currentPage > 1) {
-                this.jobPageChange(this.currentPage - 1)
+              if (this.jobData.length - this.jobIdList.length === 0 && this.curPage > 1) {
+                this.jobPageChange(this.curPage - 1)
               } else {
-                this.jobPageChange(this.currentPage)
+                this.jobPageChange(this.curPage)
               }
               this.$Message.success('用例删除成功')
               this.selectedJobs = {}
@@ -314,8 +313,16 @@ export default {
     }
   },
   computed: {
+    curPage: {
+      get: function () {
+        return this.$store.state.curPage
+      },
+      set: function (val) {
+        this.$store.commit('setCurPage', val)
+      }
+    },
     offset () { // 从某位置开始 返回当前下标
-      return (this.currentPage - 1) * this.pageSize
+      return (this.curPage - 1) * this.pageSize
     },
     uploadUrl () {
       return jobLibSvcURL + '/form/'

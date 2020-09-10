@@ -510,6 +510,7 @@ export default {
         }
       }
       this.$router.push({ path: '/jobList' })
+      this.$store.commit('setCurPage', 1)
       this.clearData()
     },
     async autoSave () {
