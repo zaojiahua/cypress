@@ -5,7 +5,7 @@
         <Input clearable size="large" v-model="curNormalData.text" />
       </header>
       <nav>
-        <Dropdown trigger="click" @on-click="getSelectedUnit" style="width: 100%;">
+        <Dropdown trigger="click" @on-click="getSelectedUnit" style="width: 100%; margin-bottom: 1em;">
           <Button type="primary" ghost style="width: 100%;">
             {{unitTemplateType}}
             <Icon type="ios-arrow-down" />

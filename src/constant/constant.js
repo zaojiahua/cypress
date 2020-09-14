@@ -58,7 +58,6 @@ export default {
     ])
   },
   NOT_SHOW_AUTO_COMPLETE: new Set([
-    'inputFile',
     'jobResourceFile',
     'jobResourcePicture',
     'picInput',
@@ -71,7 +70,8 @@ export default {
     'inputPicture',
     'jobResourceFile',
     'jobResourcePicture',
-    'inputVideo'
+    'inputVideo',
+    'inputFile'
   ]),
   SHOW_SCREEN_SHOOT: new Set([
     'jobResourcePicture',

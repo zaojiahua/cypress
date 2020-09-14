@@ -505,6 +505,10 @@ export default {
     main {
       grid-area: diagram;
     }
+    nav, main {
+      border: 1px solid #cccccc;
+      border-radius: 6px;
+    }
   }
 }
 </style>
