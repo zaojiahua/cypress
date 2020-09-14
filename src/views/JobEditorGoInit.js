@@ -183,6 +183,7 @@ function outerDiagramInit (context) {
     if (e.diagram instanceof go.Palette) return
     let { data } = node
     context.normalData = JSON.stringify(data)
+    context.curNormalKey = data.key
     context.openNormalEditor = true
   }
 

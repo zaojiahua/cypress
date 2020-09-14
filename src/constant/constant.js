@@ -90,38 +90,31 @@ export default {
         'class': 'GraphLinksModel',
         'linkFromPortIdProperty': 'fromPort',
         'linkToPortIdProperty': 'toPort',
-        'nodeDataArray': [
-          {
-            'category': 'Start',
-            'text': 'Entry',
-            'key': -1
-          },
-          {
-            'category': 'UnitList',
-            'text': 'UnitList',
-            'isGroup': true,
-            'key': -2
-          },
-          {
-            'category': 'End',
-            'text': 'Exit',
-            'key': -3
-          }
-        ],
-        'linkDataArray': [
-          {
-            'from': -1,
-            'to': -2,
-            'fromPort': 'R',
-            'toPort': 'L'
-          },
-          {
-            'from': -2,
-            'to': -3,
-            'fromPort': 'R',
-            'toPort': 'L'
-          }
-        ]
+        'nodeDataArray': [{
+          'category': 'Start',
+          'text': 'Entry',
+          'key': -1
+        }, {
+          'category': 'UnitList',
+          'text': 'UnitList',
+          'isGroup': true,
+          'key': -2
+        }, {
+          'category': 'End',
+          'text': 'Exit',
+          'key': -3
+        }],
+        'linkDataArray': [{
+          'from': -1,
+          'to': -2,
+          'fromPort': 'R',
+          'toPort': 'L'
+        }, {
+          'from': -2,
+          'to': -3,
+          'fromPort': 'R',
+          'toPort': 'L'
+        }]
       }
     },
     { category: 'Job', text: 'Job' },

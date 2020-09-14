@@ -135,8 +135,12 @@ export default {
       this.outerDiagram.model.setDataProperty(node, 'explain', msg.explain)
     },
     saveNormalData (val) {
-      let curNormalBlock = this.outerDiagram.findNodeForKey(val.key)
-      this.outerDiagram.model.setDataProperty(curNormalBlock, 'data', val)
+      let curNormalData = this.outerDiagram.findNodeForKey(this.curNormalKey).data
+      this.outerDiagram.model.setDataProperty(curNormalData, 'text', val.text)
+      this.outerDiagram.model.setDataProperty(curNormalData, 'star', val.star)
+      this.outerDiagram.model.setDataProperty(curNormalData, 'color', val.color)
+      this.outerDiagram.model.setDataProperty(curNormalData, 'unitLists', val.unitLists)
+      this.outerDiagram.model.setDataProperty(curNormalData, 'resFile', val.resFile)
     },
     _jobFlowRules () {
       const myDiagramEventValidationHint = jobFlowValidation(this)
