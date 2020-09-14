@@ -1,4 +1,5 @@
 let state = {
+  unitLists: null,
   unitTypes: [],
   itemHandBook: {
     method: undefined,
@@ -9,8 +10,9 @@ let state = {
 }
 
 let mutations = {
-  setUnitTypes (state, unitTypes) {
-    state.unitTypes = unitTypes
+  setUnitLists (state, data) {
+    state.unitLists = data
+    state.unitTypes = Object.keys(data)
   },
   setItemHandBook (state, handbook) {
     state.itemHandBook = handbook

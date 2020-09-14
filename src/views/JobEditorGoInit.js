@@ -18,6 +18,95 @@ import {
   baseGroupTemplate
 } from './jobEditorCommon'
 
+function setOutputNormalBlock (context, isOutput) {
+  if (isOutput && context.jobInfo.job_type === 'InnerJob') {
+    context.$Message.error({
+      content: '无法为内嵌用例指定结果Block'
+    })
+    return
+  }
+  let iterator = context.outerDiagram.selection
+  if (iterator.count > 1) {
+    context.$Message.error({
+      content: '仅可选取一个Block'
+    })
+    return
+  }
+  context.outerDiagram.selection.each(({ data, data: { unitLists: { linkDataArray, nodeDataArray } } }) => {
+    // 找到最后一个有star属性的unit
+    let starUnitDataArray = nodeDataArray.filter((val, index) => {
+      return val.category === 'Unit' && val.star
+    })
+    let lastStarUnit = null
+    if (starUnitDataArray.length === 1) {
+      lastStarUnit = starUnitDataArray[0]
+    } else if (starUnitDataArray.length > 1) {
+      let linkDataMap = new Map()
+      linkDataArray.forEach((val) => {
+        linkDataMap.set(val.from, val.to)
+      })
+      let startKey = nodeDataArray.filter(val => {
+        return val.category === 'Start'
+      })[0].key
+      let next = linkDataMap.get(startKey)
+      let nodeOrderArray = []
+      while (true) {
+        if (next) {
+          nodeOrderArray.push(next)
+          next = linkDataMap.get(next)
+        } else {
+          nodeOrderArray.splice(nodeOrderArray.length - 1, 1)
+          break
+        }
+      }
+      let lastStarUnitIndex = 0
+      starUnitDataArray.forEach((val, idx, arr) => {
+        arr[idx].star = CONST.COLORS.STAR
+        delete arr[idx].unitMsg.finalResult
+        let tempIndex = nodeOrderArray.indexOf(val.group)
+        if (tempIndex >= lastStarUnitIndex) {
+          lastStarUnitIndex = tempIndex
+          lastStarUnit = val
+        }
+      })
+    } else {
+      context.$Message.error({
+        content: '无法对该Block进行右键操作'
+      })
+      return
+    }
+    // 设定结果Block
+    if (data.star) {
+      if (context.finalResultBlockKey && context.finalResultBlockKey !== data.key) {
+        context.$Message.error({
+          content: '结果Block有且只能有一个'
+        })
+      } else {
+        if (isOutput) {
+          lastStarUnit.star = CONST.COLORS.RESULT
+          lastStarUnit.unitMsg.finalResult = true
+          context.$store.commit('job/setFinalResultBlock', data.key)
+          context.$Message.success({
+            content: '已将该Block设为结果Block'
+          })
+        } else {
+          lastStarUnit.star = CONST.COLORS.STAR
+          delete lastStarUnit.unitMsg.finalResult
+          context.$store.commit('job/setFinalResultBlock', null)
+          context.$Message.success({
+            content: '已将该Block设为NormalBlock'
+          })
+        }
+        context.outerDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
+      }
+    } else {
+      context.$Message.error({
+        content: '无法对该Block进行右键操作'
+      })
+    }
+  })
+}
+
 function outerDiagramInit (context) {
   context.outerDiagram = MAKE(go.Diagram, 'outer-diagram', {
     initialContentAlignment: go.Spot.Center,
@@ -75,7 +164,7 @@ function outerDiagramInit (context) {
       }),
       {
         click: function (e, obj) {
-          context.setOutputNormalBlock(context, false)
+          setOutputNormalBlock(context, false)
         }
       }
     ),
@@ -85,20 +174,16 @@ function outerDiagramInit (context) {
       }),
       {
         click: function (e, obj) {
-          context.setOutputNormalBlock(context, true)
+          setOutputNormalBlock(context, true)
         }
       }
     ))
 
   normalBlockTemplate.doubleClick = function (e, node) {
     if (e.diagram instanceof go.Palette) return
-    context.unitType = '请选择组件类型'
-    context.blockName = node.data.text
-    context.currentNormalBlockKey = node.data.key
-    context.blockModalShow = true
-    if (!context.innerDiagram) innerDiagramInit(context)
-    if (!context.innerPalette) innerPaletteInit(context)
-    context.innerDiagram.model = go.Model.fromJson(context._.cloneDeep(node.data.unitLists))
+    let { data } = node
+    context.normalData = JSON.stringify(data)
+    context.openNormalEditor = true
   }
 
   const jobBlockTemplate = baseNodeTemplateForPort(CONST.COLORS.JOB, 'Rectangle')
@@ -127,7 +212,7 @@ function outerPaletteInit (context) {
   context.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL)
 }
 
-function innerDiagramInit (context) {
+export function innerDiagramInit (context) {
   context.innerDiagram = MAKE(go.Diagram, 'inner-diagram', {
     initialContentAlignment: go.Spot.Center,
     allowDrop: true,
@@ -199,7 +284,7 @@ function innerDiagramInit (context) {
   context.innerDiagram.groupTemplateMap.add('UnitList', unitListGroupTemplate)
 }
 
-function innerPaletteInit (context) {
+export function innerPaletteInit (context) {
   context.innerPalette =
     MAKE(go.Palette, 'inner-palette',
       {

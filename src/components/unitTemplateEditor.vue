@@ -114,7 +114,7 @@ export default {
             background: true,
             content: '新建成功'
           })
-          this.$emit('updateUnitAllList', this.currentUnitType)
+          this.$emit('updateUnitLists', this.currentUnitType)
         }
       }).catch(e => {
         console.log(e)
@@ -141,7 +141,7 @@ export default {
               background: true,
               content: '更新成功'
             })
-            this.$emit('updateUnitAllList', this.currentUnitType)
+            this.$emit('updateUnitLists', this.currentUnitType)
           } else {
             this.$Message.error({
               background: true,
