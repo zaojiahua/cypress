@@ -111,6 +111,9 @@ export default {
     init(this)
     window.addEventListener('contextmenu', this.dispatchMouseEvent)
     window.addEventListener('mousemove', this.dispatchMouseEvent)
+    window.addEventListener('beforeunload', () => {
+      if (this.draftId) patchUpdateJob(this.draftId, { job_deleted: true })
+    })
     this.autoSaveTimer = setInterval(this.autoSave, this.autoSaveInterval) // 300000
   },
   beforeRouteLeave  (to, from, next) {
