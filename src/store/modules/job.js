@@ -7,7 +7,8 @@ let state = {
   outerDiagramModel: null,
   dataForDiagramModel: null,
   finalResultBlockKey: null,
-  draftId: null
+  draftId: undefined,
+  draftLabel: undefined
 }
 
 let mutations = {
@@ -40,6 +41,9 @@ let mutations = {
   },
   setDraftId (state, id) {
     state.draftId = id
+  },
+  setDraftLabel (state, label) {
+    state.draftLabel = label
   }
 }
 

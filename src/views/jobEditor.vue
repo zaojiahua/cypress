@@ -87,7 +87,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('job', ['jobInfo', 'outerDiagramModel', 'finalResultBlockKey', 'draftId']),
+    ...mapState('job', ['jobInfo', 'outerDiagramModel', 'finalResultBlockKey', 'draftId', 'draftLabel']),
     ...mapGetters('job', ['jobId']),
     ...mapState('files', ['resFiles', 'resFilesName']),
     ...mapState('device', ['countdown', 'deviceInfo'])
@@ -300,6 +300,7 @@ export default {
       })
       if (saveAs) {
         if (this.draftId) {
+          info.job_label = this.draftLabel
           this.uploadFiles(this.draftId, info)
         } else {
           try {
@@ -318,6 +319,7 @@ export default {
           }
         } else {
           if (this.draftId) {
+            info.job_label = this.draftLabel
             this.uploadFiles(this.draftId, info)
           } else {
             try {
@@ -339,6 +341,10 @@ export default {
       if (curTime - this.lastActiveTime >= this.activeTimeInterval || !this._jobMsgRules() || !this.autoSaveToggle) return
       let info = this.draftId ? await this.prepareJobInfo(false, false, true) : await this.prepareJobInfo(false, true, true)
       info.job_name = info.job_name + '_AUTOSAVE'
+      if (!this.draftLabel) {
+        this.$stroe.commit('job/setDraftLabel', createJobLabel(this))
+      }
+      info.job_label = this.draftLabel
       this.$store.commit('files/addResFile', {
         name: 'FILES_NAME_CONFIG.json',
         type: 'json',
