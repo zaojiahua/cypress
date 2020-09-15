@@ -108,8 +108,8 @@ export default {
   methods: {
     save (toggle) {
       if (toggle) {
-        let blockData = this._.cloneDeep(this.innerDiagram.model)
-        let units = blockData.nodeDataArray.filter(item => item.category === 'Unit')
+        this.curNormalData.unitLists = JSON.parse(this.innerDiagram.model.toJson())
+        let units = this.curNormalData.unitLists.nodeDataArray.filter(item => item.category === 'Unit')
         if (units.some(item => CONST.STAR.has(item.unitMsg.execModName))) {
           if (units.some(item => item.star === CONST.COLORS.RESULT)) {
             this.curNormalData.star = CONST.COLORS.RESULT
@@ -127,6 +127,7 @@ export default {
             Object.assign(this.curNormalData.resFile, val.resFile)
           }
         })
+
         this.$emit('saveNormalData', this._.cloneDeep(this.curNormalData))
       }
       this.$emit('closeNormalEditor')

@@ -79,7 +79,7 @@ export default {
       rename: false,
       lastActiveTime: null,
       activeTimeInterval: 120000,
-      autoSaveInterval: 180000,
+      autoSaveInterval: 10000,
       autoSaveTimer: null,
       autoSaveToggle: true,
       openNormalEditor: false,
@@ -336,14 +336,32 @@ export default {
       this.$store.commit('setCurPage', 1)
       this.clearData()
     },
+    prepareInnerJobList () {
+      let list = []
+      let innerJobs = this.outerDiagram.findNodesByExample({ 'category': 'Job' })
+      innerJobs.each(node => { if (node.data.jobLabel) { list.push(node.data.jobLabel) } })
+      return list
+    },
+    async prepareAutoSaveInfo () {
+      let info = this._.cloneDeep(this.jobInfo)
+      info.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
+      info.test_area = await createNewTag('test_area', info)
+      info.custom_tag = await createNewTag('custom_tag', info)
+      info.author = localStorage.id
+      info.job_name += '_AUTOSAVE'
+      info.inner_job_list = this.prepareInnerJobList()
+      if (this.draftLabel) {
+        info.job_label = this.draftLabel
+      } else {
+        info.job_label = createJobLabel(this)
+        this.$store.commit('job/setDraftLabel', info.job_label)
+      }
+      return info
+    },
     async autoSave () {
       let curTime = Date.now()
       if (curTime - this.lastActiveTime >= this.activeTimeInterval || !this._jobMsgRules() || !this.autoSaveToggle) return
-      let info = this.draftId ? await this.prepareJobInfo(false, false, true) : await this.prepareJobInfo(false, true, true)
-      info.job_name = info.job_name + '_AUTOSAVE'
-      if (!this.draftLabel) {
-        this.$stroe.commit('job/setDraftLabel', createJobLabel(this))
-      }
+      let info = await this.prepareAutoSaveInfo()
       info.job_label = this.draftLabel
       this.$store.commit('files/addResFile', {
         name: 'FILES_NAME_CONFIG.json',
@@ -355,7 +373,7 @@ export default {
           let { status, data } = await jobFlowAndMsgSave(info)
           if (status === 201) {
             this.$store.commit('job/setDraftId', data.id)
-            this.uploadFiles(this.draftId, info)
+            this.uploadFiles(data.id, info)
           }
         } catch (error) {
           console.log(error)
