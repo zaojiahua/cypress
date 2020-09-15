@@ -255,7 +255,14 @@ export function innerDiagramInit (context) {
   }
 
   unitTemplate.contextClick = function (e, node) {
-    if (e.diagram instanceof go.Palette && sessionStorage.identity.includes('Admin')) {
+    if (e.diagram instanceof go.Palette) {
+      if (!sessionStorage.identity.includes('Admin')) {
+        context.$Notice.warning({
+          title: '温馨提醒',
+          desc: '该功能仅限管理员使用，请切换您的账号或重新登录。'
+        })
+        return
+      }
       context.isDiagram = false
       context.unitTemplateName = node.data.text
       context.unitTemplateId = node.data.unit_id
