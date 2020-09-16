@@ -156,6 +156,7 @@ export default {
     }
   },
   computed: {
+    ...mapState(['showDrawer']),
     ...mapState('job', [
       'jobInfo',
       'draftId'
@@ -176,6 +177,11 @@ export default {
     }
   },
   watch: {
+    showDrawer (val) {
+      if (this.$route.name === 'jobList' && val === false) {
+        this.$store.commit('job/recoverJobInfo')
+      }
+    },
     deviceInfo (newVal, oldVal) { // 设备信息变化时检测是否和已填信息发生冲突并进行处理
       this.$store.commit('device/setPreDeviceInfo', oldVal)
       this.checkConflict(this.formInfo, newVal, false, true)

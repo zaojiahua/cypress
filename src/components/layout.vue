@@ -3,7 +3,6 @@
     <Layout  style="height: 100vh">
       <Header>
         <Menu mode="horizontal" theme="dark" class="menu">
-          <!--<Icon @click.native="collapsedSider" :class="rotateIcon" :style="{margin: '0 20px'}" type="md-menu" size="24"></Icon>-->
           <div class="layout-logo">
             <b>ANGELREEF</b>
             <span>®</span>
@@ -46,12 +45,12 @@
             <MenuItem
               name="jobList"
               style="border-top: 1px solid darkgrey"
-              @click.native="viewJob"
+              @click.native="viewJobList"
             >
               <Icon type="logo-buffer"></Icon>
               <span>用例管理</span>
             </MenuItem>
-            <MenuItem name="jobEditor" @click.native="createJob">
+            <MenuItem name="jobEditor" @click.native="enterJobEditor">
               <Icon type="ios-create"></Icon>
               <span>创建用例</span>
             </MenuItem>
@@ -70,11 +69,10 @@
   </div>
 </template>
 <script>
+import { mapState } from 'vuex'
 import jobMsgComponent from '../components/jobMsgComponent'
 import Countdown from './common/Countdown'
 import { controlDevice, releaseOccupyDevice } from '../api/reef/device'
-
-import { mapState } from 'vuex'
 
 export default {
   components: { jobMsgComponent, Countdown },
@@ -87,25 +85,10 @@ export default {
     }
   },
   computed: {
-    ...mapState('job', [
-      'preJobInfo',
-      'isValidated'
-    ]),
-    ...mapState('device', [
-      'countdown',
-      'deviceInfo'
-    ]),
-    rotateIcon () {
-      return [
-        'menu-icon',
-        this.isCollapsed ? 'rotate-icon' : ''
-      ]
-    },
+    ...mapState('job', ['jobInfo', 'preJobInfo', 'isValidated']),
+    ...mapState('device', ['countdown', 'deviceInfo']),
     menuitemClasses () {
-      return [
-        'menu-item',
-        this.isCollapsed ? 'collapsed-menu' : ''
-      ]
+      return ['menu-item', this.isCollapsed ? 'collapsed-menu' : '']
     }
   },
   methods: {
@@ -114,13 +97,11 @@ export default {
       this.$refs.side1.toggleCollapse()
     },
     logout () {
-      const self = this
       this.$Modal.confirm({
         title: '您确定要登出?',
-        onOk () {
+        onOk: () => {
           this.$Loading.start()
-          self.$router.push({ name: 'login', query: { redirect: self.$route.fullPath } }
-          )
+          this.$router.push({ name: 'login', query: { redirect: self.$route.fullPath } })
           this.$Message.success('登出成功!')
           this.$Loading.finish()
           // 登出后不能通过后退键回到TMach操作页面中
@@ -134,13 +115,19 @@ export default {
         }
       })
     },
-    viewJob () {
-      this.$store.commit('job/setPreJobInfo', true)
+    viewJobList () {
+      if (this.$route.name === 'jobEditor') {
+        this.$store.commit('job/setPreJobInfo', true)
+      }
       this.$router.push({ path: '/jobList' })
     },
-    createJob () {
-      if (this.preJobInfo) {
+    enterJobEditor () {
+      let routeOptions = { name: 'jobEditor' }
+      if (JSON.stringify(this.jobInfo) !== '{}') {
+        routeOptions.query = { jobId: this.jobInfo.job_id }
+      } else if (this.preJobInfo) {
         this.$store.commit('job/recoverJobInfo')
+        routeOptions.query = { jobId: this.preJobInfo.job_id }
       } else {
         this.$store.commit('job/setJobInfo', {})
       }
@@ -149,7 +136,7 @@ export default {
           this.$store.commit('handleShowDrawer')
         }
       }, 600)
-      this.$router.push({ path: '/jobEditor' })
+      this.$router.push(routeOptions)
     },
     async releaseDevice (auto = true) {
       try {

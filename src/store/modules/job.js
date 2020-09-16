@@ -1,11 +1,11 @@
 import CONST from 'constant/constant'
+import _ from 'lodash'
 
 let state = {
   jobInfo: {},
   preJobInfo: null,
   isValidated: false,
   outerDiagramModel: null,
-  dataForDiagramModel: null,
   finalResultBlockKey: null,
   draftId: undefined,
   draftLabel: undefined
@@ -14,14 +14,15 @@ let state = {
 let mutations = {
   setJobInfo (state, jobInfo) {
     state.jobInfo = jobInfo
+    if (!state.preJobInfo) state.preJobInfo = _.cloneDeep(jobInfo)
   },
   setPreJobInfo (state, notClear) {
     if (!notClear) state.preJobInfo = null
-    else state.preJobInfo = JSON.stringify(state.jobInfo)
+    else state.preJobInfo = _.cloneDeep(state.jobInfo)
   },
   recoverJobInfo (state) {
     if (state.preJobInfo) {
-      state.jobInfo = JSON.parse(state.preJobInfo)
+      state.jobInfo = _.cloneDeep(state.preJobInfo)
     }
   },
   setIsValidated (state, isValidated) {
