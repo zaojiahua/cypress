@@ -5,6 +5,9 @@ variables:
   TMach03: "root@10.80.3.138"
   TMach05: "root@10.80.5.138"
   TMach11: "root@10.80.11.138"
+  TMach15: "root@10.80.15.138"
+
+
 
 docker-deploy:
   stage: deploy
@@ -33,3 +36,16 @@ tmach03-docker-deploy:
     - . /root/cypress-vue/cypress_build_images.sh
   only:
     - tmach03
+
+
+tmach15-docker-deploy:
+  stage: deploy
+  script:
+    - npm install
+    - cp -rf src/assets/js/go.js node_modules/gojs/release
+    - npm run build
+    - ssh $TMach15 rm -rf /root/cypress-vue/
+    - rsync -av -e ssh --exclude={node_modules,public,src,.git} . $TMach15:/root/cypress-vue/
+    - ssh $TMach15 . /root/cypress-vue/cypress_build_images.sh
+  only:
+    - tmach15
