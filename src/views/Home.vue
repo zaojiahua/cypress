@@ -1,12 +1,10 @@
 <template>
-  <div class="home">
-    <layout></layout>
-  </div>
+  <layout></layout>
 </template>
 
 <script>
 // @ is an alias to /src
-import layout from '../components/layout.vue'
+import layout from '_c/layout.vue'
 
 export default {
   name: 'home',

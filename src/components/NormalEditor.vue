@@ -122,10 +122,11 @@ export default {
         } else {
           this.curNormalData.color = CONST.COLORS.FINISH
         }
+        if (!this.curNormalData.resFile) {
+          this.curNormalData.resFile = {}
+        }
         units.forEach((val) => {
-          if (val.resFile) {
-            Object.assign(this.curNormalData.resFile, val.resFile)
-          }
+          Object.assign(this.curNormalData.resFile, val.resFile)
         })
 
         this.$emit('saveNormalData', this._.cloneDeep(this.curNormalData))
