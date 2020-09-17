@@ -178,25 +178,28 @@ export default {
           _this.extendTime()
         }
       })
+    },
+    setHeight () {
+      if (!this.contentDom) this.contentDom = document.querySelector('.content')
+      let { innerHeight } = window
+      this.contentDom.style.height = `${innerHeight - 64}px`
     }
   },
   mounted () {
     this.$Message.config({
       duration: 3
     })
+    this.setHeight()
+    window.addEventListener('resize', this.setHeight)
   }
 }
 </script>
 
 <style lang="less" scoped>
 @import '../css/common.less';
-@contentBGC: #ffffff;
 .container {
   height: 100%;
   .header-menu {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     height: 100%;
     .logo {
       position: relative;
@@ -220,9 +223,6 @@ export default {
       }
     }
     .menu-list {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       .countdown {
         position: relative;
         color: rgba(255,255,255,.7);
@@ -273,9 +273,7 @@ export default {
   }
   .content {
     padding: 1em;
-    height: 100%;
-    overflow: auto;
-    background-color: @contentBGC;
+    background-color: @lightBGC;
   }
 }
 </style>

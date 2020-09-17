@@ -1,10 +1,10 @@
 <template>
-  <Card>
-    <p slot="title">Item Editor</p>
-    <div class="item-editor-empty" v-show="!showItemEditor">
+  <div class="card">
+    <p class="card-title">Item Editor</p>
+    <div class="item-editor-empty card-body" v-show="!showItemEditor">
       <p class="empty">选择一个 ITEM 开始编辑吧</p>
     </div>
-    <div class="item-editor" v-if="showItemEditor">
+    <div class="item-editor card-body" v-if="showItemEditor">
       <div>
         <div v-if="showInput">
           <Input
@@ -74,7 +74,7 @@
         <Button type="success" @click="setNewName">确定</Button>
       </div>
     </Modal>
-  </Card>
+  </div>
 </template>
 
 <script>
@@ -313,12 +313,15 @@ export default {
 </script>
 
 <style lang="less" scoped>
+  @import '../../css/common.less';
   .item-editor-empty {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 755px;
+    @media (min-height: 768px) {
+      height: 500px;
+    }
     .empty {
       padding: 40px;
       border: 1px dashed #dddddd;
@@ -331,7 +334,9 @@ export default {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    height: 755px;
+    @media (min-height: 768px) {
+      height: 500px;
+    }
     .mb-1 {
       margin-bottom: 10px;
     }

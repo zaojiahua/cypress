@@ -2,12 +2,12 @@
   <div class="container">
     <header>
       <Input v-model="$store.state.job.jobInfo.job_name" clearable class="job-name" placeholder="请输入JOB名称" size="large" />
-      <div class="header-btns">
-        <div>
+      <div class="child-m-right--1 flex-row">
+        <div class="child-m-right--1 flex-row">
           <Button type="primary" @click="$store.commit('handleShowDrawer')" size="large" style="margin-right: 10px;">用例详情</Button>
           <Button type="info" ghost size="large" @click="viewResFile" style="margin-right: 10px;">查看依赖文件</Button>
         </div>
-        <div>
+        <div class="child-m-right--1 flex-row">
           <Button type="primary" size="large" @click="saveJob" style="margin-right: 10px;">保存</Button>
           <Button size="large" type="success" @click="saveAs" style="margin-right: 10px;">另存为</Button>
           <Button type="primary" ghost size="large" @click="_saveJob" style="margin-right: 10px;">存草稿</Button>
@@ -458,6 +458,7 @@ export default {
       this.$store.commit('job/setOuterDiagramModel', null)
       this.$store.commit('job/setPreJobInfo', false)
       this.$store.commit('job/setDraftId', null)
+      this.$store.commit('job/setDraftLabel', null)
       this.$store.commit('job/setFinalResultBlock', null)
       this.$store.commit('files/clearResFiles')
       this.$store.commit('device/clearDeviceInfo')
@@ -503,12 +504,13 @@ export default {
 }
 </script>
 <style lang="less" scoped>
+@import '../css/common.less';
 @supports (display: grid) {
   .container {
     display: grid;
     grid-template-areas:  "header   header"
                           "palette  diagram";
-    grid-template-columns: 1fr 7fr;
+    grid-template-columns: minmax(210px, 1fr) 7fr;
     grid-template-rows: 1fr 25fr;
     grid-gap: 1em;
     height: 100%;
@@ -516,17 +518,11 @@ export default {
       grid-area: header;
       display: grid;
       grid-template-areas: "header-left header-right";
-      grid-template-columns: 1fr 7fr;
+      grid-template-columns: minmax(210px, 1fr) 7fr;
       grid-gap: 1em;
       .job-name {
         grid-area: header-left;
         display: flex;
-        align-items: center;
-      }
-      .header-btns {
-        grid-area: header-right;
-        display: flex;
-        justify-content: space-between;
         align-items: center;
       }
     }

@@ -1,9 +1,9 @@
 <template>
-  <div class="container">
+  <div class="container flex-column">
     <job-list-filter @getFilterParam="getFilterParam"></job-list-filter>
-    <Row>
-      <Row>
-        <Col span="12" style="height: 40px;">
+    <div>
+      <div class="child-m-right--1 flex-row m-b--1">
+        <div class="child-m-right--1 flex-row">
           <Upload ref="upload"
             :show-upload-list="false"
             :format="['zip']"
@@ -13,23 +13,23 @@
             :on-success="handleUploadSuccess">
             <Button icon="ios-cloud-upload-outline">导入用例</Button>
           </Upload>
-        </Col>
-        <Col span="12" style="text-align: right; height: 40px;">
-          <Button type="error" style="margin-right: 20px;" @click="delSelectedJobs">批量删除</Button>
-          <Button type="warning" style="margin-right: 20px;" @click="clear">清除已选</Button>
           <Button type="success" @click="exportJobs">导出用例</Button>
-        </Col>
-      </Row>
-      <Row span="24"  style="margin-top: 20px; min-height: 60px;">
+        </div>
+        <div class="child-m-right--1 flex-row">
+          <Button type="warning" @click="clear">清除已选</Button>
+          <Button type="error" @click="delSelectedJobs">批量删除</Button>
+        </div>
+      </div>
+      <div>
         <Tag v-for="job in selectedJobs" :key="job.id" closable @on-close="close(job.id)">{{ job.name }}</Tag>
-      </Row>
-    </Row>
+      </div>
+    </div>
     <div>
       <Table
         ref="jobList"
         :columns="columns"
         :data="jobData"
-        height="520"
+        :height="tableHeight"
         @on-row-click="onRowClick"
         @on-selection-change="selectedJobsChange"
       ></Table>
@@ -130,7 +130,8 @@ export default {
       },
       jobState: '',
       jobType: '',
-      filterUrlParam: ''
+      filterUrlParam: '',
+      tableHeight: 520
     }
   },
   methods: {
@@ -310,6 +311,23 @@ export default {
     getFilterParam (val) {
       this.filterUrlParam = val
       this.jobPageChange()
+    },
+    setTableConfig () {
+      let { innerHeight } = window
+      if (innerHeight <= 768) {
+        this.tableHeight = 183
+        this.pageSize = 3
+      } else if (innerHeight > 768 && innerHeight <= 900) {
+        this.tableHeight = 279
+        this.pageSize = 5
+      } else if (innerHeight > 900 && innerHeight <= 1080) {
+        this.tableHeight = 471
+        this.pageSize = 9
+      } else {
+        this.tableHeight = 471
+        this.pageSize = 9
+      }
+      this.jobPageChange()
     }
   },
   computed: {
@@ -333,6 +351,8 @@ export default {
   },
   mounted () {
     this.jobState = localStorage.getItem('joblist-management:DEFAULT_FILTER_CONFIG')
+    this.setTableConfig()
+    window.addEventListener('resize', this.setTableConfig)
   },
   activated () {
     this.jobPageChange()
@@ -345,10 +365,11 @@ export default {
 </script>
 
 <style lang="less" scoped>
-  .container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
+@import '../css/common.less';
+.container {
+  height: 100%;
+  @media (max-width: 1366px) {
+
   }
+}
 </style>

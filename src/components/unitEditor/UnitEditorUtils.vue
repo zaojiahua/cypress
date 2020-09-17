@@ -1,7 +1,7 @@
 <template>
-  <Card>
-    <p slot="title">Utils &nbsp; {{ utilTitle }}</p>
-    <div class="file-gallery">
+  <div class="card">
+    <p class="card-title">Utils &nbsp; {{ utilTitle }}</p>
+    <div class="file-gallery card-body">
       <p class="file-none" v-show="empty">还没有可以展示/编辑的文件</p>
       <!-- 加载动画 -->
       <div class="loader" v-if="isLoading">
@@ -30,7 +30,7 @@
         </div>
       </div>
     </div>
-  </Card>
+  </div>
 </template>
 
 <script>
@@ -102,11 +102,11 @@ export default {
 </script>
 
 <style lang="less" scoped>
+  @import '../../css/common.less';
   .file-gallery {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 755px;
 
     .file-none {
       padding: 40px;

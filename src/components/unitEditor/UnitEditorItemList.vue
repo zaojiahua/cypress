@@ -1,9 +1,9 @@
 <template>
-  <Card class="item-list">
-    <p slot="title" class="title">
+  <div class="card item-list">
+    <p class="card-title">
       <span>Unit Items &nbsp; ({{ numOfItems }})</span>
     </p>
-    <div class="item-list-content">
+    <div class="card-body item-list-content">
       <transition-group name="item" tag="div">
         <UnitItem
           v-for="(item, index) in curUnitItemsData"
@@ -14,7 +14,7 @@
         ></UnitItem>
       </transition-group>
     </div>
-  </Card>
+  </div>
 </template>
 
 <script>
@@ -34,14 +34,15 @@ export default {
     }
   },
   computed: {
+    ...mapState('unit', ['openRawUnit']),
     numOfItems () {
       return this.curUnitItemsData ? this.curUnitItemsData.length : 0
-    },
-    ...mapState('unit', [
-      'openRawUnit'
-    ])
+    }
   },
   watch: {
+    openRawUnit (val) {
+      this.itemList.classList.toggle('collapse')
+    },
     unitItemsData (val) {
       this.curUnitItemsData = []
       if (val) {
@@ -50,45 +51,28 @@ export default {
           this.curUnitItemsData[order - 1] = val[i]
         }
       }
-    },
-    openRawUnit (val) {
-      let list = document.querySelector('.item-list')
-      let items = document.querySelector('.item-list-content')
-      if (!val) {
-        list.style.height = '768px'
-        items.style.height = '678px'
-      } else {
-        list.style.height = '320px'
-        items.style.height = '230px'
-      }
-    },
-    numOfItems (val) {
-      if (val < 4) {
-        this.$store.commit('unit/handleOpenRawUnit', true)
-      } else {
-        this.$store.commit('unit/handleOpenRawUnit', false)
-      }
     }
   },
   methods: {
     updateUnitItem (currentItem) {
       this.$emit('updateUnitItem', currentItem)
     }
+  },
+  mounted () {
+    this.itemList = document.querySelector('.item-list')
   }
 }
 </script>
 
 <style lang="less" scoped>
+  @import '../../css/common.less';
   .item-list {
-    height: 320px;
-    .title {
-      display: flex;
-      justify-content: space-between;
-    }
+    overflow: auto;
+    margin-bottom: 1em;
     .item-list-content {
-      height: 230px;
-      overflow: auto;
-      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       .item-enter-active, .item-leave-active {
         transition: all 1s;
       }
@@ -97,5 +81,8 @@ export default {
         transform: translateX(100%);
       }
     }
+  }
+  .collapse {
+    flex: 1;
   }
 </style>

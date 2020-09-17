@@ -1,7 +1,7 @@
 <template>
   <Modal
     class="unit-editor"
-    width="90"
+    fullscreen
     :closable="false"
     :mask-closable="false"
     v-model="curShowUnitEditor"
@@ -13,9 +13,8 @@
         <Input class="unit-name-input" v-model="unitName" clearable></Input>
       </div>
     </div>
-    <div>
     <div class="body">
-      <div style="height:840px;">
+      <div class="pane">
         <ItemList
           :unitItemsData="unitItemsData"
           @updateUnitItem="updateUnitItem"
@@ -25,16 +24,31 @@
           @updateRawUnit="updateRawUnit"
         ></RawUnit>
       </div>
-      <div style="height:840px;">
+      <div class="pane">
         <ItemEditor
           @updateUnitItem="updateUnitItem"
           @arrangeFileName="arrangeFileName"
         ></ItemEditor>
       </div>
-      <div style="height:840px;">
+      <div class="pane">
         <Utils></Utils>
       </div>
-    </div>
+      <!-- <div class="pane">
+        <ItemList
+          :unitItemsData="unitItemsData"
+          @updateUnitItem="updateUnitItem"
+        ></ItemList>
+        <RawUnit
+          :unitData="curUnitData"
+          @updateRawUnit="updateRawUnit"
+        ></RawUnit>
+      </div>
+      <div class="pane">
+
+      </div>
+      <div class="pane">
+
+      </div> -->
     </div>
     <div slot="footer">
       <Button @click="closeUnitEditor(false)">取消</Button>
@@ -198,15 +212,17 @@ export default {
         }
       }
     }
-
     .body {
       display: flex;
       justify-content: space-between;
-      & > div {
+      padding-top: 1em;
+      height: 100%;
+      .pane {
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         width: 32.8%;
+        height: 100%;
       }
     }
   }

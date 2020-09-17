@@ -39,7 +39,8 @@ export default {
             sessionStorage.setItem(val, data[val])
           })
         }
-        this.$router.push(this.$route.query.redirect || '/')
+        sessionStorage.setItem('token', 'token')
+        this.$router.push('/')
       }).catch(error => {
         let errorMsg = ''
         if (error.response.status === 400) {
@@ -52,11 +53,6 @@ export default {
         this.$Message.error(errorMsg)
         this.$Loading.error()
       })
-    }
-  },
-  mounted () {
-    if (sessionStorage.token || localStorage.token) {
-      this.$router.push(this.$route.query.redirect || '/')
     }
   }
 }
@@ -75,7 +71,7 @@ export default {
   .container {
     padding: 1em 2em;
     border-radius: 4px;
-    background-color: @commonBGC;
+    background-color: @lightBGC;
     .login-logo {
       color: @logoColor;
       margin-bottom: -0.8em;

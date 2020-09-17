@@ -254,7 +254,7 @@ export default {
   display: grid;
   grid-template-areas:  "header header"
                         "palette  diagram";
-  grid-template-columns: 1fr 7fr;
+  grid-template-columns: minmax(210px, 1fr) 7fr;
   grid-template-rows: 1fr 25fr;
   grid-gap: 1em;
   height: 100%;

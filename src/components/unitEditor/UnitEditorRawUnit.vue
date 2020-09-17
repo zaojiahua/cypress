@@ -1,37 +1,39 @@
 <template>
-  <Card style="height: 500px" class="raw-unit-card">
-    <p slot="title">Raw Unit &nbsp; ({{ unitType }} Unit)</p>
-    <Icon
-      type="ios-arrow-up"
-      slot="extra" size="20"
-      v-show="!openRawUnit"
-      @click="open(true)"
-    />
-    <Icon
-      type="ios-arrow-down"
-      slot="extra" size="20"
-      v-show="openRawUnit"
-      @click="open(false)"
-    />
-    <div v-show="editing" class="raw-unit">
+  <div style="felx: 1;" class="raw-unit-card card">
+    <p class="card-title flex-row">
+      Raw Unit &nbsp; ({{ unitType }} Unit)
+      <Icon
+        type="ios-arrow-up"
+        slot="extra" size="20"
+        v-show="!openRawUnit"
+        @click="open(true)"
+      />
+      <Icon
+        type="ios-arrow-down"
+        slot="extra" size="20"
+        v-show="openRawUnit"
+        @click="open(false)"
+      />
+    </p>
+    <div v-show="editing" class="card-body">
       <div class="raw-unit-mask"></div>
-      <div class="unit-msg unit-msg-edit">
-        <Input type="textarea" :autosize="{minRows: 2,maxRows: 17}" v-model="currentUnitContent"/>
-      </div>
-      <div class="btns" style="justify-content: flex-end;">
-        <Button @click="cancelEditCurrentUnitContent" style="margin-right: 10px;">取消</Button>
-        <Button type="primary" @click="saveCurrentUnitContent">保存</Button>
+      <div class="unit-msg">
+        <Input type="textarea" :autosize="{minRows: 2,maxRows: 17}" class="unit-msg-edit" v-model="currentUnitContent"/>
       </div>
     </div>
-    <div v-show="!editing" class="raw-unit">
+    <div v-show="editing" class="btns card-footer child-m-right--1" style="justify-content: flex-end;">
+      <Button @click="cancelEditCurrentUnitContent">取消</Button>
+      <Button type="primary" @click="saveCurrentUnitContent">保存</Button>
+    </div>
+    <div v-show="!editing" class="card-body">
       <div class="unit-msg">
         <pre>{{ unitContent }}</pre>
       </div>
-      <div class="btns">
-        <Button @click="editCurrentUnitContent"><Icon type="ios-clipboard-outline" />编辑</Button>
-      </div>
     </div>
-  </Card>
+    <div v-show="!editing" class="btns card-footer">
+      <Button @click="editCurrentUnitContent"><Icon type="ios-clipboard-outline" />编辑</Button>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -55,18 +57,11 @@ export default {
       this.currentUnitContent = val
     },
     openRawUnit (val) {
-      let rawUnitCard = document.querySelector('.raw-unit-card')
-      if (val) {
-        rawUnitCard.style.height = '500px'
-      } else {
-        rawUnitCard.style.height = '52px'
-      }
+      this.rawUnitCard.classList.toggle('collapse')
     }
   },
   computed: {
-    ...mapState('unit', [
-      'openRawUnit'
-    ]),
+    ...mapState('unit', ['openRawUnit']),
     unitType () {
       return this.unitData ? this.unitData.unitType : ''
     },
@@ -117,45 +112,40 @@ export default {
     open (open) {
       this.$store.commit('unit/handleOpenRawUnit', open)
     }
+  },
+  mounted () {
+    this.rawUnitCard = document.querySelector('.raw-unit-card')
   }
 }
 </script>
 
 <style lang="less" scoped>
+@import '../../css/common.less';
 .raw-unit-card {
-  z-index: 10;
-  overflow: hidden;
-  .raw-unit {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 420px;
-
-    .raw-unit-mask {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      background-color: rgba(0, 0, 0, .8);
-      z-index: 1;
-    }
-
-    .unit-msg {
-      // max-height: 88%;
-      overflow: auto;
-      z-index: 10;
-    }
-    .unit-msg-edit {
-      max-width: 1600px;
-    }
-
-    .btns {
-      height: 10%;
-      display: flex;
-      align-items: center;
-      z-index: 10;
-    }
+  .raw-unit-mask {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, .8);
+    z-index: @mask;
   }
+  .unit-msg {
+    width: 100%;
+    z-index: @overMask;
+  }
+  .unit-msg-edit {
+    z-index: @overMask;
+  }
+  .btns {
+    display: flex;
+    align-items: center;
+    z-index: @overMask;
+  }
+}
+.collapse {
+  flex: 0;
+  height: 52px;
 }
 </style>

@@ -1,3 +1,50 @@
 @logoColor: #1bbc9c;
 @logoWeight: 900;
-@commonBGC: white;
+@lightBGC: white;
+@darkBGC: #515a6e;
+@mask: 100;
+@overMask: 200;
+.flex-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.flex-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.child-m-right--1 {
+  & > * { margin-right: 1em; }
+  & > :last-child { margin-right: 0; }
+}
+.m-b--1 {
+  margin-bottom: 1em;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  padding: 1em;
+  border: 1px solid #eeeeee;
+  border-radius: 4px;
+  transition: box-shadow .3s linear, height .3s linear;
+  min-height: 52px;
+  &:hover {
+    box-shadow: 0px 0px 10px #999999;
+  }
+  .card-title {
+    padding: 0 1em 1em;
+    margin: 0 -1em;
+    border-bottom: 1px solid #eeeeee;
+  }
+  .card-body {
+    padding-top: 1em;
+    flex: 1;
+    overflow: auto;
+  }
+  .card-footer {
+    padding: 1em 1em 0;
+  }
+}
