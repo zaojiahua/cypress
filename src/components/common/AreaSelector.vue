@@ -308,8 +308,8 @@ export default {
         }
       }
       &__magnifier {
-        position: absolute;
-        left: -200px;
+        position: fixed;
+        left: 56%;
         z-index: var(--selector-common-zindex);
         font-size: 0;
         background-color: #eeeeee;

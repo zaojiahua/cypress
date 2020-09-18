@@ -33,22 +33,6 @@
       <div class="pane">
         <Utils></Utils>
       </div>
-      <!-- <div class="pane">
-        <ItemList
-          :unitItemsData="unitItemsData"
-          @updateUnitItem="updateUnitItem"
-        ></ItemList>
-        <RawUnit
-          :unitData="curUnitData"
-          @updateRawUnit="updateRawUnit"
-        ></RawUnit>
-      </div>
-      <div class="pane">
-
-      </div>
-      <div class="pane">
-
-      </div> -->
     </div>
     <div slot="footer">
       <Button @click="closeUnitEditor(false)">取消</Button>

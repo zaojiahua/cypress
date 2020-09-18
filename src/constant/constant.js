@@ -120,11 +120,13 @@ export default {
     { category: 'Job', text: 'Job' },
     { category: 'End', text: 'End' }
   ],
-  BASIC_OUTER_DIAGRAM_MODEL: {
+  BASIC_OUTER_DIAGRAM_MODEL: JSON.stringify({
     'class': 'GraphLinksModel',
     'linkFromPortIdProperty': 'fromPort',
     'linkToPortIdProperty': 'toPort',
     'nodeDataArray': [ { 'category': 'Start', 'text': 'Start', 'key': -1 } ],
     'linkDataArray': []
-  }
+  }),
+  SIMPLE_JOB_KEY: ['job_name', 'job_type', 'job_second_type', 'job_label', 'description', 'draft'],
+  COMPLEX_JOB_KEY: ['test_area', 'android_version', 'custom_tag', 'phone_models', 'rom_version']
 }

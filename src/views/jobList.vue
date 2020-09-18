@@ -40,6 +40,7 @@
 
 <script>
 import util from 'lib/util/validate.js'
+import CONST from 'constant/constant'
 import { getSelectedJobs } from 'api/coral/jobLibSvc'
 import { jobLibSvcURL } from '../config/index'
 import { serializer, jobSerializer } from 'lib/util/jobListSerializer'
@@ -134,6 +135,25 @@ export default {
       tableHeight: 520
     }
   },
+  computed: {
+    curPage: {
+      get: function () {
+        return this.$store.state.curPage
+      },
+      set: function (val) {
+        this.$store.commit('setCurPage', val)
+      }
+    },
+    offset () { // 从某位置开始 返回当前下标
+      return (this.curPage - 1) * this.pageSize
+    },
+    uploadUrl () {
+      return jobLibSvcURL + '/form/'
+    },
+    jobIdList () {
+      return Object.keys(this.selectedJobs)
+    }
+  },
   methods: {
     getFilteredJobs () {
       let filterUrlParam = `${this.jobState ? `&draft=${this.jobState === 'draft' ? 'True' : 'False'}` : ''}${this.jobType ? `&job_type=${this.jobType}` : ''}${this.filterUrlParam}`
@@ -170,29 +190,22 @@ export default {
       getJobDetail(jobId).then(res => {
         let job = util.validate(jobSerializer, res.data)
         let jobInfo = {
-          job_name: job.job_name,
-          job_type: job.job_type,
-          job_second_type: job.job_second_type,
-          job_label: job.job_label,
-          description: job.description,
           manufacturer: job.phone_models[0].manufacturer.id,
           author: parseInt(localStorage.id),
-
-          test_area: job.test_area.map(item => item.id),
-          android_version: job.android_version.map(item => item.id),
-          custom_tag: job.custom_tag.map(item => item.id),
-          phone_models: job.phone_models.map(item => item.id),
-          rom_version: job.rom_version.map(item => item.id),
-
           job_id: job.id,
-          job_flow: job.ui_json_file,
-          draft: job.draft
+          job_flow: job.ui_json_file
         }
+        CONST.SIMPLE_JOB_KEY.forEach(val => {
+          jobInfo[val] = job[val]
+        })
+        CONST.COMPLEX_JOB_KEY.forEach(val => {
+          jobInfo[val] = job[val].map(item => item.id)
+        })
         this.$store.commit('job/setJobInfo', jobInfo)
       })
     },
-    onRowClick (currentData, index) { // 单击表格某一行
-      this.getJobInfo(currentData.id)
+    onRowClick (curData, index) { // 单击表格某一行
+      this.getJobInfo(curData.id)
       this.$store.commit('handleShowDrawer')
     },
     selectedJobsChange (selection) {
@@ -316,37 +329,14 @@ export default {
       let { innerHeight } = window
       if (innerHeight <= 768) {
         this.tableHeight = 183
-        this.pageSize = 3
       } else if (innerHeight > 768 && innerHeight <= 900) {
         this.tableHeight = 279
-        this.pageSize = 5
-      } else if (innerHeight > 900 && innerHeight <= 1080) {
+      } else if (innerHeight > 900 && innerHeight < 1080) {
         this.tableHeight = 471
-        this.pageSize = 9
       } else {
-        this.tableHeight = 471
-        this.pageSize = 9
+        this.tableHeight = 519
       }
       this.jobPageChange()
-    }
-  },
-  computed: {
-    curPage: {
-      get: function () {
-        return this.$store.state.curPage
-      },
-      set: function (val) {
-        this.$store.commit('setCurPage', val)
-      }
-    },
-    offset () { // 从某位置开始 返回当前下标
-      return (this.curPage - 1) * this.pageSize
-    },
-    uploadUrl () {
-      return jobLibSvcURL + '/form/'
-    },
-    jobIdList () {
-      return Object.keys(this.selectedJobs)
     }
   },
   mounted () {

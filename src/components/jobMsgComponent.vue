@@ -157,18 +157,9 @@ export default {
   },
   computed: {
     ...mapState(['showDrawer']),
-    ...mapState('job', [
-      'jobInfo',
-      'draftId'
-    ]),
-    ...mapGetters('job', [
-      'jobId'
-    ]),
-    ...mapState('device', [
-      'deviceInfo',
-      'preDeviceInfo',
-      'countdown'
-    ]),
+    ...mapState('job', ['jobInfo', 'draftId']),
+    ...mapGetters('job', ['jobId']),
+    ...mapState('device', ['deviceInfo', 'preDeviceInfo', 'countdown']),
     manufacturerId () {
       return this.formInfo.manufacturer
     },
@@ -178,7 +169,7 @@ export default {
   },
   watch: {
     showDrawer (val) {
-      if (this.$route.name === 'jobList' && val === false) {
+      if (val === false && this.$route.name === 'jobList') {
         this.$store.commit('job/recoverJobInfo')
       }
     },
@@ -344,17 +335,18 @@ export default {
       if (toggle) this.handleConflict()
     },
     closeDrawer () { // 关闭右侧抽屉时检测当前 Job 是否通过验证，并更新 JobInfo
-      this.$refs.formInfo.validate((valid) => {
-        this.$store.commit('job/setIsValidated', valid)
-        if (!valid && this.isJobEditor) {
-          this.$Message.warning({
-            background: true,
-            content: '请输入完整信息'
-          })
-        }
-      })
-
-      this.$store.commit('job/setJobInfo', Object.assign(this.jobInfo, this.formInfo))
+      if (this.$route.name === 'jobEditor') {
+        this.$refs.formInfo.validate((valid) => {
+          this.$store.commit('job/setIsValidated', valid)
+          if (!valid && this.isJobEditor) {
+            this.$Message.warning({
+              background: true,
+              content: '请输入完整信息'
+            })
+          }
+        })
+        this.$store.commit('job/setJobInfo', Object.assign(this.jobInfo, this.formInfo))
+      }
     },
     async checkConflict (formInfo, deviceInfo, formToggle, deviceToggle) {
       if (!formInfo || !deviceInfo) {

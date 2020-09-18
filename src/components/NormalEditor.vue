@@ -69,8 +69,7 @@ export default {
     openNormalEditor: {
       type: Boolean,
       default: false
-    },
-    normalData: String
+    }
   },
   data () {
     return {
@@ -92,14 +91,13 @@ export default {
     }
   },
   computed: {
-    ...mapState('unit', [
-      'unitLists'
-    ])
+    ...mapState('job', ['normalData']),
+    ...mapState('unit', ['unitLists'])
   },
   watch: {
     normalData (val) {
       this.curNormalData = JSON.parse(val)
-      this.innerDiagram.model = go.Model.fromJson(this.curNormalData.unitLists)
+      this.innerDiagram.model = go.Model.fromJson(JSON.stringify(this.curNormalData.unitLists))
     },
     openNormalEditor (val) {
       if (val) this.getSelectedUnit(this.unitTemplateType)

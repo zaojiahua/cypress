@@ -3,26 +3,38 @@ import _ from 'lodash'
 
 let state = {
   jobInfo: {},
-  preJobInfo: null,
+  preJobInfo: { dirty: false },
   isValidated: false,
   outerDiagramModel: null,
   finalResultBlockKey: null,
   draftId: undefined,
-  draftLabel: undefined
+  draftLabel: undefined,
+  normalData: null,
+  normalKey: undefined
 }
 
 let mutations = {
   setJobInfo (state, jobInfo) {
     state.jobInfo = jobInfo
-    if (!state.preJobInfo) state.preJobInfo = _.cloneDeep(jobInfo)
+    if (!state.preJobInfo.dirty) {
+      state.preJobInfo = _.cloneDeep(jobInfo)
+      state.preJobInfo.dirty = false
+    }
   },
   setPreJobInfo (state, notClear) {
-    if (!notClear) state.preJobInfo = null
-    else state.preJobInfo = _.cloneDeep(state.jobInfo)
+    if (!notClear) state.preJobInfo = { dirty: false }
+    else {
+      state.preJobInfo = _.cloneDeep(state.jobInfo)
+      state.preJobInfo.dirty = true
+    }
   },
   recoverJobInfo (state) {
-    if (state.preJobInfo) {
+    if (state.preJobInfo.dirty) {
       state.jobInfo = _.cloneDeep(state.preJobInfo)
+      delete state.jobInfo.dirty
+    } else {
+      state.jobInfo = {}
+      state.preJobInfo = { dirty: false }
     }
   },
   setIsValidated (state, isValidated) {
@@ -45,6 +57,15 @@ let mutations = {
   },
   setDraftLabel (state, label) {
     state.draftLabel = label
+  },
+  setNormalData (state, data) {
+    state.normalData = JSON.stringify(data, (key, val) => {
+      if (key === 'pb') return
+      return val
+    })
+  },
+  setNormalKey (state, key) {
+    state.normalKey = key
   }
 }
 

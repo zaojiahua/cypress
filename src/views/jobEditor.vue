@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <header>
+    <div class="header flex-row">
       <Input v-model="$store.state.job.jobInfo.job_name" clearable class="job-name" placeholder="请输入JOB名称" size="large" />
       <div class="child-m-right--1 flex-row">
         <div class="child-m-right--1 flex-row">
@@ -14,9 +14,11 @@
           <Button size="large" @click="cancelEdit">退出</Button>
         </div>
       </div>
-    </header>
-    <nav id="outer-palette"></nav>
-    <main id="outer-diagram"></main>
+    </div>
+    <div class="content">
+      <div id="outer-palette"></div>
+      <div id="outer-diagram"></div>
+    </div>
     <Modal v-model="rename" :closable="false" :mask-closeable="false" :styles="{ top: '42%' }">
       <div slot="header" style="color:#f60;text-align:center">
         <Icon type="ios-information-circle" style="font-size: 20px;"></Icon>
@@ -38,7 +40,6 @@
     ></job-res-file>
     <NormalEditor
       :openNormalEditor="openNormalEditor"
-      :normalData="normalData"
       @closeNormalEditor="closeNormalEditor"
       @saveNormalData="saveNormalData"
     ></NormalEditor>
@@ -69,6 +70,8 @@ export default {
   components: { SwitchBlockDetailComponent, jobInJob, jobResFile, NormalEditor },
   data () {
     return {
+      outerDiagram: null,
+      outerPalette: null,
       jobName: '',
       switchBlockModalShow: false,
       currentSwitchBlockKey: null,
@@ -79,15 +82,14 @@ export default {
       rename: false,
       lastActiveTime: null,
       activeTimeInterval: 120000,
-      autoSaveInterval: 180000,
+      autoSaveInterval: 180000000,
       autoSaveTimer: null,
       autoSaveToggle: true,
-      openNormalEditor: false,
-      normalData: null
+      openNormalEditor: false
     }
   },
   computed: {
-    ...mapState('job', ['jobInfo', 'outerDiagramModel', 'finalResultBlockKey', 'draftId', 'draftLabel']),
+    ...mapState('job', ['jobInfo', 'outerDiagramModel', 'finalResultBlockKey', 'draftId', 'draftLabel', 'normalKey']),
     ...mapGetters('job', ['jobId']),
     ...mapState('files', ['resFiles', 'resFilesName']),
     ...mapState('device', ['countdown', 'deviceInfo'])
@@ -104,17 +106,6 @@ export default {
       },
       deep: true
     }
-  },
-  mounted () {
-    this.$Message.config({ duration: 3 })
-    if (!this.resFiles.length) this.handleResFile(this.jobId)
-    init(this)
-    window.addEventListener('contextmenu', this.dispatchMouseEvent)
-    window.addEventListener('mousemove', this.dispatchMouseEvent)
-    window.addEventListener('beforeunload', () => {
-      if (this.draftId) patchUpdateJob(this.draftId, { job_deleted: true })
-    })
-    this.autoSaveTimer = setInterval(this.autoSave, this.autoSaveInterval) // 300000
   },
   beforeRouteLeave  (to, from, next) {
     if (to.name === 'jobList' && this.autoSaveToggle) {
@@ -138,7 +129,7 @@ export default {
       this.outerDiagram.model.setDataProperty(node, 'explain', msg.explain)
     },
     saveNormalData (val) {
-      let curNormalData = this.outerDiagram.findNodeForKey(this.curNormalKey).data
+      let curNormalData = this.outerDiagram.findNodeForKey(this.normalKey).data
       this.outerDiagram.model.setDataProperty(curNormalData, 'text', val.text)
       this.outerDiagram.model.setDataProperty(curNormalData, 'star', val.star)
       this.outerDiagram.model.setDataProperty(curNormalData, 'color', val.color)
@@ -406,39 +397,42 @@ export default {
     viewResFile () {
       this.$store.commit('files/setShowResFileModal')
     },
-    handleResFile (id) {
-      if (!id) {
-        this.$store.commit('files/setResFiles', [])
-        return
-      }
-      getJobResFilesList(id).then(res => {
-        let filesInfo = res.data.job_res_file
-        let filesNameConfigIndex
-        filesInfo.forEach((item, index) => {
-          item.fileUrl = item.file
-          item.file = null
-          if (item.name === 'FILES_NAME_CONFIG.json' || item.name === 'filesNameConfig.json') {
-            filesNameConfigIndex = index
-          }
-        })
-        Promise.all(filesInfo.map(item => getJobResFile(item.fileUrl))).then(res => {
-          res.forEach((file, index) => {
-            let reader = new FileReader()
-            if (file.data.type.split('/')[0] !== 'image') { // json 则存放 text
-              reader.readAsText(file.data)
-            } else { // 图片则存放 dataURL
-              reader.readAsDataURL(file.data)
-            }
-            reader.onload = () => {
-              filesInfo[index].file = reader.result
-              if (index === filesNameConfigIndex) {
-                this.$store.commit('files/setResFilesName', reader.result)
-              }
+    handleResFile () {
+      if (!this.jobId) return
+      getJobResFilesList(this.jobId).then(({ status, data }) => {
+        if (status === 200) {
+          let filesInfo = data.job_res_file
+          let filesNameConfigIndex
+          filesInfo.forEach((item, index) => {
+            item.fileUrl = item.file
+            if (item.name === 'FILES_NAME_CONFIG.json' || item.name === 'filesNameConfig.json') {
+              filesNameConfigIndex = index
             }
           })
-        }).then(() => {
-          this.$store.commit('files/setResFiles', filesInfo)
-        })
+          Promise.all(filesInfo.map(item => getJobResFile(item.fileUrl))).then(res => {
+            res.forEach((file, index) => {
+              let reader = new FileReader()
+              if (file.data.type.split('/')[0] !== 'image') { // json 则存放 text
+                reader.readAsText(file.data)
+              } else { // 图片则存放 dataURL
+                reader.readAsDataURL(file.data)
+              }
+              reader.onload = () => {
+                filesInfo[index].file = reader.result
+                if (index === filesNameConfigIndex) {
+                  this.$store.commit('files/setResFilesName', reader.result)
+                }
+              }
+            })
+          }).then(() => {
+            this.$store.commit('files/setResFiles', filesInfo)
+          })
+        } else {
+          throw new Error('依赖文件获取失败')
+        }
+      }).catch(err => {
+        console.log(err)
+        this.$Message.error({ background: true, content: '依赖文件获取失败' })
       })
     },
     async clearData () {
@@ -500,41 +494,48 @@ export default {
           break
       }
     }
+  },
+  mounted () {
+    init(this) // 创建画板与画布并绘制流程图
+    if (!this.resFiles.length) this.handleResFile()
+    this.autoSaveTimer = setInterval(this.autoSave, this.autoSaveInterval) // 300000
+    window.addEventListener('contextmenu', this.dispatchMouseEvent)
+    window.addEventListener('mousemove', this.dispatchMouseEvent)
+    window.addEventListener('beforeunload', () => {
+      if (this.draftId) patchUpdateJob(this.draftId, { job_deleted: true })
+    })
   }
 }
 </script>
 <style lang="less" scoped>
 @import '../css/common.less';
-@supports (display: grid) {
-  .container {
-    display: grid;
-    grid-template-areas:  "header   header"
-                          "palette  diagram";
-    grid-template-columns: minmax(210px, 1fr) 7fr;
-    grid-template-rows: 1fr 25fr;
-    grid-gap: 1em;
-    height: 100%;
-    header {
-      grid-area: header;
-      display: grid;
-      grid-template-areas: "header-left header-right";
-      grid-template-columns: minmax(210px, 1fr) 7fr;
-      grid-gap: 1em;
-      .job-name {
-        grid-area: header-left;
-        display: flex;
-        align-items: center;
-      }
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  .header {
+    margin-bottom: 1em;
+    .job-name {
+      width: 13em;
+      margin-right: 1em;
     }
-    nav {
-      grid-area: palette;
+    .job-name + div {
+      flex: 1;
     }
-    main {
-      grid-area: diagram;
-    }
-    nav, main {
+  }
+  .content {
+    flex: 1;
+    display: flex;
+    > div {
       border: 1px solid #cccccc;
       border-radius: 6px;
+    }
+    #outer-palette {
+      width: 13em;
+      margin-right: 1em;
+    }
+    #outer-diagram {
+      flex: 1;
     }
   }
 }

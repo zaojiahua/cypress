@@ -1,11 +1,11 @@
 <template>
-  <Layout class="container">
-    <Header style="padding: 0;">
-      <Menu mode="horizontal" theme="dark" class="header-menu">
-        <div class="logo">
+  <Layout class="layout">
+    <Header class="header">
+      <Menu mode="horizontal" theme="dark" class="flex-row">
+        <div class="logo flex-row">
           <b>ANGELREEF</b><span>®</span>
         </div>
-        <div class="menu-list">
+        <div class="flex-row">
           <div class="countdown" v-if="countdown">
             距设备释放还有：
             <Countdown
@@ -18,27 +18,25 @@
               <Button icon="ios-add" long @click="extendTime">延期使用</Button>
             </ButtonGroup>
           </div>
-          <nav>
-            <MenuItem name="1">
-              {{ username }}
-            </MenuItem>
-            <MenuItem name="2" to="about">
-              关于TMach
-              <Icon type="ios-help-circle-outline" size="24"/>
-            </MenuItem>
-            <MenuItem name="3" @click.native="logout">
-              登出
-              <Icon type="ios-exit-outline" size="24">
-              </Icon>
-            </MenuItem>
-          </nav>
+          <MenuItem name="1">
+            {{ username }}
+          </MenuItem>
+          <MenuItem name="2" to="about">
+            关于TMach
+            <Icon type="ios-help-circle-outline" size="24"/>
+          </MenuItem>
+          <MenuItem name="3" @click.native="logout">
+            登出
+            <Icon type="ios-exit-outline" size="24">
+            </Icon>
+          </MenuItem>
         </div>
       </Menu>
     </Header>
     <Layout>
       <Sider collapsible :width="isCollapsed ? 78 : 110" v-model="isCollapsed" class="sider">
         <Menu :active-name="$route.name" ref="menu" theme="dark" width="auto"
-        :class="['menu-item', this.isCollapsed ? 'collapsed-menu' : '']">
+        :class="['sider-menu', this.isCollapsed ? 'sider-menu-collapsed' : '']">
           <MenuItem name="jobList" @click.native="viewJobList" title="用例管理">
             <Icon type="logo-buffer"></Icon>
             <span>用例管理</span>
@@ -49,14 +47,16 @@
           </MenuItem>
         </Menu>
       </Sider>
-      <Content class="content">
-        <transition name="fade" mode="out-in">
-          <keep-alive include="jobList">
-            <router-view/>
-          </keep-alive>
-        </transition>
-        <job-msg-component></job-msg-component>
-      </Content>
+      <Layout class="main">
+        <Content>
+          <transition name="fade" mode="out-in">
+            <keep-alive include="jobList">
+              <router-view/>
+            </keep-alive>
+          </transition>
+          <job-msg-component></job-msg-component>
+        </Content>
+      </Layout>
     </Layout>
   </Layout>
 </template>
@@ -108,8 +108,8 @@ export default {
       if (JSON.stringify(this.jobInfo) !== '{}') {
         routeOptions.query = { jobId: this.jobInfo.job_id }
       } else if (this.preJobInfo) {
-        this.$store.commit('job/recoverJobInfo')
         routeOptions.query = { jobId: this.preJobInfo.job_id }
+        this.$store.commit('job/recoverJobInfo')
       } else {
         this.$store.commit('job/setJobInfo', {})
       }
@@ -180,100 +180,101 @@ export default {
       })
     },
     setHeight () {
-      if (!this.contentDom) this.contentDom = document.querySelector('.content')
-      let { innerHeight } = window
-      this.contentDom.style.height = `${innerHeight - 64}px`
+      // if (!this.contentDom) this.contentDom = document.querySelector('.content')
+      // let { innerHeight } = window
+      // this.contentDom.style.height = `${innerHeight - 64}px`
     }
   },
   mounted () {
     this.$Message.config({
       duration: 3
     })
-    this.setHeight()
-    window.addEventListener('resize', this.setHeight)
+    // this.setHeight()
+    // window.addEventListener('resize', this.setHeight)
   }
 }
 </script>
 
 <style lang="less" scoped>
 @import '../css/common.less';
-.container {
-  height: 100%;
-  .header-menu {
-    height: 100%;
+.layout {
+  font-size: 16px;
+  .header {
+    padding: 0;
     .logo {
       position: relative;
       font-size: 1rem;
-      height: 4em;
       width: 12.5em;
-      margin-left: 0.8em;
+      height: 4em;
+      padding: 0 0.8em;
       color: @logoColor;
-      text-align: center;
+      font-weight: @logoWeight;
       b {
-        font-size: 1.5em;
-        font-weight: @logoWeight;
-        letter-spacing: 0.0625em;
+        font-size: 1.5rem;
+        letter-spacing: 1px;
       }
       span {
         position: absolute;
-        top: -0.625em;
+        font-size: 1.25rem;
         right: 0;
-        font-size: 1.25em;
-        font-weight: @logoWeight;
+        top: -0.4em;
       }
-    }
-    .menu-list {
-      .countdown {
-        position: relative;
-        color: rgba(255,255,255,.7);
-        margin-right: 1.25em;
-        .countdown-pane {
-          visibility: hidden;
-          position: absolute;
-          bottom: -100%;
-          left: 0;
-          width: 100%;
-          opacity: 0;
-          transition: all .2s linear;
-        }
-        &:hover .countdown-pane {
-          visibility: visible;
-          opacity: 1;
+      + div {
+        color: rgba(255, 255, 255, .7);
+        .countdown {
+          position: relative;
+          margin-right: 1em;
+          &-pane {
+            visibility: hidden;
+            position: absolute;
+            left: 0;
+            bottom: -100%;
+            width: 100%;
+            opacity: 0;
+            transition: all .3s linear;
+          }
+          &:hover .countdown-pane {
+            opacity: 1;
+            visibility: visible;
+          }
         }
       }
     }
   }
   .sider {
-    .menu-item {
-      li { padding-left: 1em; padding-right: 0.6em; }
-      span {
-        display: inline-block;
-        width: 4.3125em;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        vertical-align: bottom;
-        transition: width .2s ease .2s;
-      }
-      i {
-        transform: translateX(0px);
-        vertical-align: middle;
-        font-size: 1em;
-        transition: font-size .2s ease, transform .2s ease;
+    &-menu {
+      li {
+        display: flex;
+        padding: 1em;
+        justify-content: center;
+        align-items: center;
+        span {
+          display: inline-block;
+          width: 100%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          transition: width .2s ease .2s;
+        }
+        i {
+          transition: font-size .2s ease;
+          font-size: 1rem;
+        }
       }
     }
-    .collapsed-menu {
-      span { width: 0; transition: all .2s ease; }
-      i {
-        transform: translateX(8px);
-        font-size: 1.375em;
-        transition: font-size .2s ease .2s, transform .2s ease .2s;
+    &-menu-collapsed {
+      li {
+        span { width: 0; transition: width .2s ease; }
+        i {
+          transition: font-size .2s ease .2s;
+          font-size: 1.375rem;
+        }
       }
     }
   }
-  .content {
+  .main {
+    height: calc(100vh - 4em);
     padding: 1em;
-    background-color: @lightBGC;
   }
 }
 </style>

@@ -182,8 +182,8 @@ function outerDiagramInit (context) {
   normalBlockTemplate.doubleClick = function (e, node) {
     if (e.diagram instanceof go.Palette) return
     let { data } = node
-    context.normalData = JSON.stringify(data)
-    context.curNormalKey = data.key
+    context.$store.commit('job/setNormalData', data)
+    context.$store.commit('job/setNormalKey', data.key)
     context.openNormalEditor = true
   }
 
@@ -303,28 +303,32 @@ export function innerPaletteInit (context) {
   context.getSelectedUnit('基础操作')
 }
 
-async function setOuterDiagramData (context) {
+function setOuterDiagramData (context) {
   if (context.outerDiagramModel !== null && JSON.parse(context.outerDiagramModel).nodeDataArray.length > 1) {
     context.outerDiagram.model = go.Model.fromJson(context.outerDiagramModel)
   } else {
     if (context.jobInfo.job_flow) {
-      let { status, data } = await getBlockFlowDict4Font(context.jobInfo.job_flow)
-      if (status === 200) {
-        if (JSON.stringify(data) === '{}') {
-          context.$Message.err({
-            background: true,
-            content: '这个job不存在'
-          })
-          return context.$router.push({ path: '/' })
+      getBlockFlowDict4Font(context.jobInfo.job_flow).then(({ status, data }) => {
+        if (status === 200) {
+          if (JSON.stringify(data) === '{}') {
+            context.$Message.err({
+              background: true,
+              content: '这个 job 不存在'
+            })
+            return context.$router.push({ path: '/' })
+          }
+          context.outerDiagram.model = go.Model.fromJson(JSON.stringify(data))
+        } else {
+          throw new Error('获取 Job 信息失败')
         }
-        context.outerDiagram.model = go.Model.fromJson(data)
-      } else {
-        context.$Message.err({
+      }).catch(err => {
+        console.log(err)
+        context.$Message.error({
           background: true,
           content: '获取 Job 信息失败'
         })
         return context.$router.push({ path: '/' })
-      }
+      })
     } else {
       context.outerDiagram.model = go.Model.fromJson(CONST.BASIC_OUTER_DIAGRAM_MODEL)
     }

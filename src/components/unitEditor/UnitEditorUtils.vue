@@ -26,7 +26,7 @@
             id="btn-get-coordinate"
             v-show="isPicInput"
           >获取坐标</Button>
-          <AreaSelector :imgSrc="currentFile ? currentFile.file : ''" @on-select="select" :closable="true"></AreaSelector>
+          <AreaSelector :imgSrc="currentFile ? currentFile.file : ''" @on-select="select" :closable="true" maskKey="F2"></AreaSelector>
         </div>
       </div>
     </div>
