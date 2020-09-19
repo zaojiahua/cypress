@@ -58,6 +58,11 @@ export default {
       dataCount: 0,
       columns: [
         {
+          type: 'index',
+          width: 60,
+          align: 'center'
+        },
+        {
           type: 'selection',
           width: 60,
           align: 'center'

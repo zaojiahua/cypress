@@ -30,18 +30,6 @@ export function jobFlowValidation (vueObj) {
         if (endLinksInto.count <= 0) {
           myDiagramEventValidationHint.add('End至少有一条被指向链接')
         }
-        if (node.data.text === 'End') {
-          endLinksInto.each(link => {
-            let preNormalBlockData = link.fromNode.data
-            if (preNormalBlockData.category === 'normalBlock') {
-              // self.outerDiagram.model.setDataProperty(preNormalBlockData, 'star', true)
-              let imgToolUnits = preNormalBlockData.unitLists.nodeDataArray.filter(item => item.category === 'Unit' && CONSTANT.IMGTOOL.has(item.unitMsg.execModName))
-              if (!imgToolUnits.length) {
-                myDiagramEventValidationHint.add('End 节点前的 NormalBlock 未包含类型为 "图像识别" 的 Unit（如果必须要这么做，请将 End 节点更换为 Success 或 Fail 节点）')
-              }
-            }
-          })
-        }
       })
     }
   }
@@ -89,23 +77,34 @@ export function jobFlowValidation (vueObj) {
 
   const normalBlockValidation = () => {
     let normalBlockAll = self.outerDiagram.findNodesByExample({ 'category': 'normalBlock' })
-
-    if (normalBlockAll.count === 0) {
-      myDiagramEventValidationHint.add('缺少Normal block')
+    let jobBlockAll = self.outerDiagram.findNodesByExample({ 'category': 'Job' })
+    if (normalBlockAll.count === 0 && jobBlockAll.count === 0) {
+      myDiagramEventValidationHint.add('JobBlock 与 NormalBlock 至少要有一种')
     } else {
-      normalBlockAll.iterator.each(function (node) {
-        let normalBlockLinksInto = node.findLinksInto()
-        let normalBlockLinksOutOf = node.findLinksOutOf()
-        if (normalBlockLinksInto.count < 1) {
-          myDiagramEventValidationHint.add('Normal block至少有一条被指向链接')
-        }
-        if (normalBlockLinksOutOf.count !== 1) {
-          myDiagramEventValidationHint.add('Normal block有且只有一条指向链接')
-        }
-        if (!node.data.unitLists) {
-          myDiagramEventValidationHint.add('Normal block未编辑')
-        }
-      })
+      if (normalBlockAll.count) {
+        normalBlockAll.iterator.each(function (node) {
+          let normalBlockLinksInto = node.findLinksInto()
+          let normalBlockLinksOutOf = node.findLinksOutOf()
+          if (normalBlockLinksInto.count < 1) {
+            myDiagramEventValidationHint.add('NormalBlock 至少有一条被指向链接')
+          }
+          if (normalBlockLinksOutOf.count !== 1) {
+            myDiagramEventValidationHint.add('NormalBlock 有且只有一条指向链接')
+          }
+        })
+      }
+      if (jobBlockAll.count) {
+        jobBlockAll.iterator.each(function (node) {
+          let jobBlockLinksInto = node.findLinksInto()
+          let jobBlockLinksOutOf = node.findLinksOutOf()
+          if (jobBlockLinksInto.count < 1) {
+            myDiagramEventValidationHint.add('JobBlock 至少有一条被指向链接')
+          }
+          if (jobBlockLinksOutOf.count !== 1) {
+            myDiagramEventValidationHint.add('JobBlock 有且只有一条指向链接')
+          }
+        })
+      }
     }
   }
 

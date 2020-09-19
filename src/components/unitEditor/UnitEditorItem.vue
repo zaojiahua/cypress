@@ -81,9 +81,6 @@ export default {
       }
       return null
     },
-    tagText () {
-      return this.isCompleted ? '编辑完成' : '暂无数据'
-    },
     tagColor () {
       return !this.isEditable ? '#aaaaaa' : this.isCompleted ? 'success' : 'error'
     },
@@ -203,9 +200,6 @@ export default {
   },
   mounted () {
     this.handleTmachBlanks()
-    // if (this.itemData.itemContent.type === 'jobResourceFile' && !this.editToggle) {
-    //   this.isEditable = false
-    // }
   }
 }
 </script>

@@ -1,6 +1,22 @@
 <template>
   <div class="card">
-    <p class="card-title">Utils &nbsp; {{ utilTitle }}</p>
+    <p class="card-title flex-row title">
+      Utils &nbsp; {{ utilTitle }}
+      <Button
+        size="small"
+        type="primary"
+        @click.native="addCoordinate"
+        id='btn-confirm-area'
+        v-show="isJobResourceFile"
+      >确定</Button>
+      <Button
+        size="small"
+        type="primary"
+        @click="handleAbsoluteCoordinates"
+        id="btn-get-coordinate"
+        v-show="isPicInput"
+      >获取坐标</Button>
+    </p>
     <div class="file-gallery card-body">
       <p class="file-none" v-show="empty">还没有可以展示/编辑的文件</p>
       <!-- 加载动画 -->
@@ -10,25 +26,7 @@
         <div class="box"></div>
       </div>
 
-      <div v-show="currentFile" class="file-container">
-        <div class="image-container">
-          <Button
-            size="small"
-            type="primary"
-            @click.native="addCoordinate"
-            id='btn-confirm-area'
-            v-show="isJobResourceFile"
-          >确定</Button>
-          <Button
-            size="small"
-            type="primary"
-            @click="handleAbsoluteCoordinates"
-            id="btn-get-coordinate"
-            v-show="isPicInput"
-          >获取坐标</Button>
-          <AreaSelector :imgSrc="currentFile ? currentFile.file : ''" @on-select="select" :closable="true" maskKey="F2"></AreaSelector>
-        </div>
-      </div>
+      <AreaSelector v-show="currentFile" :imgSrc="currentFile ? currentFile.file : ''" @on-select="select" :closable="true" maskKey="F2"></AreaSelector>
     </div>
   </div>
 </template>
@@ -78,7 +76,18 @@ export default {
     }
   },
   methods: {
+    hasSelectArea () {
+      if (!this.coordinate || !this.coordinate.relativeCoordinate || !this.coordinate.absoluteCoordinate) {
+        this.$Message.warning({
+          background: true,
+          content: '请选择区域'
+        })
+        return false
+      }
+      return true
+    },
     addCoordinate () {
+      if (!this.hasSelectArea()) return
       let startPoint = this.coordinate.relativeCoordinate.topLeft
       let endPoint = this.coordinate.relativeCoordinate.bottomRight
       this.$store.commit('img/addCoordinate', {
@@ -87,6 +96,7 @@ export default {
       })
     },
     handleAbsoluteCoordinates () {
+      if (!this.hasSelectArea()) return
       let x = parseInt(this.coordinate.absoluteCoordinate.topLeft.x)
       let y = parseInt(this.coordinate.absoluteCoordinate.topLeft.y)
       this.$store.commit('img/setAbsoluteCoordinates', { x, y })
@@ -94,15 +104,19 @@ export default {
     select (val) {
       this.coordinate = val
     }
-  },
-  mounted () {
-    this.btnConfirmArea = document.querySelector('#btn-confirm-area')
   }
 }
 </script>
 
 <style lang="less" scoped>
   @import '../../css/common.less';
+  .title {
+    position: relative;
+    Button {
+      position: absolute;
+      right: 1em;
+    }
+  }
   .file-gallery {
     display: flex;
     justify-content: center;
@@ -164,12 +178,6 @@ export default {
         align-items: center;
         height: 100%;
         position: relative;
-
-        #btn-confirm-area, #btn-get-coordinate {
-          position: absolute;
-          right: 0;
-          top: -54px;
-        }
       }
     }
   }

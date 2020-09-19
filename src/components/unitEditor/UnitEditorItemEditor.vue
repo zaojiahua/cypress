@@ -214,9 +214,11 @@ export default {
     updateCurrentUnitItemData () {
       let currentItem = this._.cloneDeep(this.currentItem)
       let tmachBlanks = currentItem.itemContent.content.match(/Tmach.*? /g)
+      let contentSeg = currentItem.itemContent.content.match(/.*?Tmach.*? /g)
       for (let i = 0; i < tmachBlanks.length; i++) {
-        currentItem.itemContent.content = currentItem.itemContent.content.replace(tmachBlanks[i], 'Tmach' + this.tmachBlanks[i] + ' ')
+        contentSeg[i] = contentSeg[i].replace(tmachBlanks[i], `Tmach${this.tmachBlanks[i]} `)
       }
+      currentItem.itemContent.content = contentSeg.join()
       this.$emit('updateUnitItem', currentItem)
     },
     closeItemEditor () {
