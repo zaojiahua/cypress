@@ -275,6 +275,7 @@ export default {
   .main {
     height: calc(100vh - 4em);
     padding: 1em;
+    background-color: @lightBGC;
   }
 }
 </style>

@@ -33,7 +33,11 @@
         @on-row-click="onRowClick"
         @on-selection-change="selectedJobsChange"
       ></Table>
-      <Page simple :page-size="pageSize" :total="dataCount" :current.sync="curPage" @on-change="jobPageChange" style="text-align: center;margin-top: 20px"></Page>
+      <div class="flex-row page">
+        <Button size="small" :disabled="this.curPage === 1" @click="jobPageChange(1)">首页</Button>
+        <Page simple :page-size="pageSize" :total="dataCount" :current.sync="curPage" @on-change="jobPageChange" style="margin: 0 1em;"></Page>
+        <Button size="small" :disabled="this.curPage === this.lastPage" @click="jobPageChange(lastPage)">尾页</Button>
+      </div>
     </div>
   </div>
 </template>
@@ -56,6 +60,7 @@ export default {
     return {
       pageSize: 10, // 每页条数
       dataCount: 0,
+      lastPage: 0,
       columns: [
         {
           type: 'index',
@@ -169,6 +174,7 @@ export default {
       }).then(res => {
         this.currentPageSelectedJobs = {}
         this.dataCount = Number(res.headers['total-count'])
+        this.lastPage = Math.ceil(this.dataCount / this.pageSize)
         this.jobData = res.data.jobs
         this.jobData.forEach(job => {
           job.test_area = job.test_area.map(item => item.description).join(',')
@@ -363,8 +369,9 @@ export default {
 @import '../css/common.less';
 .container {
   height: 100%;
-  @media (max-width: 1366px) {
-
+  .page {
+    justify-content: center;
+    margin-top: 1em;
   }
 }
 </style>

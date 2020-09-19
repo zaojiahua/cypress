@@ -1,4 +1,3 @@
-import CONSTANT from 'constant/constant'
 export function jobFlowValidation (vueObj) {
   const self = vueObj
   // 事件校验提示
