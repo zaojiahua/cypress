@@ -19,6 +19,9 @@
       <div id="outer-palette"></div>
       <div id="outer-diagram"></div>
     </div>
+    <Modal v-model="gallery" :closable="false" fullscreen>
+      <Gallery mode="vertical"></Gallery>
+    </Modal>
     <Modal v-model="rename" :closable="false" :mask-closeable="false" :styles="{ top: '42%' }">
       <div slot="header" style="color:#f60;text-align:center">
         <Icon type="ios-information-circle" style="font-size: 20px;"></Icon>
@@ -56,6 +59,7 @@ import { init } from './JobEditorGoInit'
 import jobInJob from '_c/jobInJob'
 import jobResFile from '_c/jobResFile/jobResFile.vue'
 import NormalEditor from '_c/NormalEditor.vue'
+import Gallery from '_c/common/Gallery.vue'
 import { jobFlowAndMsgSave, jobFlowAndMsgUpdate } from '../api/reef/jobFlow'
 import { jobResFilesSave, getJobResFilesList, getJobResFile } from '../api/reef/jobResFileSave'
 import { patchUpdateJob } from 'api/reef/job'
@@ -67,7 +71,7 @@ import { releaseOccupyDevice } from '../api/reef/device'
 
 export default {
   name: 'jobEditor',
-  components: { SwitchBlockDetailComponent, jobInJob, jobResFile, NormalEditor },
+  components: { SwitchBlockDetailComponent, jobInJob, jobResFile, NormalEditor, Gallery },
   data () {
     return {
       outerDiagram: null,
@@ -85,7 +89,8 @@ export default {
       autoSaveInterval: 180000,
       autoSaveTimer: null,
       autoSaveToggle: true,
-      openNormalEditor: false
+      openNormalEditor: false,
+      gallery: false
     }
   },
   computed: {
