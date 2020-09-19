@@ -216,7 +216,7 @@ export default {
       let tmachBlanks = currentItem.itemContent.content.match(/Tmach.*? /g)
       let contentSeg = currentItem.itemContent.content.match(/.*?Tmach.*? /g)
       for (let i = 0; i < tmachBlanks.length; i++) {
-        contentSeg[i] = contentSeg[i].replace(tmachBlanks[i], `Tmach${this.tmachBlanks[i]} `).trimStart()
+        contentSeg[i] = contentSeg[i].replace(tmachBlanks[i], `Tmach${this.tmachBlanks[i]} `)
       }
       currentItem.itemContent.content = contentSeg.join('')
       this.$emit('updateUnitItem', currentItem)

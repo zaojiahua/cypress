@@ -20,7 +20,7 @@
       <div id="outer-diagram"></div>
     </div>
     <Modal v-model="gallery" :closable="false" fullscreen>
-      <Gallery mode="vertical"></Gallery>
+      <Gallery mode="horizontal"></Gallery>
     </Modal>
     <Modal v-model="rename" :closable="false" :mask-closeable="false" :styles="{ top: '42%' }">
       <div slot="header" style="color:#f60;text-align:center">
@@ -90,7 +90,7 @@ export default {
       autoSaveTimer: null,
       autoSaveToggle: true,
       openNormalEditor: false,
-      gallery: false
+      gallery: !true
     }
   },
   computed: {

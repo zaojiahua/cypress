@@ -52,13 +52,14 @@ export default {
       curPic: {
         url: '',
         title: ''
-      },
-      curPicUrl: ''
+      }
     }
   },
-  methods: {
-    selectPic (val) {
-      this.curPic = this._.cloneDeep(val)
+  watch: {
+    picUrl (val) {
+      this.curPic = JSON.parse(JSON.stringify(val[0]))
+    },
+    curPic (val) {
       let image = new Image()
       image.src = this.curPic.url
       image.onload = () => {
@@ -72,8 +73,16 @@ export default {
       }
     }
   },
+  methods: {
+    selectPic (val) {
+      this.curPic = JSON.parse(JSON.stringify(val))
+    }
+  },
   mounted () {
     this.picDom = document.querySelector('.picture > img')
+    if (this.picUrl.length) {
+      this.curPic = JSON.parse(JSON.stringify(this.picUrl[0]))
+    }
   }
 }
 </script>
@@ -111,6 +120,16 @@ export default {
   .thumbnail {
     height: 100%;
     width: 200px;
+    div {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      overflow: auto;
+      img {
+        width: 100%;
+        margin-bottom: 1em;
+      }
+    }
   }
 }
 .vertical {
