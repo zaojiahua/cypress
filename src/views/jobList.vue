@@ -13,16 +13,16 @@
             :on-success="handleUploadSuccess">
             <Button icon="ios-cloud-upload-outline">导入用例</Button>
           </Upload>
-          <Button type="success" @click="exportJobs">导出用例</Button>
+          <Button type="success" @click="exportJobs">导出用例 (已选 {{Object.keys(this.selectedJobs).length}} 个)</Button>
         </div>
         <div class="child-m-right--1 flex-row">
-          <Button type="warning" @click="clear">清除已选</Button>
+          <Button type="warning" @click="clear">取消选择</Button>
           <Button type="error" @click="delSelectedJobs">批量删除</Button>
         </div>
       </div>
-      <div>
+      <!-- <div>
         <Tag v-for="job in selectedJobs" :key="job.id" closable @on-close="close(job.id)">{{ job.name }}</Tag>
-      </div>
+      </div> -->
     </div>
     <div>
       <Table
@@ -142,7 +142,7 @@ export default {
       jobState: '',
       jobType: '',
       filterUrlParam: '',
-      tableHeight: 520
+      tableHeight: 519
     }
   },
   computed: {
@@ -336,10 +336,10 @@ export default {
       this.filterUrlParam = val
       this.jobPageChange()
     },
-    setTableConfig () {
+    setTableHeight () {
       let { innerHeight } = window
       if (innerHeight <= 768) {
-        this.tableHeight = 183
+        this.tableHeight = 256
       } else if (innerHeight > 768 && innerHeight <= 900) {
         this.tableHeight = 279
       } else if (innerHeight > 900 && innerHeight < 1080) {
@@ -352,8 +352,8 @@ export default {
   },
   mounted () {
     this.jobState = localStorage.getItem('joblist-management:DEFAULT_FILTER_CONFIG')
-    this.setTableConfig()
-    window.addEventListener('resize', this.setTableConfig)
+    // this.setTableHeight()
+    // window.addEventListener('resize', this.setTableHeight)
   },
   activated () {
     this.jobPageChange()

@@ -30,7 +30,7 @@
             </TabPane>
           </Tabs>
         </Row>
-        <div class="collapse__footer" v-show="collapseIsOpen">
+        <div class="collapse__footer">
           <Row class="filter__container">
             <!-- <span class="filter__title">筛选条件</span> -->
             <div class="filter__content" v-show="filterConditions.length !== 0">
@@ -260,7 +260,7 @@ export default {
 .collapse {
   display: flex;
   flex-direction: column;
-  margin-bottom: 1.6em;
+  margin-bottom: 1em;
   border: 1px solid #cccccc;
   border-radius: 6px;
   .slide-fade-enter-active {

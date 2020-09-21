@@ -166,14 +166,14 @@ export default {
 </script>
 
 <style lang="less">
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  ::-webkit-scrollbar-thumb {
-    border-radius: 3px;
-    background-color: rgb(190, 202, 209);
-  }
+  // ::-webkit-scrollbar {
+  //   width: 6px;
+  //   height: 6px;
+  // }
+  // ::-webkit-scrollbar-thumb {
+  //   border-radius: 3px;
+  //   background-color: rgb(190, 202, 209);
+  // }
   .unit-editor {
     .header {
       display: flex;
