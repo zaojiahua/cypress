@@ -1,6 +1,11 @@
 <template>
   <div class="container flex-column">
     <job-list-filter @getFilterParam="getFilterParam"></job-list-filter>
+    <!-- <div>
+      <div>
+        <Tag v-for="job in selectedJobs" :key="job.id" closable @on-close="close(job.id)">{{ job.name }}</Tag>
+      </div>
+    </div> -->
     <div>
       <div class="child-m-right--1 flex-row m-b--1">
         <div class="child-m-right--1 flex-row">
@@ -20,11 +25,6 @@
           <Button type="error" @click="delSelectedJobs">批量删除</Button>
         </div>
       </div>
-      <!-- <div>
-        <Tag v-for="job in selectedJobs" :key="job.id" closable @on-close="close(job.id)">{{ job.name }}</Tag>
-      </div> -->
-    </div>
-    <div>
       <Table
         ref="jobList"
         :columns="columns"
