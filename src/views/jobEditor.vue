@@ -56,6 +56,7 @@ import { init } from './JobEditorGoInit'
 import jobInJob from '_c/jobInJob'
 import jobResFile from '_c/jobResFile/jobResFile.vue'
 import NormalEditor from '_c/NormalEditor.vue'
+import CONST from 'constant/constant'
 import { jobFlowAndMsgSave, jobFlowAndMsgUpdate } from '../api/reef/jobFlow'
 import { jobResFilesSave, getJobResFilesList, getJobResFile } from '../api/reef/jobResFileSave'
 import { patchUpdateJob } from 'api/reef/job'
@@ -201,9 +202,9 @@ export default {
       return flag
     },
     saveJob (saveAs = false) {
-      // 使用 & 保证都运行
       if (!this._jobMsgRules() || this.isInvalidInnerJob()) return
       if (this._jobFlowRules()) {
+        this.autoSaveToggle = false
         this._saveJob(saveAs, false, false)
       }
     },
@@ -284,7 +285,6 @@ export default {
       return info
     },
     async _saveJob (e, saveAs = false, isDraft = true) {
-      this.autoSaveToggle = false
       let id = this.jobId
       let info = await this.prepareJobInfo(saveAs, !id, isDraft)
       this.$store.commit('files/addResFile', {
@@ -326,9 +326,9 @@ export default {
           }
         }
       }
+      await this.clearData()
       this.$router.push({ path: '/jobList' })
       this.$store.commit('setCurPage', 1)
-      this.clearData()
     },
     prepareInnerJobList () {
       let list = []
@@ -436,37 +436,44 @@ export default {
       })
     },
     async clearData () {
-      if (this.countdown) {
-        let { status } = await releaseOccupyDevice({
-          device_id_list: [this.deviceInfo.id]
-        })
-        if (status === 200) {
-          this.$Message.info({
-            background: true,
-            content: '设备已释放'
-          })
-        }
-        this.$store.commit('device/setCountdown')
-      }
+      this.$store.commit('job/setDraftId', null)
+      this.$store.commit('job/setDraftLabel', null)
       this.$store.commit('job/setJobInfo', {})
       this.$store.commit('job/setOuterDiagramModel', null)
       this.$store.commit('job/setPreJobInfo', false)
-      this.$store.commit('job/setDraftId', null)
-      this.$store.commit('job/setDraftLabel', null)
       this.$store.commit('job/setFinalResultBlock', null)
       this.$store.commit('files/clearResFiles')
-      this.$store.commit('device/clearDeviceInfo')
-      this.$store.commit('device/clearPreDeviceInfo')
-      this.$store.commit('files/setResFilesName', JSON.stringify([
-        {
-          title: '文件名称',
-          children: ['text']
-        },
-        {
-          title: '图片名称',
-          children: ['snap']
+      let resFilesName = []
+      for (let key in CONST.WILL_TOUCH_NAME) {
+        resFilesName.push({
+          title: CONST.WILL_TOUCH_NAME[key],
+          key,
+          children: []
+        })
+      }
+      this.$store.commit('files/setResFilesName', JSON.stringify(resFilesName))
+      if (this.countdown) {
+        try {
+          let { status } = await releaseOccupyDevice({
+            device_id_list: [this.deviceInfo.id]
+          })
+          if (status === 200) {
+            this.$Message.info({
+              background: true,
+              content: '设备已释放'
+            })
+            this.$store.commit('device/setCountdown')
+            this.$store.commit('device/clearDeviceInfo')
+            this.$store.commit('device/clearPreDeviceInfo')
+          }
+        } catch (err) {
+          console.log(err)
+          this.$Message.error({
+            background: true,
+            content: '设备释放失败' + err.toString()
+          })
         }
-      ]))
+      }
     },
     cancelEdit () {
       this.autoSaveToggle = false
@@ -503,6 +510,7 @@ export default {
     window.addEventListener('mousemove', this.dispatchMouseEvent)
     window.addEventListener('beforeunload', () => {
       if (this.draftId) patchUpdateJob(this.draftId, { job_deleted: true })
+      this.$store.commit('job/setDraftId', null)
     })
   }
 }

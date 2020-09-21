@@ -3,7 +3,8 @@ let state = {
   currentItem: {
     itemName: '',
     itemContent: ''
-  }
+  },
+  saveToFinalResult: false
 }
 
 let mutations = {
@@ -12,6 +13,9 @@ let mutations = {
   },
   setCurrentItem (state, unitItem) {
     state.currentItem = unitItem
+  },
+  setSaveToFinal (state, toggle) {
+    state.saveToFinalResult = toggle
   }
 }
 

@@ -171,6 +171,7 @@ export default {
       }
       this.removeLabelArea()
       this.handleClicked()
+      this.$store.commit('item/setSaveToFinal', false)
       this.$store.commit('item/setCurrentItem', this.itemData)
       this.$store.commit('item/setShowItemEditor', true)
       if (this.tmachBlanks[0].trim().length !== 0) {

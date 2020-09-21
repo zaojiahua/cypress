@@ -42,7 +42,7 @@
           :featurePointFileName="tmachBlanks[0] || randomJSONFileName()"
           @setFeaturePointFileName="setName"
         ></FeaturePoint>
-        <Checkbox v-model="saveToFinalResult" v-if="showCheckbox" style="float: right;">添加此图片至最终结果</Checkbox>
+        <Checkbox v-model="$store.state.item.saveToFinalResult" v-if="showCheckbox" style="float: right;">添加此图片至最终结果</Checkbox>
         <p class="instructions"><Tag>操作说明</Tag>{{ currentItemMeaning }}</p>
       </div>
       <div class="btn-confirm">
@@ -91,7 +91,6 @@ export default {
     return {
       tmachBlanks: [],
       tmachIndex: 0,
-      saveToFinalResult: false,
       showRename: false,
       preFileName: null,
       saving: false
@@ -104,7 +103,8 @@ export default {
     ]),
     ...mapState('item', [
       'showItemEditor',
-      'currentItem'
+      'currentItem',
+      'saveToFinalResult'
     ]),
     ...mapState('img', [
       'imgRecRate',
@@ -168,8 +168,7 @@ export default {
       if (this.isOutputPicture || this.isOutputFile) {
         let commandOfSaveToFinal = '<copy2rdsDatPath>'
         for (let i = 0; i < tmachBlanks.length; i++) {
-          if (tmachBlanks[i].includes(commandOfSaveToFinal)) this.saveToFinalResult = true
-          // tmachBlanks[i] = suffixAutoRemove(this.tmachBlanks[i])
+          if (tmachBlanks[i].includes(commandOfSaveToFinal)) this.$store.commit('item/setSaveToFinal', true)
         }
       }
       return tmachBlanks
@@ -208,6 +207,7 @@ export default {
         this.tmachBlanks[i] = suffixComplete(this.tmachBlanks[i], this.itemType)
         if (this.saveToFinalResult) {
           this.tmachBlanks[i] += commandOfSaveToFinal
+          this.$store.commit('item/setSaveToFinal', false)
         }
       }
     },
@@ -271,7 +271,6 @@ export default {
       }
       this.updateCurrentUnitItemData()
       this.closeItemEditor()
-      this.saveToFinalResult = false
       this.tmachIndex = 0
       setTimeout(() => {
         this.saving = false
