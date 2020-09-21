@@ -1,19 +1,25 @@
 <template>
-  <div class="gallery" :class="mode">
-    <div class="thumbnail">
-      <div>
-        <img v-for="pic in picUrl" :src="pic.url" :alt="pic.title" :key="pic.url" @click="selectPic(pic)">
+  <Modal v-model="curOpen" :closable="false" fullscreen @on-ok="close(true)" @on-cancel="close(false)">
+    <div class="gallery" :class="mode">
+      <div class="thumbnail">
+        <ul>
+          <li v-for="pic in picUrl" :key="pic.name">
+            <img :src="pic.file" :alt="pic.name" :title="pic.name" @click="selectPic(pic)">
+            <p :title="pic.name">{{ pic.name }}</p>
+          </li>
+        </ul>
+      </div>
+      <div class="picture">
+        <img :src="curPic.file" :alt="curPic.name">
       </div>
     </div>
-    <div class="picture">
-      <img :src="curPic.url" :alt="curPic.title">
-    </div>
-  </div>
+  </Modal>
 </template>
 <script>
 export default {
   name: 'Gallery',
   props: {
+    open: Boolean,
     mode: {
       type: String,
       default: 'horizontal',
@@ -26,42 +32,28 @@ export default {
     picUrl: {
       type: Array,
       default () {
-        return [
-          {
-            url: 'https://t1.hxzdhn.com/uploads/tu/202005/9999/085a4d3e7e.jpg',
-            title: '1'
-          },
-          {
-            url: 'https://siwayu.com/faces/taomiaoxiezhen/ID0077/4.jpg',
-            title: '2'
-          },
-          {
-            url: 'http://t1.hxzdhn.com/uploads/tu/201809/9999/5b591df791.jpg',
-            title: '3'
-          },
-          {
-            url: 'https://t1.hxzdhn.com/uploads/tu/202004/9999/b55aa006d9.jpg',
-            title: '4'
-          }
-        ]
+        return []
       }
     }
   },
   data () {
     return {
       curPic: {
-        url: '',
-        title: ''
-      }
+        file: '',
+        name: ''
+      },
+      curOpen: false
     }
   },
   watch: {
     picUrl (val) {
-      this.curPic = JSON.parse(JSON.stringify(val[0]))
+      setTimeout(() => {
+        if (val[0]) this.curPic = JSON.parse(JSON.stringify(val[0]))
+      }, 300)
     },
     curPic (val) {
       let image = new Image()
-      image.src = this.curPic.url
+      image.src = this.curPic.file
       image.onload = () => {
         if (image.width > image.height) {
           this.picDom.style.width = '100%'
@@ -71,18 +63,24 @@ export default {
           this.picDom.style.maxHeight = '100%'
         }
       }
+    },
+    open (val) {
+      this.curOpen = val
     }
   },
   methods: {
     selectPic (val) {
       this.curPic = JSON.parse(JSON.stringify(val))
+    },
+    close (toggle) {
+      if (toggle) {
+        this.$emit('getPic', this.curPic)
+      }
+      this.$emit('close', false)
     }
   },
   mounted () {
     this.picDom = document.querySelector('.picture > img')
-    if (this.picUrl.length) {
-      this.curPic = JSON.parse(JSON.stringify(this.picUrl[0]))
-    }
   }
 }
 </script>
@@ -95,13 +93,27 @@ export default {
     padding: 1em;
     border-radius: 4px;
     background-color: @darkBGC;
-    img {
-      display: block;
-      cursor: pointer;
-      border-radius: 4px;
-      transition: all .3s linear;
-      &:hover {
-        box-shadow: 0 0 6px #333333;
+    ul {
+      list-style: none;
+      overflow: auto;
+      li {
+        text-align: center;
+        img {
+          cursor: pointer;
+          border-radius: 4px;
+          transition: all .3s linear;
+          &:hover {
+            box-shadow: 0 0 6px #333333;
+          }
+        }
+      }
+      p {
+        width: 100%;
+        color: @logoColor;
+        text-align: center;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
       }
     }
   }
@@ -119,15 +131,21 @@ export default {
   flex-direction: row;
   .thumbnail {
     height: 100%;
-    width: 200px;
-    div {
+    width: 160px;
+    ul {
       display: flex;
       flex-direction: column;
       width: 100%;
-      overflow: auto;
-      img {
+      height: 100%;
+      li {
         width: 100%;
-        margin-bottom: 1em;
+        margin-bottom: 1.4em;
+        img {
+          width: 100%;
+        }
+      }
+      :last-child {
+        margin-bottom: 0;
       }
     }
   }
@@ -136,19 +154,21 @@ export default {
   flex-direction: column;
   .thumbnail {
     height: 200px;
-    div {
+    padding-bottom: 0.4em;
+    ul {
       display: flex;
       height: 100%;
-      overflow: auto;
-      img {
+      li {
         height: 100%;
+        width: 100px;
         margin-right: 1em;
+        img {
+          height: calc(100% - 28px);
+        }
       }
-    }
-  }
-  .vertical {
-    img {
-      height: 100%;
+      :last-child {
+        margin-right: 0;
+      }
     }
   }
 }

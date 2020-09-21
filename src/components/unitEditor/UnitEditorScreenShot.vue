@@ -56,7 +56,8 @@ export default {
         }
       ],
       currentImageName: this.imageName,
-      loading: false
+      loading: false,
+      pid: 1
     }
   },
   computed: {
@@ -131,13 +132,10 @@ export default {
                 })
               }
               if (this.isPicInput) {
-                this.$store.commit('files/setCurrentFile', {
-                  byName: false,
-                  currentFileInfo: {
-                    name: '选点用图',
-                    type: 'png',
-                    file: res
-                  }
+                this.$store.commit('files/addResFile', {
+                  name: `ForPointSelect_${this.pid++}.png`,
+                  type: 'png',
+                  file: res
                 })
               }
             })
