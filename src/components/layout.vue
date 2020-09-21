@@ -62,6 +62,7 @@
 </template>
 <script>
 import { mapState } from 'vuex'
+import CONST from 'constant/constant'
 import jobMsgComponent from '_c/jobMsgComponent'
 import Countdown from '_c/common/Countdown'
 import { controlDevice, releaseOccupyDevice } from 'api/reef/device'
@@ -90,10 +91,10 @@ export default {
           this.$Message.success('登出成功!')
           this.$Loading.finish()
           // 登出后不能通过后退键回到TMach操作页面中
-          sessionStorage.removeItem('token')
-          localStorage.removeItem('token')
-          sessionStorage.removeItem('identity')
-          localStorage.removeItem('identity')
+          CONST.USER_INFO.forEach((val) => {
+            sessionStorage.removeItem(val)
+            localStorage.removeItem(val)
+          })
         }
       })
     },

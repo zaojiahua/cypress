@@ -128,5 +128,6 @@ export default {
     'linkDataArray': []
   }),
   SIMPLE_JOB_KEY: ['job_name', 'job_type', 'job_second_type', 'job_label', 'description', 'draft'],
-  COMPLEX_JOB_KEY: ['test_area', 'android_version', 'custom_tag', 'phone_models', 'rom_version']
+  COMPLEX_JOB_KEY: ['test_area', 'android_version', 'custom_tag', 'phone_models', 'rom_version'],
+  USER_INFO: ['id', 'username', 'groups', 'token']
 }

@@ -7,7 +7,7 @@
       <Divider/>
       <div class="login-input">
         <Input prefix="ios-person-outline" v-model="username" placeholder="请输入账户"/>
-        <Input prefix="ios-lock-outline" type="password" password v-model="password" placeholder="请输入密码"/>
+        <Input prefix="ios-lock-outline" @on-enter="login" type="password" password v-model="password" placeholder="请输入密码"/>
         <Checkbox v-model="keepLogin">保持登入</Checkbox>
         <Button type="success" @click="login">登入</Button>
       </div>
@@ -17,29 +17,28 @@
 
 <script>
 import { login } from 'api/reef/user'
+import CONST from 'constant/constant'
 export default {
   name: 'login',
   data () {
     return {
       username: '',
       password: '',
-      keepLogin: false,
-      loginInfo: ['id', 'username', 'groups', 'token']
+      keepLogin: false
     }
   },
   methods: {
     login () {
       login(this.username, this.password).then(({ status, data }) => {
         if (this.keepLogin) {
-          this.loginInfo.forEach((val, idx) => {
+          CONST.USER_INFO.forEach((val, idx) => {
             localStorage.setItem(val, data[val])
           })
         } else {
-          this.loginInfo.forEach((val, idx) => {
+          CONST.USER_INFO.forEach((val, idx) => {
             sessionStorage.setItem(val, data[val])
           })
         }
-        sessionStorage.setItem('token', 'token')
         this.$router.push('/')
       }).catch(error => {
         let errorMsg = ''
@@ -54,6 +53,12 @@ export default {
         this.$Loading.error()
       })
     }
+  },
+  beforeRouteEnter (to, from, next) {
+    if (sessionStorage.getItem('token') || localStorage.getItem('token')) {
+      this.route.push('/')
+    }
+    next()
   }
 }
 </script>
