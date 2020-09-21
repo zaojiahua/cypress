@@ -16,13 +16,6 @@
         id="btn-get-coordinate"
         v-show="isPicInput"
       >获取坐标</Button>
-      <Button
-        size="small"
-        v-show="isPicInput"
-        :disabled="this.picUrl.length === 0"
-        @click="gallery = !gallery"
-        style="right: 7em;"
-      >选取图片</Button>
     </p>
     <div class="file-gallery card-body">
       <p class="file-none" v-show="empty">还没有可以展示/编辑的文件</p>
@@ -32,35 +25,29 @@
         <div class="box"></div>
         <div class="box"></div>
       </div>
-
       <AreaSelector v-show="currentFile" :imgSrc="currentFile ? currentFile.file : ''" @on-select="select" :closable="true" maskKey="F2"></AreaSelector>
     </div>
-    <Gallery mode="vertical" :picUrl="picUrl" @getPic="getPic" @close="closeGallery" :open="gallery"></Gallery>
   </div>
 </template>
 
 <script>
 import { mapState, mapGetters } from 'vuex'
 import AreaSelector from '_c/common/AreaSelector'
-import Gallery from '_c/common/Gallery.vue'
 
 export default {
   name: 'Utils',
-  components: { AreaSelector, Gallery },
+  components: { AreaSelector },
   data () {
     return {
       btnConfirmArea: null,
       coordinate: null,
       itemType: null,
       threshold: null,
-      fileInfo: null,
-      gallery: false
+      fileInfo: null
     }
   },
   computed: {
-    ...mapState([
-      'isLoading'
-    ]),
+    ...mapState(['isLoading']),
     ...mapState('files', ['resFiles', 'currentFile']),
     ...mapGetters('item', ['isPicInput', 'isJobResourceFile', 'isJobResourcePicture']),
     ...mapGetters('img', ['imgRecRate']),
@@ -75,9 +62,6 @@ export default {
         return '( 图片名称：' + this.currentFile.name + ' | 识别率：' + this.imgRecRate + '% )'
       }
       return null
-    },
-    picUrl () {
-      return this.resFiles.filter((val) => { return val.type === 'png' && val.name.startsWith('ForPointSelect_') })
     }
   },
   methods: {
@@ -108,15 +92,6 @@ export default {
     },
     select (val) {
       this.coordinate = val
-    },
-    getPic (val) {
-      this.$store.commit('files/setCurrentFile', {
-        byName: true,
-        name: val.name
-      })
-    },
-    closeGallery (val) {
-      this.gallery = val
     }
   }
 }

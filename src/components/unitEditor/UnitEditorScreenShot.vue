@@ -8,17 +8,22 @@
       :columns="deviceInfoColumns"
       :data="deviceInfo"
     ></Table>
-    <div class="get-image">
+    <div class="get-image child-m-right--1">
       <div>
         <Input v-model="currentImageName" v-if="!isPicInput" @input="setImageName" clearable>
           <span slot="prepend">图片名称</span>
         </Input>
       </div>
+      <Button
+        :disabled="this.picUrl.length === 0"
+        @click="gallery = !gallery"
+      >选取图片</Button>
       <Button type="primary" :loading="isLoading" @click="getImage">
         <span v-if="!isLoading">获取截图</span>
         <span v-else>Loading...</span>
      </Button>
     </div>
+    <Gallery mode="vertical" :picUrl="picUrl" @getPic="getPic" @close="closeGallery" :open="gallery"></Gallery>
   </div>
 </template>
 
@@ -26,11 +31,14 @@
 import { mapState, mapGetters } from 'vuex'
 import { blobToDataURL, suffixAutoComplete } from 'lib/tools.js'
 import CONST from 'constant/constant'
+import Gallery from '_c/common/Gallery.vue'
+
 export default {
   name: 'ScreenShot',
   props: {
     imageName: [String, Number]
   },
+  components: { Gallery },
   data () {
     return {
       deviceInfoColumns: [
@@ -57,21 +65,18 @@ export default {
       ],
       currentImageName: this.imageName,
       loading: false,
-      pid: 1
+      pid: 1,
+      gallery: false
     }
   },
   computed: {
-    ...mapState([
-      'isLoading'
-    ]),
-    ...mapGetters('item', [
-      'itemType',
-      'isPicInput',
-      'isJobResourcePicture'
-    ]),
-    ...mapGetters('device', [
-      'deviceInfo'
-    ])
+    ...mapState(['isLoading']),
+    ...mapState('files', ['resFiles']),
+    ...mapGetters('item', ['itemType', 'isPicInput', 'isJobResourcePicture']),
+    ...mapGetters('device', ['deviceInfo']),
+    picUrl () {
+      return this.resFiles.filter((val) => { return val.type === 'png' })
+    }
   },
   methods: {
     showDeviceSelectPage () {
@@ -154,12 +159,22 @@ export default {
     },
     setImageName () {
       this.$emit('setImageName', this.currentImageName)
+    },
+    getPic (val) {
+      this.$store.commit('files/setCurrentFile', {
+        byName: true,
+        name: val.name
+      })
+    },
+    closeGallery (val) {
+      this.gallery = val
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
+  @import '../../css/common.less';
   .screen-shot {
     position: relative;
     margin-bottom: 10px;
