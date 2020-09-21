@@ -18,11 +18,12 @@
             :on-success="handleUploadSuccess">
             <Button icon="ios-cloud-upload-outline">导入用例</Button>
           </Upload>
-          <Button type="success" @click="exportJobs">导出用例 (已选 {{Object.keys(this.selectedJobs).length}} 个)</Button>
         </div>
         <div class="child-m-right--1 flex-row">
-          <Button type="warning" @click="clear">取消选择</Button>
-          <Button type="error" @click="delSelectedJobs">批量删除</Button>
+          <Tag size="large" style="margin-top: 0; margin-bottom: 0;"> 已选 {{Object.keys(this.selectedJobs).length}} 个</Tag>
+          <Button type="success" icon="ios-cloud-download" @click="exportJobs">导出用例</Button>
+          <Button type="warning" icon="ios-qr-scanner" @click="clear">取消选择</Button>
+          <Button type="error" icon="md-trash" @click="delSelectedJobs">批量删除</Button>
         </div>
       </div>
       <Table
