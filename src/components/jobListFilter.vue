@@ -30,21 +30,21 @@
             </TabPane>
           </Tabs>
         </Row>
+        <div class="collapse__footer" v-show="collapseIsOpen">
+          <Row class="filter__container">
+            <!-- <span class="filter__title">筛选条件</span> -->
+            <div class="filter__content" v-show="filterConditions.length !== 0">
+              <div v-for="(val, key, idx) in filterFactors" :key="val.title" v-show="val.values.length !== 0" class="filter-factor">
+                <span class="filter-factor__title" @click="changeTab(idx + '')">{{val.title}}</span>
+                <div class="filter-factor__content">
+                  <Tag v-for="(factor, index) in val.values" :key="factor" closable @on-close="close(key, index)">{{ factor.split(':')[2] }}</Tag>
+                </div>
+              </div>
+            </div>
+          </Row>
+        </div>
       </div>
     </transition>
-    <div class="collapse__footer">
-      <Row class="filter__container">
-        <!-- <span class="filter__title">筛选条件</span> -->
-        <div class="filter__content" v-show="filterConditions.length !== 0">
-          <div v-for="(val, key, idx) in filterFactors" :key="val.title" v-show="val.values.length !== 0" class="filter-factor">
-            <span class="filter-factor__title" @click="changeTab(idx + '')">{{val.title}}</span>
-            <div class="filter-factor__content">
-              <Tag v-for="(factor, index) in val.values" :key="factor" closable @on-close="close(key, index)">{{ factor.split(':')[2] }}</Tag>
-            </div>
-          </div>
-        </div>
-      </Row>
-    </div>
   </div>
 </template>
 
@@ -312,7 +312,7 @@ export default {
         margin: 1em;
       }
       .filter__content {
-        padding: 1em;
+        padding: 1em 0 0;
         .filter-factor {
           display: flex;
           justify-content: flex-start;
@@ -320,6 +320,7 @@ export default {
           margin: 0.2em;
           min-height: 26px;
           &__title {
+            font-size: 0.75em;
             width: 6em;
             cursor: pointer;
           }
