@@ -65,7 +65,6 @@ export default {
       ],
       currentImageName: this.imageName,
       loading: false,
-      pid: 1,
       gallery: false
     }
   },
@@ -138,7 +137,7 @@ export default {
               }
               if (this.isPicInput) {
                 this.$store.commit('files/addResFile', {
-                  name: `ForPointSelect_${this.pid++}.png`,
+                  name: `ForPointSelect_${Math.random().toString(36).substr(2, 6)}.png`,
                   type: 'png',
                   file: res
                 })
