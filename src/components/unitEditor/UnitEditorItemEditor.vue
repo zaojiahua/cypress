@@ -1,6 +1,13 @@
 <template>
   <div class="card">
-    <p class="card-title">Item Editor</p>
+    <p class="card-title title">
+      Item Editor
+      <Button
+        v-show="this.picUrl.length !== 0"
+        size="small"
+        @click="gallery = !gallery"
+      >选取图片</Button>
+    </p>
     <div class="item-editor-empty card-body" v-show="!showItemEditor">
       <p class="empty">选择一个 ITEM 开始编辑吧</p>
     </div>
@@ -52,6 +59,7 @@
         </Button>
       </div>
     </div>
+    <Gallery mode="vertical" :picUrl="picUrl" @getPic="getPic" @close="closeGallery" :open="gallery"></Gallery>
     <Modal v-model="isDuplicatedFile" :styles="{top: '48%'}" :mask-closable="false"  :closable="false">
       <p slot="header">
         <Icon type="ios-alert-outline" style="color:orange;font-size:1.2em;font-weight:bold;" />
@@ -83,42 +91,26 @@ import { suffixComplete, suffixAutoRemove } from 'lib/tools.js'
 import ScreenShot from './UnitEditorScreenShot'
 import FeaturePoint from './UnitEditorFeaturePoint'
 import CONST from 'constant/constant'
+import Gallery from '_c/common/Gallery.vue'
 
 export default {
   name: 'ItemEditor',
-  components: { ScreenShot, FeaturePoint },
+  components: { ScreenShot, FeaturePoint, Gallery },
   data () {
     return {
       tmachBlanks: [],
       tmachIndex: 0,
       showRename: false,
       preFileName: null,
-      saving: false
+      saving: false,
+      gallery: false
     }
   },
   computed: {
-    ...mapState('files', [
-      'resFiles',
-      'resFilesName'
-    ]),
-    ...mapState('item', [
-      'showItemEditor',
-      'currentItem',
-      'saveToFinalResult'
-    ]),
-    ...mapState('img', [
-      'imgRecRate',
-      'coordinates',
-      'absoulteCoordinates'
-    ]),
-    ...mapGetters('item', [
-      'itemType',
-      'isPicInput',
-      'isOutputPicture',
-      'isOutputFile',
-      'isJobResourceFile',
-      'currentItemMeaning'
-    ]),
+    ...mapState('files', ['resFiles', 'resFilesName']),
+    ...mapState('item', ['showItemEditor', 'currentItem', 'saveToFinalResult']),
+    ...mapState('img', ['imgRecRate', 'coordinates', 'absoulteCoordinates']),
+    ...mapGetters('item', ['itemType', 'isPicInput', 'isOutputPicture', 'isOutputFile', 'isJobResourceFile', 'currentItemMeaning']),
     isDuplicatedFile: {
       get () {
         return this.$store.state.files.isDuplicatedFile
@@ -141,6 +133,9 @@ export default {
     },
     willTouchFile () {
       return CONST.WILL_TOUCH_FILE.has(this.itemType)
+    },
+    picUrl () {
+      return this.resFiles.filter((val) => { return val.type === 'png' })
     }
   },
   watch: {
@@ -321,6 +316,15 @@ export default {
         newName: newFileName
       })
       this.preFileName = null
+    },
+    getPic (val) {
+      this.$store.commit('files/setCurrentFile', {
+        byName: true,
+        name: val.name
+      })
+    },
+    closeGallery (val) {
+      this.gallery = val
     }
   }
 }
@@ -328,6 +332,13 @@ export default {
 
 <style lang="less" scoped>
   @import '../../css/common.less';
+  .title {
+    position: relative;
+    Button {
+      position: absolute;
+      right: 1em;
+    }
+  }
   .item-editor-empty {
     display: flex;
     flex-direction: column;
