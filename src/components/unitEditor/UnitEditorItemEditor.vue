@@ -212,13 +212,26 @@ export default {
       }
     },
     updateCurrentUnitItemData () {
+      if (!this.tmachBlanks.length) {
+        this.$Message.error({
+          background: true,
+          content: '不允许填入空值'
+        })
+        return
+      }
       let currentItem = this._.cloneDeep(this.currentItem)
       let tmachBlanks = currentItem.itemContent.content.match(/Tmach.*? /g)
-      let contentSeg = currentItem.itemContent.content.match(/.*?Tmach.*? /g)
+      console.log(tmachBlanks)
+      let curIndex = 0
+      let temp
       for (let i = 0; i < tmachBlanks.length; i++) {
-        contentSeg[i] = contentSeg[i].replace(tmachBlanks[i], `Tmach${this.tmachBlanks[i]} `)
+        curIndex = currentItem.itemContent.content.indexOf(tmachBlanks[i], curIndex)
+        temp = currentItem.itemContent.content.split('')
+        let target = `Tmach${this.tmachBlanks[i]} `
+        temp.splice(curIndex, tmachBlanks[i].length, target)
+        curIndex += target.length
+        currentItem.itemContent.content = temp.join('')
       }
-      currentItem.itemContent.content = contentSeg.join('')
       this.$emit('updateUnitItem', currentItem)
     },
     closeItemEditor () {

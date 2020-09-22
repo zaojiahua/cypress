@@ -4,7 +4,11 @@ let state = {
     itemName: '',
     itemContent: ''
   },
-  saveToFinalResult: false
+  saveToFinalResult: false,
+  areasInfo: {
+    data: [],
+    idx: undefined
+  }
 }
 
 let mutations = {
@@ -16,6 +20,9 @@ let mutations = {
   },
   setSaveToFinal (state, toggle) {
     state.saveToFinalResult = toggle
+  },
+  setAreasInfo (state, val) {
+    state.areasInfo = val
   }
 }
 

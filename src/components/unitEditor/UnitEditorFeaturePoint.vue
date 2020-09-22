@@ -97,32 +97,11 @@ export default {
     setFeaturePointFileName () {
       this.$emit('setFeaturePointFileName', this.currentFeaturePointFileName)
     },
-    removeLabelArea () {
-      let imageDom = document.querySelector('.selector')
-      let areas = document.querySelectorAll('.area')
-      areas.forEach(area => {
-        imageDom.removeChild(area)
-      })
-    },
     showLabelArea (currentRowData, index) {
-      this.removeLabelArea()
-      let coordinateA = currentRowData.coordinate_a.split(',')
-      let coordinateB = currentRowData.coordinate_b.split(',')
-      let selector = document.querySelector('.selector')
-      let selectorRect = selector.getBoundingClientRect()
-      let selectorImgRect = document.querySelector('.selector__img').getBoundingClientRect()
-      let offsetX = (selectorRect.width - selectorImgRect.width) / 2
-      let offsetY = (selectorRect.height - selectorImgRect.height) / 2
-      let left = offsetX + coordinateA[0] * selectorImgRect.width
-      let top = offsetY + coordinateA[1] * selectorImgRect.height
-      let width = (coordinateB[0] - coordinateA[0]) * selectorImgRect.width
-      let height = (coordinateB[1] - coordinateA[1]) * selectorImgRect.height
-
-      let area = document.createElement('div')
-      area.classList.add('area')
-      area.setAttribute('style', `display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bolder; position: absolute; left: ${left}px; top: ${top}px; width: ${width}px; height: ${height}px; z-index: 900; background: rgba(87, 250, 255, .4);`)
-      area.innerText = index + 1
-      selector.appendChild(area)
+      this.$store.commit('item/setAreasInfo', {
+        data: this._.cloneDeep(currentRowData),
+        index
+      })
     }
   }
 }

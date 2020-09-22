@@ -43,17 +43,10 @@ export default {
     }
   },
   computed: {
-    ...mapState('files', [
-      'resFiles',
-      'currentFile'
-    ]),
-    ...mapState('img', [
-      'coordinates'
-    ]),
-    ...mapGetters('item', [
-      'isJobResourcePicture',
-      'isJobResourceFile'
-    ]),
+    ...mapState('files', ['resFiles', 'currentFile']),
+    ...mapState('img', ['coordinates']),
+    ...mapState('item', ['saveToFinalResult']),
+    ...mapGetters('item', ['isJobResourcePicture', 'isJobResourceFile']),
     itemType () {
       return this.currentItem.type
     },
@@ -113,32 +106,11 @@ export default {
         bro.isClicked = false
       })
     },
-    removeLabelArea () { // 移除标示区域
-      let imageDom = document.querySelector('.selector')
-      let areas = document.querySelectorAll('.area')
-      areas.forEach(area => {
-        imageDom.removeChild(area)
-      })
-    },
     addAreas () { // 显示标示区域
-      let selector = document.querySelector('.selector')
-      let selectorRect = selector.getBoundingClientRect()
-      let selectorImgRect = document.querySelector('.selector__img').getBoundingClientRect()
-      for (let i = 0; i < this.coordinates.length; i++) {
-        let coordinateA = this.coordinates[i].coordinate_a.split(',')
-        let coordinateB = this.coordinates[i].coordinate_b.split(',')
-        let offsetX = (selectorRect.width - selectorImgRect.width) / 2
-        let offsetY = (selectorRect.height - selectorImgRect.height) / 2
-        let left = offsetX + coordinateA[0] * selectorImgRect.width
-        let top = offsetY + coordinateA[1] * selectorImgRect.height
-        let width = (coordinateB[0] - coordinateA[0]) * selectorImgRect.width
-        let height = (coordinateB[1] - coordinateA[1]) * selectorImgRect.height
-        let area = document.createElement('div')
-        area.classList.add('area')
-        area.setAttribute('style', `display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bolder; position: absolute; left: ${left}px; top: ${top}px; width: ${width}px; height: ${height}px; z-index: 900; background: rgba(87, 250, 255, .4); border: 1px dashed #0099FF;`)
-        area.innerText = i + 1
-        selector.appendChild(area)
-      }
+      this.$store.commit('item/setAreasInfo', {
+        data: this._.cloneDeep(this.coordinates),
+        index: undefined
+      })
     },
     setCoordinateAndImgRecRate (name) { // 点击 类型为 jobResourceFile 的 item 时，如果存在相应文件，则将文件内的数据提取出来
       this.$store.commit('img/clearCoordinates')
@@ -169,9 +141,12 @@ export default {
         })
         return
       }
-      this.removeLabelArea()
       this.handleClicked()
-      this.$store.commit('item/setSaveToFinal', false)
+      this.$store.commit('item/setAreasInfo', {
+        data: [],
+        index: undefined
+      })
+      if (this.saveToFinalResult) this.$store.commit('item/setSaveToFinal', false)
       this.$store.commit('item/setCurrentItem', this.itemData)
       this.$store.commit('item/setShowItemEditor', true)
       if (this.tmachBlanks[0].trim().length !== 0) {

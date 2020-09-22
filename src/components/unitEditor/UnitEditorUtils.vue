@@ -25,30 +25,37 @@
         <div class="box"></div>
         <div class="box"></div>
       </div>
-      <AreaSelector v-show="currentFile" :imgSrc="currentFile ? currentFile.file : ''" @on-select="select" :closable="true" maskKey="F2"></AreaSelector>
+      <ImageTool
+        v-show="currentFile"
+        :imgSrc="currentFile ? currentFile.file : ''"
+        @outputResult="outputResult"
+        :areasInfo="normalizedAreasInfo"
+      ></ImageTool>
     </div>
   </div>
 </template>
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import AreaSelector from '_c/common/AreaSelector'
+import ImageTool from '_c/common/ImageTool'
 
 export default {
   name: 'Utils',
-  components: { AreaSelector },
+  components: { ImageTool },
   data () {
     return {
       btnConfirmArea: null,
       coordinate: null,
       itemType: null,
       threshold: null,
-      fileInfo: null
+      fileInfo: null,
+      normalizedAreasInfo: []
     }
   },
   computed: {
     ...mapState(['isLoading']),
     ...mapState('files', ['resFiles', 'currentFile']),
+    ...mapState('item', ['areasInfo']),
     ...mapGetters('item', ['isPicInput', 'isJobResourceFile', 'isJobResourcePicture']),
     ...mapGetters('img', ['imgRecRate']),
     empty () {
@@ -64,12 +71,27 @@ export default {
       return null
     }
   },
+  watch: {
+    areasInfo (val) {
+      this.normalizedAreasInfo = this.normalizeAreasInfo(val)
+    }
+  },
   methods: {
     hasSelectArea () {
       if (!this.coordinate || !this.coordinate.relativeCoordinate || !this.coordinate.absoluteCoordinate) {
         this.$Message.warning({
           background: true,
           content: '请选择区域'
+        })
+        return false
+      }
+      return true
+    },
+    hasSelectAPoint () {
+      if (!this.point) {
+        this.$Message.warning({
+          background: true,
+          content: '请选择坐标点'
         })
         return false
       }
@@ -83,15 +105,46 @@ export default {
         coordinate_a: `${startPoint.x.toFixed(4)}, ${startPoint.y.toFixed(4)}`,
         coordinate_b: `${endPoint.x.toFixed(4)}, ${endPoint.y.toFixed(4)}`
       })
+      this.coordinate = null
     },
     handleAbsoluteCoordinates () {
-      if (!this.hasSelectArea()) return
-      let x = parseInt(this.coordinate.absoluteCoordinate.topLeft.x)
-      let y = parseInt(this.coordinate.absoluteCoordinate.topLeft.y)
-      this.$store.commit('img/setAbsoluteCoordinates', { x, y })
+      if (!this.hasSelectAPoint()) return
+      this.$store.commit('img/setAbsoluteCoordinates', this.point)
+      this.point = null
     },
-    select (val) {
-      this.coordinate = val
+    outputResult (val) {
+      this.coordinate = null
+      this.point = null
+      this.offset = null
+      if (val.coordinate) this.coordinate = this._.cloneDeep(val.coordinate)
+      if (val.point) this.point = this._.cloneDeep(val.point)
+      if (val.offset) this.offset = this._.cloneDeep(val.offset)
+    },
+    normalizeAreasInfo (val) {
+      let areasInfo = []
+      if (Array.isArray(val.data)) {
+        val.data.forEach(val => {
+          let tlp = val.coordinate_a.split(',')
+          let brp = val.coordinate_b.split(',')
+          areasInfo.push({
+            x: tlp[0],
+            y: tlp[1],
+            w: brp[0] - tlp[0],
+            h: brp[1] - tlp[1]
+          })
+        })
+      } else {
+        let tlp = val.data.coordinate_a.split(',')
+        let brp = val.data.coordinate_b.split(',')
+        areasInfo.push({
+          x: tlp[0],
+          y: tlp[1],
+          w: brp[0] - tlp[0],
+          h: brp[1] - tlp[1]
+        })
+        areasInfo.index = val.index
+      }
+      return areasInfo
     }
   }
 }
