@@ -1,9 +1,7 @@
 <template>
   <div class="image-tool-container">
     <div class="tool-bar">
-      <button class="tool-bar-btn active" @click="(evt) => setEventType(evt, 0)">选区</button>
-      <button class="tool-bar-btn" @click="(evt) => setEventType(evt, 1)">选点</button>
-      <button class="tool-bar-btn" @click="(evt) => setEventType(evt, 2)">测距</button>
+      <Button v-for="(val, idx) in eventTypes" :type="val === eventType ? 'primary' : 'default'" size="small" :key="val" @click="setEventType(idx)">{{ val }}</Button>
     </div>
     <div class="image-tool-content">
       <div>
@@ -24,10 +22,19 @@ export default {
       canvasW: 0,
       aspectRatio: 1.0,
       sizeRatio: 1.0,
-      eventTypes: ['AREA', 'POINT', 'RANGING'],
+      eventTypes: ['AREA', 'POINT', 'OFFSET'],
       eventType: 'AREA',
       canvasToggle: false,
       outputInfo: null
+    }
+  },
+  computed: {
+    offsetString () {
+      console.log(this.outputInfo)
+      if (this.outputInfo && this.outputInfo.offset) {
+        return `offsetX: ${this.outputInfo.offset.offsetX}, offsetY: ${this.outputInfo.offset.offsetY}`
+      }
+      return ''
     }
   },
   watch: {
@@ -37,7 +44,6 @@ export default {
     areasInfo (val) {
       this.context2D.clearRect(0, 0, this.canvasW, this.canvasH)
       val.forEach((v, i) => {
-        console.log(v)
         if (v.h < 1 && v.w < 1) {
           let x = v.x * this.canvasW
           let y = v.y * this.canvasH
@@ -67,14 +73,7 @@ export default {
         this.setOffScreenCanvas(img)
       }
     },
-    setEventType (evt, idx) {
-      let toolBarBtns = [...document.querySelectorAll('.tool-bar-btn')]
-      toolBarBtns.forEach(val => {
-        if (val.classList.contains('active')) {
-          val.classList.toggle('active')
-        }
-      })
-      evt.target.classList.toggle('active')
+    setEventType (idx) {
       this.eventType = this.eventTypes[idx]
     },
     setOffScreenCanvas (img) {
@@ -141,6 +140,7 @@ export default {
       }
       this.context2D.save()
       this.context2D.lineWidth = 2
+      this.context2D.fillStyle = 'white'
       this.context2D.strokeStyle = '#F76132'
       this.context2D.beginPath()
       this.context2D.moveTo(x0, y0)
@@ -148,6 +148,7 @@ export default {
       this.context2D.lineTo(x1, y0)
       this.context2D.closePath()
       this.context2D.stroke()
+      this.context2D.fill()
       this.context2D.restore()
     },
     dispatchMouseEvent (evt) {
@@ -164,10 +165,20 @@ export default {
             case 'mousemove':
               if (this.canvasToggle) {
                 this.context2D.clearRect(0, 0, this.canvasW, this.canvasH)
-                let areaW = offsetX - this.startX
-                let areaH = offsetY - this.startY
+                let absoluteCoordinate = {
+                  topLeft: {
+                    x: Math.max(0, Math.min(this.startX, offsetX)) * this.sizeRatio,
+                    y: Math.max(0, Math.min(this.startY, offsetY)) * this.sizeRatio
+                  },
+                  bottomRight: {
+                    x: Math.min(this.canvasW, Math.max(this.startX, offsetX)) * this.sizeRatio,
+                    y: Math.min(this.canvasH, Math.max(this.startY, offsetY)) * this.sizeRatio
+                  }
+                }
+                let areaW = (absoluteCoordinate.bottomRight.x - absoluteCoordinate.topLeft.x) / this.sizeRatio
+                let areaH = (absoluteCoordinate.bottomRight.y - absoluteCoordinate.topLeft.y) / this.sizeRatio
                 if (areaW > 10 || areaH > 10) {
-                  this.drawRect(this.startX, this.startY, areaW, areaH)
+                  this.drawRect(absoluteCoordinate.topLeft.x / this.sizeRatio, absoluteCoordinate.topLeft.y / this.sizeRatio, areaW, areaH)
                   this.fillCircle(this.startX, this.startY, 4)
                   this.fillCircle(offsetX, offsetY, 4)
                 }
@@ -240,7 +251,8 @@ export default {
             case 'mousedown':
               this.context2D.clearRect(0, 0, this.canvasW, this.canvasH)
               let { offsetX, offsetY } = evt
-              this.fillCircle(offsetX, offsetY, 10)
+              this.fillCircle(offsetX, offsetY, 12, 'rgba(107, 40, 200, .2)')
+              this.fillCircle(offsetX, offsetY, 3)
               this.outputInfo = {
                 point: {
                   x: (offsetX * this.sizeRatio).toFixed(2),
@@ -251,7 +263,7 @@ export default {
               break
           }
           break
-        case 'RANGING':
+        case 'OFFSET':
           switch (type) {
             case 'mousedown':
               this.context2D.clearRect(0, 0, this.canvasW, this.canvasH)
@@ -262,23 +274,37 @@ export default {
             case 'mousemove':
               if (this.canvasToggle) {
                 this.context2D.clearRect(0, 0, this.canvasW, this.canvasH)
-                if (offsetX - this.startX > 10 || offsetY - this.startY > 10) {
+                if (Math.abs(offsetX - this.startX) > 10 || Math.abs(offsetY - this.startY) > 10) {
                   this.drawTriangle(this.startX, this.startY, offsetX, offsetY)
+                  this.drawRect(0, 0, this.canvasW, 20, 'white')
                   this.fillCircle(this.startX, this.startY, 4)
-                  this.fillText(`${((offsetX - this.startX) * this.sizeRatio).toFixed(2)}`, this.startX, this.startY + 6, 'green')
-                  this.fillText(`${((offsetY - this.startY) * this.sizeRatio).toFixed(2)}`, offsetX + 10, offsetY - 10, 'green')
+                  let tempOffsetX = ((offsetX - this.startX) * this.sizeRatio).toFixed(2)
+                  let tempOffsetY = ((offsetY - this.startY) * this.sizeRatio).toFixed(2)
+                  this.fillText(`offsetX: ${tempOffsetX}, offsetY: ${tempOffsetY}`, 2, 5, 'black')
+                  this.outputInfo = {
+                    offset: {
+                      offsetX: tempOffsetX,
+                      offsetY: tempOffsetY
+                    }
+                  }
+                  this.$emit('outputResult', JSON.parse(JSON.stringify(this.outputInfo)))
                 }
               }
               break
             case 'mouseup':
               if (this.canvasToggle) {
                 this.canvasToggle = false
-                if (offsetX - this.startX > 10 || offsetY - this.startY > 10) {
+                if (Math.abs(offsetX - this.startX) > 10 || Math.abs(offsetY - this.startY) > 10) {
                   this.drawTriangle(this.startX, this.startY, offsetX, offsetY)
+                  this.drawRect(0, 0, this.canvasW, 20, 'white')
+                  this.fillCircle(this.startX, this.startY, 4)
+                  let tempOffsetX = ((offsetX - this.startX) * this.sizeRatio).toFixed(2)
+                  let tempOffsetY = ((offsetY - this.startY) * this.sizeRatio).toFixed(2)
+                  this.fillText(`offsetX: ${tempOffsetX}, offsetY: ${tempOffsetY}`, 2, 5, 'black')
                   this.outputInfo = {
                     offset: {
-                      offsetX: ((offsetX - this.startX) * this.sizeRatio).toFixed(2),
-                      offsetY: ((offsetY - this.startY) * this.sizeRatio).toFixed(2)
+                      offsetX: tempOffsetX,
+                      offsetY: tempOffsetY
                     }
                   }
                   this.$emit('outputResult', JSON.parse(JSON.stringify(this.outputInfo)))
@@ -288,12 +314,17 @@ export default {
             case 'mouseleave':
               if (this.canvasToggle) {
                 this.canvasToggle = false
-                if (offsetX - this.startX > 10 || offsetY - this.startY > 10) {
+                if (Math.abs(offsetX - this.startX) > 10 || Math.abs(offsetY - this.startY) > 10) {
                   this.drawTriangle(this.startX, this.startY, offsetX, offsetY)
+                  this.drawRect(0, 0, this.canvasW, 20, 'white')
+                  this.fillCircle(this.startX, this.startY, 4)
+                  let tempOffsetX = ((offsetX - this.startX) * this.sizeRatio).toFixed(2)
+                  let tempOffsetY = ((offsetY - this.startY) * this.sizeRatio).toFixed(2)
+                  this.fillText(`offsetX: ${tempOffsetX}, offsetY: ${tempOffsetY}`, 2, 5, 'black')
                   this.outputInfo = {
                     offset: {
-                      offsetX: ((offsetX - this.startX) * this.sizeRatio).toFixed(2),
-                      offsetY: ((offsetY - this.startY) * this.sizeRatio).toFixed(2)
+                      offsetX: tempOffsetX,
+                      offsetY: tempOffsetY
                     }
                   }
                   this.$emit('outputResult', JSON.parse(JSON.stringify(this.outputInfo)))
@@ -327,31 +358,10 @@ export default {
     justify-content: flex-start;
     align-items: center;
     width: 100%;
-    height: 60px;
-    padding: 1em;
-    .tool-bar-btn {
-      padding: 0.2em 0.8em;
+    height: 40px;
+    padding-bottom: .6em;
+    Button {
       margin-right: 1em;
-      border: 0;
-      font-size: 1rem;
-      color: white;
-      border-radius: 0.5em;
-      background-color: #57b;
-      box-shadow: 0 0.4em #148;
-      text-shadow: 1px 1px #148;
-      &:active {
-        background-color: #456ab5;
-        transform: translateY(0.1em);
-        box-shadow: 0 0.3em #148;
-      }
-      &:focus {
-        outline: none;
-      }
-    }
-    .active {
-      background-color: rgb(104, 201, 231);
-      box-shadow: 0 0.4em rgb(81, 158, 182);
-      color: black;
     }
   }
   .image-tool-content {
@@ -360,6 +370,10 @@ export default {
     align-items: center;
     height: 100%;
     width: 100%;
+    transition: box-shadow .3s linear;
+    &:hover {
+      box-shadow: 0 0 6px #666;
+    }
     div {
       position: relative;
       background-repeat: no-repeat;

@@ -1,38 +1,38 @@
 // jobList页面需要用到的格式校验规则
 
 const serializer = {
-  getPhoneModelSerializer: {
+  phoneModelSerializer: {
     phonemodels: [{
       id: 'number',
       phone_model_name: 'string'
     }]
   },
-  getJobTestAreaSerializer: {
+  testAreaSerializer: {
     jobtestareas: [{
       id: 'number',
       description: 'string'
     }]
   },
-  getAndroidVersionSerializer: {
+  androidVersionSerializer: {
     androidversions: [{
       id: 'number',
       version: 'string'
     }]
   },
-  getRomVersionSerializer: {
+  romVersionSerializer: {
     romversions: [{
       id: 'number',
       version: 'string'
     }]
   },
-  getReefUserSerializer: {
+  reefUserSerializer: {
     reefusers: [{
       id: 'number',
       username: 'string',
       last_name: 'string'
     }]
   },
-  getCustomTagSerializer: {
+  customTagSerializer: {
     customtags: [{
       id: 'number',
       custom_tag_name: 'string'
@@ -50,7 +50,7 @@ const serializer = {
       description: 'string'
     }]
   }],
-  getManufacturerSerializer: {
+  manufacturerSerializer: {
     manufacturers: [{
       id: 'number',
       manufacturer_name: 'string',
@@ -108,21 +108,8 @@ const jobSerializer = {
   }],
   ui_json_file: 'string'
 }
-const formInfoSerializer = {
-  job_name: 'string',
-  job_type: 'string',
-  job_second_type: 'string',
-  test_area: [],
-  custom_tag: [],
-  description: 'string',
-  manufacturer: 'string',
-  phone_models: [],
-  rom_version: [],
-  android_version: []
-}
 
 export {
   serializer,
-  jobSerializer,
-  formInfoSerializer
+  jobSerializer
 }

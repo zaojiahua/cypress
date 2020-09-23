@@ -1,54 +1,55 @@
 <template>
   <Drawer title="用例详情" :closable="false" v-model="$store.state.showDrawer" width="30" @on-close="closeDrawer">
-    <Divider orientation="left">
-      <b>用例信息</b>
-    </Divider>
-    <Form ref="formInfo" :label-width="100" :model='formInfo' :rules='jobInfoRules'>
-      <FormItem label="用例名称:" prop="job_name">
-        <Input v-model="formInfo.job_name" placeholder="请输入" clearable/>
+    <Form ref="form"
+      :model="$store.state.job.jobInfo"
+      width="30" :label-width="90"
+      label-position="left"
+      :rules="validateRules">
+      <FormItem label="用例名称" prop="job_name">
+        <Input v-model="$store.state.job.jobInfo.job_name" clearable placeholder="请输入用例名称"/>
       </FormItem>
-      <FormItem label="测试用途:" prop="test_area">
-        <Select v-model="formInfo.test_area" multiple placeholder="请选择" filterable allow-create>
-          <Option v-for="item in jobTestArea.jobtestareas" :value="item.id" :key="item.id">{{ item.description }}</Option>
+      <FormItem label="测试用途" prop="test_area">
+        <Select v-model="$store.state.job.jobInfo.test_area" multiple placeholder="请选择" filterable allow-create>
+          <Option v-for="item in testArea.jobtestareas" :value="item.id" :key="item.id">{{ item.description }}</Option>
         </Select>
       </FormItem>
-      <FormItem label="用例类型:" prop="job_type">
+      <FormItem label="用例类型" prop="job_type">
         <Cascader :data="jobTypes" v-model="curJobType"></Cascader>
       </FormItem>
-      <FormItem label="自定义标签:" prop="custom_tag">
-        <Select v-model="formInfo.custom_tag" multiple placeholder="请选择" filterable allow-create>
+      <FormItem label="自定义标签" prop="custom_tag">
+        <Select v-model="$store.state.job.jobInfo.custom_tag" multiple placeholder="请选择" filterable allow-create>
           <Option v-for="item in customTag.customtags" :value="item.id" :key="item.id">{{ item.custom_tag_name }}</Option>
         </Select>
       </FormItem>
-      <FormItem label="用例说明:" prop="description">
-        <Input v-model="formInfo.description" clearable placeholder="请输入"/>
+      <FormItem label="用例说明" prop="description">
+        <Input v-model="$store.state.job.jobInfo.description" clearable placeholder="请输入说明信息" />
       </FormItem>
       <Divider orientation="left" class="device-info-title" style="margin-top: 60px;">
         <b>设备信息</b>
-        <Button type="info" @click="selectDevice">选取设备</Button>
+        <Button type="info" @click="$store.commit('device/setSelectDevice')">选取设备</Button>
       </Divider>
-      <FormItem label="厂商信息:" prop="manufacturers">
-        <Select v-model="formInfo.manufacturer" placeholder="请选择" @on-change="clear" filterable>
+      <FormItem label="厂商信息" prop="manufacturer">
+        <Select v-model="$store.state.job.jobInfo.manufacturer" placeholder="请选择" @on-change="clear" filterable>
           <Option v-for="item in manufacturer.manufacturers" :value="item.id" :key="item.id">{{ item.manufacturer_name }}</Option>
         </Select>
       </FormItem>
-      <FormItem label="适配机型:" prop="phone_models">
-        <Select v-model="formInfo.phone_models" multiple :disabled="disabled" placeholder="请选择" filterable>
-          <Option v-for="item in checkManufacturerList.phonemodel" :value="item.id" :key="item.id">{{ item.phone_model_name }}</Option>
+      <FormItem label="适配机型" prop="phone_models">
+        <Select v-model="$store.state.job.jobInfo.phone_models" multiple :disabled="disabled" placeholder="请选择" filterable>
+          <Option v-for="item in curManufacturer.phonemodel" :value="item.id" :key="item.id">{{ item.phone_model_name }}</Option>
         </Select>
       </FormItem>
-      <FormItem label="ROM版本:" prop="rom_version">
-        <Select v-model="formInfo.rom_version" multiple :disabled="disabled" placeholder="请选择" filterable>
-          <Option v-for="item in checkManufacturerList.romversion" :value="item.id" :key="item.id">{{ item.version }}</Option>
+      <FormItem label="ROM版本" prop="rom_version">
+        <Select v-model="$store.state.job.jobInfo.rom_version" multiple :disabled="disabled" placeholder="请选择" filterable>
+          <Option v-for="item in curManufacturer.romversion" :value="item.id" :key="item.id">{{ item.version }}</Option>
         </Select>
       </FormItem>
-      <FormItem label="适配系统:" prop="android_version">
-        <Select v-model="formInfo.android_version" multiple placeholder="请选择">
+      <FormItem label="适配系统" prop="android_version">
+        <Select v-model="$store.state.job.jobInfo.android_version" multiple placeholder="请选择">
           <Option v-for="item in androidVersion.androidversions" :value="item.id" :key="item.id">{{ item.version }}</Option>
         </Select>
       </FormItem>
       <div v-show="!isJobEditor" style="float: right;">
-        <Button type="success" @click="saveChange" style="margin-right: 20px">保存修改</Button>
+        <Button type="success" @click="saveChange" style="margin-right: 1em">保存修改</Button>
         <Button type="info" @click="enterJobEditor">开始编辑</Button>
       </div>
     </Form>
@@ -73,7 +74,7 @@
 </template>
 <script>
 import util from 'lib/util/validate.js'
-import { serializer, jobSerializer, formInfoSerializer } from 'lib/util/jobListSerializer'
+import { serializer, jobSerializer } from 'lib/util/jobListSerializer'
 
 import { patchUpdateJob } from 'api/reef/job'
 import { getManufacturerList } from 'api/reef/manufacturer'
@@ -90,8 +91,28 @@ export default {
   components: { jobDeviceSelect },
   data () {
     return {
-      checkManufacturerList: {},
+      curManufacturer: {},
       disabled: true,
+      validateRules: {
+        job_name: [{
+          required: true, message: '用例名称不能为空', trigger: 'blur,change'
+        }],
+        test_area: [{
+          required: true, type: 'array', min: 1, message: '测试用途不能为空', trigger: 'change'
+        }],
+        manufacturer: [{
+          required: true, type: 'number', message: '厂商信息不能为空', trigger: 'change'
+        }],
+        phone_models: [{
+          required: true, type: 'array', min: 1, message: '适配机型不能为空', trigger: 'change'
+        }],
+        rom_version: [{
+          required: true, type: 'array', min: 1, message: 'ROM版本不能为空', trigger: 'change'
+        }],
+        android_version: [{
+          required: true, type: 'array', min: 1, message: '适配系统不能为空', trigger: 'change'
+        }]
+      },
       jobInfoRules: {
         job_name: [
           { required: true, message: '请输入用例名称', trigger: 'blur,change' }
@@ -122,19 +143,16 @@ export default {
         ]
       },
       job: util.validate(jobSerializer, {}),
-      formInfo: util.validate(formInfoSerializer, {}),
-      manufacturer: util.validate(serializer.getManufacturerSerializer, {}),
-      androidVersion: util.validate(serializer.getAndroidVersionSerializer, {}),
-      customTag: util.validate(serializer.getCustomTagSerializer, {}),
-      jobTestArea: util.validate(serializer.getJobTestAreaSerializer, {}),
+      manufacturer: util.validate(serializer.manufacturerSerializer, {}),
+      androidVersion: util.validate(serializer.androidVersionSerializer, {}),
+      customTag: util.validate(serializer.customTagSerializer, {}),
+      testArea: util.validate(serializer.testAreaSerializer, {}),
       isConflicted: false,
       jobTypes: [
         {
           value: 'Joblib',
           label: '功能测试',
-          children: [
-
-          ]
+          children: []
         },
         {
           value: 'InnerJob',
@@ -152,7 +170,8 @@ export default {
           ]
         }
       ],
-      curJobType: []
+      curJobType: [],
+      serializerKeys: ['manufacturer', 'androidVersion', 'customTag', 'testArea']
     }
   },
   computed: {
@@ -160,48 +179,27 @@ export default {
     ...mapState('job', ['jobInfo', 'draftId']),
     ...mapGetters('job', ['jobId']),
     ...mapState('device', ['deviceInfo', 'preDeviceInfo', 'countdown']),
-    manufacturerId () {
-      return this.formInfo.manufacturer
-    },
     isJobEditor () { // 是否在 JobEditor 页面
       return this.$route.name === 'jobEditor'
     }
   },
   watch: {
+    jobInfo (val) {
+      console.log(val)
+    },
     showDrawer (val) {
-      if (val === false && this.$route.name === 'jobList') {
-        this.$store.commit('job/recoverJobInfo')
-      }
+      if (val === false && !this.isJobEditor) this.$store.commit('job/recoverJobInfo')
     },
     deviceInfo (newVal, oldVal) { // 设备信息变化时检测是否和已填信息发生冲突并进行处理
       this.$store.commit('device/setPreDeviceInfo', oldVal)
-      this.checkConflict(this.formInfo, newVal, false, true)
+      this.checkConflict(false, true)
     },
-    manufacturerId (val) { // 当厂商发生变动时刷新列表
-      this.refreshManufacturer()
-    },
-    jobInfo (val) { // jobInfo 更新时同步更新 formInfo
-      for (let key in this.formInfo) {
-        this.formInfo[key] = val[key]
-      }
-      if (this.formInfo.job_type) {
-        this.curJobType.splice(0, 1, this.formInfo.job_type)
-      } else {
-        this.curJobType.splice(0, 1)
-      }
-      if (this.formInfo.job_second_type) {
-        this.curJobType.splice(1, 1, this.formInfo.job_second_type)
-      } else {
-        this.curJobType.splice(1, 1)
-      }
-      this.$refs.formInfo.validate((valid) => {
-        this.$store.commit('job/setIsValidated', valid)
-      })
-      this.getInfo()
+    'jobInfo.manufacturer' (val) { // 当厂商发生变动时刷新列表
+      this.resetManufacturter()
     },
     curJobType (val) {
-      this.formInfo.job_type = val[0]
-      this.formInfo.job_second_type = val[1]
+      this.jobInfo.job_type = val[0]
+      this.jobInfo.job_second_type = val[1]
     }
   },
   methods: {
@@ -229,7 +227,7 @@ export default {
       this.$store.commit('files/clearResFiles')
 
       if (this.countdown) {
-        this.checkConflict(this.formInfo, this.deviceInfo, true, false)
+        this.checkConflict(true, false)
       }
 
       this.$router.push({ // 跳转到 JobEditor
@@ -239,19 +237,27 @@ export default {
         }
       })
     },
-    clear () { // 当厂商变化时清空 适配机型 与 ROM版本 信息
-      this.formInfo.phone_models = []
-      this.formInfo.rom_version = []
-    },
-    refreshManufacturer () {
-      this.disabled = false
-      this.manufacturer.manufacturers.forEach(item => {
-        if (item.id === this.manufacturerId) {
-          this.checkManufacturerList = item
-        }
+    getInfo () {
+      Promise.all([getManufacturerList(), getAndroidVersionList(), getCustomTagList(), getJobTestAreaList()]).then((res) => {
+        this.serializerKeys.forEach((val, idx) => {
+          this[val] = util.validate(serializer[`${val}Serializer`], res[idx].data)
+        })
       })
     },
-    async _controlDevice () {
+    clear () { // 当厂商变化时清空 适配机型 与 ROM版本 信息
+      this.jobInfo.phone_models = []
+      this.jobInfo.rom_version = []
+    },
+    resetManufacturter () {
+      for (let i = 0; i < this.manufacturer.manufacturers.length; i++) {
+        if (this.manufacturer.manufacturers[i].id === this.jobInfo.manufacturer) {
+          this.curManufacturer = this.manufacturer.manufacturers[i]
+          this.disabled = false
+          break
+        }
+      }
+    },
+    async controlDevice () {
       if (this.preDeviceInfo) {
         try {
           // eslint-disable-next-line camelcase
@@ -291,10 +297,8 @@ export default {
       }
     },
     saveChange () { // 保存对当前 Job 的修改
-      this.$refs.formInfo.validate((valid) => {
+      this.$refs.form.validate((valid) => {
         if (valid) { // 通过验证
-          this.$store.commit('job/setJobInfo', Object.assign(this.jobInfo, this.formInfo))
-
           patchUpdateJob(this.jobId, this.jobInfo).then(() => {
             this.$Message.info('修改成功')
           }).catch(error => {
@@ -308,92 +312,80 @@ export default {
         }
       })
     },
-    selectDevice () { // 打开设备选取页面
-      this.$store.commit('device/setSelectDevice')
-    },
     handleConflict () { // 打开或关闭冲突处理面板
       this.isConflicted = !this.isConflicted
     },
     deviceInfoAppend () { // 发生冲突后将选取的设备信息追加
-      if (!this.phoneModelFlag) this.formInfo.phone_models.push(this.deviceInfo.phone_model_id)
-      if (!this.romVersionFlag) this.formInfo.rom_version.push(this.deviceInfo.rom_version_id)
-      if (!this.androidVersionFlag) this.formInfo.android_version.push(this.deviceInfo.android_version_id)
-      console.log('请求占用')
-      this._controlDevice()
-
+      if (!this.phoneModelFlag) this.jobInfo.phone_models.push(this.deviceInfo.phone_model_id)
+      if (!this.romVersionFlag) this.jobInfo.rom_version.push(this.deviceInfo.rom_version_id)
+      if (!this.androidVersionFlag) this.jobInfo.android_version.push(this.deviceInfo.android_version_id)
+      this.controlDevice()
       this.handleConflict()
     },
     deviceInfoReplace (toggle = true) { // 发生冲突后用选取的设备信息替换原设备信息
       if (!this.deviceInfo) return
-      this.formInfo.manufacturer = this.deviceInfo.manufacturer_id
-      this.formInfo.phone_models = [this.deviceInfo.phone_model_id]
-      this.formInfo.rom_version = [this.deviceInfo.rom_version_id]
-      this.formInfo.android_version = [this.deviceInfo.android_version_id]
-      console.log('请求占用')
-      this._controlDevice()
-
+      this.jobInfo.manufacturer = this.deviceInfo.manufacturer_id
+      this.jobInfo.phone_models = [this.deviceInfo.phone_model_id]
+      this.jobInfo.rom_version = [this.deviceInfo.rom_version_id]
+      this.jobInfo.android_version = [this.deviceInfo.android_version_id]
+      this.controlDevice()
       if (toggle) this.handleConflict()
     },
     closeDrawer () { // 关闭右侧抽屉时检测当前 Job 是否通过验证，并更新 JobInfo
-      if (this.$route.name === 'jobEditor') {
-        this.$refs.formInfo.validate((valid) => {
+      if (this.isJobEditor) {
+        this.$refs.form.validate((valid) => {
           this.$store.commit('job/setIsValidated', valid)
-          if (!valid && this.isJobEditor) {
+          if (!valid) {
             this.$Message.warning({
               background: true,
               content: '请输入完整信息'
             })
           }
         })
-        this.$store.commit('job/setJobInfo', Object.assign(this.jobInfo, this.formInfo))
       }
     },
-    async checkConflict (formInfo, deviceInfo, formToggle, deviceToggle) {
-      if (!formInfo || !deviceInfo) {
-        return
-      }
+    async checkConflict (deviceToggle, formToggle) {
       if (deviceToggle) {
-        if (!formInfo.manufacturer) { // 当前 formInfo 没有厂商信息时则用设备信息直接替换
-          this.deviceInfoReplace(false)
+        if (!this.jobInfo.manufacturer) {
+          this.deviceInfoReplace(true)
           return
         }
-        if (formInfo.manufacturer !== deviceInfo.manufacturer_id) { // 设备厂商与 formInfo 厂商不符合时需要解决冲突
+        if (this.jobInfo.manufacturer !== this.deviceInfo.manufacturer_id) {
           this.handleConflict()
           return
         }
-
         let same = true
         this.phoneModelFlag = true
         this.romVersionFlag = true
         this.androidVersionFlag = true
-        if (!formInfo.phone_models.includes(deviceInfo.phone_model_id)) { // 检测适配机型是否冲突
+        if (!this.jobInfo.phone_models.includes(this.deviceInfo.phone_models_id)) {
           this.phoneModelFlag = false
           same = false
         }
-        if (!formInfo.rom_version.includes(deviceInfo.rom_version_id)) { // 检测 ROM 版本是否冲突
+        if (!this.jobInfo.rom_version.includes(this.deviceInfo.rom_version_id)) { // 检测 ROM 版本是否冲突
           this.romVersionFlag = false
           same = false
         }
-        if (!formInfo.android_version.includes(deviceInfo.android_version_id)) { // 检测适配系统是否冲突
+        if (!this.jobInfo.android_version.includes(this.deviceInfo.android_version_id)) { // 检测适配系统是否冲突
           this.androidVersionFlag = false
           same = false
         }
         if (!same) { // 有冲突则进行处理
           this.handleConflict()
         } else {
-          this._controlDevice()
+          this.controlDevice()
         }
       }
       if (formToggle) {
-        if (!deviceInfo) return
+        if (!this.deviceInfo) return
         if (
-          formInfo.manufacturer !== deviceInfo.manufacturer_id ||
-          !formInfo.phone_models.includes(deviceInfo.phone_model_id) ||
-          !formInfo.rom_version.includes(deviceInfo.rom_version_id) ||
-          !formInfo.android_version.includes(deviceInfo.android_version_id)
+          this.jobInfo.manufacturer !== this.deviceInfo.manufacturer_id ||
+          !this.jobInfo.phone_models.includes(this.deviceInfo.phone_model_id) ||
+          !this.jobInfo.rom_version.includes(this.deviceInfo.rom_version_id) ||
+          !this.jobInfo.android_version.includes(this.deviceInfo.android_version_id)
         ) {
           let { status } = await releaseOccupyDevice({
-            device_id_list: [deviceInfo.id]
+            device_id_list: [this.deviceInfo.id]
           })
           if (status === 200) {
             this.$Message.warning({
@@ -404,20 +396,9 @@ export default {
           this.$store.commit('device/setCountdown')
         }
       }
-    },
-    getInfo () {
-      Promise.all([getManufacturerList(), getAndroidVersionList(), getCustomTagList(), getJobTestAreaList()]).then((res) => {
-        this.manufacturer = util.validate(serializer.getManufacturerSerializer, res[0].data)
-        this.androidVersion = util.validate(serializer.getAndroidVersionSerializer, res[1].data)
-        this.customTag = util.validate(serializer.getCustomTagSerializer, res[2].data)
-        this.jobTestArea = util.validate(serializer.getJobTestAreaSerializer, res[3].data)
-      })
     }
   },
   mounted () {
-    this.$Message.config({
-      duration: 3
-    })
     this.getInfo()
   }
 }

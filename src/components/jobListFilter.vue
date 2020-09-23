@@ -124,32 +124,32 @@ export default {
         {
           mainKey: 'phone_model',
           subKey: 'phone_model_name',
-          serializerKey: 'PhoneModel'
+          serializerKey: 'phoneModel'
         },
         {
           mainKey: 'job_test_area',
           subKey: 'description',
-          serializerKey: 'JobTestArea'
+          serializerKey: 'testArea'
         },
         {
           mainKey: 'android_version',
           subKey: 'version',
-          serializerKey: 'AndroidVersion'
+          serializerKey: 'androidVersion'
         },
         {
           mainKey: 'rom_version',
           subKey: 'version',
-          serializerKey: 'RomVersion'
+          serializerKey: 'romVersion'
         },
         {
           mainKey: 'reefuser',
           subKey: 'username',
-          serializerKey: 'ReefUser'
+          serializerKey: 'reefUser'
         },
         {
           mainKey: 'custom_tag',
           subKey: 'custom_tag_name',
-          serializerKey: 'CustomTag'
+          serializerKey: 'customTag'
         }
       ]
     }
@@ -238,7 +238,7 @@ export default {
       this.collapseIsOpen = !this.collapseIsOpen
     },
     setFilterdata (mainKey, serializerKey, data) {
-      let validatedData = util.validate(serializer[`get${serializerKey}Serializer`], data)
+      let validatedData = util.validate(serializer[`${serializerKey}Serializer`], data)
       this.$set(this.filterData, mainKey, validatedData[Object.keys(validatedData)[0]])
     },
     orderFilterData (mainKey, subKey) {

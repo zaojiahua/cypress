@@ -83,7 +83,7 @@ export default {
       rename: false,
       lastActiveTime: null,
       activeTimeInterval: 120000,
-      autoSaveInterval: 180000000,
+      autoSaveInterval: 18000000000,
       autoSaveTimer: null,
       autoSaveToggle: true,
       openNormalEditor: false
@@ -337,10 +337,10 @@ export default {
       return list
     },
     async prepareAutoSaveInfo () {
+      this.jobInfo.test_area = await createNewTag('test_area', this.jobInfo)
+      this.jobInfo.custom_tag = await createNewTag('custom_tag', this.jobInfo)
       let info = this._.cloneDeep(this.jobInfo)
       info.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
-      info.test_area = await createNewTag('test_area', info)
-      info.custom_tag = await createNewTag('custom_tag', info)
       info.author = localStorage.id
       info.job_name += '_AUTOSAVE'
       info.inner_job_list = this.prepareInnerJobList()

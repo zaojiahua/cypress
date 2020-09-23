@@ -203,7 +203,7 @@ export default {
         let job = util.validate(jobSerializer, res.data)
         let jobInfo = {
           manufacturer: job.phone_models[0].manufacturer.id,
-          author: parseInt(localStorage.id),
+          author: parseInt(localStorage.id || sessionStorage.id),
           job_id: job.id,
           job_flow: job.ui_json_file
         }
