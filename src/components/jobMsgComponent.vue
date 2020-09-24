@@ -52,6 +52,7 @@
         <Button type="success" @click="saveChange" style="margin-right: 1em">保存修改</Button>
         <Button type="info" @click="enterJobEditor">开始编辑</Button>
       </div>
+      {{customTag}}
     </Form>
     <job-device-select></job-device-select>
     <Modal v-model="isConflicted" :closable="false" :styles="{top: '42%'}" width="390">
@@ -73,14 +74,10 @@
   </Drawer>
 </template>
 <script>
+import CONST from 'constant/constant'
 import util from 'lib/util/validate.js'
-import { serializer, jobSerializer } from 'lib/util/jobListSerializer'
-
+import { jobSerializer } from 'lib/util/jobListSerializer'
 import { patchUpdateJob } from 'api/reef/job'
-import { getManufacturerList } from 'api/reef/manufacturer'
-import { getJobTestAreaList } from 'api/reef/jobTestArea'
-import { getCustomTagList } from 'api/reef/customTag'
-import { getAndroidVersionList } from 'api/reef/androidVersion'
 import { controlDevice, releaseOccupyDevice } from 'api/reef/device'
 import jobDeviceSelect from '../components/jobDeviceSelect'
 
@@ -143,10 +140,6 @@ export default {
         ]
       },
       job: util.validate(jobSerializer, {}),
-      manufacturer: util.validate(serializer.manufacturerSerializer, {}),
-      androidVersion: util.validate(serializer.androidVersionSerializer, {}),
-      customTag: util.validate(serializer.customTagSerializer, {}),
-      testArea: util.validate(serializer.testAreaSerializer, {}),
       isConflicted: false,
       jobTypes: [
         {
@@ -170,13 +163,12 @@ export default {
           ]
         }
       ],
-      curJobType: [],
-      serializerKeys: ['manufacturer', 'androidVersion', 'customTag', 'testArea']
+      curJobType: []
     }
   },
   computed: {
     ...mapState(['showDrawer']),
-    ...mapState('job', ['jobInfo', 'draftId']),
+    ...mapState('job', ['jobInfo', 'draftId'].concat(CONST.SERIALIZER_KEY)),
     ...mapGetters('job', ['jobId']),
     ...mapState('device', ['deviceInfo', 'preDeviceInfo', 'countdown']),
     isJobEditor () { // 是否在 JobEditor 页面
@@ -235,13 +227,6 @@ export default {
         query: {
           jobId: this.jobId
         }
-      })
-    },
-    getInfo () {
-      Promise.all([getManufacturerList(), getAndroidVersionList(), getCustomTagList(), getJobTestAreaList()]).then((res) => {
-        this.serializerKeys.forEach((val, idx) => {
-          this[val] = util.validate(serializer[`${val}Serializer`], res[idx].data)
-        })
       })
     },
     clear () { // 当厂商变化时清空 适配机型 与 ROM版本 信息
@@ -399,7 +384,7 @@ export default {
     }
   },
   mounted () {
-    this.getInfo()
+    this.$store.dispatch('job/setBaseData')
   }
 }
 </script>

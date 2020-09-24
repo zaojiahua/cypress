@@ -129,5 +129,6 @@ export default {
   }),
   SIMPLE_JOB_KEY: ['job_name', 'job_type', 'job_second_type', 'job_label', 'description', 'draft'],
   COMPLEX_JOB_KEY: ['test_area', 'android_version', 'custom_tag', 'phone_models', 'rom_version'],
-  USER_INFO: ['id', 'username', 'groups', 'token']
+  USER_INFO: ['id', 'username', 'groups', 'token'],
+  SERIALIZER_KEY: ['manufacturer', 'androidVersion', 'customTag', 'testArea']
 }

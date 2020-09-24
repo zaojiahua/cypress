@@ -63,8 +63,10 @@ import { patchUpdateJob } from 'api/reef/job'
 import SwitchBlockDetailComponent from '_c/SwitchBlockDetailComponent'
 import { jobFlowValidation } from '../core/validation/finalValidation/job'
 import { mapState, mapGetters } from 'vuex'
-import { createJobLabel, dataURLtoFile, createNewTag } from '../lib/tools'
+import { createJobLabel, dataURLtoFile } from '../lib/tools'
 import { releaseOccupyDevice } from '../api/reef/device'
+import { baseURL } from '../config'
+import axios from '../api'
 
 export default {
   name: 'jobEditor',
@@ -83,7 +85,7 @@ export default {
       rename: false,
       lastActiveTime: null,
       activeTimeInterval: 120000,
-      autoSaveInterval: 18000000000,
+      autoSaveInterval: 20000,
       autoSaveTimer: null,
       autoSaveToggle: true,
       openNormalEditor: false
@@ -265,8 +267,8 @@ export default {
     async prepareJobInfo (saveAs, createNew, isDraft) {
       let info = this._.cloneDeep(this.jobInfo)
       info.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
-      info.test_area = await createNewTag('test_area', info)
-      info.custom_tag = await createNewTag('custom_tag', info)
+      info.test_area = await this.createNewTag('test_area', info)
+      info.custom_tag = await this.createNewTag('custom_tag', info)
       info.author = localStorage.id
       this.removeInvalidFile(info.ui_json_file)
       info.inner_job_list = []
@@ -336,10 +338,32 @@ export default {
       innerJobs.each(node => { if (node.data.jobLabel) { list.push(node.data.jobLabel) } })
       return list
     },
+    async createNewTag (tagType, jobInfo) {
+      let target = jobInfo[tagType]
+      if (!target) return []
+      let targetNameDic = {
+        'test_area': 'job_test_area',
+        'custom_tag': 'custom_tag'
+      }
+      for (let i = 0; i < target.length; i++) {
+        if (typeof target[i] !== 'number') {
+          let { data: { id } } = await axios.request({
+            url: `${baseURL}/api/v1/cedar/${targetNameDic[tagType]}/`,
+            method: 'post',
+            data: tagType === 'test_area' ? { description: target[i] } : { custom_tag_name: target[i] }
+          })
+          target.splice(i, 1, id)
+          this.jobInfo[tagType].splice(i, 1, id)
+        }
+      }
+      return target
+    },
     async prepareAutoSaveInfo () {
-      this.jobInfo.test_area = await createNewTag('test_area', this.jobInfo)
-      this.jobInfo.custom_tag = await createNewTag('custom_tag', this.jobInfo)
       let info = this._.cloneDeep(this.jobInfo)
+      info.test_area = await this.createNewTag('test_area', info)
+      this.$store.dispatch('job/setJobTestArea', this._.cloneDeep(info.test_area))
+      info.custom_tag = await this.createNewTag('custom_tag', info)
+      this.$store.dispatch('job/setJobCustomTag', this._.cloneDeep(info.custom_tag))
       info.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
       info.author = localStorage.id
       info.job_name += '_AUTOSAVE'

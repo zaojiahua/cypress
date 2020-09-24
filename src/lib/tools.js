@@ -1,6 +1,4 @@
 import CONST from 'constant/constant'
-import axios from 'api'
-import { baseURL } from '../config'
 
 export function isJsonString (str) {
   try {
@@ -135,26 +133,6 @@ function suffixComplete (str, type) {
   if (flag) return str
 }
 
-async function createNewTag (tagType, jobInfo) {
-  let target = jobInfo[tagType]
-  if (!target) return []
-  let targetNameDic = {
-    'test_area': 'job_test_area',
-    'custom_tag': 'custom_tag'
-  }
-  for (let i = 0; i < target.length; i++) {
-    if (typeof target[i] !== 'number') {
-      let { data: { id } } = await axios.request({
-        url: `${baseURL}/api/v1/cedar/${targetNameDic[tagType]}/`,
-        method: 'post',
-        data: tagType === 'test_area' ? { description: target[i] } : { custom_tag_name: target[i] }
-      })
-      target.splice(i, 1, id)
-    }
-  }
-  return target
-}
-
 export {
   findBrothersComponents,
   findComponentsDownward,
@@ -164,6 +142,5 @@ export {
   suffixAutoRemove,
   suffixAutoComplete,
   createJobLabel,
-  suffixComplete,
-  createNewTag
+  suffixComplete
 }
