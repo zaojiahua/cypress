@@ -22,8 +22,8 @@ export default {
       canvasW: 0,
       aspectRatio: 1.0,
       sizeRatio: 1.0,
-      eventTypes: ['AREA', 'POINT', 'OFFSET'],
-      eventType: 'AREA',
+      eventTypes: ['选区', '选点', '测距'],
+      eventType: '选区',
       canvasToggle: false,
       outputInfo: null
     }
@@ -154,7 +154,7 @@ export default {
     dispatchMouseEvent (evt) {
       let { type, offsetX, offsetY } = evt
       switch (this.eventType) {
-        case 'AREA':
+        case '选区':
           switch (type) {
             case 'mousedown':
               this.context2D.clearRect(0, 0, this.canvasW, this.canvasH)
@@ -246,7 +246,7 @@ export default {
               break
           }
           break
-        case 'POINT':
+        case '选点':
           switch (type) {
             case 'mousedown':
               this.context2D.clearRect(0, 0, this.canvasW, this.canvasH)
@@ -263,7 +263,7 @@ export default {
               break
           }
           break
-        case 'OFFSET':
+        case '测距':
           switch (type) {
             case 'mousedown':
               this.context2D.clearRect(0, 0, this.canvasW, this.canvasH)

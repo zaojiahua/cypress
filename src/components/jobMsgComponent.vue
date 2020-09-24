@@ -79,6 +79,7 @@ import { jobSerializer } from 'lib/util/jobListSerializer'
 import { patchUpdateJob } from 'api/reef/job'
 import { controlDevice, releaseOccupyDevice } from 'api/reef/device'
 import jobDeviceSelect from '../components/jobDeviceSelect'
+import { createNewTag } from 'lib/tools'
 
 import { mapState, mapGetters } from 'vuex'
 
@@ -290,13 +291,17 @@ export default {
       }
     },
     saveChange () { // 保存对当前 Job 的修改
-      this.$refs.form.validate((valid) => {
+      this.$refs.form.validate(async (valid) => {
+        this.$store.dispatch('job/setJobTestArea', await createNewTag('test_area', this.jobInfo))
+        this.$store.dispatch('job/setJobCustomTag', await createNewTag('custom_tag', this.jobInfo))
         if (valid) { // 通过验证
-          patchUpdateJob(this.jobId, this.jobInfo).then(() => {
-            this.$Message.info('修改成功')
-          }).catch(error => {
-            console.log(error)
-          })
+          setTimeout(() => {
+            patchUpdateJob(this.jobId, this.jobInfo).then(() => {
+              this.$Message.info('修改成功')
+            }).catch(error => {
+              console.log(error)
+            })
+          }, 400)
         } else { // 验证失败
           this.$Message.warning({
             background: true,
