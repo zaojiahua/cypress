@@ -52,7 +52,6 @@
         <Button type="success" @click="saveChange" style="margin-right: 1em">保存修改</Button>
         <Button type="info" @click="enterJobEditor">开始编辑</Button>
       </div>
-      {{customTag}}
     </Form>
     <job-device-select></job-device-select>
     <Modal v-model="isConflicted" :closable="false" :styles="{top: '42%'}" width="390">
@@ -177,7 +176,16 @@ export default {
   },
   watch: {
     jobInfo (val) {
-      console.log(val)
+      if (val.job_type) {
+        this.curJobType.splice(0, 1, val.job_type)
+      } else {
+        this.curJobType.splice(0, 1)
+      }
+      if (val.job_second_type) {
+        this.curJobType.splice(1, 1, val.job_second_type)
+      } else {
+        this.curJobType.splice(1, 1)
+      }
     },
     showDrawer (val) {
       if (val === false && !this.isJobEditor) this.$store.commit('job/recoverJobInfo')

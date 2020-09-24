@@ -111,7 +111,6 @@ let actions = {
     })
   },
   setJobCustomTag ({ commit }, jobCustomTag) {
-    console.log(jobCustomTag)
     getCustomTagList().then(({ data }) => {
       let customTag = util.validate(serializer.customTagSerializer, data)
       commit('setBaseCustomTag', customTag)
