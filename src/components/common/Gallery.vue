@@ -3,8 +3,8 @@
     <div class="gallery" :class="mode">
       <div class="thumbnail">
         <ul>
-          <li v-for="pic in picUrl" :key="pic.name">
-            <img :src="pic.file" :alt="pic.name" :title="pic.name" @click="selectPic(pic)">
+          <li v-for="(pic, idx) in picUrl" :key="pic.name">
+            <img :src="pic.file" :alt="pic.name" :title="pic.name" @click="selectPic(pic, idx)" :class="idx === curPicIdx ? 'selected' : ''">
             <p :title="pic.name">{{ pic.name }}</p>
           </li>
         </ul>
@@ -104,6 +104,7 @@ export default {
         file: '',
         name: ''
       },
+      curPicIdx: 0,
       curOpen: false
     }
   },
@@ -131,8 +132,9 @@ export default {
     }
   },
   methods: {
-    selectPic (val) {
-      this.curPic = JSON.parse(JSON.stringify(val))
+    selectPic (pic, idx) {
+      this.curPic = pic
+      this.curPicIdx = idx
     },
     close (toggle) {
       if (toggle) {
@@ -168,6 +170,9 @@ export default {
             box-shadow: 0 0 6px #333333;
           }
         }
+      }
+      .selected {
+        border: 1px solid red;
       }
       p {
         width: 100%;

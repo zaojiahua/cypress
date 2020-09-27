@@ -96,10 +96,10 @@ let mutations = {
     if (typeof state.jobInfo.subsidiary_device_count !== 'number') {
       Reflect.set(state.jobInfo, 'subsidiary_device_count', 0)
     }
-    if (type === 'add') {
+    if (type === 'plus') {
       state.jobInfo.subsidiary_device_count++
     }
-    if (type === 'delete') {
+    if (type === 'reduce') {
       state.jobInfo.subsidiary_device_count--
     }
   }
