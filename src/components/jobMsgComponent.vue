@@ -323,9 +323,9 @@ export default {
     deviceInfoReplace (toggle = true) { // 发生冲突后用选取的设备信息替换原设备信息
       if (!this.deviceInfo) return
       this.$set(this.jobInfo, 'manufacturer', this.deviceInfo.manufacturer_id)
-      this.$set(this.jobInfo, 'phone_models', this.deviceInfo.phone_model_id)
-      this.$set(this.jobInfo, 'rom_version', this.deviceInfo.rom_version_id)
-      this.$set(this.jobInfo, 'android_version', this.deviceInfo.android_version_id)
+      this.$set(this.jobInfo, 'phone_models', [this.deviceInfo.phone_model_id])
+      this.$set(this.jobInfo, 'rom_version', [this.deviceInfo.rom_version_id])
+      this.$set(this.jobInfo, 'android_version', [this.deviceInfo.android_version_id])
       this.controlDevice()
       if (toggle) this.handleConflict()
     },
@@ -343,6 +343,7 @@ export default {
       }
     },
     async checkConflict (formToggle, deviceToggle) {
+      if (!this.jobInfo || !this.deviceInfo) return
       if (deviceToggle) {
         if (!this.jobInfo.manufacturer) {
           this.deviceInfoReplace(false)
@@ -356,7 +357,7 @@ export default {
         this.phoneModelFlag = true
         this.romVersionFlag = true
         this.androidVersionFlag = true
-        if (!this.jobInfo.phone_models.includes(this.deviceInfo.phone_models_id)) {
+        if (!this.jobInfo.phone_models.includes(this.deviceInfo.phone_model_id)) {
           this.phoneModelFlag = false
           same = false
         }
@@ -368,6 +369,7 @@ export default {
           this.androidVersionFlag = false
           same = false
         }
+        console.log(same, this.phoneModelFlag, this.romVersionFlag, this.androidVersionFlag)
         if (!same) { // 有冲突则进行处理
           this.handleConflict()
         } else {
