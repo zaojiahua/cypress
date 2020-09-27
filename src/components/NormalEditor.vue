@@ -196,9 +196,15 @@ export default {
     setWingman (wingmanId) {
       let curUnit = this.innerDiagram.findNodeForKey(this.curUnitKey)
       if (wingmanId) {
+        if (!curUnit.data.assistDevice) {
+          this.$store.commit('job/handleWingmanCount', 'add')
+        }
         this.innerDiagram.model.setDataProperty(curUnit.data, 'assistDevice', wingmanId)
         this.innerDiagram.model.setDataProperty(curUnit.data.unitMsg, 'assistDevice', wingmanId)
       } else {
+        if (curUnit.data.assistDevice) {
+          this.$store.commit('job/handleWingmanCount', 'delete')
+        }
         this.innerDiagram.model.setDataProperty(curUnit.data, 'assistDevice', null)
         delete curUnit.data.assistDevice
         delete curUnit.data.unitMsg.assistDevice

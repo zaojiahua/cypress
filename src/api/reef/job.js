@@ -31,6 +31,7 @@ export const getJobDetail = (id) => {
       'job_type,' +
       'job_second_type,' +
       'draft,' +
+      'subsidiary_device_count,' +
       'rom_version,rom_version.version,rom_version.id,' +
       'rom_version.manufacturer,rom_version.manufacturer.manufacturer_name,rom_version.manufacturer.id,' +
       'android_version,android_version.version,android_version.id,' +

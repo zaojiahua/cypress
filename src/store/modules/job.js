@@ -91,6 +91,17 @@ let mutations = {
   },
   setBaseCustomTag (state, data) {
     state.customTag = data
+  },
+  handleWingmanCount (state, type) {
+    if (typeof state.jobInfo.subsidiary_device_count !== 'number') {
+      Reflect.set(state.jobInfo, 'subsidiary_device_count', 0)
+    }
+    if (type === 'add') {
+      state.jobInfo.subsidiary_device_count++
+    }
+    if (type === 'delete') {
+      state.jobInfo.subsidiary_device_count--
+    }
   }
 }
 

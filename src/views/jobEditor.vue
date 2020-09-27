@@ -86,7 +86,8 @@ export default {
       autoSaveInterval: 180000000,
       autoSaveTimer: null,
       autoSaveToggle: true,
-      openNormalEditor: false
+      openNormalEditor: false,
+      wingmanCount: 0
     }
   },
   computed: {
