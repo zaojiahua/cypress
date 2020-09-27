@@ -62,9 +62,16 @@ export default {
   },
   computed: {
     ...mapState(['isLoading']),
-    ...mapState('files', ['resFiles']),
+    ...mapState('files', ['resFiles', 'currentFile']),
     ...mapGetters('item', ['itemType', 'isPicInput', 'isJobResourcePicture']),
     ...mapGetters('device', ['deviceInfo'])
+  },
+  watch: {
+    currentFile (val) {
+      if (CONST.SHOW_SCREEN_SHOOT.has(this.itemType)) {
+        this.currentImageName = val.name
+      }
+    }
   },
   methods: {
     showDeviceSelectPage () {
