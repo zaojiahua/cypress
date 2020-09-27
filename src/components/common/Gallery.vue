@@ -32,7 +32,69 @@ export default {
     picUrl: {
       type: Array,
       default () {
-        return []
+        return [
+          // {
+          //   name: 1,
+          //   file: 'https://t1.hxzdhn.com/uploads/tu/202005/9999/6ef75a2cbd.jpg'
+          // }, {
+          //   name: 2,
+          //   file: 'https://t1.hxzdhn.com/uploads/tu/202005/9999/fd949f19b7.jpg'
+          // }, {
+          //   name: 3,
+          //   file: 'http://t1.hxzdhn.com/uploads/tu/202003/9999/0fe7a588bd.jpg'
+          // }, {
+          //   name: 4,
+          //   file: 'https://t1.hxzdhn.com/uploads/tu/202004/9999/20c1f570c5.jpg'
+          // }, {
+          //   name: 5,
+          //   file: 'https://t1.hxzdhn.com/uploads/tu/202005/9999/6ef75a2cbd.jpg'
+          // }, {
+          //   name: 6,
+          //   file: 'https://t1.hxzdhn.com/uploads/tu/202005/9999/fd949f19b7.jpg'
+          // }, {
+          //   name: 7,
+          //   file: 'http://t1.hxzdhn.com/uploads/tu/202003/9999/0fe7a588bd.jpg'
+          // }, {
+          //   name: 8,
+          //   file: 'https://t1.hxzdhn.com/uploads/tu/202004/9999/20c1f570c5.jpg'
+          // }, {
+          //   name: 9,
+          //   file: 'https://t1.hxzdhn.com/uploads/tu/202005/9999/6ef75a2cbd.jpg'
+          // }, {
+          //   name: 10,
+          //   file: 'https://t1.hxzdhn.com/uploads/tu/202005/9999/fd949f19b7.jpg'
+          // }, {
+          //   name: 11,
+          //   file: 'http://t1.hxzdhn.com/uploads/tu/202003/9999/0fe7a588bd.jpg'
+          // }, {
+          //   name: 12,
+          //   file: 'https://t1.hxzdhn.com/uploads/tu/202004/9999/20c1f570c5.jpg'
+          // }, {
+          //   name: 13,
+          //   file: 'https://t1.hxzdhn.com/uploads/tu/202005/9999/6ef75a2cbd.jpg'
+          // }, {
+          //   name: 14,
+          //   file: 'https://t1.hxzdhn.com/uploads/tu/202005/9999/fd949f19b7.jpg'
+          // }, {
+          //   name: 15,
+          //   file: 'http://t1.hxzdhn.com/uploads/tu/202003/9999/0fe7a588bd.jpg'
+          // }, {
+          //   name: 16,
+          //   file: 'https://t1.hxzdhn.com/uploads/tu/202004/9999/20c1f570c5.jpg'
+          // }, {
+          //   name: 17,
+          //   file: 'https://t1.hxzdhn.com/uploads/tu/202005/9999/6ef75a2cbd.jpg'
+          // }, {
+          //   name: 18,
+          //   file: 'https://t1.hxzdhn.com/uploads/tu/202005/9999/fd949f19b7.jpg'
+          // }, {
+          //   name: 19,
+          //   file: 'http://t1.hxzdhn.com/uploads/tu/202003/9999/0fe7a588bd.jpg'
+          // }, {
+          //   name: 20,
+          //   file: 'https://t1.hxzdhn.com/uploads/tu/202004/9999/20c1f570c5.jpg'
+          // }
+        ]
       }
     }
   },

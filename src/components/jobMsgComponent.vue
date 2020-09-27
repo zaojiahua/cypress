@@ -322,10 +322,10 @@ export default {
     },
     deviceInfoReplace (toggle = true) { // 发生冲突后用选取的设备信息替换原设备信息
       if (!this.deviceInfo) return
-      this.jobInfo.manufacturer = this.deviceInfo.manufacturer_id
-      this.jobInfo.phone_models = [this.deviceInfo.phone_model_id]
-      this.jobInfo.rom_version = [this.deviceInfo.rom_version_id]
-      this.jobInfo.android_version = [this.deviceInfo.android_version_id]
+      this.$set(this.jobInfo, 'manufacturer', this.deviceInfo.manufacturer_id)
+      this.$set(this.jobInfo, 'phone_models', this.deviceInfo.phone_model_id)
+      this.$set(this.jobInfo, 'rom_version', this.deviceInfo.rom_version_id)
+      this.$set(this.jobInfo, 'android_version', this.deviceInfo.android_version_id)
       this.controlDevice()
       if (toggle) this.handleConflict()
     },
@@ -342,10 +342,10 @@ export default {
         })
       }
     },
-    async checkConflict (deviceToggle, formToggle) {
+    async checkConflict (formToggle, deviceToggle) {
       if (deviceToggle) {
         if (!this.jobInfo.manufacturer) {
-          this.deviceInfoReplace(true)
+          this.deviceInfoReplace(false)
           return
         }
         if (this.jobInfo.manufacturer !== this.deviceInfo.manufacturer_id) {
