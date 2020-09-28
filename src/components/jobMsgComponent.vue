@@ -13,8 +13,9 @@
           <Option v-for="item in testArea.jobtestareas" :value="item.id" :key="item.id">{{ item.description }}</Option>
         </Select>
       </FormItem>
-      <FormItem label="用例类型" prop="job_type">
-        <Cascader :data="jobTypes" v-model="curJobType"></Cascader>
+      <FormItem label="用例类型" prop="job_type" class="type">
+        <Cascader :data="jobTypes" v-model="curJobType" style="margin-right: 1em;"></Cascader>
+        <Input v-model="jobTypeString" style=" width: 50%;" disabled/>
       </FormItem>
       <FormItem label="自定义标签" prop="custom_tag">
         <Select v-model="$store.state.job.jobInfo.custom_tag" multiple placeholder="请选择" filterable allow-create>
@@ -97,6 +98,9 @@ export default {
         test_area: [{
           required: true, type: 'array', min: 1, message: '测试用途不能为空', trigger: 'change'
         }],
+        job_type: [{
+          required: true, type: 'string', message: '用例类型不能为空', trigger: 'change'
+        }],
         manufacturer: [{
           required: true, type: 'number', message: '厂商信息不能为空', trigger: 'change'
         }],
@@ -109,35 +113,6 @@ export default {
         android_version: [{
           required: true, type: 'array', min: 1, message: '适配系统不能为空', trigger: 'change'
         }]
-      },
-      jobInfoRules: {
-        job_name: [
-          { required: true, message: '请输入用例名称', trigger: 'blur,change' }
-        ],
-        test_area: [
-          { required: true, type: 'array', min: 1, message: '请输入测试用途', trigger: 'change' }
-        ],
-        // custom_tag: [
-        //   { required: true, type: 'array', min: 1, message: '请输入自定义标签', trigger: 'change' }
-        // ],
-        // description: [
-        //   { required: true, message: '请输入用例说明', trigger: 'blur' }
-        // ],
-        // manufacturer: [
-        //   { required: true, type: 'string', message: '请输入厂商信息', trigger: 'change' }
-        // ],
-        // job_type: [
-        //   { required: true, type: 'array', min: 1, message: '请选择用例类型', trigger: 'change' }
-        // ],
-        phone_models: [
-          { required: true, type: 'array', min: 1, message: '请输入适配机型', trigger: 'change' }
-        ],
-        rom_version: [
-          { required: true, type: 'array', min: 1, message: '请输入ROM版本', trigger: 'change' }
-        ],
-        android_version: [
-          { required: true, type: 'array', min: 1, message: '请输入适配系统', trigger: 'change' }
-        ]
       },
       job: util.validate(jobSerializer, {}),
       isConflicted: false,
@@ -173,6 +148,14 @@ export default {
     ...mapState('device', ['deviceInfo', 'preDeviceInfo', 'countdown']),
     isJobEditor () { // 是否在 JobEditor 页面
       return this.$route.name === 'jobEditor'
+    },
+    jobTypeString: {
+      get: function () {
+        return this.curJobType.join('/')
+      },
+      set: function (val) {
+
+      }
     }
   },
   watch: {
@@ -199,8 +182,8 @@ export default {
       this.resetManufacturter()
     },
     curJobType (val) {
-      this.jobInfo.job_type = val[0]
-      this.jobInfo.job_second_type = val[1]
+      this.$set(this.jobInfo, 'job_type', val[0])
+      this.$set(this.jobInfo, 'job_second_type', val[1])
     }
   },
   methods: {
@@ -408,6 +391,7 @@ export default {
 </script>
 
 <style lang="less" scoped>
+@import '../css/common.less';
   .device-info-title {
     position: relative;
 
@@ -416,6 +400,13 @@ export default {
       right: 0;
       top: -2px;
       z-index: 2;
+    }
+  }
+  .type {
+    /deep/ & > .ivu-form-item-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
   }
 </style>
