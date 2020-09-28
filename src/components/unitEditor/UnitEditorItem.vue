@@ -189,7 +189,6 @@ export default {
   border-radius: 6px;
   padding: 10px 6px;
   margin: 10px 0;
-  margin-right: 10px;
   cursor: pointer;
   &:hover {
     box-shadow: inset 0px 0px 20px #a5d0e4;

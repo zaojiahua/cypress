@@ -1,8 +1,15 @@
 <template>
   <div class="card item-list">
-    <p class="card-title">
+    <div class="card-title title">
       <span>Unit Items &nbsp; ({{ numOfItems }})</span>
-    </p>
+      <div class="engine" v-show="curOcrChoice !== 0">
+        <span>OCR引擎：</span>
+        <Switch false-color="#ff4949" v-model="ocrChoiceToggle" @on-change="changeOcrEngine">
+          <span slot="open">1</span>
+          <span slot="close">2</span>
+        </Switch>
+      </div>
+    </div>
     <div class="card-body item-list-content">
       <transition-group name="item" tag="div">
         <UnitItem
@@ -26,11 +33,14 @@ export default {
   name: 'UnitItemList',
   components: { UnitItem },
   props: {
-    unitItemsData: Array
+    unitItemsData: Array,
+    ocrChoice: Number
   },
   data () {
     return {
-      curUnitItemsData: this.unitItemsData
+      curUnitItemsData: this.unitItemsData,
+      ocrChoiceToggle: true,
+      curOcrChoice: 0
     }
   },
   computed: {
@@ -51,11 +61,28 @@ export default {
           this.curUnitItemsData[order - 1] = val[i]
         }
       }
+    },
+    ocrChoice (val) {
+      if (val === 1) {
+        this.ocrChoiceToggle = true
+      }
+      if (val === 2) {
+        this.ocrChoiceToggle = false
+      }
+      this.curOcrChoice = val
     }
   },
   methods: {
     updateUnitItem (currentItem) {
       this.$emit('updateUnitItem', currentItem)
+    },
+    changeOcrEngine (val) {
+      if (val) {
+        this.curOcrChoice = 1
+      } else {
+        this.curOcrChoice = 2
+      }
+      this.$emit('updateOcrChoice', this.curOcrChoice)
     }
   },
   mounted () {
@@ -69,6 +96,17 @@ export default {
   .item-list {
     overflow: auto;
     margin-bottom: 1em;
+    .title {
+      position: relative;
+      .engine {
+        position: absolute;
+        right: 1em;
+        top: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+    }
     .item-list-content {
       display: flex;
       flex-direction: column;

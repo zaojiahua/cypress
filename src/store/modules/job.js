@@ -98,7 +98,6 @@ let mutations = {
     if (data.action === 'reduce' && state.config.wingman[data.wingman] > 0) {
       state.config.wingman[data.wingman]--
     }
-    console.log(state.config.wingman)
     Reflect.set(state.jobInfo, 'subsidiary_device_count', state.config.wingman.reduce((pre, cur) => cur > 0 ? 1 + pre : pre), 0)
   },
   setConfig (state, data) {

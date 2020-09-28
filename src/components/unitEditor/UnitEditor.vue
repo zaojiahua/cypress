@@ -16,8 +16,10 @@
     <div class="body">
       <div class="pane">
         <ItemList
+          :ocrChoice="ocrChoice"
           :unitItemsData="unitItemsData"
           @updateUnitItem="updateUnitItem"
+          @updateOcrChoice="updateOcrChoice"
         ></ItemList>
         <RawUnit
           :unitData="curUnitData"
@@ -80,7 +82,6 @@ export default {
     },
     unitItemsData () {
       if (!this.curUnitData) return
-
       let { unitMsg: { execCmdDict, execCmdDict: { execCmdList } } } = this._.cloneDeep(this.curUnitData)
       let src = execCmdList || execCmdDict
       let unitItemsData = []
@@ -93,6 +94,10 @@ export default {
         }
       }
       return unitItemsData
+    },
+    ocrChoice () {
+      if (!this.curUnitData) return
+      return this.curUnitData.unitMsg.ocrChoice ? this.curUnitData.unitMsg.ocrChoice : 0
     }
   },
   watch: {
@@ -160,6 +165,9 @@ export default {
     },
     arrangeFileName (nameData) {
       this.unitResFileList.push(nameData)
+    },
+    updateOcrChoice (data) {
+      this.curUnitData.unitMsg.ocrChoice = data
     }
   }
 }

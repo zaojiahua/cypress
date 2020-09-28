@@ -9,6 +9,11 @@ module.exports = {
   lintOnSave: false,
   publicPath: BASE_URL,
   chainWebpack: config => {
+    config.module
+      .rule('vue')
+      .use('iview')
+      .loader('iview-loader')
+      .options({ prefix: false })
     config.resolve.alias
       .set('@', resolve('src'))
       .set('_c', resolve('src/components'))
