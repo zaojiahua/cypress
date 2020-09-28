@@ -210,10 +210,11 @@ export default {
         if (curUnit.data.assistDevice) {
           this.$store.commit('job/handleWingmanCount', {
             action: 'reduce',
-            wingman: curUnit.data.assistDevice
+            wingman: curUnit.data.unitMsg.assistDevice
           })
         }
         this.innerDiagram.model.setDataProperty(curUnit.data, 'assistDevice', null)
+        this.innerDiagram.model.setDataProperty(curUnit.data.unitMsg, 'assistDevice', null)
         delete curUnit.data.assistDevice
         delete curUnit.data.unitMsg.assistDevice
       }
