@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container" @click="closeJobController">
     <div class="header flex-row">
       <Input v-model="$store.state.job.jobInfo.job_name" clearable class="job-name" placeholder="请输入JOB名称" size="large" />
       <div class="child-m-right--1 flex-row">
@@ -19,6 +19,10 @@
       <div id="outer-palette"></div>
       <div id="outer-diagram"></div>
     </div>
+    <ButtonGroup vertical size="default" id="job-controller">
+      <Button type="primary" @click="setWingman(0)">主机</Button>
+      <Button v-for="wingman in wingmans" :key="wingman" @click="setWingman(wingman)">{{wingman}} 号机</Button>
+    </ButtonGroup>
     <Modal v-model="rename" :closable="false" :mask-closeable="false" :styles="{ top: '42%' }">
       <div slot="header" style="color:#f60;text-align:center">
         <Icon type="ios-information-circle" style="font-size: 20px;"></Icon>
@@ -87,7 +91,9 @@ export default {
       autoSaveTimer: null,
       autoSaveToggle: true,
       openNormalEditor: false,
-      wingmanCount: 0
+      wingmanCount: 0,
+      wingmans: 3,
+      jobController: null
     }
   },
   computed: {
@@ -505,11 +511,25 @@ export default {
           evt.preventDefault()
           break
       }
+    },
+    setWingman (id) {
+      let curJobBlock = this.outerDiagram.findNodeForKey(this.currentJobBlockKey)
+      if (id) {
+        this.outerDiagram.model.setDataProperty(curJobBlock.data, 'assistDevice', id)
+      } else {
+        this.outerDiagram.model.setDataProperty(curJobBlock.data, 'assistDevice', null)
+        delete curJobBlock.data.assistDevice
+      }
+      this.closeJobController()
+    },
+    closeJobController () {
+      this.jobController.style.display = 'none'
     }
   },
   mounted () {
     init(this) // 创建画板与画布并绘制流程图
     if (!this.resFiles.length) this.handleResFile()
+    this.jobController = document.getElementById('job-controller')
     this.autoSaveTimer = setInterval(this.autoSave, this.autoSaveInterval) // 300000
     window.addEventListener('contextmenu', this.dispatchMouseEvent)
     window.addEventListener('mousemove', this.dispatchMouseEvent)
@@ -550,6 +570,11 @@ export default {
     #outer-diagram {
       flex: 1;
     }
+  }
+  #job-controller {
+    display: none;
+    position: absolute;
+    z-index: 100;
   }
 }
 </style>

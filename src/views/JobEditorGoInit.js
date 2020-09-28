@@ -199,6 +199,14 @@ function outerDiagramInit (context) {
     context.currentJobBlockKey = node.data.key
     context.jobModalShow = true
   }
+  jobBlockTemplate.contextClick = function (e, node) {
+    if (e.diagram instanceof go.Palette) return
+    context.isDiagram = true
+    context.currentJobBlockKey = node.data.key
+    context.jobController.style.top = `${e.event.y - 50}px`
+    context.jobController.style.left = `${e.event.x}px`
+    context.jobController.style.display = 'block'
+  }
 
   context.outerDiagram.nodeTemplateMap.add('normalBlock', normalBlockTemplate)
   context.outerDiagram.nodeTemplateMap.add('switchBlock', switchBlockTemplate)
