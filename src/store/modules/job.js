@@ -20,7 +20,8 @@ let state = {
   manufacturer: util.validate(serializer.manufacturerSerializer, {}),
   androidVersion: util.validate(serializer.androidVersionSerializer, {}),
   customTag: util.validate(serializer.customTagSerializer, {}),
-  testArea: util.validate(serializer.testAreaSerializer, {})
+  testArea: util.validate(serializer.testAreaSerializer, {}),
+  wingmanCount: [0, 0, 0, 0]
 }
 
 let mutations = {
@@ -92,16 +93,15 @@ let mutations = {
   setBaseCustomTag (state, data) {
     state.customTag = data
   },
-  handleWingmanCount (state, type) {
-    if (typeof state.jobInfo.subsidiary_device_count !== 'number') {
-      Reflect.set(state.jobInfo, 'subsidiary_device_count', 0)
+  handleWingmanCount (state, data) {
+    if (data.action === 'plus') {
+      state.wingmanCount[data.wingman]++
     }
-    if (type === 'plus') {
-      state.jobInfo.subsidiary_device_count++
+    if (data.action === 'reduce' && state.wingmanCount[data.wingman] > 0) {
+      state.wingmanCount[data.wingman]--
     }
-    if (type === 'reduce') {
-      state.jobInfo.subsidiary_device_count--
-    }
+    console.log(state.wingmanCount)
+    Reflect.set(state.jobInfo, 'subsidiary_device_count', state.wingmanCount.reduce((pre, cur) => cur > 0 ? 1 + pre : pre), 0)
   }
 }
 
