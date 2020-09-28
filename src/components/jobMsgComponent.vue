@@ -323,9 +323,12 @@ export default {
     deviceInfoReplace (toggle = true) { // 发生冲突后用选取的设备信息替换原设备信息
       if (!this.deviceInfo) return
       this.$set(this.jobInfo, 'manufacturer', this.deviceInfo.manufacturer_id)
-      this.$set(this.jobInfo, 'phone_models', [this.deviceInfo.phone_model_id])
-      this.$set(this.jobInfo, 'rom_version', [this.deviceInfo.rom_version_id])
-      this.$set(this.jobInfo, 'android_version', [this.deviceInfo.android_version_id])
+      this.$set(this.jobInfo, 'phone_models', [])
+      this.jobInfo.phone_models.push(this.deviceInfo.phone_model_id)
+      this.$set(this.jobInfo, 'rom_version', [])
+      this.jobInfo.rom_version.push(this.deviceInfo.rom_version_id)
+      this.$set(this.jobInfo, 'android_version', [])
+      this.jobInfo.android_version.push(this.deviceInfo.android_version_id)
       this.controlDevice()
       if (toggle) this.handleConflict()
     },
