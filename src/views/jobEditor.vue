@@ -91,7 +91,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('job', ['jobInfo', 'outerDiagramModel', 'finalResultBlockKey', 'draftId', 'draftLabel', 'normalKey']),
+    ...mapState('job', ['jobInfo', 'outerDiagramModel', 'draftId', 'draftLabel', 'normalKey', 'config']),
     ...mapGetters('job', ['jobId']),
     ...mapState('files', ['resFiles', 'resFilesName']),
     ...mapState('device', ['countdown', 'deviceInfo'])
@@ -99,7 +99,7 @@ export default {
   watch: {
     jobInfo: {
       handler: function (val) {
-        if (val.job_type === 'InnerJob' && this.finalResultBlockKey) {
+        if (val.job_type === 'InnerJob' && this.config.finalResultKey) {
           this.$Message.error({
             background: true,
             content: '无法为内嵌用例指定结果Block'
@@ -185,7 +185,7 @@ export default {
       let flag = false
       let { count } = this.outerDiagram.findNodesByExample({ 'category': 'Job' })
       if (this.jobInfo.job_type === 'InnerJob') {
-        if (this.finalResultBlockKey) {
+        if (this.config.finalResultKey) {
           this.$Message.error({
             background: true,
             content: '无法为内嵌用例指定结果Block'
@@ -265,6 +265,8 @@ export default {
     },
     async prepareJobInfo (saveAs, createNew, isDraft) {
       let info = this._.cloneDeep(this.jobInfo)
+      let { data: start } = this.outerDiagram.findNodeForKey(-1)
+      start.config = this._.cloneDeep(this.config)
       info.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
       info.test_area = await createNewTag('test_area', info)
       info.custom_tag = await createNewTag('custom_tag', info)
@@ -444,7 +446,7 @@ export default {
       this.$store.commit('job/setJobInfo', {})
       this.$store.commit('job/setOuterDiagramModel', null)
       this.$store.commit('job/setPreJobInfo', false)
-      this.$store.commit('job/setFinalResultBlock', null)
+      this.$store.commit('job/setConfig', null)
       this.$store.commit('files/clearResFiles')
       let resFilesName = []
       for (let key in CONST.WILL_TOUCH_NAME) {

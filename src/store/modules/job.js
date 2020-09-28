@@ -12,7 +12,6 @@ let state = {
   preJobInfo: { dirty: false },
   isValidated: false,
   outerDiagramModel: null,
-  finalResultBlockKey: null,
   draftId: undefined,
   draftLabel: undefined,
   normalData: null,
@@ -21,7 +20,7 @@ let state = {
   androidVersion: util.validate(serializer.androidVersionSerializer, {}),
   customTag: util.validate(serializer.customTagSerializer, {}),
   testArea: util.validate(serializer.testAreaSerializer, {}),
-  wingmanCount: [0, 0, 0, 0]
+  config: _.extend({}, CONST.JOB_DEFAULT_CONFIG)
 }
 
 let mutations = {
@@ -57,11 +56,10 @@ let mutations = {
       let finalResultBlock = JSON.parse(diagramModel).nodeDataArray.filter((val) => {
         return val.category === 'normalBlock' && val.star === CONST.COLORS.RESULT
       })[0]
-      if (finalResultBlock) state.finalResultBlockKey = finalResultBlock.key
+      if (finalResultBlock) {
+        state.config.finalResultKey = finalResultBlock.key
+      }
     }
-  },
-  setFinalResultBlock (state, key) {
-    state.finalResultBlockKey = key
   },
   setDraftId (state, id) {
     state.draftId = id
@@ -95,13 +93,20 @@ let mutations = {
   },
   handleWingmanCount (state, data) {
     if (data.action === 'plus') {
-      state.wingmanCount[data.wingman]++
+      state.config.wingman[data.wingman]++
     }
-    if (data.action === 'reduce' && state.wingmanCount[data.wingman] > 0) {
-      state.wingmanCount[data.wingman]--
+    if (data.action === 'reduce' && state.config.wingman[data.wingman] > 0) {
+      state.config.wingman[data.wingman]--
     }
-    console.log(state.wingmanCount)
-    Reflect.set(state.jobInfo, 'subsidiary_device_count', state.wingmanCount.reduce((pre, cur) => cur > 0 ? 1 + pre : pre), 0)
+    console.log(state.config.wingman)
+    Reflect.set(state.jobInfo, 'subsidiary_device_count', state.config.wingman.reduce((pre, cur) => cur > 0 ? 1 + pre : pre), 0)
+  },
+  setConfig (state, data) {
+    if (data) {
+      _.extend(state.config, data)
+    } else {
+      _.extend(state.config, CONST.JOB_DEFAULT_CONFIG)
+    }
   }
 }
 

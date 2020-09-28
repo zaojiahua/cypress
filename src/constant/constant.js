@@ -130,5 +130,9 @@ export default {
   SIMPLE_JOB_KEY: ['job_name', 'job_type', 'job_second_type', 'job_label', 'description', 'draft', 'subsidiary_device_count'],
   COMPLEX_JOB_KEY: ['test_area', 'android_version', 'custom_tag', 'phone_models', 'rom_version'],
   USER_INFO: ['id', 'username', 'groups', 'token'],
-  SERIALIZER_KEY: ['manufacturer', 'androidVersion', 'customTag', 'testArea']
+  SERIALIZER_KEY: ['manufacturer', 'androidVersion', 'customTag', 'testArea'],
+  JOB_DEFAULT_CONFIG: {
+    wingman: [0, 0, 0, 0],
+    finalResultKey: 0
+  }
 }

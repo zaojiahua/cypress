@@ -34,13 +34,13 @@ function setOutputNormalBlock (context, isOutput) {
   }
   context.outerDiagram.selection.each(({ data, data: { unitLists: { linkDataArray, nodeDataArray } } }) => {
     // 找到最后一个有star属性的unit
-    let starUnitDataArray = nodeDataArray.filter((val, index) => {
+    let starUnitArray = nodeDataArray.filter((val, index) => {
       return val.category === 'Unit' && val.star
     })
     let lastStarUnit = null
-    if (starUnitDataArray.length === 1) {
-      lastStarUnit = starUnitDataArray[0]
-    } else if (starUnitDataArray.length > 1) {
+    if (starUnitArray.length === 1) {
+      lastStarUnit = starUnitArray[0]
+    } else if (starUnitArray.length > 1) {
       let linkDataMap = new Map()
       linkDataArray.forEach((val) => {
         linkDataMap.set(val.from, val.to)
@@ -60,11 +60,11 @@ function setOutputNormalBlock (context, isOutput) {
         }
       }
       let lastStarUnitIndex = 0
-      starUnitDataArray.forEach((val, idx, arr) => {
+      starUnitArray.forEach((val, idx, arr) => {
         arr[idx].star = CONST.COLORS.STAR
         delete arr[idx].unitMsg.finalResult
         let tempIndex = nodeOrderArray.indexOf(val.group)
-        if (tempIndex >= lastStarUnitIndex) {
+        if (tempIndex > lastStarUnitIndex) {
           lastStarUnitIndex = tempIndex
           lastStarUnit = val
         }
@@ -77,27 +77,32 @@ function setOutputNormalBlock (context, isOutput) {
     }
     // 设定结果Block
     if (data.star) {
-      if (context.finalResultBlockKey && context.finalResultBlockKey !== data.key) {
-        context.$Message.error({
-          content: '结果Block有且只能有一个'
+      if (context.config.finalResultKey === 0 && isOutput) {
+        lastStarUnit.star = CONST.COLORS.RESULT
+        lastStarUnit.unitMsg.finalResult = true
+        context.$store.commit('job/setConfig', { finalResultKey: data.key })
+        context.$Message.success({
+          content: '已将该Block设为结果Block'
         })
-      } else {
-        if (isOutput) {
-          lastStarUnit.star = CONST.COLORS.RESULT
-          lastStarUnit.unitMsg.finalResult = true
-          context.$store.commit('job/setFinalResultBlock', data.key)
-          context.$Message.success({
-            content: '已将该Block设为结果Block'
-          })
-        } else {
+        context.outerDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
+      }
+      if (context.config.finalResultKey !== 0 && context.config.finalResultKey === data.key) {
+        if (!isOutput && lastStarUnit.star === CONST.COLORS.RESULT) {
           lastStarUnit.star = CONST.COLORS.STAR
           delete lastStarUnit.unitMsg.finalResult
-          context.$store.commit('job/setFinalResultBlock', null)
+          context.$store.commit('job/setConfig', { finalResultKey: 0 })
           context.$Message.success({
             content: '已将该Block设为NormalBlock'
           })
         }
         context.outerDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
+      }
+      if (context.config.finalResultKey !== 0 && context.config.finalResultKey !== data.key) {
+        if (isOutput) {
+          context.$Message.error({
+            content: '结果Block有且只能有一个'
+          })
+        }
       }
     } else {
       context.$Message.error({
@@ -318,6 +323,8 @@ function setOuterDiagramData (context) {
             return context.$router.push({ path: '/' })
           }
           context.outerDiagram.model = go.Model.fromJson(JSON.stringify(data))
+          let { data: start } = context.outerDiagram.findNodeForKey(-1)
+          context.$store.commit('job/setConfig', start.config || {})
         } else {
           throw new Error('获取 Job 信息失败')
         }
