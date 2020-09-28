@@ -114,6 +114,8 @@ export default {
           } else {
             this.curNormalData.star = CONST.COLORS.STAR
           }
+        } else {
+          this.curNormalData.star = null
         }
         if (units.length === 0 || units.some(item => item.completed === false)) {
           this.curNormalData.color = CONST.COLORS.UNFINISHED

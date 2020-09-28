@@ -191,6 +191,9 @@ function outerDiagramInit (context) {
     context.$store.commit('job/setNormalKey', data.key)
     context.openNormalEditor = true
   }
+  normalBlockTemplate.contextClick = function (e, node) {
+    console.log(node.data)
+  }
 
   const jobBlockTemplate = baseNodeTemplateForPort(CONST.COLORS.JOB, 'Rectangle')
   jobBlockTemplate.doubleClick = function (e, node) {
