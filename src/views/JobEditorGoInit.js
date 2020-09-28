@@ -77,6 +77,7 @@ function setOutputNormalBlock (context, isOutput) {
     }
     // 设定结果Block
     if (data.star) {
+      let finalResultBlock = context.outerDiagram.findNodeForKey(context.config.finalResultKey)
       if (context.config.finalResultKey === 0 && isOutput) {
         lastStarUnit.star = CONST.COLORS.RESULT
         lastStarUnit.unitMsg.finalResult = true
@@ -86,22 +87,44 @@ function setOutputNormalBlock (context, isOutput) {
         })
         context.outerDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
       }
-      if (context.config.finalResultKey !== 0 && context.config.finalResultKey === data.key) {
-        if (!isOutput && lastStarUnit.star === CONST.COLORS.RESULT) {
-          lastStarUnit.star = CONST.COLORS.STAR
-          delete lastStarUnit.unitMsg.finalResult
-          context.$store.commit('job/setConfig', { finalResultKey: 0 })
-          context.$Message.success({
-            content: '已将该Block设为NormalBlock'
-          })
-        }
-        context.outerDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
-      }
-      if (context.config.finalResultKey !== 0 && context.config.finalResultKey !== data.key) {
-        if (isOutput) {
-          context.$Message.error({
-            content: '结果Block有且只能有一个'
-          })
+      if (context.config.finalResultKey) {
+        if (context.config.finalResultKey === data.key) {
+          if (!isOutput) {
+            lastStarUnit.star = CONST.COLORS.STAR
+            delete lastStarUnit.unitMsg.finalResult
+            context.$store.commit('job/setConfig', { finalResultKey: 0 })
+            context.$Message.success({
+              content: '已将该Block设为NormalBlock'
+            })
+            context.outerDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
+          }
+        } else {
+          if (isOutput) {
+            if (finalResultBlock) {
+              let finalResultUnit = finalResultBlock.data.unitLists.nodeDataArray.filter(node => node.category === 'Unit' && node.unitMsg.finalResult)
+              if (finalResultUnit.length > 0) {
+                context.$Message.error({
+                  content: '结果Block有且只能有一个'
+                })
+              } else {
+                lastStarUnit.star = CONST.COLORS.RESULT
+                lastStarUnit.unitMsg.finalResult = true
+                context.$store.commit('job/setConfig', { finalResultKey: data.key })
+                context.$Message.success({
+                  content: '已将该Block设为结果Block'
+                })
+                context.outerDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
+              }
+            } else {
+              lastStarUnit.star = CONST.COLORS.RESULT
+              lastStarUnit.unitMsg.finalResult = true
+              context.$store.commit('job/setConfig', { finalResultKey: data.key })
+              context.$Message.success({
+                content: '已将该Block设为结果Block'
+              })
+              context.outerDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
+            }
+          }
         }
       }
     } else {
@@ -192,7 +215,7 @@ function outerDiagramInit (context) {
     context.openNormalEditor = true
   }
   normalBlockTemplate.contextClick = function (e, node) {
-    console.log(node.data)
+    // console.log(node.data)
   }
 
   const jobBlockTemplate = baseNodeTemplateForPort(CONST.COLORS.JOB, 'Rectangle')
