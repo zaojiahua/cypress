@@ -16,7 +16,7 @@
       </div>
     </Card>
     <Modal v-model="setNewUnitName" :mask-closable="false" :styles="{top: '48%'}" :closable="false" @on-ok="_saveAs">
-      <Input placeholder="为新的 Unit 起一个名字吧" autofocus="autofocus" v-model="newUnitName"/>
+      <Input placeholder="为新的 Unit 起一个名字吧" v-model="newUnitName"/>
     </Modal>
     <div slot="footer">
       <Button type="warning" @click="closeUnitTemplateEditor">取消</Button>

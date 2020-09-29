@@ -212,6 +212,7 @@ function outerDiagramInit (context) {
     let { data } = node
     context.$store.commit('job/setNormalData', data)
     context.$store.commit('job/setNormalKey', data.key)
+    context.outerDiagram.div.firstElementChild.blur()
     context.openNormalEditor = true
   }
   normalBlockTemplate.contextClick = function (e, node) {

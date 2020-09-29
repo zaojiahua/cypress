@@ -14,8 +14,8 @@
         </Select>
       </FormItem>
       <FormItem label="用例类型" prop="job_type" class="type">
-        <Cascader :data="jobTypes" v-model="curJobType" style="margin-right: 1em;"></Cascader>
-        <Input v-model="jobTypeString" style=" width: 50%;" disabled/>
+        <Cascader :data="jobTypes" v-model="curJobType"></Cascader>
+        <Input v-model="jobTypeString" style="display: none;" disabled />
       </FormItem>
       <FormItem label="自定义标签" prop="custom_tag">
         <Select v-model="$store.state.job.jobInfo.custom_tag" multiple placeholder="请选择" filterable allow-create>
@@ -402,11 +402,11 @@ export default {
       z-index: 2;
     }
   }
-  .type {
-    /deep/ & > .ivu-form-item-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-  }
+  // .type {
+  //   /deep/ & > .ivu-form-item-content {
+  //     display: flex;
+  //     justify-content: space-between;
+  //     align-items: center;
+  //   }
+  // }
 </style>
