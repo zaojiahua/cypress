@@ -15,7 +15,7 @@ export default {
     UNFINISHED: '#F76132',
     UNIT: '#338FF0',
     GROUP: '#50A5F4',
-    RESULT: '#800080',
+    RESULT: '#3AFFF3',
     STAR: '#ffff00'
   },
   WILL_TOUCH_FILE: new Set([

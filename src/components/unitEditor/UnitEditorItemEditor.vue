@@ -216,7 +216,6 @@ export default {
       }
       let currentItem = this._.cloneDeep(this.currentItem)
       let tmachBlanks = currentItem.itemContent.content.match(/Tmach.*? /g)
-      console.log(tmachBlanks)
       let curIndex = 0
       let temp
       for (let i = 0; i < tmachBlanks.length; i++) {

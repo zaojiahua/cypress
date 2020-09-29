@@ -355,7 +355,6 @@ export default {
           this.androidVersionFlag = false
           same = false
         }
-        console.log(same, this.phoneModelFlag, this.romVersionFlag, this.androidVersionFlag)
         if (!same) { // 有冲突则进行处理
           this.handleConflict()
         } else {

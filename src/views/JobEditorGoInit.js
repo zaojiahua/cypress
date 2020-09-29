@@ -216,7 +216,7 @@ function outerDiagramInit (context) {
     context.openNormalEditor = true
   }
   normalBlockTemplate.contextClick = function (e, node) {
-    // console.log(node.data)
+    console.log(node.data)
   }
 
   const jobBlockTemplate = baseNodeTemplateForPort(CONST.COLORS.JOB, 'Rectangle')
