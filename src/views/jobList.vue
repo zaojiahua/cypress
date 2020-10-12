@@ -51,6 +51,7 @@ import { jobLibSvcURL } from '../config/index'
 import { serializer, jobSerializer } from 'lib/util/jobListSerializer'
 import jobListFilter from '../components/jobListFilter'
 import { getJobDetail, getJobList, patchUpdateJob } from 'api/reef/job'
+import { mapState } from 'vuex'
 
 export default {
   name: 'jobList',
@@ -147,6 +148,7 @@ export default {
     }
   },
   computed: {
+    ...mapState(['refresh']),
     curPage: {
       get: function () {
         return this.$store.state.curPage
@@ -163,6 +165,11 @@ export default {
     },
     jobIdList () {
       return Object.keys(this.selectedJobs)
+    }
+  },
+  watch: {
+    refresh (val) {
+      if (val) this.jobPageChange(1)
     }
   },
   methods: {

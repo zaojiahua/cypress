@@ -17,7 +17,27 @@
       <Button type="primary" :loading="isLoading" @click="getImage">
         <span v-if="!isLoading">获取截图</span>
         <span v-else>Loading...</span>
-     </Button>
+      </Button>
+      <!-- <Dropdown placement="bottom-end">
+        <Button type="primary">
+            获取截图
+            <Icon type="ios-arrow-down"></Icon>
+        </Button>
+        <DropdownMenu slot="list">
+          <DropdownItem>
+            <Button type="primary" :loading="isLoading" @click="getImage">
+              <span v-if="!isLoading">获取主机截图</span>
+              <span v-else>Loading...</span>
+            </Button>
+          </DropdownItem>
+          <DropdownItem v-for="idx of 3" :key="idx">
+            <Button type="primary" :loading="isLoading" @click="getImage">
+              <span v-if="!isLoading">获取{{idx}}号僚机截图</span>
+              <span v-else>Loading...</span>
+            </Button>
+          </DropdownItem>
+        </DropdownMenu>
+      </Dropdown> -->
     </div>
   </div>
 </template>
@@ -173,11 +193,11 @@ export default {
     .get-image {
       display: flex;
       justify-content: space-between;
-      margin-top: 20px;
-      & > div {
+      margin-top: 1em;
+      & > div:first-child {
+        flex: 1;
         display: flex;
         align-items: center;
-        width: 60%;
       }
     }
   }

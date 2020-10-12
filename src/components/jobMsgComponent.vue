@@ -281,6 +281,7 @@ export default {
           setTimeout(() => {
             patchUpdateJob(this.jobId, this.jobInfo).then(() => {
               this.$Message.info('修改成功')
+              this.$store.commit('refreshJobList')
             }).catch(error => {
               console.log(error)
             })

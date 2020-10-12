@@ -21,7 +21,8 @@ export default new Vuex.Store({
   state: {
     showDrawer: false,
     isLoading: false,
-    curPage: 1
+    curPage: 1,
+    refresh: false
   },
   mutations: {
     handleShowDrawer (state) {
@@ -32,6 +33,12 @@ export default new Vuex.Store({
     },
     setCurPage (state, page) {
       state.curPage = page
+    },
+    refreshJobList (state) {
+      state.refresh = true
+      setTimeout(() => {
+        state.refresh = false
+      })
     }
   }
 })
