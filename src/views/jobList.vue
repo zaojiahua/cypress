@@ -358,6 +358,9 @@ export default {
       this.jobPageChange()
     }
   },
+  beforeCreate () {
+    this.$store.dispatch('setBasicData')
+  },
   mounted () {
     this.jobState = localStorage.getItem('joblist-management:DEFAULT_FILTER_CONFIG')
     // this.setTableHeight()

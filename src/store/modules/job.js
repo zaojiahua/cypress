@@ -1,11 +1,5 @@
 import CONST from 'constant/constant'
 import _ from 'lodash'
-import util from 'lib/util/validate.js'
-import { serializer } from 'lib/util/jobListSerializer'
-import { getManufacturerList } from 'api/reef/manufacturer'
-import { getJobTestAreaList } from 'api/reef/jobTestArea'
-import { getCustomTagList } from 'api/reef/customTag'
-import { getAndroidVersionList } from 'api/reef/androidVersion'
 
 let state = {
   jobInfo: {},
@@ -16,10 +10,6 @@ let state = {
   draftLabel: undefined,
   normalData: null,
   normalKey: undefined,
-  manufacturer: util.validate(serializer.manufacturerSerializer, {}),
-  androidVersion: util.validate(serializer.androidVersionSerializer, {}),
-  customTag: util.validate(serializer.customTagSerializer, {}),
-  testArea: util.validate(serializer.testAreaSerializer, {}),
   config: _.extend({}, CONST.JOB_DEFAULT_CONFIG)
 }
 
@@ -82,15 +72,6 @@ let mutations = {
   setJobCustomTag (state, data) {
     state.jobInfo.custom_tag = data
   },
-  setBaseData (state, data) {
-    state[data.type] = data.data
-  },
-  setBaseTestArea (state, data) {
-    state.testArea = data
-  },
-  setBaseCustomTag (state, data) {
-    state.customTag = data
-  },
   handleWingmanCount (state, data) {
     if (data.action === 'plus') {
       state.config.wingman[data.wingman]++
@@ -109,31 +90,6 @@ let mutations = {
   }
 }
 
-let actions = {
-  setBaseData ({ commit }) {
-    Promise.all([getManufacturerList(), getAndroidVersionList(), getCustomTagList(), getJobTestAreaList()]).then((res) => {
-      CONST.SERIALIZER_KEY.forEach((val, idx) => {
-        let data = util.validate(serializer[`${val}Serializer`], res[idx].data)
-        commit('setBaseData', { type: val, data })
-      })
-    })
-  },
-  setJobTestArea ({ commit }, jobTestArea) {
-    getJobTestAreaList().then(({ data }) => {
-      let testArea = util.validate(serializer.testAreaSerializer, data)
-      commit('setBaseTestArea', testArea)
-      commit('setJobTestArea', jobTestArea)
-    })
-  },
-  setJobCustomTag ({ commit }, jobCustomTag) {
-    getCustomTagList().then(({ data }) => {
-      let customTag = util.validate(serializer.customTagSerializer, data)
-      commit('setBaseCustomTag', customTag)
-      commit('setJobCustomTag', jobCustomTag)
-    })
-  }
-}
-
 let getters = {
   jobId (state) {
     return parseInt(state.jobInfo.job_id)
@@ -147,6 +103,5 @@ export default {
   namespaced: true,
   state,
   mutations,
-  actions,
   getters
 }

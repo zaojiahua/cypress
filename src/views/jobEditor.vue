@@ -67,7 +67,7 @@ import { patchUpdateJob } from 'api/reef/job'
 import SwitchBlockDetailComponent from '_c/SwitchBlockDetailComponent'
 import { jobFlowValidation } from '../core/validation/finalValidation/job'
 import { mapState, mapGetters } from 'vuex'
-import { createJobLabel, dataURLtoFile, createNewTag } from '../lib/tools'
+import { createJobLabel, dataURLtoFile, shouldCreateNewTag, createNewTag } from '../lib/tools'
 import { releaseOccupyDevice } from '../api/reef/device'
 
 export default {
@@ -274,8 +274,14 @@ export default {
       let { data: start } = this.outerDiagram.findNodeForKey(-1)
       start.config = this._.cloneDeep(this.config)
       info.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
-      info.test_area = await createNewTag('test_area', info)
-      info.custom_tag = await createNewTag('custom_tag', info)
+      if (shouldCreateNewTag('test_area', info)) {
+        info.test_area = await createNewTag('test_area', info)
+        this.$store.dispatch('setBasicTestArea')
+      }
+      if (shouldCreateNewTag('custom_tag', info)) {
+        info.custom_tag = await createNewTag('custom_tag', info)
+        this.$store.dispatch('setBasicCustomTag')
+      }
       info.author = localStorage.id
       this.removeInvalidFile(info.ui_json_file)
       info.inner_job_list = []
@@ -347,10 +353,16 @@ export default {
     },
     async prepareAutoSaveInfo () {
       let info = this._.cloneDeep(this.jobInfo)
-      info.test_area = await createNewTag('test_area', info)
-      this.$store.dispatch('job/setJobTestArea', this._.cloneDeep(info.test_area))
-      info.custom_tag = await createNewTag('custom_tag', info)
-      this.$store.dispatch('job/setJobCustomTag', this._.cloneDeep(info.custom_tag))
+      if (shouldCreateNewTag('test_area', info)) {
+        info.test_area = await createNewTag('test_area', info)
+        this.$store.commit('job/setJobTestArea', this._.cloneDeep(info.test_area))
+        this.$store.dispatch('setBasicTestArea')
+      }
+      if (shouldCreateNewTag('custom_tag', info)) {
+        info.custom_tag = await createNewTag('custom_tag', info)
+        this.$store.commit('job/setJobCustomTag', this._.cloneDeep(info.custom_tag))
+        this.$store.dispatch('setBasicCustomTag')
+      }
       info.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
       info.author = localStorage.id
       info.job_name += '_AUTOSAVE'

@@ -134,5 +134,42 @@ export default {
   JOB_DEFAULT_CONFIG: {
     wingman: [0, 0, 0, 0],
     finalResultKey: 0
-  }
+  },
+  BASIC_DATA_KEYS: [
+    {
+      camelCase: 'testArea',
+      underlineCase: 'job_test_area',
+      orderCase: 'description'
+    },
+    {
+      camelCase: 'customTag',
+      underlineCase: 'custom_tag',
+      orderCase: 'custom_tag_name'
+    },
+    {
+      camelCase: 'reefUser',
+      underlineCase: 'reefuser',
+      orderCase: 'username'
+    },
+    {
+      camelCase: 'phoneModel',
+      underlineCase: 'phone_model',
+      orderCase: 'phone_model_name'
+    },
+    {
+      camelCase: 'androidVersion',
+      underlineCase: 'android_version',
+      orderCase: 'version'
+    },
+    {
+      camelCase: 'romVersion',
+      underlineCase: 'rom_version',
+      orderCase: 'version'
+    },
+    {
+      camelCase: 'manufacturer',
+      underlineCase: 'manufacturer',
+      orderCase: 'manufacturer_name'
+    }
+  ]
 }

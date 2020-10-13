@@ -134,7 +134,15 @@ function suffixComplete (str, type) {
   }
   if (flag) return str
 }
-
+function shouldCreateNewTag (tagType, jobInfo) {
+  let target = jobInfo[tagType]
+  for (let i = 0; i < target.length; i++) {
+    if (typeof target[i] !== 'number') {
+      return true
+    }
+  }
+  return false
+}
 async function createNewTag (tagType, jobInfo) {
   let target = jobInfo[tagType]
   if (!target) return []
@@ -165,5 +173,6 @@ export {
   suffixAutoComplete,
   createJobLabel,
   suffixComplete,
+  shouldCreateNewTag,
   createNewTag
 }

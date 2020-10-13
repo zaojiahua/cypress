@@ -1,16 +1,17 @@
 <template>
   <Drawer title="用例详情" :closable="false" v-model="$store.state.showDrawer" width="30" @on-close="closeDrawer">
     <Form ref="form"
+      v-if="basicData"
       :model="$store.state.job.jobInfo"
       width="30" :label-width="90"
       label-position="left"
       :rules="validateRules">
-      <FormItem label="用例名称" prop="job_name">
+       <FormItem label="用例名称" prop="job_name">
         <Input v-model="$store.state.job.jobInfo.job_name" clearable placeholder="请输入用例名称"/>
       </FormItem>
       <FormItem label="测试用途" prop="test_area">
         <Select v-model="$store.state.job.jobInfo.test_area" multiple placeholder="请选择" filterable allow-create>
-          <Option v-for="item in testArea.jobtestareas" :value="item.id" :key="item.id">{{ item.description }}</Option>
+          <Option v-for="item in basicData[basicData.testArea]" :value="item.id" :key="item.id">{{ item.description }}</Option>
         </Select>
       </FormItem>
       <FormItem label="用例类型" prop="job_type" class="type">
@@ -19,7 +20,7 @@
       </FormItem>
       <FormItem label="自定义标签" prop="custom_tag">
         <Select v-model="$store.state.job.jobInfo.custom_tag" multiple placeholder="请选择" filterable allow-create>
-          <Option v-for="item in customTag.customtags" :value="item.id" :key="item.id">{{ item.custom_tag_name }}</Option>
+          <Option v-for="item in basicData[basicData.customTag]" :value="item.id" :key="item.id">{{ item.custom_tag_name }}</Option>
         </Select>
       </FormItem>
       <FormItem label="用例说明" prop="description">
@@ -31,7 +32,7 @@
       </Divider>
       <FormItem label="厂商信息" prop="manufacturer">
         <Select v-model="$store.state.job.jobInfo.manufacturer" placeholder="请选择" @on-change="clear" filterable>
-          <Option v-for="item in manufacturer.manufacturers" :value="item.id" :key="item.id">{{ item.manufacturer_name }}</Option>
+          <Option v-for="item in basicData[basicData.manufacturer]" :value="item.id" :key="item.id">{{ item.manufacturer_name }}</Option>
         </Select>
       </FormItem>
       <FormItem label="适配机型" prop="phone_models">
@@ -46,7 +47,7 @@
       </FormItem>
       <FormItem label="适配系统" prop="android_version">
         <Select v-model="$store.state.job.jobInfo.android_version" multiple placeholder="请选择">
-          <Option v-for="item in androidVersion.androidversions" :value="item.id" :key="item.id">{{ item.version }}</Option>
+          <Option v-for="item in basicData[basicData.androidVersion]" :value="item.id" :key="item.id">{{ item.version }}</Option>
         </Select>
       </FormItem>
       <div v-show="!isJobEditor" style="float: right;">
@@ -74,13 +75,12 @@
   </Drawer>
 </template>
 <script>
-import CONST from 'constant/constant'
 import util from 'lib/util/validate.js'
 import { jobSerializer } from 'lib/util/jobListSerializer'
 import { patchUpdateJob } from 'api/reef/job'
 import { controlDevice, releaseOccupyDevice } from 'api/reef/device'
 import jobDeviceSelect from '../components/jobDeviceSelect'
-import { createNewTag } from 'lib/tools'
+import { shouldCreateNewTag, createNewTag } from 'lib/tools'
 
 import { mapState, mapGetters } from 'vuex'
 
@@ -142,12 +142,24 @@ export default {
     }
   },
   computed: {
-    ...mapState(['showDrawer']),
-    ...mapState('job', ['jobInfo', 'draftId'].concat(CONST.SERIALIZER_KEY)),
+    ...mapState(['showDrawer', 'basicData']),
+    ...mapState('job', ['jobInfo', 'draftId']),
     ...mapGetters('job', ['jobId']),
     ...mapState('device', ['deviceInfo', 'preDeviceInfo', 'countdown']),
     isJobEditor () { // 是否在 JobEditor 页面
       return this.$route.name === 'jobEditor'
+    },
+    manufacturer () {
+      return this.basicData[this.basicData.manufacturer]
+    },
+    androidVersion () {
+      return this.basicData[this.basicData.androidVersion]
+    },
+    customTag () {
+      return this.basicData[this.basicData.customTag]
+    },
+    testArea () {
+      return this.basicData[this.basicData.testArea]
     },
     jobTypeString: {
       get: function () {
@@ -226,9 +238,9 @@ export default {
       this.jobInfo.rom_version = []
     },
     resetManufacturter () {
-      for (let i = 0; i < this.manufacturer.manufacturers.length; i++) {
-        if (this.manufacturer.manufacturers[i].id === this.jobInfo.manufacturer) {
-          this.curManufacturer = this.manufacturer.manufacturers[i]
+      for (let i = 0; i < this.manufacturer.length; i++) {
+        if (this.manufacturer[i].id === this.jobInfo.manufacturer) {
+          this.curManufacturer = this.manufacturer[i]
           this.disabled = false
           break
         }
@@ -275,8 +287,14 @@ export default {
     },
     saveChange () { // 保存对当前 Job 的修改
       this.$refs.form.validate(async (valid) => {
-        this.$store.dispatch('job/setJobTestArea', await createNewTag('test_area', this.jobInfo))
-        this.$store.dispatch('job/setJobCustomTag', await createNewTag('custom_tag', this.jobInfo))
+        if (shouldCreateNewTag('test_area', this.jobInfo)) {
+          this.$store.commit('job/setJobTestArea', await createNewTag('test_area', this.jobInfo))
+          this.$store.dispatch('setBasicTestArea')
+        }
+        if (shouldCreateNewTag('custom_tag', this.jobInfo)) {
+          this.$store.commit('job/setJobCustomTag', await createNewTag('custom_tag', this.jobInfo))
+          this.$store.dispatch('setBasicCustomTag')
+        }
         if (valid) { // 通过验证
           setTimeout(() => {
             patchUpdateJob(this.jobId, this.jobInfo).then(() => {
@@ -383,9 +401,6 @@ export default {
         }
       }
     }
-  },
-  mounted () {
-    this.$store.dispatch('job/setBaseData')
   }
 }
 </script>

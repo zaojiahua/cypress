@@ -49,27 +49,29 @@
 </template>
 
 <script>
-import util from '../lib/util/validate.js'
-import { serializer } from '../lib/util/jobListSerializer'
-import { getPhoneModelList } from '../api/reef/phoneModel'
-import { getJobTestAreaList } from '../api/reef/jobTestArea'
-import { getAndroidVersionList } from '../api/reef/androidVersion'
-import { getRomVersionList } from '../api/reef/romVersion'
-import { getReefUserList } from '../api/reef/reefUser'
-import { getCustomTagList } from '../api/reef/customTag'
+import { mapState } from 'vuex'
+import CONST from '../constant/constant'
 
 export default {
   data () {
     return {
       filterColumn: [ // 将获得的数据以统一的格式存放到filterData中，以便于v-for循环
         {
-          title: '适用机型',
-          key: 'phone_model',
-          item_key: 'phone_model_name'
-        }, {
           title: '测试用途',
           key: 'job_test_area',
           item_key: 'description'
+        }, {
+          title: '自定义标签',
+          key: 'custom_tag',
+          item_key: 'custom_tag_name'
+        }, {
+          title: '维护人员',
+          key: 'reefuser',
+          item_key: 'username'
+        }, {
+          title: '适用机型',
+          key: 'phone_model',
+          item_key: 'phone_model_name'
         }, {
           title: '安卓版本',
           key: 'android_version',
@@ -78,14 +80,6 @@ export default {
           title: 'ROM版本',
           key: 'rom_version',
           item_key: 'version'
-        }, {
-          title: '维护人员',
-          key: 'reefuser',
-          item_key: 'username'
-        }, {
-          title: '自定义标签',
-          key: 'custom_tag',
-          item_key: 'custom_tag_name'
         }
       ],
       filterData: {}, // 提供的筛选条件
@@ -119,40 +113,11 @@ export default {
       curTab: '0',
       filterFactorNum: new Array(6).fill(0),
       keyword: '',
-      collapseIsOpen: true,
-      keys: [
-        {
-          mainKey: 'phone_model',
-          subKey: 'phone_model_name',
-          serializerKey: 'phoneModel'
-        },
-        {
-          mainKey: 'job_test_area',
-          subKey: 'description',
-          serializerKey: 'testArea'
-        },
-        {
-          mainKey: 'android_version',
-          subKey: 'version',
-          serializerKey: 'androidVersion'
-        },
-        {
-          mainKey: 'rom_version',
-          subKey: 'version',
-          serializerKey: 'romVersion'
-        },
-        {
-          mainKey: 'reefuser',
-          subKey: 'username',
-          serializerKey: 'reefUser'
-        },
-        {
-          mainKey: 'custom_tag',
-          subKey: 'custom_tag_name',
-          serializerKey: 'customTag'
-        }
-      ]
+      collapseIsOpen: true
     }
+  },
+  computed: {
+    ...mapState(['basicData'])
   },
   watch: {
     filterConditions (newVal, oldVal) {
@@ -175,6 +140,11 @@ export default {
         }
       }
       this.getFilteredJob()
+    },
+    basicData (val) {
+      for (let i = 0; i < val.length - 1; i++) {
+        this.$set(this.filterData, CONST.BASIC_DATA_KEYS[i].underlineCase, val[i])
+      }
     }
   },
   methods: {
@@ -236,22 +206,7 @@ export default {
     },
     handleCollapse () {
       this.collapseIsOpen = !this.collapseIsOpen
-    },
-    setFilterdata (mainKey, serializerKey, data) {
-      let validatedData = util.validate(serializer[`${serializerKey}Serializer`], data)
-      this.$set(this.filterData, mainKey, validatedData[Object.keys(validatedData)[0]])
-    },
-    orderFilterData (mainKey, subKey) {
-      this.filterData[mainKey] = this._.orderBy(this.filterData[mainKey], [subKey])
     }
-  },
-  beforeCreate () {
-    Promise.all([getPhoneModelList(), getJobTestAreaList(), getAndroidVersionList(), getRomVersionList(), getReefUserList(), getCustomTagList()]).then(res => {
-      res.forEach((val, idx) => {
-        this.setFilterdata(this.keys[idx].mainKey, this.keys[idx].serializerKey, val.data)
-        this.orderFilterData(this.keys[idx].mainKey, this.keys[idx].subKey)
-      })
-    })
   }
 }
 </script>
