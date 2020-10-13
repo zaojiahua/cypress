@@ -136,6 +136,7 @@ function suffixComplete (str, type) {
 }
 function shouldCreateNewTag (tagType, jobInfo) {
   let target = jobInfo[tagType]
+  if (!target) return false
   for (let i = 0; i < target.length; i++) {
     if (typeof target[i] !== 'number') {
       return true
