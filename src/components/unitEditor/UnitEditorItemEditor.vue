@@ -321,6 +321,9 @@ export default {
         byName: true,
         name: val.name
       })
+      if (this.showScreenShot) {
+        this.setName(val.name)
+      }
     },
     closeGallery (val) {
       this.gallery = val

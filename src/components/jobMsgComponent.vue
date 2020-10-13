@@ -152,15 +152,6 @@ export default {
     manufacturer () {
       return this.basicData[this.basicData.manufacturer]
     },
-    androidVersion () {
-      return this.basicData[this.basicData.androidVersion]
-    },
-    customTag () {
-      return this.basicData[this.basicData.customTag]
-    },
-    testArea () {
-      return this.basicData[this.basicData.testArea]
-    },
     jobTypeString: {
       get: function () {
         return this.curJobType.join('/')
