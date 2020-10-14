@@ -11,6 +11,7 @@
       />
       <Icon type="ios-arrow-up" class="collapse__header-arrow-up" v-show="collapseIsOpen" @click="handleCollapse"/>
       <Icon type="ios-arrow-down" class="collapse__header-arrow-down" v-show="!collapseIsOpen" @click="handleCollapse"/>
+      <Button type="error" icon="ios-trash" @click="deleteFilterFactor" v-show="filterConditions.length !== 0">删除</Button>
       <Button icon="ios-close" class="filter__clear" @click="clearFilterFactor" v-show="filterConditions.length !== 0">清除</Button>
     </div>
     <transition name="slide-fade">
@@ -21,7 +22,7 @@
               <CheckboxGroup v-model="filterConditions">
                 <Row type="flex">
                   <Col span="4" v-for="(item, index) in filterData[column.key]" :key="index">
-                    <Checkbox :label="column.key + ':' + index + ':' + item[column.item_key]">
+                    <Checkbox :label="column.key + ':' + index + ':' + item[column.item_key] + ':' + item.id">
                       <span>{{ item[column.item_key] }}</span>
                     </Checkbox>
                   </Col>
@@ -51,6 +52,7 @@
 <script>
 import { mapState } from 'vuex'
 import CONST from '../constant/constant'
+import { deleteTag } from '../api/reef/job'
 
 export default {
   data () {
@@ -203,6 +205,15 @@ export default {
       for (let key in this.filterFactors) {
         this.filterFactors[key].values = []
       }
+    },
+    deleteFilterFactor () {
+      Promise.all(this.filterConditions.map(val => {
+        let data = val.split(':')
+        return deleteTag(data[0], data[3])
+      })).then(res => {
+        this.$store.dispatch('setBasicData')
+        this.clearFilterFactor()
+      })
     },
     handleCollapse () {
       this.collapseIsOpen = !this.collapseIsOpen

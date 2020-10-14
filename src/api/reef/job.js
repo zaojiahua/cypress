@@ -52,3 +52,10 @@ export const patchUpdateJob = (id, data) => {
     data
   })
 }
+
+export const deleteTag = (type, id) => {
+  return axios.request({
+    url: `/api/v1/cedar/${type}/${id}`,
+    method: 'delete'
+  })
+}
