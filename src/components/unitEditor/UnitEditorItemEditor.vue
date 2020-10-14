@@ -321,7 +321,7 @@ export default {
         byName: true,
         name: val.name
       })
-      if (this.showScreenShot) {
+      if (this.showScreenShot && !this.showInput && !this.showAutoComplete) {
         this.setName(val.name)
       }
     },
