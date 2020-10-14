@@ -207,6 +207,13 @@ export default {
     handleCollapse () {
       this.collapseIsOpen = !this.collapseIsOpen
     }
+  },
+  mounted () {
+    if (JSON.stringify(this.filterData) === '{}') {
+      for (let i = 0; i < this.basicData.length - 1; i++) {
+        this.$set(this.filterData, CONST.BASIC_DATA_KEYS[i].underlineCase, this.basicData[i])
+      }
+    }
   }
 }
 </script>
