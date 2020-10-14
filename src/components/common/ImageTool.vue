@@ -66,8 +66,13 @@ export default {
         this.imageH = img.height
         this.imageW = img.width
         this.aspectRatio = img.height / img.width
-        this.canvasH = document.querySelector('.image-tool-content').getBoundingClientRect().height
-        this.canvasW = this.canvasH / this.aspectRatio
+        if (this.imageH > this.imageW) {
+          this.canvasH = document.querySelector('.image-tool-content').getBoundingClientRect().height
+          this.canvasW = this.canvasH / this.aspectRatio
+        } else {
+          this.canvasW = document.querySelector('.image-tool-container').parentNode.getBoundingClientRect().width - 32
+          this.canvasH = this.canvasW * this.aspectRatio
+        }
         this.sizeRatio = this.imageH / this.canvasH
         this.canvas.parentNode.style.backgroundImage = `url(${src})`
         this.setOffScreenCanvas(img)
@@ -370,15 +375,15 @@ export default {
     align-items: center;
     height: 100%;
     width: 100%;
-    transition: box-shadow .3s linear;
-    &:hover {
-      box-shadow: 0 0 6px #666;
-    }
     div {
       position: relative;
       background-repeat: no-repeat;
       background-size: contain;
       font-size: 0;
+      transition: box-shadow .3s linear;
+      &:hover {
+        box-shadow: 0 0 6px #666;
+      }
       #image-tool-canvas {
         background-color: transparent;
         background-repeat: no-repeat;

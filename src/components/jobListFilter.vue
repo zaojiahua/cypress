@@ -210,6 +210,7 @@ export default {
   },
   mounted () {
     if (JSON.stringify(this.filterData) === '{}') {
+      if (!this.basicData) return
       for (let i = 0; i < this.basicData.length - 1; i++) {
         this.$set(this.filterData, CONST.BASIC_DATA_KEYS[i].underlineCase, this.basicData[i])
       }
