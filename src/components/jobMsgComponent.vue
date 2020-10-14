@@ -279,12 +279,18 @@ export default {
     saveChange () { // 保存对当前 Job 的修改
       this.$refs.form.validate(async (valid) => {
         if (shouldCreateNewTag('test_area', this.jobInfo)) {
-          this.$store.commit('job/setJobTestArea', await createNewTag('test_area', this.jobInfo))
+          let data = await createNewTag('test_area', this.jobInfo)
           this.$store.dispatch('setBasicTestArea')
+          setTimeout(() => {
+            this.$store.commit('job/setJobTestArea', data)
+          }, 400)
         }
         if (shouldCreateNewTag('custom_tag', this.jobInfo)) {
-          this.$store.commit('job/setJobCustomTag', await createNewTag('custom_tag', this.jobInfo))
+          let data = await createNewTag('custom_tag', this.jobInfo)
           this.$store.dispatch('setBasicCustomTag')
+          setTimeout(() => {
+            this.$store.commit('job/setJobCustomTag', data)
+          }, 400)
         }
         if (valid) { // 通过验证
           setTimeout(() => {

@@ -355,13 +355,17 @@ export default {
       let info = this._.cloneDeep(this.jobInfo)
       if (shouldCreateNewTag('test_area', info)) {
         info.test_area = await createNewTag('test_area', info)
-        this.$store.commit('job/setJobTestArea', this._.cloneDeep(info.test_area))
         this.$store.dispatch('setBasicTestArea')
+        setTimeout(() => {
+          this.$store.commit('job/setJobTestArea', this._.cloneDeep(info.test_area))
+        }, 400)
       }
       if (shouldCreateNewTag('custom_tag', info)) {
         info.custom_tag = await createNewTag('custom_tag', info)
-        this.$store.commit('job/setJobCustomTag', this._.cloneDeep(info.custom_tag))
         this.$store.dispatch('setBasicCustomTag')
+        setTimeout(() => {
+          this.$store.commit('job/setJobCustomTag', this._.cloneDeep(info.custom_tag))
+        }, 400)
       }
       info.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
       info.author = localStorage.id
