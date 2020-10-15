@@ -26,7 +26,7 @@
         </ButtonGroup>
         <ButtonGroup vertical size="default" v-else>
           <Button type="primary" @click="setWingman(0)">主机</Button>
-          <Button v-for="wingman in wingmans" :key="wingman" @click="setWingman(wingman)">{{wingman}} 号机</Button>
+          <Button v-for="wingman in numOfWingman" :key="wingman" @click="setWingman(wingman)">{{wingman}} 号机</Button>
         </ButtonGroup>
       </div>
     </div>
@@ -84,7 +84,7 @@ export default {
       openUnitTemplateEditor: false,
       unitController: null,
       isDiagram: false,
-      wingmans: 3,
+      numOfWingman: 3,
       showUnitEditor: false,
       curUnitKey: undefined,
       unitData: null
@@ -104,7 +104,22 @@ export default {
     }
   },
   methods: {
+    recordOrRemoveWingman () {
+      let wingman = new Array(4).fill(0)
+      let flag = false
+      let units = this.innerDiagram.findNodesByExample({ 'category': 'Unit' })
+      units.each(({ data }) => {
+        if (data.assistDevice) wingman[data.assistDevice]++
+        flag = true
+      })
+      if (flag) { // 使用了僚机才记录
+        this.curNormalData.wingman = wingman
+      } else {
+        delete this.curNormalData.wingman
+      }
+    },
     save (toggle) {
+      this.recordOrRemoveWingman()
       if (toggle) {
         this.curNormalData.unitLists = JSON.parse(this.innerDiagram.model.toJson())
         let units = this.curNormalData.unitLists.nodeDataArray.filter(item => item.category === 'Unit')
@@ -128,7 +143,6 @@ export default {
         units.forEach((val) => {
           Object.assign(this.curNormalData.resFile, val.resFile)
         })
-
         this.$emit('saveNormalData', this._.cloneDeep(this.curNormalData))
       }
       this.$emit('closeNormalEditor')
@@ -195,29 +209,19 @@ export default {
     closeContextMenu () {
       this.unitController.style.display = 'none'
     },
-    setWingman (wingmanId) {
-      let curUnit = this.innerDiagram.findNodeForKey(this.curUnitKey)
-      if (wingmanId) {
-        if (!curUnit.data.assistDevice) {
-          this.$store.commit('job/handleWingmanCount', {
-            action: 'plus',
-            wingman: wingmanId
-          })
+    setWingman (wingmanId) { // 记录僚机使用情况
+      this.innerDiagram.selection.each(({ data }) => {
+        if (data.category !== 'Unit') return
+        if (wingmanId) { // 设置为僚机
+          this.innerDiagram.model.setDataProperty(data, 'assistDevice', wingmanId)
+          this.innerDiagram.model.setDataProperty(data.unitMsg, 'assistDevice', wingmanId)
+        } else { // 设置为主机
+          this.innerDiagram.model.setDataProperty(data, 'assistDevice', null)
+          this.innerDiagram.model.setDataProperty(data.unitMsg, 'assistDevice', null)
+          delete data.assistDevice
+          delete data.unitMsg.assistDevice
         }
-        this.innerDiagram.model.setDataProperty(curUnit.data, 'assistDevice', wingmanId)
-        this.innerDiagram.model.setDataProperty(curUnit.data.unitMsg, 'assistDevice', wingmanId)
-      } else {
-        if (curUnit.data.assistDevice) {
-          this.$store.commit('job/handleWingmanCount', {
-            action: 'reduce',
-            wingman: curUnit.data.unitMsg.assistDevice
-          })
-        }
-        this.innerDiagram.model.setDataProperty(curUnit.data, 'assistDevice', null)
-        this.innerDiagram.model.setDataProperty(curUnit.data.unitMsg, 'assistDevice', null)
-        delete curUnit.data.assistDevice
-        delete curUnit.data.unitMsg.assistDevice
-      }
+      })
     },
     closeUnitEditor () {
       this.showUnitEditor = false

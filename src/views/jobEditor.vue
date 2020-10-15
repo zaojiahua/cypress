@@ -138,11 +138,9 @@ export default {
     },
     saveNormalData (val) {
       let curNormalData = this.outerDiagram.findNodeForKey(this.normalKey).data
-      this.outerDiagram.model.setDataProperty(curNormalData, 'text', val.text)
-      this.outerDiagram.model.setDataProperty(curNormalData, 'star', val.star)
-      this.outerDiagram.model.setDataProperty(curNormalData, 'color', val.color)
-      this.outerDiagram.model.setDataProperty(curNormalData, 'unitLists', val.unitLists)
-      this.outerDiagram.model.setDataProperty(curNormalData, 'resFile', val.resFile)
+      CONST.NORMAL_DATA_KEY.forEach((key) => {
+        this.outerDiagram.model.setDataProperty(curNormalData, key, val[key])
+      })
     },
     _jobFlowRules () {
       const myDiagramEventValidationHint = jobFlowValidation(this)
@@ -269,11 +267,30 @@ export default {
         }
       }
     },
+    calcWingmanCount () {
+      let wingman = new Array(4).fill(0)
+      let normalBlocks = this.outerDiagram.findNodesByExample({ 'category': 'normalBlock' })
+      normalBlocks.each(({ data }) => {
+        if (data.wingman) {
+          wingman[1] += data.wingman[1]
+          wingman[2] += data.wingman[2]
+          wingman[3] += data.wingman[3]
+        }
+      })
+      let innerJobs = this.outerDiagram.findNodesByExample({ 'category': 'Job' })
+      innerJobs.each(({ data }) => {
+        if (data.assistDevice) {
+          wingman[data.assistDevice]++
+        }
+      })
+      return wingman.reduce((pre, cur) => cur > 0 ? 1 + pre : pre, 0)
+    },
     async prepareJobInfo (saveAs, createNew, isDraft) {
       let info = this._.cloneDeep(this.jobInfo)
       let { data: start } = this.outerDiagram.findNodeForKey(-1)
       start.config = this._.cloneDeep(this.config)
       info.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
+      info.subsidiary_device_count = this.calcWingmanCount()
       if (shouldCreateNewTag('test_area', info)) {
         info.test_area = await createNewTag('test_area', info)
         this.$store.dispatch('setBasicTestArea')
@@ -368,6 +385,7 @@ export default {
         }, 400)
       }
       info.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
+      info.subsidiary_device_count = this.calcWingmanCount()
       info.author = localStorage.id
       info.job_name += '_AUTOSAVE'
       info.inner_job_list = this.prepareInnerJobList()

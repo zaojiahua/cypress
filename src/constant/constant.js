@@ -132,7 +132,6 @@ export default {
   USER_INFO: ['id', 'username', 'groups', 'token'],
   SERIALIZER_KEY: ['manufacturer', 'androidVersion', 'customTag', 'testArea'],
   JOB_DEFAULT_CONFIG: {
-    wingman: [0, 0, 0, 0],
     finalResultKey: 0
   },
   BASIC_DATA_KEYS: [
@@ -171,5 +170,6 @@ export default {
       underlineCase: 'manufacturer',
       orderCase: 'manufacturer_name'
     }
-  ]
+  ],
+  NORMAL_DATA_KEY: ['text', 'star', 'color', 'unitLists', 'resFile', 'wingman']
 }

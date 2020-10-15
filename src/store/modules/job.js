@@ -72,15 +72,6 @@ let mutations = {
   setJobCustomTag (state, data) {
     state.jobInfo.custom_tag = data
   },
-  handleWingmanCount (state, data) {
-    if (data.action === 'plus') {
-      state.config.wingman[data.wingman]++
-    }
-    if (data.action === 'reduce' && state.config.wingman[data.wingman] > 0) {
-      state.config.wingman[data.wingman]--
-    }
-    Reflect.set(state.jobInfo, 'subsidiary_device_count', state.config.wingman.reduce((pre, cur) => cur > 0 ? 1 + pre : pre), 0)
-  },
   setConfig (state, data) {
     if (data) {
       _.extend(state.config, data)

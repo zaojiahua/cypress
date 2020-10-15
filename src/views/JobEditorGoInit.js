@@ -217,10 +217,12 @@ function outerDiagramInit (context) {
     context.openNormalEditor = true
   }
 
-  function deleteNode () {
+  function deleteNode () { // 删除节点时同步更新配置信息
     return context.outerDiagram.selection.all(function ({ data }) {
-      if (data.star === CONST.COLORS.RESULT) {
-        context.$store.commit('job/setConfig', { finalResultKey: 0 })
+      if (data.category === 'normalBlock') {
+        if (data.star === CONST.COLORS.RESULT) {
+          context.$store.commit('job/setConfig', { finalResultKey: 0 })
+        }
       }
       return true
     })
