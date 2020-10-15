@@ -152,7 +152,8 @@ function outerDiagramInit (context) {
     'undoManager.isEnabled': true,
     mouseDrop: function (e) {
       finishDrop(e, null)
-    }
+    },
+    'commandHandler.canDeleteSelection': deleteNode
   })
 
   const startTemplate = startNodeTemplate(CONST.COLORS.START)
@@ -215,8 +216,14 @@ function outerDiagramInit (context) {
     context.outerDiagram.div.firstElementChild.blur()
     context.openNormalEditor = true
   }
-  normalBlockTemplate.contextClick = function (e, node) {
-    console.log(node.data)
+
+  function deleteNode () {
+    return context.outerDiagram.selection.all(function ({ data }) {
+      if (data.star === CONST.COLORS.RESULT) {
+        context.$store.commit('job/setConfig', { finalResultKey: 0 })
+      }
+      return true
+    })
   }
 
   const jobBlockTemplate = baseNodeTemplateForPort(CONST.COLORS.JOB, 'Rectangle')
