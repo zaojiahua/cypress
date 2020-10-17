@@ -29,7 +29,7 @@
 <script>
 import { isJsonString, insertAfterCursor } from 'lib/tools.js'
 
-import { updateJobUnitTemplate, createNewUnitTemplate } from 'api/reef/unit'
+import { updateJobUnitTemplate, createNewUnitTemplate } from 'api/reef/request'
 
 import { mapState } from 'vuex'
 

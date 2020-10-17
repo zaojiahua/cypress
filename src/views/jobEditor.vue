@@ -61,14 +61,12 @@ import jobInJob from '_c/jobInJob'
 import jobResFile from '_c/jobResFile/jobResFile.vue'
 import NormalEditor from '_c/NormalEditor.vue'
 import CONST from 'constant/constant'
-import { jobFlowAndMsgSave, jobFlowAndMsgUpdate } from '../api/reef/jobFlow'
-import { jobResFilesSave, getJobResFilesList, getJobResFile } from '../api/reef/jobResFileSave'
-import { patchUpdateJob } from 'api/reef/job'
+import { getJobResFile } from '../api/reef/jobResFileSave'
 import SwitchBlockDetailComponent from '_c/SwitchBlockDetailComponent'
 import { jobFlowValidation } from '../core/validation/finalValidation/job'
 import { mapState, mapGetters } from 'vuex'
 import { createJobLabel, dataURLtoFile, shouldCreateNewTag, createNewTag } from '../lib/tools'
-import { releaseOccupyDevice } from '../api/reef/device'
+import { releaseOccupyDevice, updateJob, jobResFilesSave, getJobResFilesList, saveJobFlowAndMsg } from '../api/reef/request'
 
 export default {
   name: 'jobEditor',
@@ -217,7 +215,7 @@ export default {
       info.job_id = id
       let resFiles = this._.cloneDeep(this.resFiles)
       try {
-        let { status } = await jobFlowAndMsgUpdate(id, info)
+        let { status } = await updateJob(id, info)
         if (status === 200) {
           let data = new FormData()
           data.append('job', id)
@@ -330,7 +328,7 @@ export default {
           this.uploadFiles(this.draftId, info)
         } else {
           try {
-            let { status, data } = await jobFlowAndMsgSave(info)
+            let { status, data } = await saveJobFlowAndMsg(info)
             if (status === 201) id = data.id
             this.uploadFiles(id, info)
           } catch (error) {
@@ -341,7 +339,7 @@ export default {
         if (id) {
           this.uploadFiles(id, info)
           if (this.draftId) {
-            patchUpdateJob(this.draftId, { job_deleted: true })
+            updateJob(this.draftId, { job_deleted: true })
           }
         } else {
           if (this.draftId) {
@@ -349,7 +347,7 @@ export default {
             this.uploadFiles(this.draftId, info)
           } else {
             try {
-              let { status, data } = await jobFlowAndMsgSave(info)
+              let { status, data } = await saveJobFlowAndMsg(info)
               if (status === 201) id = data.id
               this.uploadFiles(id, info)
             } catch (error) {
@@ -409,7 +407,7 @@ export default {
       })
       if (!this.draftId) {
         try {
-          let { status, data } = await jobFlowAndMsgSave(info)
+          let { status, data } = await saveJobFlowAndMsg(info)
           if (status === 201) {
             this.$store.commit('job/setDraftId', data.id)
             this.uploadFiles(data.id, info)
@@ -523,7 +521,7 @@ export default {
     cancelEdit () {
       this.autoSaveToggle = false
       if (this.draftId) {
-        patchUpdateJob(this.draftId, { job_deleted: true }).then(({ status }) => {
+        updateJob(this.draftId, { job_deleted: true }).then(({ status }) => {
           if (status === 200) {
             this.$Notice.warning({
               title: '温馨提示',
@@ -568,7 +566,7 @@ export default {
     window.addEventListener('contextmenu', this.dispatchMouseEvent)
     window.addEventListener('mousemove', this.dispatchMouseEvent)
     window.addEventListener('beforeunload', () => {
-      if (this.draftId) patchUpdateJob(this.draftId, { job_deleted: true })
+      if (this.draftId) updateJob(this.draftId, { job_deleted: true })
       this.$store.commit('job/setDraftId', null)
     })
   }

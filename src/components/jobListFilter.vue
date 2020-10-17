@@ -52,7 +52,7 @@
 <script>
 import { mapState } from 'vuex'
 import CONST from '../constant/constant'
-import { deleteTag } from '../api/reef/job'
+import { deleteTag } from '../api/reef/request'
 
 export default {
   data () {

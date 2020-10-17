@@ -60,7 +60,7 @@ import CONST from 'constant/constant'
 import unitTemplateEditor from '_c/unitTemplateEditor'
 import UnitEditor from '_c/unitEditor/UnitEditor.vue'
 import { innerDiagramInit, innerPaletteInit } from '../views/JobEditorGoInit'
-import { getJobUnitsBodyDict, deleteUnitTemplate } from 'api/reef/unit'
+import { getJobUnitsBodyDict, deleteUnitTemplate } from 'api/reef/request'
 
 export default {
   name: 'NormalEditor',

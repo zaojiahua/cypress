@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import { getDeviceList, getDeviceBatteryLevel } from '../api/reef/device.js'
+import { getDeviceList, getDeviceBatteryLevel } from '../api/reef/request'
 import util from '../lib/util/validate'
 
 import { mapState } from 'vuex'

@@ -65,7 +65,7 @@ import { mapState } from 'vuex'
 import CONST from 'constant/constant'
 import jobMsgComponent from '_c/jobMsgComponent'
 import Countdown from '_c/common/Countdown'
-import { controlDevice, releaseOccupyDevice } from 'api/reef/device'
+import { controlDevice, releaseOccupyDevice } from 'api/reef/request'
 
 export default {
   components: { jobMsgComponent, Countdown },
