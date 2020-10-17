@@ -1,4 +1,5 @@
-const prefix = '/api/v1/cedar/'
+const reefPrefix = '/api/v1/cedar/'
+const coralPrefix = '/api/v1/coral/'
 const testAreaFilter = ['id', 'description']
 const customTagFilter = ['id', 'custom_tag_name']
 const reefUserFilter = ['id', 'username', 'last_name']
@@ -17,26 +18,26 @@ function joinFilter (data) {
 }
 
 export default {
-  login: () => `${prefix}user_login/`,
-  testArea: () => `${prefix}job_test_area/?fields=${joinFilter(testAreaFilter)}`,
-  customTag: () => `${prefix}custom_tag/?fields=${joinFilter(customTagFilter)}`,
-  reefUser: () => `${prefix}reefuser/?fields=${joinFilter(reefUserFilter)}`,
-  phoneModel: () => `${prefix}phone_model/?fields=${joinFilter(phoneModelFilter)}`,
-  androidVersion: () => `${prefix}android_version/?fields=${joinFilter(androidVersionFilter)}`,
-  romVersion: () => `${prefix}rom_version/?fields=${joinFilter(romVersionFilter)}`,
-  manufacturer: () => `${prefix}manufacturer/?fields=${joinFilter(manufacturerFilter)}`,
-  usableDevice: () => `${prefix}device/?fields=${joinFilter(usableDeviceFilter)}&status=idle&ai_occupy=False`,
-  device: (data) => `${prefix}device/?fields=${joinFilter(deviceFilter)}&limit=${data.pageSize}&offset=${data.pageOffset}${data.deviceStatus}&ordering=id`,
-  deviceBattery: (data) => `${prefix}get_device_power_battery_level/?device_id=${data}`,
-  controlDevice: () => `api/v1/coral/control_device/`,
-  releaseDevice: () => `api/v1/coral/release_occupy_device/`,
-  job: (data) => `${prefix}job/?fields=${joinFilter(jobFilter)}&job_deleted=False&limit=${data.pageSize}&offset=${data.offset}&ordering=-updated_time${data.filterUrlParam}`,
-  jobDetail: (id) => `${prefix}job/${id}/?fields=${joinFilter(jobDetailFilter)}&job_deleted=False`,
-  saveJobFlowAndMsg: () => `${prefix}job/`,
-  updateJobMsg: (id) => `${prefix}job/${id}`,
-  deleteTag: (id, type) => `${prefix}${type}/${id}`,
-  saveResFile: () => `${prefix}job_upload_multi_res_file/`,
-  getResFile: (id) => `${prefix}job/${id}/?fields=${joinFilter(resFileFilter)}`,
-  unit: () => `${prefix}unit/`,
-  handleUnit: (id) => `${prefix}unit/${id}/`
+  login: () => `${reefPrefix}user_login/`,
+  testArea: () => `${reefPrefix}job_test_area/?fields=${joinFilter(testAreaFilter)}`,
+  customTag: () => `${reefPrefix}custom_tag/?fields=${joinFilter(customTagFilter)}`,
+  reefUser: () => `${reefPrefix}reefuser/?fields=${joinFilter(reefUserFilter)}`,
+  phoneModel: () => `${reefPrefix}phone_model/?fields=${joinFilter(phoneModelFilter)}`,
+  androidVersion: () => `${reefPrefix}android_version/?fields=${joinFilter(androidVersionFilter)}`,
+  romVersion: () => `${reefPrefix}rom_version/?fields=${joinFilter(romVersionFilter)}`,
+  manufacturer: () => `${reefPrefix}manufacturer/?fields=${joinFilter(manufacturerFilter)}`,
+  usableDevice: () => `${reefPrefix}device/?fields=${joinFilter(usableDeviceFilter)}&status=idle&ai_occupy=False`,
+  device: (data) => `${reefPrefix}device/?fields=${joinFilter(deviceFilter)}&limit=${data.pageSize}&offset=${data.pageOffset}${data.deviceStatus}&ordering=id`,
+  deviceBattery: (data) => `${reefPrefix}get_device_power_battery_level/?device_id=${data}`,
+  controlDevice: () => `${coralPrefix}control_device/`,
+  releaseDevice: () => `${coralPrefix}release_occupy_device/`,
+  job: (data) => `${reefPrefix}job/?fields=${joinFilter(jobFilter)}&job_deleted=False&limit=${data.pageSize}&offset=${data.offset}&ordering=-updated_time${data.filterUrlParam}`,
+  jobDetail: (id) => `${reefPrefix}job/${id}/?fields=${joinFilter(jobDetailFilter)}&job_deleted=False`,
+  saveJobFlowAndMsg: () => `${reefPrefix}job/`,
+  updateJobMsg: (id) => `${reefPrefix}job/${id}`,
+  deleteTag: (id, type) => `${reefPrefix}${type}/${id}`,
+  saveResFile: () => `${reefPrefix}job_upload_multi_res_file/`,
+  getResFile: (id) => `${reefPrefix}job/${id}/?fields=${joinFilter(resFileFilter)}`,
+  unit: () => `${reefPrefix}unit/`,
+  handleUnit: (id) => `${reefPrefix}unit/${id}/`
 }

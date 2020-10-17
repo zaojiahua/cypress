@@ -1,5 +1,5 @@
 import axios from '../index'
-import url from '../url'
+import url from './url'
 import { baseURL } from '../../config'
 
 // login
@@ -71,9 +71,9 @@ const getUsableDeviceList = () => {
   })
 }
 
-const getDeviceList = () => {
+const getDeviceList = (data) => {
   return axios.request({
-    url: url.device()
+    url: url.device(data)
   })
 }
 

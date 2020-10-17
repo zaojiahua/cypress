@@ -4,7 +4,7 @@
       <span>Unit Items &nbsp; ({{ numOfItems }})</span>
       <div class="engine" v-show="curOcrChoice !== 0">
         <span>OCR引擎：</span>
-        <Switch false-color="#ff4949" v-model="ocrChoiceToggle" @on-change="changeOcrEngine">
+        <Switch false-color="#ff4949" v-model="ocrChoiceToggle" @on-change="changeOcrChoice">
           <span slot="open">1</span>
           <span slot="close">2</span>
         </Switch>
@@ -76,7 +76,7 @@ export default {
     updateUnitItem (currentItem) {
       this.$emit('updateUnitItem', currentItem)
     },
-    changeOcrEngine (val) {
+    changeOcrChoice (val) {
       if (val) {
         this.curOcrChoice = 1
       } else {

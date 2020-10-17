@@ -4,7 +4,7 @@ import { startValidation } from '../core/validation/operationValidation/job'
 import { commonValidation } from '../core/validation/common'
 import { unitListValidation } from '../core/validation/operationValidation/block'
 
-import { getBlockFlowDict4Font } from '..api/reef/request'
+import { getBlockFlowDict4Font } from '../api/reef/request'
 
 import {
   MAKE,
