@@ -1,6 +1,8 @@
 import axios from '../index'
 import url from '../url'
+import { baseURL } from '../../config'
 
+// login
 const login = (username, password) => {
   return axios.request({
     method: 'post',
@@ -12,6 +14,7 @@ const login = (username, password) => {
   })
 }
 
+// basic data
 const getJobTestAreaList = () => {
   return axios.request({
     url: url.testArea()
@@ -54,6 +57,14 @@ const getManufacturerList = () => {
   })
 }
 
+const deleteTag = (type, id) => {
+  return axios.request({
+    method: 'delete',
+    url: url.deleteTag(id, type)
+  })
+}
+
+// device
 const getUsableDeviceList = () => {
   return axios.request({
     url: url.usableDevice()
@@ -88,6 +99,7 @@ const releaseOccupyDevice = (data) => {
   })
 }
 
+// job
 const getJobList = (data) => {
   return axios.request({
     url: url.job(data)
@@ -108,14 +120,21 @@ const saveJobFlowAndMsg = (data) => {
   })
 }
 
-const updateJob = (id, data) => {
+const updateJobMsg = (id, data) => {
   return axios.request({
     method: 'patch',
-    url: url.updateJob(id),
+    url: url.updateJobMsg(id),
     data
   })
 }
 
+const getBlockFlowDict4Font = (url) => {
+  return axios.request({
+    url: url
+  })
+}
+
+// resfile
 const jobResFilesSave = (data) => {
   return axios.request({
     method: 'post',
@@ -130,13 +149,14 @@ const getJobResFilesList = (id) => {
   })
 }
 
-const deleteTag = (type, id) => {
+const getJobResFile = (fileUrl) => {
   return axios.request({
-    method: 'delete',
-    url: url.deleteTag(id, type)
+    url: `${baseURL}${fileUrl}`,
+    responseType: 'blob'
   })
 }
 
+// unit
 const getJobUnitsBodyDict = () => {
   return axios.request({
     url: url.unit()
@@ -175,6 +195,7 @@ export {
   getAndroidVersionList,
   getRomVersionList,
   getManufacturerList,
+  deleteTag,
   getUsableDeviceList,
   getDeviceList,
   getDeviceBatteryLevel,
@@ -183,10 +204,11 @@ export {
   saveJobFlowAndMsg,
   getJobList,
   getJobDetail,
-  updateJob,
+  updateJobMsg,
+  getBlockFlowDict4Font,
   jobResFilesSave,
   getJobResFilesList,
-  deleteTag,
+  getJobResFile,
   getJobUnitsBodyDict,
   updateJobUnitTemplate,
   createNewUnitTemplate,

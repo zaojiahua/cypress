@@ -61,12 +61,11 @@ import jobInJob from '_c/jobInJob'
 import jobResFile from '_c/jobResFile/jobResFile.vue'
 import NormalEditor from '_c/NormalEditor.vue'
 import CONST from 'constant/constant'
-import { getJobResFile } from '../api/reef/jobResFileSave'
 import SwitchBlockDetailComponent from '_c/SwitchBlockDetailComponent'
 import { jobFlowValidation } from '../core/validation/finalValidation/job'
 import { mapState, mapGetters } from 'vuex'
 import { createJobLabel, dataURLtoFile, shouldCreateNewTag, createNewTag } from '../lib/tools'
-import { releaseOccupyDevice, updateJob, jobResFilesSave, getJobResFilesList, saveJobFlowAndMsg } from '../api/reef/request'
+import { releaseOccupyDevice, updateJobMsg, jobResFilesSave, getJobResFilesList, saveJobFlowAndMsg, getJobResFile } from '../api/reef/request'
 
 export default {
   name: 'jobEditor',
@@ -215,7 +214,7 @@ export default {
       info.job_id = id
       let resFiles = this._.cloneDeep(this.resFiles)
       try {
-        let { status } = await updateJob(id, info)
+        let { status } = await updateJobMsg(id, info)
         if (status === 200) {
           let data = new FormData()
           data.append('job', id)
@@ -339,7 +338,7 @@ export default {
         if (id) {
           this.uploadFiles(id, info)
           if (this.draftId) {
-            updateJob(this.draftId, { job_deleted: true })
+            updateJobMsg(this.draftId, { job_deleted: true })
           }
         } else {
           if (this.draftId) {
@@ -521,7 +520,7 @@ export default {
     cancelEdit () {
       this.autoSaveToggle = false
       if (this.draftId) {
-        updateJob(this.draftId, { job_deleted: true }).then(({ status }) => {
+        updateJobMsg(this.draftId, { job_deleted: true }).then(({ status }) => {
           if (status === 200) {
             this.$Notice.warning({
               title: '温馨提示',
@@ -566,7 +565,7 @@ export default {
     window.addEventListener('contextmenu', this.dispatchMouseEvent)
     window.addEventListener('mousemove', this.dispatchMouseEvent)
     window.addEventListener('beforeunload', () => {
-      if (this.draftId) updateJob(this.draftId, { job_deleted: true })
+      if (this.draftId) updateJobMsg(this.draftId, { job_deleted: true })
       this.$store.commit('job/setDraftId', null)
     })
   }

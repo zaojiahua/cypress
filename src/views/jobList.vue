@@ -50,7 +50,7 @@ import { getSelectedJobs } from 'api/coral/jobLibSvc'
 import { jobLibSvcURL } from '../config/index'
 import { serializer, jobSerializer } from 'lib/util/jobListSerializer'
 import jobListFilter from '../components/jobListFilter'
-import { getJobDetail, getJobList, updateJob } from 'api/reef/request'
+import { getJobDetail, getJobList, updateJobMsg } from 'api/reef/request'
 import { mapState } from 'vuex'
 
 export default {
@@ -325,7 +325,7 @@ export default {
           content: '您真的要删除这些用例吗？',
           onOk: () => {
             this.jobIdList.forEach(async (id) => {
-              await updateJob(id, { job_deleted: true })
+              await updateJobMsg(id, { job_deleted: true })
             })
             setTimeout(() => {
               if (this.jobData.length - this.jobIdList.length === 0 && this.curPage > 1) {

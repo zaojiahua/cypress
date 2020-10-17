@@ -77,7 +77,7 @@
 <script>
 import util from 'lib/util/validate.js'
 import { jobSerializer } from 'lib/util/jobListSerializer'
-import { controlDevice, releaseOccupyDevice, updateJob } from 'api/reef/request'
+import { controlDevice, releaseOccupyDevice, updateJobMsg } from 'api/reef/request'
 import jobDeviceSelect from '../components/jobDeviceSelect'
 import { shouldCreateNewTag, createNewTag } from 'lib/tools'
 
@@ -196,7 +196,7 @@ export default {
       }, 800)
 
       if (this.draftId) {
-        updateJob(this.draftId, { job_deleted: true }).then(({ status }) => {
+        updateJobMsg(this.draftId, { job_deleted: true }).then(({ status }) => {
           if (status === 200) {
           } else {
             console.log('删除自动备份文件失败，错误码: ' + status)
@@ -293,7 +293,7 @@ export default {
         }
         if (valid) { // 通过验证
           setTimeout(() => {
-            updateJob(this.jobId, this.jobInfo).then(() => {
+            updateJobMsg(this.jobId, this.jobInfo).then(() => {
               this.$Message.info('修改成功')
               this.$store.commit('refreshJobList')
             }).catch(error => {
