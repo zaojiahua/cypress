@@ -295,12 +295,22 @@ export function innerDiagramInit (context) {
     if (e.diagram instanceof go.Palette) return
     context.showUnitEditor = true
     let { key, text, unitMsg, unitMsg: { execModName } } = node.data
-    context.unitData = {
-      unitNodeKey: key,
+    let unitData = {
+      unitKey: key,
       unitName: text,
       unitType: execModName,
       unitMsg: context._.cloneDeep(unitMsg)
     }
+    context.$store.commit('unit/handleUnitData', {
+      action: 'setUnitData',
+      data: unitData
+    })
+    // context.unitData = {
+    //   unitNodeKey: key,
+    //   unitName: text,
+    //   unitType: execModName,
+    //   unitMsg: context._.cloneDeep(unitMsg)
+    // }
   }
 
   unitTemplate.contextClick = function (e, node) {

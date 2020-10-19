@@ -2,7 +2,7 @@
   <Card class="raw-unit-card" :class="foldRawUnit ? 'fold-raw-unit' : null">
     <!-- title -->
     <p slot="title">
-      Raw Unit &nbsp; ({{ unitType }} Unit) {{foldRawUnit}}
+      Raw Unit &nbsp; ({{ unitData.unitType }} Unit)
     </p>
     <!-- extra -->
     <div slot="extra">
@@ -25,76 +25,75 @@
         <pre>{{ unitContent }}</pre>
       </div>
       <div v-show="editing">
-        <Input type="textarea" v-model="currentUnitContent"/>
+        <Input type="textarea" v-model="unitContent"/>
         <div class="btns">
-          <Button @click="cancelEditCurrentUnitContent">取消</Button>
-          <Button type="primary" @click="saveCurrentUnitContent">保存</Button>
+          <Button @click="endUnitContentEdit(false)">取消</Button>
+          <Button type="primary" @click="endUnitContentEdit(true)">保存</Button>
         </div>
       </div>
-      <Button @click="editCurrentUnitContent"><Icon type="ios-clipboard-outline" />编辑</Button>
+      <Button @click="editUnitContent"><Icon type="ios-clipboard-outline" />编辑</Button>
     </div>
   </Card>
 </template>
 
 <script>
 import { isJsonString, insertAfterCursor } from 'lib/tools.js'
+import { mapState } from 'vuex'
 
 export default {
   name: 'RawUnit',
-  props: {
-    unitData: Object
-  },
   data () {
     return {
       foldRawUnit: false,
       editing: false,
-      currentUnitContent: this.unitContent
-    }
-  },
-  watch: {
-    unitContent (val) {
-      this.currentUnitContent = val
+      curUnitContent: undefined
     }
   },
   computed: {
-    unitType () {
-      return this.unitData ? this.unitData.unitType : ''
-    },
-    unitContent () {
-      if (this.unitData) {
-        let { unitMsg, unitMsg: { execCmdDict: { execCmdList } } } = this._.cloneDeep(this.unitData)
-        if (execCmdList) {
-          execCmdList.forEach((val) => {
-            delete val.itemID
-          })
+    ...mapState('unit', ['unitData']),
+    unitContent: {
+      get () {
+        if (this.unitData.unitMsg) {
+          let { unitMsg, unitMsg: { execCmdDict: { execCmdList } } } = this._.cloneDeep(this.unitData)
+          if (execCmdList) {
+            execCmdList.forEach((val) => {
+              delete val.itemID
+            })
+          }
+          return JSON.stringify(unitMsg, null, 2)
         }
-        return JSON.stringify(unitMsg, null, 2)
+        return ''
+      },
+      set (val) {
+        this.curUnitContent = val
       }
-      return ''
     }
   },
   methods: {
-    editCurrentUnitContent () {
+    editUnitContent () {
       this.editing = true
+      this.curUnitContent = this.unitContent
     },
-    cancelEditCurrentUnitContent () {
-      this.editing = false
-      this.currentUnitContent = this.unitContent
-    },
-    saveCurrentUnitContent () {
-      if (!isJsonString(this.currentUnitContent)) {
-        this.$Message.error({
-          background: true,
-          content: '不是 JSON 格式'
-        })
-      } else {
-        this.$emit('updateRawUnit', this.currentUnitContent)
-        this.$Message.success({
-          background: true,
-          content: '保存成功'
-        })
-        this.editing = false
+    endUnitContentEdit (save) {
+      if (save) {
+        if (!isJsonString(this.unitContent)) {
+          this.$Message.error({
+            background: true,
+            content: '不是 JSON 格式'
+          })
+          return
+        } else {
+          this.$store.commit('unit/handleUnitData', {
+            action: 'setUnitMsg',
+            data: JSON.parse(this.curUnitContent)
+          })
+          this.$Message.success({
+            background: true,
+            content: '保存成功'
+          })
+        }
       }
+      this.editing = false
     },
     handleKeydown (event) {
       let insertStr = '  '
@@ -160,12 +159,9 @@ export default {
   }
 }
 .fold-raw-unit {
-  max-height: 50px;
-  font-size: 0;
+  max-height: 52px;
   /deep/ .ivu-card-body {
-    visibility: hidden;
-    height: 0;
-    padding: 0;
+    display: none;
   }
 }
 </style>

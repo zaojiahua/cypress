@@ -172,5 +172,11 @@ export default {
       orderCase: 'manufacturer_name'
     }
   ],
-  NORMAL_DATA_KEY: ['text', 'star', 'color', 'unitLists', 'resFile', 'wingman']
+  NORMAL_DATA_KEY: ['text', 'star', 'color', 'unitLists', 'resFile', 'wingman'],
+  DEFAULT_UNIT_DATA: {
+    unitKey: undefined,
+    unitName: undefined,
+    unitType: undefined,
+    unitMsg: null
+  }
 }

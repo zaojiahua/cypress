@@ -10,31 +10,25 @@
       <span>UNIT EDITOR</span>
       <div class="unit-name">
         <Tag class="unit-name-tag" color="green" size="large">UNIT NAME</Tag>
-        <Input class="unit-name-input" v-model="unitName" clearable></Input>
+        <Input class="unit-name-input" v-model="unitData.unitName" clearable></Input>
       </div>
     </div>
     <div class="body">
       <div class="pane">
         <ItemList
-          :ocrChoice="ocrChoice"
-          :unitItemsData="unitItemsData"
           @updateUnitItem="updateUnitItem"
-          @updateOcrChoice="updateOcrChoice"
         ></ItemList>
-        <RawUnit
-          :unitData="curUnitData"
-          @updateRawUnit="updateRawUnit"
-        ></RawUnit>
+        <RawUnit></RawUnit>
       </div>
       <div class="pane">
-        <!-- <ItemEditor
+        {{unitData}}
+        <ItemEditor
           @updateUnitItem="updateUnitItem"
           @arrangeFileName="arrangeFileName"
-          :unitKey="unitKey"
-        ></ItemEditor> -->
+        ></ItemEditor>
       </div>
       <div class="pane">
-        <!-- <Utils></Utils> -->
+        <Utils></Utils>
       </div>
     </div>
     <div slot="footer">
@@ -58,51 +52,17 @@ export default {
   name: 'UnitEditor',
   components: { ItemList, RawUnit, ItemEditor, Utils },
   props: {
-    showUnitEditor: Boolean,
-    unitData: Object
+    showUnitEditor: Boolean
   },
   data () {
     return {
       curShowUnitEditor: this.showUnitEditor,
-      curUnitData: this.unitData,
       unitItems: [],
       unitResFileList: []
     }
   },
   computed: {
-    ...mapState('unit', [
-      'itemHandBook'
-    ]),
-    unitName: {
-      get () {
-        return this.curUnitData ? this.curUnitData.unitName : ''
-      },
-      set (val) {
-        this.curUnitData.unitName = val
-      }
-    },
-    unitKey () {
-      return this.curUnitData ? this.curUnitData.unitNodeKey : null
-    },
-    unitItemsData () { // 在当前的Unit信息中提取Items的信息
-      if (!this.curUnitData) return
-      let { unitMsg: { execCmdDict, execCmdDict: { execCmdList } } } = this._.cloneDeep(this.curUnitData)
-      let src = execCmdList || execCmdDict
-      let unitItemsData = []
-      for (let key in src) {
-        if (src[key].type !== 'noChange') { // 只提取需要用户操作的Item信息
-          unitItemsData.push({
-            'itemName': key,
-            'itemContent': this._.cloneDeep(src[key])
-          })
-        }
-      }
-      return unitItemsData
-    },
-    ocrChoice () { // 如果保存了文字识别引擎的编号，则返回，否则返回0
-      if (!this.curUnitData) return
-      return this.curUnitData.unitMsg.ocrChoice ? this.curUnitData.unitMsg.ocrChoice : 0
-    }
+    ...mapState('unit', ['itemHandBook', 'unitData'])
   },
   watch: {
     showUnitEditor (val) {
@@ -137,7 +97,7 @@ export default {
       this.unitItems = [...findComponentsDownward(this, 'UnitItem')]
       if (save) {
         this.$emit('changeUnitColor', this.checkWeatherCompleted())
-        let unitData = this._.cloneDeep(this.curUnitData)
+        let unitData = this._.cloneDeep(this.unitData)
         let unitResFileList = this._.cloneDeep(this.unitResFileList)
         this.unitResFileList = []
         let { unitMsg: { execCmdDict: { execCmdList } } } = unitData
@@ -164,14 +124,8 @@ export default {
       let src = execCmdList || execCmdDict
       Object.assign(src[item.itemName], item.itemContent)
     },
-    updateRawUnit (unitContent) {
-      this.curUnitData.unitMsg = JSON.parse(unitContent)
-    },
     arrangeFileName (nameData) {
       this.unitResFileList.push(nameData)
-    },
-    updateOcrChoice (data) {
-      this.curUnitData.unitMsg.ocrChoice = data
     }
   }
 }
