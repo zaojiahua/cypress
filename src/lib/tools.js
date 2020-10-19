@@ -101,7 +101,7 @@ function blobToDataURL (blob) {
   })
 }
 
-function suffixAutoRemove (str) {
+function suffixRemove (str) {
   let suffixIndex = str.lastIndexOf('.')
   if (suffixIndex !== -1) {
     return str.substring(0, suffixIndex)
@@ -170,7 +170,7 @@ export {
   fileToDataURL,
   dataURLtoFile,
   blobToDataURL,
-  suffixAutoRemove,
+  suffixRemove,
   suffixAutoComplete,
   createJobLabel,
   suffixComplete,

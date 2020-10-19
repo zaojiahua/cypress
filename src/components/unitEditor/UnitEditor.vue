@@ -27,13 +27,14 @@
         ></RawUnit>
       </div>
       <div class="pane">
-        <ItemEditor
+        <!-- <ItemEditor
           @updateUnitItem="updateUnitItem"
           @arrangeFileName="arrangeFileName"
-        ></ItemEditor>
+          :unitKey="unitKey"
+        ></ItemEditor> -->
       </div>
       <div class="pane">
-        <Utils></Utils>
+        <!-- <Utils></Utils> -->
       </div>
     </div>
     <div slot="footer">
@@ -80,13 +81,16 @@ export default {
         this.curUnitData.unitName = val
       }
     },
-    unitItemsData () {
+    unitKey () {
+      return this.curUnitData ? this.curUnitData.unitNodeKey : null
+    },
+    unitItemsData () { // 在当前的Unit信息中提取Items的信息
       if (!this.curUnitData) return
       let { unitMsg: { execCmdDict, execCmdDict: { execCmdList } } } = this._.cloneDeep(this.curUnitData)
       let src = execCmdList || execCmdDict
       let unitItemsData = []
       for (let key in src) {
-        if (src[key].type !== 'noChange') {
+        if (src[key].type !== 'noChange') { // 只提取需要用户操作的Item信息
           unitItemsData.push({
             'itemName': key,
             'itemContent': this._.cloneDeep(src[key])
@@ -95,7 +99,7 @@ export default {
       }
       return unitItemsData
     },
-    ocrChoice () {
+    ocrChoice () { // 如果保存了文字识别引擎的编号，则返回，否则返回0
       if (!this.curUnitData) return
       return this.curUnitData.unitMsg.ocrChoice ? this.curUnitData.unitMsg.ocrChoice : 0
     }

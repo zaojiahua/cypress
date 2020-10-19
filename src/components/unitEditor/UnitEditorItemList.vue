@@ -1,27 +1,28 @@
 <template>
-  <div class="card item-list">
-    <div class="card-title title">
+  <Card class="unit-item-list-card">
+    <!-- title -->
+    <p slot="title">
       <span>Unit Items &nbsp; ({{ numOfItems }})</span>
-      <div class="engine" v-show="curOcrChoice !== 0">
-        <span>OCR引擎：</span>
-        <Switch false-color="#ff4949" v-model="ocrChoiceToggle" @on-change="changeOcrChoice">
-          <span slot="open">1</span>
-          <span slot="close">2</span>
-        </Switch>
-      </div>
+    </p>
+    <!-- extra -->
+    <div slot="extra">
+      <span>OCR引擎：</span>
+      <Switch false-color="#ff4949" v-model="ocrChoiceToggle" @on-change="changeOcrChoice">
+        <span slot="open">1</span>
+        <span slot="close">2</span>
+      </Switch>
     </div>
-    <div class="card-body item-list-content">
-      <transition-group name="item" tag="div">
-        <UnitItem
-          v-for="(item, index) in curUnitItemsData"
-          :key="item.itemContent.itemID || index"
-          :itemData="item"
-          :itemIndex="index"
-          @updateUnitItem="updateUnitItem"
-        ></UnitItem>
-      </transition-group>
-    </div>
-  </div>
+    <!-- body -->
+    <transition-group name="item" tag="div" class="item-container">
+      <UnitItem
+        v-for="(item, index) in curUnitItemsData"
+        :key="item.itemContent.itemID || index"
+        :itemData="item"
+        :itemIndex="index"
+        @updateUnitItem="updateUnitItem"
+      ></UnitItem>
+    </transition-group>
+  </Card>
 </template>
 
 <script>
@@ -93,34 +94,54 @@ export default {
 
 <style lang="less" scoped>
   @import '../../css/common.less';
-  .item-list {
-    overflow: auto;
-    margin-bottom: 1em;
-    .title {
-      position: relative;
-      .engine {
-        position: absolute;
-        right: 1em;
-        top: 0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-    }
-    .item-list-content {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      .item-enter-active, .item-leave-active {
-        transition: all 1s;
-      }
-      .item-enter, .item-leave-to {
-        opacity: 0;
-        transform: translateX(100%);
-      }
-    }
-  }
-  .collapse {
+  .unit-item-list-card {
     flex: 1;
+    margin-bottom: 1em;
+    .item-container {
+      overflow: hidden;
+      & > div:first-child {
+        margin-top: 0;
+      }
+      & > div:last-child {
+        margin-bottom: 0;
+      }
+    }
+    .item-enter-active, .item-leave-active {
+      transition: all 1s;
+    }
+    .item-enter, .item-leave-to {
+      opacity: 0;
+      transform: translateX(100%);
+    }
   }
+  // .item-list {
+  //   overflow: auto;
+  //   margin-bottom: 1em;
+  //   .title {
+  //     position: relative;
+  //     .engine {
+  //       position: absolute;
+  //       right: 1em;
+  //       top: 0;
+  //       display: flex;
+  //       justify-content: space-between;
+  //       align-items: center;
+  //     }
+  //   }
+  //   .item-list-content {
+  //     display: flex;
+  //     flex-direction: column;
+  //     justify-content: space-between;
+  //     .item-enter-active, .item-leave-active {
+  //       transition: all 1s;
+  //     }
+  //     .item-enter, .item-leave-to {
+  //       opacity: 0;
+  //       transform: translateX(100%);
+  //     }
+  //   }
+  // }
+  // .collapse {
+  //   flex: 1;
+  // }
 </style>

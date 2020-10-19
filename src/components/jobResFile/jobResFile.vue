@@ -54,7 +54,7 @@
 import jobResFileShow from './jobResFileShow'
 import jobResFileTable from './jobResFileTable'
 
-import { suffixAutoRemove } from 'lib/tools'
+import { suffixRemove } from 'lib/tools'
 
 import { mapState } from 'vuex'
 
@@ -146,7 +146,7 @@ export default {
     checkDuplicateName () {
       let flag = true
       for (let i = 0; i < this.resFiles.length; i++) {
-        if (suffixAutoRemove(this.resFiles[i].name) === this.newName && this.fileData.type === this.resFiles[i].type) {
+        if (suffixRemove(this.resFiles[i].name) === this.newName && this.fileData.type === this.resFiles[i].type) {
           flag = false
           break
         }

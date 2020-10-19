@@ -87,7 +87,7 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import { suffixComplete, suffixAutoRemove } from 'lib/tools.js'
+import { suffixComplete, suffixRemove } from 'lib/tools.js'
 import ScreenShot from './UnitEditorScreenShot'
 import FeaturePoint from './UnitEditorFeaturePoint'
 import CONST from 'constant/constant'
@@ -96,6 +96,9 @@ import Gallery from '_c/common/Gallery.vue'
 export default {
   name: 'ItemEditor',
   components: { ScreenShot, FeaturePoint, Gallery },
+  props: {
+    unitKey: Number
+  },
   data () {
     return {
       tmachBlanks: [],
@@ -107,6 +110,7 @@ export default {
     }
   },
   computed: {
+    ...mapState('job', ['normalKey', 'config']),
     ...mapState('files', ['resFiles', 'resFilesName']),
     ...mapState('item', ['showItemEditor', 'currentItem', 'saveToFinalResult']),
     ...mapState('img', ['imgRecRate', 'coordinates', 'absoulteCoordinates']),
@@ -186,7 +190,7 @@ export default {
           coordinateDataList[area] = coordinateRowList
         }
         this.$store.commit('files/addResFile', {
-          name: suffixAutoRemove(this.tmachBlanks[0]) + '.json',
+          name: suffixRemove(this.tmachBlanks[0]) + '.json',
           type: 'json',
           file: JSON.stringify(coordinateDataList, null, 4),
           fileUrl: ''
@@ -253,7 +257,7 @@ export default {
           }
         }
         for (let i = 0; i < outputFilesName.length; i++) {
-          if (suffixAutoRemove(this.tmachBlanks[0]) === outputFilesName[i]) {
+          if (suffixRemove(this.tmachBlanks[0]) === outputFilesName[i]) {
             this.$Message.error({
               content: '这个名字已经被占用了',
               background: true
@@ -262,7 +266,7 @@ export default {
           }
         }
         this.$store.commit('files/addResFilesName', {
-          name: suffixAutoRemove(this.tmachBlanks[0]),
+          name: suffixRemove(this.tmachBlanks[0]),
           index
         })
       }
@@ -284,6 +288,11 @@ export default {
       }, 200)
     },
     setName (name) {
+      let resFilesInfo = this._.cloneDeep(this.config.resFilesInfo)
+      let key = [this.normalKey, this.unitKey, this.currentItem.itemName].join('*')
+      resFilesInfo[key] = `${key}*${name}`
+      this.$store.commit('job/setConfig', { resFilesInfo })
+      console.log(resFilesInfo)
       this.tmachBlanks.splice(0, 1, name)
     },
     overwrite () {

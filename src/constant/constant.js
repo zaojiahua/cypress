@@ -132,7 +132,8 @@ export default {
   USER_INFO: ['id', 'username', 'groups', 'token'],
   SERIALIZER_KEY: ['manufacturer', 'androidVersion', 'customTag', 'testArea'],
   JOB_DEFAULT_CONFIG: {
-    finalResultKey: 0
+    finalResultKey: 0,
+    resFilesInfo: {}
   },
   BASIC_DATA_KEYS: [
     {
