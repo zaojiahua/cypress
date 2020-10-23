@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import CONST from 'constant/constant'
 
 let resFilesName = []
@@ -11,35 +12,23 @@ for (let key in CONST.WILL_TOUCH_NAME) {
 
 let state = {
   resFiles: [],
-  currentFile: null,
-  isDuplicatedFile: false,
+  curFile: null,
   duplicatedFile: null,
   resFilesName,
   showResFileModal: false
 }
 
 let mutations = {
-  setResFiles (state, resFiles) {
-    state.resFiles = resFiles
-  },
-  addResFile (state, resFile) {
-    let resFiles = state.resFiles
-    let index = resFiles.findIndex(file => file.name === resFile.name)
-    if (index !== -1) {
-      if (resFile.name !== 'FILES_NAME_CONFIG.json') {
-        state.isDuplicatedFile = true
-        state.duplicatedFile = {
-          index,
-          resFile
-        }
-      } else {
-        state.resFiles.splice(index, 1, resFile)
-      }
-      return
+  handleResFiles (state, { action, data }) {
+    if (action === 'setResFiles') {
+      state.resFiles = data
     }
-    state.resFiles.push(resFile)
-    if (resFile.type === 'png') {
-      state.currentFile = resFile
+    if (action === 'addResFile') {
+      if (data.index !== -1) {
+        state.resFiles.splice(data.index, 1, data)
+      } else {
+        state.resFiles.push(data)
+      }
     }
   },
   removeResFile (state, index) {
@@ -48,38 +37,45 @@ let mutations = {
   clearResFiles (state) {
     state.resFiles = []
   },
+  handleCurFile (state, { action, data }) {
+    if (action === 'setCurFile') {
+      if (data.dirty) {
+        if (data.index !== -1) {
+          state.curFile = state.resFiles[data.index]
+          state.curFile.name = data.name
+        }
+      } else {
+        state.curFile = data
+      }
+    }
+    if (action === 'addCurFile') {
+      if (!state.curFile) return
+      let { dirty, index } = state.curFile
+      if (!dirty) {
+        state.curFile.dirty = true
+        if (index !== -1) {
+          state.resFiles.splice(index, 1, state.curFile)
+        } else {
+          state.curFile.index = state.resFiles.length
+          state.resFiles.push(state.curFile)
+        }
+      }
+    }
+    if (action === 'removeCurFile') {
+      state.curFile = null
+    }
+  },
   setCurrentFile (state, data) {
     if (data.byName) {
       for (let i = 0; i < state.resFiles.length; i++) {
         if (state.resFiles[i].name === data.name) {
-          state.currentFile = state.resFiles[i]
+          state.curFile = state.resFiles[i]
           break
         }
       }
     } else {
-      state.currentFile = data.currentFileInfo
+      state.curFile = data.currentFileInfo
     }
-  },
-  removeCurrentFile (state) {
-    state.currentFile = null
-  },
-  setIsDuplicatedFile (state, isDuplicatedFile) {
-    state.isDuplicatedFile = isDuplicatedFile
-  },
-  renameDuplicatedFile (state, newName) {
-    if (!newName.endsWith(state.duplicatedFile.resFile.type)) {
-      state.duplicatedFile.resFile.name = newName + '.' + state.duplicatedFile.resFile.type
-    } else {
-      state.duplicatedFile.resFile.name = newName
-    }
-    state.resFiles.push(state.duplicatedFile.resFile)
-    state.isDuplicatedFile = false
-    state.currentFile = state.duplicatedFile.resFile
-  },
-  setDuplicatedFile (state) {
-    state.resFiles.splice(state.duplicatedFile.index, 1, state.duplicatedFile.resFile)
-    state.isDuplicatedFile = false
-    state.currentFile = state.duplicatedFile.resFile
   },
   addResFilesName (state, data) {
     state.resFilesName[data.index].children.push(data.name)
@@ -100,7 +96,9 @@ let mutations = {
 }
 
 let getters = {
-
+  resFilesName (state) {
+    return state.resFiles.map(item => item.name)
+  }
 }
 
 export default {

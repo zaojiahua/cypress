@@ -1,9 +1,9 @@
 <template>
   <Card class="raw-unit-card" :class="foldRawUnit ? 'fold-raw-unit' : null">
     <!-- title -->
-    <p slot="title">
+    <div slot="title">
       Raw Unit &nbsp; ({{ unitData.unitType }} Unit)
-    </p>
+    </div>
     <!-- extra -->
     <div slot="extra">
       <Icon
@@ -31,7 +31,7 @@
           <Button type="primary" @click="endUnitContentEdit(true)">保存</Button>
         </div>
       </div>
-      <Button @click="editUnitContent"><Icon type="ios-clipboard-outline" />编辑</Button>
+      <Button @click="editUnitContent" size="small"><Icon type="ios-clipboard-outline" />编辑</Button>
     </div>
   </Card>
 </template>
@@ -56,8 +56,8 @@ export default {
         if (this.unitData.unitMsg) {
           let { unitMsg, unitMsg: { execCmdDict: { execCmdList } } } = this._.cloneDeep(this.unitData)
           if (execCmdList) {
-            execCmdList.forEach((val) => {
-              delete val.itemID
+            execCmdList.forEach((val, idx, arr) => {
+              delete arr[idx].itemId
             })
           }
           return JSON.stringify(unitMsg, null, 2)
@@ -111,9 +111,12 @@ export default {
 @import '../../css/common.less';
 .raw-unit-card {
   flex: 1;
-  max-height: 50%;
+  max-height: calc(50% - 16px);
+  /deep/ .ivu-card-extra {
+    top: 10px;
+  }
   /deep/ .ivu-card-body {
-    height: calc(100% - 51px);
+    height: calc(100% - 44px);
   }
   .raw-unit-container {
     display: flex;
@@ -159,7 +162,7 @@ export default {
   }
 }
 .fold-raw-unit {
-  max-height: 52px;
+  max-height: 44px;
   /deep/ .ivu-card-body {
     display: none;
   }

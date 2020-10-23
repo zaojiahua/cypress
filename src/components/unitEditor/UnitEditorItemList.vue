@@ -1,9 +1,9 @@
 <template>
   <Card class="unit-item-list-card">
     <!-- title -->
-    <p slot="title">
+    <div slot="title">
       <span>Unit Items &nbsp; ({{ numOfItems }})</span>
-    </p>
+    </div>
     <!-- extra -->
     <div slot="extra" v-show="ocrChoice">
       <span>OCR引擎：</span>
@@ -16,9 +16,11 @@
     <transition-group name="item" tag="div" class="item-container">
       <UnitItem
         v-for="(item, index) in unitItemsData"
-        :key="item.itemContent.itemID || index"
+        :key="item.itemContent.itemId || index"
         :itemData="item"
         :itemIndex="index"
+        :isActive="curUnitItem === index"
+        @click.native="handleItemClick(index)"
       ></UnitItem>
     </transition-group>
   </Card>
@@ -35,7 +37,7 @@ export default {
   data () {
     return {
       ocrChoiceToggle: true,
-      curOcrChoice: 0
+      curUnitItem: undefined
     }
   },
   computed: {
@@ -76,6 +78,9 @@ export default {
         action: 'setUnitMsg',
         data: unitMsg
       })
+    },
+    handleItemClick (index) {
+      this.curUnitItem = index
     }
   }
 }
@@ -86,8 +91,15 @@ export default {
   .unit-item-list-card {
     flex: 1;
     margin-bottom: 1em;
+    /deep/ .ivu-card-extra {
+      top: 10px;
+    }
+    /deep/ .ivu-card-body {
+      height: calc(100% - 44px);
+    }
     .item-container {
-      overflow: hidden;
+      height: 100%;
+      overflow: auto;
       & > div:first-child {
         margin-top: 0;
       }

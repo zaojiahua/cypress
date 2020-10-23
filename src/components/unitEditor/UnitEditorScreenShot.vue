@@ -1,56 +1,66 @@
 <template>
-  <div class="screen-shot">
-    <Button @click="showDeviceSelectPage" type="primary" class="select-device">选取设备</Button>
-    <Divider orientation="left">获取图片</Divider>
-    <Table
-      border
+  <Card class="screen-shot-container">
+    <!-- title -->
+    <p slot="title">
+      <Divider orientation="left" style="margin: 0;">获取图片</Divider>
+    </p>
+    <!-- extra -->
+    <Button
+      slot="extra"
+      @click="showDeviceSelectPage"
+      type="primary"
       size="small"
-      :columns="deviceInfoColumns"
-      :data="deviceInfo"
-    ></Table>
-    <div class="get-image child-m-right--1">
-      <div>
-        <Input v-model="currentImageName" v-if="!isPicInput" @input="setImageName" clearable>
+    >选取设备</Button>
+    <!-- body -->
+    <div class="screen-shot-body">
+      <Table
+        border
+        size="small"
+        :columns="deviceInfoColumns"
+        :data="deviceInfo"
+      ></Table>
+      <div class="child-m-right--1">
+        <Input v-model="curImgName" size="small" :disabled="!isPicInput ? false : true" @input="setImgName" clearable>
           <span slot="prepend">图片名称</span>
         </Input>
-      </div>
-      <Button type="primary" :loading="isLoading" @click="getImage">
-        <span v-if="!isLoading">获取截图</span>
-        <span v-else>Loading...</span>
-      </Button>
-      <!-- <Dropdown placement="bottom-end">
-        <Button type="primary">
-            获取截图
-            <Icon type="ios-arrow-down"></Icon>
+        <Button type="primary" size="small" :loading="isLoading" @click="getImage">
+          <span v-if="!isLoading">获取截图</span>
+          <span v-else>Loading...</span>
         </Button>
-        <DropdownMenu slot="list">
-          <DropdownItem>
-            <Button type="primary" :loading="isLoading" @click="getImage">
-              <span v-if="!isLoading">获取主机截图</span>
-              <span v-else>Loading...</span>
-            </Button>
-          </DropdownItem>
-          <DropdownItem v-for="idx of 3" :key="idx">
-            <Button type="primary" :loading="isLoading" @click="getImage">
-              <span v-if="!isLoading">获取{{idx}}号僚机截图</span>
-              <span v-else>Loading...</span>
-            </Button>
-          </DropdownItem>
-        </DropdownMenu>
-      </Dropdown> -->
+        <!-- <Dropdown placement="bottom-end">
+          <Button type="primary">
+              获取截图
+              <Icon type="ios-arrow-down"></Icon>
+          </Button>
+          <DropdownMenu slot="list">
+            <DropdownItem>
+              <Button type="primary" :loading="isLoading" @click="getImage">
+                <span v-if="!isLoading">获取主机截图</span>
+                <span v-else>Loading...</span>
+              </Button>
+            </DropdownItem>
+            <DropdownItem v-for="idx of 3" :key="idx">
+              <Button type="primary" :loading="isLoading" @click="getImage">
+                <span v-if="!isLoading">获取{{idx}}号僚机截图</span>
+                <span v-else>Loading...</span>
+              </Button>
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown> -->
+      </div>
     </div>
-  </div>
+  </Card>
 </template>
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import { blobToDataURL, suffixAutoComplete } from 'lib/tools.js'
+import { blobToDataURL, addSuffix, cypressGet, cypressTimeout, suffixRemove } from 'lib/tools.js'
 import CONST from 'constant/constant'
 
 export default {
   name: 'ScreenShot',
   props: {
-    imageName: [String, Number]
+    imgName: Object
   },
   data () {
     return {
@@ -76,21 +86,33 @@ export default {
           align: 'center'
         }
       ],
-      currentImageName: this.imageName,
+      curImgName: this.imgName.main,
       loading: false
     }
   },
   computed: {
     ...mapState(['isLoading']),
-    ...mapState('files', ['resFiles', 'currentFile']),
-    ...mapGetters('item', ['itemType', 'isPicInput', 'isJobResourcePicture']),
+    ...mapGetters('job', ['normalKey']),
+    ...mapGetters('unit', ['unitKey']),
+    ...mapState('files', ['resFiles', 'curFile']),
+    ...mapGetters('files', ['resFilesName']),
+    ...mapGetters('item', ['itemType', 'isPicInput', 'isJobResourcePicture', 'itemName']),
     ...mapGetters('device', ['deviceInfo'])
   },
   watch: {
-    currentFile (val) {
+    curFile (val) {
+      if (!val) return
       if (CONST.SHOW_SCREEN_SHOOT.has(this.itemType)) {
-        this.currentImageName = val.name
+        this.curImgName = val.name
+        let slices = val.name.split('*')
+        this.curImgName = suffixRemove(slices.pop())
       }
+    },
+    imgName: {
+      handler: function (val) {
+        this.curImgName = this.imgName.main
+      },
+      deep: true
     }
   },
   methods: {
@@ -100,7 +122,9 @@ export default {
     handleErrors () {
       let errors = []
       if (!this.deviceInfo.length) errors.push('未选择 device')
-      if (this.isJobResourcePicture && !this.currentImageName) errors.push('请为图片命名')
+      if (this.isJobResourcePicture && !this.curImgName) errors.push('请为图片命名')
+      this.curImgName = [this.normalKey, this.unitKey, this.itemName, 'cypress'].join('*')
+      if (this.curImgName.includes('*') || this.curImgName.includes('.')) errors.push('名称中不可包含 * 与 .')
       if (errors.length) {
         errors.forEach(error => {
           this.$Message.error({
@@ -113,51 +137,52 @@ export default {
     },
     getImage () {
       if (this.handleErrors()) {
-        this.$store.commit('files/removeCurrentFile')
+        this.$store.commit('files/handleCurFile', { action: 'removeCurFile' })
         this.$store.commit('setIsLoading', true)
-        let screenShotName = suffixAutoComplete(this.currentImageName, '.png')
+        let screenShotName = addSuffix(this.curImgName.trim(), '.png')
         if (this.isJobResourcePicture) {
 
         }
-        let getScreenShotParams = {
+        let screenShotParams = {
           cabinet_ip: this.deviceInfo[0].cabinet_ip_address,
           device_label: this.deviceInfo[0].device_label,
           device_ip: this.deviceInfo[0].ip_address,
           picture_name: screenShotName
         }
-        let screenshot = new Promise((resolve, reject) => {
-          let url = `http://${getScreenShotParams.cabinet_ip}:5000/pane/snap_shot/?device_label=${getScreenShotParams.device_label}&device_ip=${getScreenShotParams.device_ip}&picture_name=${getScreenShotParams.picture_name}`
-          let xhr = new XMLHttpRequest()
-          xhr.open('GET', url, true)
-          xhr.responseType = 'blob'
-          xhr.send()
-          xhr.onload = () => {
-            resolve(xhr)
-          }
-          xhr.onerror = (err) => {
-            reject(err)
-          }
+        let screenshot = cypressGet({
+          url: `http://${screenShotParams.cabinet_ip}:5000/pane/snap_shot/?device_label=${screenShotParams.device_label}&device_ip=${screenShotParams.device_ip}&picture_name=${screenShotParams.picture_name}`,
+          responseType: 'blob'
         })
-        var timeout = new Promise((resolve, reject) => {
-          setTimeout(reject, 20000, 'timeout')
-        })
-        Promise.race([screenshot, timeout]).then(({ status, response }) => {
+        Promise.race([screenshot, cypressTimeout(20)]).then(({ status, response }) => {
           if (status === 200) {
+            // 找到同样前缀文件的位置
+            let index = -1
+            for (let i = 0; i < this.resFilesName.length; i++) {
+              if (this.resFilesName[i].startsWith(this.imgName.prefix)) {
+                index = i
+                break
+              }
+            }
+            // 将截取的图片设置为当前文件以展示
+
             blobToDataURL(response).then(res => {
-              if (CONST.WILL_TOUCH_FILE.has(this.itemType)) { // this.isJobResourcePicture
-                this.$store.commit('files/addResFile', {
-                  name: screenShotName,
-                  type: 'png',
-                  file: res
-                })
-              }
-              if (this.isPicInput) {
-                this.$store.commit('files/addResFile', {
-                  name: `ForPointSelect_${Math.random().toString(36).substr(2, 6)}.png`,
-                  type: 'png',
-                  file: res
-                })
-              }
+              this.$store.commit('files/handleCurFile', {
+                action: 'setCurFile',
+                data: {
+                  dirty: false,
+                  index,
+                  name: `${this.imgName.prefix}${this.curImgName.trim()}.png`,
+                  file: res,
+                  type: 'png'
+                }
+              })
+              // if (this.isPicInput) {
+              //   this.$store.commit('files/addResFile', {
+              //     name: `ForPointSelect_${Math.random().toString(36).substr(2, 6)}.png`,
+              //     type: 'png',
+              //     file: res
+              //   })
+              // }
             })
           }
         }).catch(err => {
@@ -172,8 +197,8 @@ export default {
         })
       }
     },
-    setImageName () {
-      this.$emit('setImageName', this.currentImageName)
+    setImgName () {
+      this.$emit('setImgName', this.curImgName.trim())
     }
   }
 }
@@ -181,23 +206,29 @@ export default {
 
 <style lang="less" scoped>
   @import '../../css/common.less';
-  .screen-shot {
-    position: relative;
-    margin-bottom: 10px;
-    .select-device {
-      position: absolute;
-      top: -4px;
-      right: 0;
-      z-index: 2;
+  .screen-shot-container {
+    /deep/ .ivu-card-head {
+      border-bottom: 0;
+      & > .ivu-divider {
+        margin: 0;
+      }
     }
-    .get-image {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 1em;
-      & > div:first-child {
-        flex: 1;
+    /deep/ .ivu-card-body {
+      padding: 0 1em 1em;
+    }
+    .screen-shot-body {
+      & > * {
+        margin-bottom: 1em;
+      }
+      & > div:last-child {
+        margin-bottom: 0;
+      }
+      & > div:nth-child(2) {
         display: flex;
-        align-items: center;
+        justify-content: space-between;
+        & > div:first-child {
+          flex: 1;
+        }
       }
     }
   }

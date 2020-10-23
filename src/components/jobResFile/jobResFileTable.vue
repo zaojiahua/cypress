@@ -30,14 +30,14 @@ export default {
         return []
       }
     },
-    currentFile: {
+    curFile: {
       type: Number,
       default: 0
     }
   },
   data () {
     return {
-      currentRow: this.currentFile
+      currentRow: this.curFile
     }
   },
   methods: {

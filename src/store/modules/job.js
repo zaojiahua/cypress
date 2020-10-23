@@ -9,7 +9,6 @@ let state = {
   draftId: undefined,
   draftLabel: undefined,
   normalData: null,
-  normalKey: undefined,
   config: _.extend({}, CONST.JOB_DEFAULT_CONFIG)
 }
 
@@ -84,6 +83,9 @@ let mutations = {
 let getters = {
   jobId (state) {
     return parseInt(state.jobInfo.job_id)
+  },
+  normalKey (state) {
+    return JSON.parse(state.normalData).key
   },
   manufacturerId () {
     return state.jobInfo.manufacturer

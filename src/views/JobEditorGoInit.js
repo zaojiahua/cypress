@@ -294,12 +294,18 @@ export function innerDiagramInit (context) {
   unitTemplate.doubleClick = function (e, node) {
     if (e.diagram instanceof go.Palette) return
     context.showUnitEditor = true
-    let { key, text, unitMsg, unitMsg: { execModName } } = node.data
+    let { key, text, unitMsg, unitMsg: { execModName } } = context._.cloneDeep(node.data)
+    let { execCmdDict: { execCmdList: target } } = unitMsg
+    if (target) {
+      target.forEach((val, idx, arr) => {
+        arr[idx].itemId = Math.random().toString(36).substr(2, 6)
+      })
+    }
     let unitData = {
       unitKey: key,
       unitName: text,
       unitType: execModName,
-      unitMsg: context._.cloneDeep(unitMsg)
+      unitMsg
     }
     context.$store.commit('unit/handleUnitData', {
       action: 'setUnitData',

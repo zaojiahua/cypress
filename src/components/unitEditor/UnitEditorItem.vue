@@ -1,5 +1,5 @@
 <template>
-  <div class="item" :class="{active: isClicked, disabled: !isEditable}" @click="handleItemClick">
+  <div class="item" :class="{active: isActive, disabled: !isEditable}" @click="handleItemClick">
     <p class="item-content" >
       <Tag :color="tagColor" style="border-radius: 50%">
         {{ itemIndex + 1 }}
@@ -10,13 +10,12 @@
     </p>
     <div class="btn-list" v-if="isPicInput">
       <span class="add-new-item" @click.stop="handleItem(true)"> + </span>
-      <span class="remove-item" @click.stop="handleItem(false)"> - </span>
+      <span class="remove-item" :class="disable ? '' : 'disable'" @click.stop="handleItem(false)"> - </span>
     </div>
   </div>
 </template>
 
 <script>
-import { findBrothersComponents } from 'lib/tools.js'
 import { mapGetters, mapState } from 'vuex'
 import CONST from 'constant/constant'
 
@@ -24,12 +23,13 @@ export default {
   name: 'UnitItem',
   props: {
     itemData: Object,
-    itemIndex: Number
+    itemIndex: Number,
+    isActive: Boolean
   },
   data () {
     return {
       isClicked: false,
-      currentItem: this.itemData.itemContent,
+      curItemContent: this.itemData.itemContent,
       tmachBlanks: [],
       itemDesc: CONST.ITEM_DESC
     }
@@ -37,18 +37,22 @@ export default {
   watch: {
     itemData (val) {
       if (val) {
-        this.currentItem = val.itemContent
+        this.curItemContent = val.itemContent
         this.handleTmachBlanks()
       }
     }
   },
   computed: {
-    ...mapState('files', ['resFiles', 'currentFile']),
+    ...mapState('job', ['normalKey']),
+    ...mapState('unit', ['unitData']),
+    ...mapGetters('unit', ['unitKey']),
+    ...mapState('files', ['resFiles', 'curFile']),
+    ...mapGetters('files', ['resFilesName']),
     ...mapState('img', ['coordinates']),
     ...mapState('item', ['saveToFinalResult']),
     ...mapGetters('item', ['isJobResourcePicture', 'isJobResourceFile']),
     itemType () {
-      return this.currentItem.type
+      return this.curItemContent.type
     },
     isUxInput () {
       return this.itemType === 'uxInput'
@@ -69,8 +73,8 @@ export default {
       return true
     },
     uxInputDefaultValue () {
-      if ('defaultValue' in this.currentItem) {
-        return this.currentItem.defaultValue.split(' ')
+      if ('defaultValue' in this.curItemContent) {
+        return this.curItemContent.defaultValue.split(' ')
       }
       return null
     },
@@ -78,33 +82,37 @@ export default {
       return !this.isEditable ? '#aaaaaa' : this.isCompleted ? 'success' : 'error'
     },
     isEditable () {
-      if (this.itemType === 'jobResourceFile' && !this.currentFile) {
+      if (this.itemType === 'jobResourceFile' && !this.curFile) {
         return false
       }
       return true
+    },
+    disable () {
+      let target = this.unitData.unitMsg.execCmdDict.execCmdList
+      return target ? target.length > 1 : false
     }
   },
   methods: {
     handleItem (flag) { // 当 item 类型 为 picInput 时，可以复制或删除本身
+      let itemContent = this._.cloneDeep(this.itemData.itemContent)
+      itemContent.content = itemContent.content.replace(/Tmach.*? /g, 'Tmach ')
+      itemContent.itemId = Math.random().toString(36).substr(2, 6)
+      let { unitMsg } = this._.cloneDeep(this.unitData)
+      let { execCmdDict: { execCmdList: target } } = unitMsg
       if (flag) {
-        this.$store.commit('unit/setItemHandBook', {
-          methods: 'add',
-          index: Number(this.itemData.itemName),
-          data: this._.cloneDeep(this.currentItem)
+        target.splice(Number(this.itemData.itemName) + 1, 0, itemContent)
+        this.$store.commit('unit/handleUnitData', {
+          action: 'setUnitMsg',
+          data: unitMsg
         })
       } else {
-        this.$store.commit('unit/setItemHandBook', {
-          methods: 'remove',
-          index: Number(this.itemData.itemName)
+        if (target.length === 1) return
+        target.splice(Number(this.itemData.itemName), 1)
+        this.$store.commit('unit/handleUnitData', {
+          action: 'setUnitMsg',
+          data: unitMsg
         })
       }
-    },
-    handleClicked () { // 点击 item 时取消对兄弟节点的聚焦
-      this.isClicked = true
-      let unitItemBrothers = findBrothersComponents(this, 'UnitItem')
-      unitItemBrothers.forEach(bro => {
-        bro.isClicked = false
-      })
     },
     addAreas () { // 显示标示区域
       this.$store.commit('item/setAreasInfo', {
@@ -141,19 +149,28 @@ export default {
         })
         return
       }
-      this.handleClicked()
-      this.$store.commit('item/setAreasInfo', {
-        data: [],
-        index: undefined
+      // this.$store.commit('item/setAreasInfo', {
+      //   data: [],
+      //   index: undefined
+      // })
+      // if (this.saveToFinalResult) this.$store.commit('item/handleSaveToFinal', false)
+      // this.$store.commit('item/setCurrentItem', this.itemData)
+      let itemData = this._.cloneDeep(this.itemData)
+      itemData.itemIndex = this.itemIndex
+      this.$store.commit('item/handleItemData', {
+        action: 'setItemData',
+        data: itemData
       })
-      if (this.saveToFinalResult) this.$store.commit('item/setSaveToFinal', false)
-      this.$store.commit('item/setCurrentItem', this.itemData)
-      this.$store.commit('item/setShowItemEditor', true)
+      this.$store.commit('item/handleShowItemEditor', true)
       if (this.tmachBlanks[0].trim().length !== 0) {
         if (this.isJobResourcePicture) {
-          this.$store.commit('files/setCurrentFile', {
-            byName: true,
-            name: this.tmachBlanks[0].trim().substring(5)
+          this.$store.commit('files/handleCurFile', {
+            action: 'setCurFile',
+            data: {
+              dirty: true,
+              index: this.resFilesName.indexOf(this.tmachBlanks[0].trim().substring(5)),
+              name: [this.normalKey, this.unitKey, this.itemData.itemName, this.tmachBlanks[0].trim().substring(5).split('*').pop()].join('*')
+            }
           })
         }
         if (this.isJobResourceFile) {
@@ -165,13 +182,13 @@ export default {
     setDefaultValue () { // 给某些 item 内的选项设定默认值
       if (this.tmachBlanks.includes('Tmach ')) {
         for (let i = 0; i < this.tmachBlanks.length; i++) {
-          this.currentItem.content = this.currentItem.content.replace(this.tmachBlanks[i], 'Tmach' + this.uxInputDefaultValue[i] + ' ')
+          this.curItemContent.content = this.curItemContent.content.replace(this.tmachBlanks[i], 'Tmach' + this.uxInputDefaultValue[i] + ' ')
         }
         this.$emit('updateUnitItem', this._.cloneDeep(this.itemData))
       }
     },
     handleTmachBlanks () { // 获取 item 中需要修改的项
-      this.tmachBlanks = this.currentItem.content.match(/Tmach.*? /g)
+      this.tmachBlanks = this.curItemContent.content.match(/Tmach.*? /g)
     }
   },
   mounted () {
@@ -236,6 +253,9 @@ export default {
     .remove-item {
       background: rgb(214, 50, 32);
       cursor: default;
+    }
+    .disable {
+      background: #cccccc;
     }
   }
 }

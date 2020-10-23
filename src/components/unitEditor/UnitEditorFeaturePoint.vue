@@ -1,13 +1,16 @@
 <template>
-  <div class="mb-1">
-    <Divider orientation="left">选取特征点</Divider>
+  <Card class="feature-point-container">
+    <!-- title -->
+    <p slot="title">
+      <Divider orientation="left" style="margin: 0;">选取特征点</Divider>
+    </p>
+    <!-- body -->
     <Table
       :columns="coordinateColumn"
       :data="coordinates"
       border
       max-height="556"
       size="small"
-      class="mb-1"
       @on-row-click="showLabelArea"
     >
       <template slot-scope="{ row, index }" slot="action">
@@ -16,17 +19,18 @@
     </Table>
     <div class="file-info">
       <div class="file-name">
-        <Tag color="blue" size="large" class="tag">文件名称</Tag>
+        <Tag color="blue" size="small" class="tag">文件名称</Tag>
         <Input
           placeholder="为选取的特征点们取一个名字吧"
-          @input="setFeaturePointFileName"
-          v-model="currentFeaturePointFileName"
+          @input="handleAreaFileName"
+          v-model="curAreaFileName"
           style="flex: 1;"
+          size="small"
           clearable
         ></Input>
       </div>
       <div class="recognition-rate">
-        <Tag color="blue" size="large" class="tag">识别率</Tag>
+        <Tag color="blue" size="small" class="tag">识别率</Tag>
         <InputNumber
           :max="100"
           :min="0"
@@ -35,10 +39,11 @@
           placeholder="识别率标准..."
           :formatter="value => `${value}%`"
           :parser="value => value.replace('%', '')"
+          size="small"
         ></InputNumber>
       </div>
     </div>
-  </div>
+  </Card>
 </template>
 
 <script>
@@ -47,7 +52,7 @@ import { mapState } from 'vuex'
 export default {
   name: 'FeaturePoint',
   props: {
-    featurePointFileName: String
+    areaFileName: Object
   },
   data () {
     return {
@@ -74,7 +79,7 @@ export default {
           align: 'center'
         }
       ],
-      currentFeaturePointFileName: this.featurePointFileName
+      curAreaFileName: this.areaFileName.main
     }
   },
   computed: {
@@ -94,8 +99,8 @@ export default {
     remove (index) {
       this.$store.commit('img/removeCoordinate', index)
     },
-    setFeaturePointFileName () {
-      this.$emit('setFeaturePointFileName', this.currentFeaturePointFileName)
+    handleAreaFileName () {
+      this.$emit('handleAreaFileName', this.curAreaFileName)
     },
     showLabelArea (currentRowData, index) {
       this.$store.commit('item/setAreasInfo', {
@@ -108,26 +113,37 @@ export default {
 </script>
 
 <style lang="less" scoped>
-  .mb-1 {
-    margin-bottom: 10px;
-  }
-  .file-info {
-    display: flex;
-    justify-content: space-between;
-    .tag {
-      line-height: 32px;
+  .feature-point-container {
+     /deep/ .ivu-card-head {
+      border-bottom: 0;
+      & > .ivu-divider {
+        margin: 0;
+      }
     }
-    .file-name {
+    /deep/ .ivu-card-body {
+      padding: 0 1em 1em;
+      & > * {
+        margin-bottom: 1em;
+      }
+      & > div:last-child {
+        margin-bottom: 0;
+      }
+    }
+    .file-info {
       display: flex;
-      flex: 1;
       justify-content: space-between;
-      align-items: center;
-      margin-right: 20px;
-    }
-    .recognition-rate {
-      display: flex;
-      flex: 1;
-      align-items: center;
+      .file-name {
+        display: flex;
+        flex: 1;
+        justify-content: space-between;
+        align-items: center;
+        margin-right: 20px;
+      }
+      .recognition-rate {
+        display: flex;
+        flex: 1;
+        align-items: center;
+      }
     }
   }
 </style>

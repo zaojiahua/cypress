@@ -96,7 +96,8 @@ export default {
   computed: {
     ...mapState('job', ['jobInfo', 'outerDiagramModel', 'draftId', 'draftLabel', 'normalKey', 'config']),
     ...mapGetters('job', ['jobId']),
-    ...mapState('files', ['resFiles', 'resFilesName']),
+    ...mapState('files', ['resFiles']),
+    ...mapGetters('files', ['resFilesName']),
     ...mapState('device', ['countdown', 'deviceInfo'])
   },
   watch: {
@@ -439,19 +440,12 @@ export default {
     viewResFile () {
       this.$store.commit('files/setShowResFileModal')
     },
-    handleResFile () {
+    handleResFile () { // 获取依赖文件
       if (!this.jobId) return
       getJobResFilesList(this.jobId).then(({ status, data }) => {
         if (status === 200) {
-          let filesInfo = data.job_res_file
-          let filesNameConfigIndex
-          filesInfo.forEach((item, index) => {
-            item.fileUrl = item.file
-            if (item.name === 'FILES_NAME_CONFIG.json' || item.name === 'filesNameConfig.json') {
-              filesNameConfigIndex = index
-            }
-          })
-          Promise.all(filesInfo.map(item => getJobResFile(item.fileUrl))).then(res => {
+          let filesData = data.job_res_file
+          Promise.all(filesData.map(item => getJobResFile(item.file))).then(res => {
             res.forEach((file, index) => {
               let reader = new FileReader()
               if (file.data.type.split('/')[0] !== 'image') { // json 则存放 text
@@ -460,14 +454,17 @@ export default {
                 reader.readAsDataURL(file.data)
               }
               reader.onload = () => {
-                filesInfo[index].file = reader.result
-                if (index === filesNameConfigIndex) {
-                  this.$store.commit('files/setResFilesName', reader.result)
-                }
+                filesData[index].index = index
+                filesData[index].dirty = true
+                filesData[index].file = reader.result
               }
             })
           }).then(() => {
-            this.$store.commit('files/setResFiles', filesInfo)
+            this.$store.commit('files/handleResFiles', {
+              action: 'setResFiles',
+              data: filesData
+            })
+            console.log(this.resFilesName)
           })
         } else {
           throw new Error('依赖文件获取失败')

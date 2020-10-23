@@ -1,7 +1,11 @@
 <template>
-  <div class="card">
-    <p class="card-title flex-row title">
+  <Card class="utils-container">
+    <!-- title -->
+    <div slot="title">
       Utils &nbsp; {{ utilTitle }}
+    </div>
+    <!-- extra -->
+    <div slot="extra">
       <Button
         size="small"
         type="primary"
@@ -16,32 +20,36 @@
         id="btn-get-coordinate"
         v-show="isPicInput"
       >获取坐标</Button>
-    </p>
-    <div class="file-gallery card-body">
-      <p class="file-none" v-show="empty">还没有可以展示/编辑的文件</p>
-      <!-- 加载动画 -->
-      <div class="loader" v-if="isLoading">
-        <div class="box"></div>
-        <div class="box"></div>
-        <div class="box"></div>
-      </div>
-      <ImageTool
-        v-show="currentFile"
-        :imgSrc="currentFile ? currentFile.file : ''"
-        @outputResult="outputResult"
-        :areasInfo="normalizedAreasInfo"
-      ></ImageTool>
     </div>
-  </div>
+    <!-- body -->
+    <div>
+      <p v-show="!editing">还没有可以展示/编辑的文件</p>
+      <transition name="fade-loader">
+        <CypressLoader
+          :size="200"
+          v-show="isLoading"
+        ></CypressLoader>
+      </transition>
+      <transition name="fade-tool">
+        <ImageTool
+          v-show="editing && !isLoading"
+          :imgSrc="curFile? curFile.file : null"
+          @outputResult="outputResult"
+          :areasInfo="normalizedAreasInfo"
+        ></ImageTool>
+      </transition>
+    </div>
+  </Card>
 </template>
 
 <script>
 import { mapState, mapGetters } from 'vuex'
 import ImageTool from '_c/common/ImageTool'
+import CypressLoader from '_c/common/Loader'
 
 export default {
   name: 'Utils',
-  components: { ImageTool },
+  components: { ImageTool, CypressLoader },
   data () {
     return {
       btnConfirmArea: null,
@@ -54,19 +62,19 @@ export default {
   },
   computed: {
     ...mapState(['isLoading']),
-    ...mapState('files', ['resFiles', 'currentFile']),
-    ...mapState('item', ['areasInfo']),
+    ...mapState('files', ['resFiles', 'curFile']),
+    ...mapState('item', ['areasInfo', 'itemData']),
     ...mapGetters('item', ['isPicInput', 'isJobResourceFile', 'isJobResourcePicture']),
     ...mapGetters('img', ['imgRecRate']),
-    empty () {
-      return !(this.currentFile || this.isLoading)
+    editing () {
+      return !!(this.curFile || this.isLoading)
     },
     utilTitle () {
-      if (this.currentFile && this.isJobResourcePicture) {
-        return '( 图片名称：' + this.currentFile.name + ' )'
+      if (this.curFile && this.isJobResourcePicture) {
+        return '(图片名称：' + this.curFile.name.split('*').pop() + ')'
       }
-      if (this.currentFile && this.isJobResourceFile) {
-        return '( 图片名称：' + this.currentFile.name + ' | 识别率：' + this.imgRecRate + '% )'
+      if (this.curFile && this.isJobResourceFile) {
+        return '(图片名称：' + this.curFile.name.split('*').pop() + ' | 识别率：' + this.imgRecRate + '%)'
       }
       return null
     }
@@ -152,72 +160,52 @@ export default {
 
 <style lang="less" scoped>
   @import '../../css/common.less';
-  .title {
-    position: relative;
-    Button {
-      position: absolute;
-      right: 1em;
+  .utils-container {
+    height: 100%;
+    /deep/ .ivu-card-extra {
+      top: 10px;
     }
-  }
-  .file-gallery {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    .file-none {
-      padding: 40px;
-      border: 1px dashed #dddddd;
-      border-radius: 6px;
-      background-color: rgba(0, 0, 0, 0.3);
-      color: white;
-    }
-
-    .loader {
-      position: absolute;
-      width: 200px;
-      height: 200px;
-      z-index: 5;
-
-      .box {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
+    /deep/ .ivu-card-body {
+      height: calc(100% - 44px);
+      & > div:first-child {
+        // display: flex;
+        // justify-content: center;
+        // align-items: center;
+        position: relative;
         height: 100%;
-        border-radius: 50%;
-        transform-origin: 48% 48%;
-        mix-blend-mode: screen;
-      }
-      .box:nth-child(1) {
-        background-color: #0000ff;
-        animation: turn 3s linear 0s infinite;
-      }
-      .box:nth-child(2) {
-        background-color: #00ff00;
-        animation: turn 3s linear -1s infinite;
-      }
-      .box:nth-child(3) {
-        background-color: #ff0000;
-        animation: turn 3s linear -2s infinite;
-      }
-      @keyframes turn {
-        to {
-          transform: rotate(360deg);
+        & > * {
+          position: absolute;
+          top: 50%;
+          right: 50%;
+          transform: translate(50%, -50%);
+        }
+        & > p:first-child {
+          padding: 40px;
+          border: 1px dashed #dddddd;
+          border-radius: 6px;
+          background-color: rgba(0, 0, 0, 0.3);
+          color: white;
+          transition-delay: .4s;
         }
       }
     }
-
-    .file-container {
-      flex: 1;
-      height: 100%;
-
-      .image-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100%;
-        position: relative;
-      }
-    }
+  }
+  .fade-loader-enter-active {
+    transition: all .4s linear;
+  }
+  .fade-loader-leave-active {
+    transition: all .4s linear;
+  }
+  .fade-loader-enter, .fade-loader-leave-active {
+    opacity: 0;
+  }
+  .fade-tool-enter-active {
+    transition: all .4s linear;
+  }
+  .fade-tool-leave-active {
+    transition: all .4s linear;
+  }
+  .fade-tool-enter, .fade-tool-leave-active {
+    opacity: 0;
   }
 </style>

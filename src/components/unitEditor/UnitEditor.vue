@@ -21,7 +21,6 @@
         <RawUnit></RawUnit>
       </div>
       <div class="pane">
-        {{unitData}}
         <ItemEditor
           @updateUnitItem="updateUnitItem"
           @arrangeFileName="arrangeFileName"
@@ -112,8 +111,8 @@ export default {
       this.unitItems.forEach(item => {
         item.isClicked = false
       })
-      this.$store.commit('item/setShowItemEditor', false)
-      this.$store.commit('files/removeCurrentFile')
+      this.$store.commit('item/handleShowItemEditor', false)
+      this.$store.commit('files/handleCurFile', { action: 'removeCurFile' })
       this.curUnitData = null
     },
     checkWeatherCompleted () {

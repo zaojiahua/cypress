@@ -1,6 +1,8 @@
 import CONST from 'constant/constant'
 import { baseURL } from '../config'
 import axios from '../api'
+import { method } from 'lodash'
+import { reject, resolve } from 'core-js/fn/promise'
 
 export function isJsonString (str) {
   try {
@@ -101,20 +103,64 @@ function blobToDataURL (blob) {
   })
 }
 
-function suffixRemove (str) {
-  let suffixIndex = str.lastIndexOf('.')
-  if (suffixIndex !== -1) {
-    return str.substring(0, suffixIndex)
+function prefixRemove (prefix, child, data) {
+  let len = prefix.length
+  let flag = false
+  if (Array.isArray(data)) {
+    data.forEach((val, idx, arr) => {
+      arr[idx] = val.trim().substring(len)
+      if (!flag && val.includes(child)) flag = true
+    })
+  } else if (typeof data === 'string') {
+    data = data.trim().substring(len)
+    if (!flag && data.includes(child)) flag = true
+  } else {
+    throw new Error('第三个参数只接受数组或字符串')
   }
-  return str
+  return {
+    hasChild: flag,
+    data
+  }
 }
 
-function suffixAutoComplete (str, suffix) {
-  let suffixIndex = str.lastIndexOf('.')
-  if (suffixIndex !== -1) {
-    return str.substring(0, suffixIndex) + suffix
+function suffixRemove (data) {
+  let suffixIndex
+  if (Array.isArray(data)) {
+    data.forEach((val, idx, arr) => {
+      suffixIndex = val.lastIndexOf('.')
+      if (suffixIndex !== -1) {
+        arr[idx] = val.substring(0, suffixIndex)
+      }
+    })
+  } else if (typeof data === 'string') {
+    let suffixIndex = data.lastIndexOf('.')
+    if (suffixIndex !== -1) {
+      data = data.substring(0, suffixIndex)
+    }
   }
-  return str + suffix
+  return data
+}
+
+function addSuffix (data, suffix, extraSuffix = '') {
+  let suffixIndex
+  if (Array.isArray(data)) {
+    data.forEach((val, idx, arr) => {
+      suffixIndex = val.lastIndexOf('.')
+      if (suffixIndex !== -1) {
+        arr[idx] = val.substring(0, suffixIndex) + suffix + extraSuffix
+      } else {
+        arr[idx] = val + suffix + extraSuffix
+      }
+    })
+  } else if (typeof data === 'string') {
+    suffixIndex = data.lastIndexOf('.')
+    if (suffixIndex !== -1) {
+      data = data.substring(0, suffixIndex) + suffix + extraSuffix
+    } else {
+      data = data + suffix + extraSuffix
+    }
+  }
+  return data
 }
 
 function createJobLabel (context) {
@@ -122,17 +168,17 @@ function createJobLabel (context) {
   return 'job-' + jobLabel.substr(0, 8) + '-' + jobLabel.substr(8, 4) + '-' + jobLabel.substr(12, 4) + '-' + jobLabel.substr(16, 4) + '-' + jobLabel.substr(20)
 }
 
-function suffixComplete (str, type) {
+function suffixComplete (data, type, extraSuffix = '') {
   let suffix
   let flag = true
   for (let key in CONST.FILL) {
     if (CONST.FILL[key].has(type)) {
       suffix = `.${key.toLowerCase()}`
       flag = false
-      return suffixAutoComplete(str, suffix)
+      return addSuffix(data, suffix, extraSuffix)
     }
   }
-  if (flag) return str
+  if (flag) return data
 }
 function shouldCreateNewTag (tagType, jobInfo) {
   let target = jobInfo[tagType]
@@ -164,6 +210,27 @@ async function createNewTag (tagType, jobInfo) {
   return target
 }
 
+function cypressGet ({ url, responseType }) {
+  return new Promise((resolve, reject) => {
+    let xhr = new XMLHttpRequest()
+    xhr.open('GET', url, true)
+    if (responseType) xhr.responseType = responseType
+    xhr.send()
+    xhr.onload = () => {
+      resolve(xhr)
+    }
+    xhr.onerror = (err) => {
+      reject(err)
+    }
+  })
+}
+
+function cypressTimeout (time = 20) {
+  return new Promise((resolve, reject) => {
+    setTimeout(reject, time * 1000, 'timeout')
+  })
+}
+
 export {
   findBrothersComponents,
   findComponentsDownward,
@@ -171,9 +238,12 @@ export {
   dataURLtoFile,
   blobToDataURL,
   suffixRemove,
-  suffixAutoComplete,
+  addSuffix,
+  prefixRemove,
   createJobLabel,
   suffixComplete,
   shouldCreateNewTag,
-  createNewTag
+  createNewTag,
+  cypressGet,
+  cypressTimeout
 }
