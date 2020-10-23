@@ -283,7 +283,7 @@ export default {
         this.$store.dispatch('setBasicCustomTag')
       }
       info.author = localStorage.id
-      this.removeInvalidFile(info.ui_json_file)
+      // this.removeInvalidFile(info.ui_json_file)
       info.inner_job_list = []
       let innerJobs = this.outerDiagram.findNodesByExample({ 'category': 'Job' })
       innerJobs.each(node => {
