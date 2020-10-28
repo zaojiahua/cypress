@@ -6,7 +6,7 @@ variables:
   TMach05: "root@10.80.5.138"
   TMach11: "root@10.80.11.138"
   TMach15: "root@10.80.15.138"
-  TMAch20: "root@10.80.20.138"
+  TMach20: "root@10.80.20.138"
 
 
 docker-deploy:
