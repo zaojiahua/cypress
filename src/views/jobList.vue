@@ -220,7 +220,7 @@ export default {
         CONST.COMPLEX_JOB_KEY.forEach(val => {
           jobInfo[val] = job[val].map(item => item.id)
         })
-        this.$store.commit('job/setJobInfo', jobInfo)
+        this.$store.commit('job/handleJobInfo', { action: 'setJobInfo', data: jobInfo })
       })
     },
     onRowClick (curData, index) { // 单击表格某一行

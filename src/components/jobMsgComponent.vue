@@ -174,7 +174,7 @@ export default {
       }
     },
     showDrawer (val) {
-      if (val === false && !this.isJobEditor) this.$store.commit('job/recoverJobInfo')
+      if (val === false && !this.isJobEditor) this.$store.commit('job/handleJobInfo', { action: 'recoverJobInfo' })
     },
     deviceInfo (newVal, oldVal) { // 设备信息变化时检测是否和已填信息发生冲突并进行处理
       this.$store.commit('device/setPreDeviceInfo', oldVal)
@@ -209,7 +209,7 @@ export default {
 
       // 清空失效的数据
       this.$store.commit('job/setOuterDiagramModel', null)
-      this.$store.commit('job/setPreJobInfo', false)
+      this.$store.commit('job/handleJobInfo', { action: 'setPreJobInfo', data: false })
       this.$store.commit('files/handleResFiles', { action: 'clearResFiles' })
 
       if (this.countdown) {

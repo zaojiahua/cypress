@@ -13,11 +13,29 @@ let state = {
 }
 
 let mutations = {
-  setJobInfo (state, jobInfo) {
-    state.jobInfo = jobInfo
-    if (!state.preJobInfo.dirty) {
-      state.preJobInfo = _.cloneDeep(jobInfo)
-      state.preJobInfo.dirty = false
+  handleJobInfo (state, { action, data }) {
+    if (action === 'setJobInfo') {
+      state.jobInfo = data
+      if (!state.preJobInfo.dirty) {
+        state.preJobInfo = _.cloneDeep(data)
+        state.preJobInfo.dirty = false
+      }
+    }
+    if (action === 'setPreJobInfo') {
+      if (!data) state.preJobInfo = { dirty: false }
+      else {
+        state.preJobInfo = _.cloneDeep(state.jobInfo)
+        state.preJobInfo.dirty = false
+      }
+    }
+    if (action === 'recoverJobInfo') {
+      if (state.preJobInfo.dirty) {
+        state.jobInfo = _.cloneDeep(state.preJobInfo)
+        delete state.jobInfo.dirty
+      } else {
+        state.jobInfo = {}
+        state.preJobInfo = { dirty: false }
+      }
     }
   },
   setPreJobInfo (state, notClear) {

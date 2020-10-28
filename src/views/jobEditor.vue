@@ -462,9 +462,9 @@ export default {
     async clearData () {
       this.$store.commit('job/setDraftId', null)
       this.$store.commit('job/setDraftLabel', null)
-      this.$store.commit('job/setJobInfo', {})
+      this.$store.commit('job/handleJobInfo', { action: 'setJobInfo', data: {} })
       this.$store.commit('job/setOuterDiagramModel', null)
-      this.$store.commit('job/setPreJobInfo', false)
+      this.$store.commit('job/handleJobInfo', { action: 'setPreJobInfo', data: false })
       this.$store.commit('job/handleConfig', { action: 'init' })
       this.$store.commit('files/handleResFiles', { action: 'clearResFiles' })
       if (this.countdown) {

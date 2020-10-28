@@ -100,7 +100,7 @@ export default {
     },
     viewJobList () {
       if (this.$route.name === 'jobEditor') {
-        this.$store.commit('job/setPreJobInfo', true)
+        this.$store.commit('job/handleJobInfo', { action: 'setPreJobInfo', data: true })
       }
       this.$router.push({ path: '/jobList' })
     },
@@ -110,9 +110,9 @@ export default {
         routeOptions.query = { jobId: this.jobInfo.job_id }
       } else if (this.preJobInfo) {
         routeOptions.query = { jobId: this.preJobInfo.job_id }
-        this.$store.commit('job/recoverJobInfo')
+        this.$store.commit('job/handleJobInfo', { action: 'recoverJobInfo' })
       } else {
-        this.$store.commit('job/setJobInfo', {})
+        this.$store.commit('job/handleJobInfo', { action: 'setJobInfo', data: {} })
       }
       setTimeout(() => {
         if (!this.isValidated) {
