@@ -49,3 +49,16 @@ tmach15-docker-deploy:
     - ssh $TMach15 . /root/cypress-vue/cypress_build_images.sh
   only:
     - tmach15
+
+tmach20-new-docker-deploy:
+  stage: deploy
+  script:
+    - npm install
+    - cp -rf src/assets/js/go.js node_modules/gojs/release
+    - npm run build
+    - ssh $TMach20 rm -rf /root/cypress-vue/
+    - rsync -av -e ssh --exclude={node_modules,public,src,.git} . $TMach20:/root/cypress-vue/
+    - ssh $TMach20 . /root/cypress-vue/cypress_build_images_new.sh
+  only:
+    - rebuild
+
