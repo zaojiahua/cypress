@@ -81,7 +81,10 @@ function setOutputNormalBlock (context, isOutput) {
       if (context.config.finalResultKey === 0 && isOutput) {
         lastStarUnit.star = CONST.COLORS.RESULT
         lastStarUnit.unitMsg.finalResult = true
-        context.$store.commit('job/setConfig', { finalResultKey: data.key })
+        context.$store.commit('job/handleConfig', {
+          action: 'setConfig',
+          data: { finalResultKey: data.key }
+        })
         context.$Message.success({
           content: '已将该Block设为结果Block'
         })
@@ -92,7 +95,10 @@ function setOutputNormalBlock (context, isOutput) {
           if (!isOutput) {
             lastStarUnit.star = CONST.COLORS.STAR
             delete lastStarUnit.unitMsg.finalResult
-            context.$store.commit('job/setConfig', { finalResultKey: 0 })
+            context.$store.commit('job/handleConfig', {
+              action: 'setConfig',
+              data: { finalResultKey: 0 }
+            })
             context.$Message.success({
               content: '已将该Block设为NormalBlock'
             })
@@ -109,7 +115,10 @@ function setOutputNormalBlock (context, isOutput) {
               } else {
                 lastStarUnit.star = CONST.COLORS.RESULT
                 lastStarUnit.unitMsg.finalResult = true
-                context.$store.commit('job/setConfig', { finalResultKey: data.key })
+                context.$store.commit('job/handleConfig', {
+                  action: 'setConfig',
+                  data: { finalResultKey: data.key }
+                })
                 context.$Message.success({
                   content: '已将该Block设为结果Block'
                 })
@@ -118,7 +127,10 @@ function setOutputNormalBlock (context, isOutput) {
             } else {
               lastStarUnit.star = CONST.COLORS.RESULT
               lastStarUnit.unitMsg.finalResult = true
-              context.$store.commit('job/setConfig', { finalResultKey: data.key })
+              context.$store.commit('job/handleConfig', {
+                action: 'setConfig',
+                data: { finalResultKey: data.key }
+              })
               context.$Message.success({
                 content: '已将该Block设为结果Block'
               })
@@ -158,6 +170,9 @@ function outerDiagramInit (context) {
 
   const startTemplate = startNodeTemplate(CONST.COLORS.START)
   startTemplate.linkValidation = startValidation
+  startTemplate.click = (e, node) => {
+    console.log(node.data)
+  }
 
   const endTemplate = endNodeTemplate(CONST.COLORS.END)
   endTemplate.doubleClick = (e, node) => {
@@ -221,7 +236,10 @@ function outerDiagramInit (context) {
     return context.outerDiagram.selection.all(function ({ data }) {
       if (data.category === 'normalBlock') {
         if (data.star === CONST.COLORS.RESULT) {
-          context.$store.commit('job/setConfig', { finalResultKey: 0 })
+          context.$store.commit('job/handleConfig', {
+            action: 'setConfig',
+            data: { finalResultKey: 0 }
+          })
         }
       }
       return true
@@ -384,7 +402,11 @@ function setOuterDiagramData (context) {
           }
           context.outerDiagram.model = go.Model.fromJson(JSON.stringify(data))
           let { data: start } = context.outerDiagram.findNodeForKey(-1)
-          context.$store.commit('job/setConfig', start.config || {})
+          // todo
+          context.$store.commit('job/handleConfig', {
+            action: 'setConfig',
+            data: start.config || {}
+          })
         } else {
           throw new Error('获取 Job 信息失败')
         }

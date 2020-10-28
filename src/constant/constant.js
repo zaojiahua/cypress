@@ -27,6 +27,14 @@ export default {
     'outputPicture': '图片名称',
     'outputVideo': '视频名称'
   },
+  JOB_DEFAULT_CONFIG: {
+    finalResultKey: 0,
+    byProductsName: [
+      { 'title': '文件名称', 'key': 'outputFile', 'children': [] },
+      { 'title': '图片名称', 'key': 'outputPicture', 'children': [] },
+      { 'title': '视频名称', 'key': 'outputVideo', 'children': [] }
+    ]
+  },
   ITEM_DESC: {
     'jobResourceFile': '图片配置文件',
     'jobResourcePicture': '参考标准图片',
@@ -131,10 +139,6 @@ export default {
   COMPLEX_JOB_KEY: ['test_area', 'android_version', 'custom_tag', 'phone_models', 'rom_version'],
   USER_INFO: ['id', 'username', 'groups', 'token'],
   SERIALIZER_KEY: ['manufacturer', 'androidVersion', 'customTag', 'testArea'],
-  JOB_DEFAULT_CONFIG: {
-    finalResultKey: 0,
-    resFilesInfo: {}
-  },
   BASIC_DATA_KEYS: [
     {
       camelCase: 'testArea',

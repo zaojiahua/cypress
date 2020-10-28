@@ -125,6 +125,7 @@ const updateJobMsg = (id, data) => {
     method: 'patch',
     url: url.updateJobMsg(id),
     data
+    // headers: { 'Access-Control-Allow-Origin': '*' }
   })
 }
 

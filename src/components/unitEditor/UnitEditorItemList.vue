@@ -99,7 +99,8 @@ export default {
     }
     .item-container {
       height: 100%;
-      overflow: auto;
+      overflow-y: auto;
+      overflow-x: hidden;
       & > div:first-child {
         margin-top: 0;
       }

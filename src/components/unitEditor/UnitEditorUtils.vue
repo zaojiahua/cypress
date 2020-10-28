@@ -9,16 +9,16 @@
       <Button
         size="small"
         type="primary"
-        @click.native="addCoordinate"
+        @click.native="handleCoordinate"
         id='btn-confirm-area'
-        v-show="isJobResourceFile"
+        v-show="isJobResourceFile && this.curFile"
       >确定</Button>
       <Button
         size="small"
         type="primary"
         @click="handleAbsoluteCoordinates"
         id="btn-get-coordinate"
-        v-show="isPicInput"
+        v-show="isPicInput && this.curFile"
       >获取坐标</Button>
     </div>
     <!-- body -->
@@ -71,10 +71,10 @@ export default {
     },
     utilTitle () {
       if (this.curFile && this.isJobResourcePicture) {
-        return '(图片名称：' + this.curFile.name.split('*').pop() + ')'
+        return '(图片名称：' + this.curFile.name + ')'
       }
       if (this.curFile && this.isJobResourceFile) {
-        return '(图片名称：' + this.curFile.name.split('*').pop() + ' | 识别率：' + this.imgRecRate + '%)'
+        return '(图片名称：' + this.curFile.name + ' | 识别率：' + this.imgRecRate + '%)'
       }
       return null
     }
@@ -105,13 +105,16 @@ export default {
       }
       return true
     },
-    addCoordinate () {
+    handleCoordinate () {
       if (!this.hasSelectArea()) return
       let startPoint = this.coordinate.relativeCoordinate.topLeft
       let endPoint = this.coordinate.relativeCoordinate.bottomRight
-      this.$store.commit('img/addCoordinate', {
-        coordinate_a: `${startPoint.x.toFixed(4)}, ${startPoint.y.toFixed(4)}`,
-        coordinate_b: `${endPoint.x.toFixed(4)}, ${endPoint.y.toFixed(4)}`
+      this.$store.commit('img/handleCoordinate', {
+        action: 'add',
+        data: {
+          coordinate_a: `${startPoint.x.toFixed(4)}, ${startPoint.y.toFixed(4)}`,
+          coordinate_b: `${endPoint.x.toFixed(4)}, ${endPoint.y.toFixed(4)}`
+        }
       })
       this.coordinate = null
     },

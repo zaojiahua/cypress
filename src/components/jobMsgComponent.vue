@@ -210,7 +210,7 @@ export default {
       // 清空失效的数据
       this.$store.commit('job/setOuterDiagramModel', null)
       this.$store.commit('job/setPreJobInfo', false)
-      this.$store.commit('files/clearResFiles')
+      this.$store.commit('files/handleResFiles', { action: 'clearResFiles' })
 
       if (this.countdown) {
         this.checkConflict(true, false)

@@ -18,29 +18,13 @@
       </template>
     </Table>
     <div class="file-info">
-      <div class="file-name">
-        <Tag color="blue" size="small" class="tag">文件名称</Tag>
-        <Input
-          placeholder="为选取的特征点们取一个名字吧"
-          @input="handleAreaFileName"
-          v-model="curAreaFileName"
-          style="flex: 1;"
-          size="small"
-          clearable
-        ></Input>
-      </div>
       <div class="recognition-rate">
-        <Tag color="blue" size="small" class="tag">识别率</Tag>
-        <InputNumber
-          :max="100"
-          :min="0"
-          v-model="imgRecRate"
-          style="flex: 1;"
-          placeholder="识别率标准..."
-          :formatter="value => `${value}%`"
-          :parser="value => value.replace('%', '')"
-          size="small"
-        ></InputNumber>
+        <Poptip trigger="focus">
+          <Input v-model="imgRecRate" size="small" placeholder="请设定识别率">
+            <span slot="prepend">识别率</span>
+          </Input>
+          <div slot="content">{{ `${this.imgRecRate}%` }}</div>
+        </Poptip>
       </div>
     </div>
   </Card>
@@ -51,9 +35,6 @@ import { mapState } from 'vuex'
 
 export default {
   name: 'FeaturePoint',
-  props: {
-    areaFileName: Object
-  },
   data () {
     return {
       coordinateColumn: [
@@ -78,8 +59,7 @@ export default {
           width: 150,
           align: 'center'
         }
-      ],
-      curAreaFileName: this.areaFileName.main
+      ]
     }
   },
   computed: {
@@ -97,10 +77,10 @@ export default {
   },
   methods: {
     remove (index) {
-      this.$store.commit('img/removeCoordinate', index)
-    },
-    handleAreaFileName () {
-      this.$emit('handleAreaFileName', this.curAreaFileName)
+      this.$store.commit('img/handleCoordinate', {
+        action: 'remove',
+        data: index
+      })
     },
     showLabelArea (currentRowData, index) {
       this.$store.commit('item/setAreasInfo', {
@@ -132,17 +112,16 @@ export default {
     .file-info {
       display: flex;
       justify-content: space-between;
-      .file-name {
-        display: flex;
-        flex: 1;
-        justify-content: space-between;
-        align-items: center;
-        margin-right: 20px;
-      }
       .recognition-rate {
-        display: flex;
         flex: 1;
         align-items: center;
+        height: 24px;
+        /deep/ .ivu-poptip {
+          width: 100%;
+          & > .ivu-poptip-rel {
+            width: 100%;
+          }
+        }
       }
     }
   }

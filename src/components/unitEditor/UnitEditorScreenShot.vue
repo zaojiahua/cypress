@@ -1,16 +1,9 @@
 <template>
   <Card class="screen-shot-container">
     <!-- title -->
-    <p slot="title">
+    <div slot="title">
       <Divider orientation="left" style="margin: 0;">获取图片</Divider>
-    </p>
-    <!-- extra -->
-    <Button
-      slot="extra"
-      @click="showDeviceSelectPage"
-      type="primary"
-      size="small"
-    >选取设备</Button>
+    </div>
     <!-- body -->
     <div class="screen-shot-body">
       <Table
@@ -20,10 +13,10 @@
         :data="deviceInfo"
       ></Table>
       <div class="child-m-right--1">
-        <Input v-model="curImgName" size="small" :disabled="!isPicInput ? false : true" @input="setImgName" clearable>
-          <span slot="prepend">图片名称</span>
-        </Input>
-        <Button type="primary" size="small" :loading="isLoading" @click="getImage">
+        <Button
+          @click="showDeviceSelectPage" type="primary" size="small" long
+        >选取设备</Button>
+        <Button type="primary" size="small" :loading="isLoading" @click="getImage" long>
           <span v-if="!isLoading">获取截图</span>
           <span v-else>Loading...</span>
         </Button>
@@ -54,14 +47,11 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import { blobToDataURL, addSuffix, cypressGet, cypressTimeout, suffixRemove } from 'lib/tools.js'
+import { blobToDataURL, cypressGet, cypressTimeout, suffixRemove } from 'lib/tools.js'
 import CONST from 'constant/constant'
 
 export default {
   name: 'ScreenShot',
-  props: {
-    imgName: Object
-  },
   data () {
     return {
       deviceInfoColumns: [
@@ -86,7 +76,6 @@ export default {
           align: 'center'
         }
       ],
-      curImgName: this.imgName.main,
       loading: false
     }
   },
@@ -97,7 +86,10 @@ export default {
     ...mapState('files', ['resFiles', 'curFile']),
     ...mapGetters('files', ['resFilesName']),
     ...mapGetters('item', ['itemType', 'isPicInput', 'isJobResourcePicture', 'itemName']),
-    ...mapGetters('device', ['deviceInfo'])
+    ...mapGetters('device', ['deviceInfo']),
+    imgName () {
+      return `${[this.normalKey, this.unitKey, this.itemName].join('*')}.png`
+    }
   },
   watch: {
     curFile (val) {
@@ -107,12 +99,6 @@ export default {
         let slices = val.name.split('*')
         this.curImgName = suffixRemove(slices.pop())
       }
-    },
-    imgName: {
-      handler: function (val) {
-        this.curImgName = this.imgName.main
-      },
-      deep: true
     }
   },
   methods: {
@@ -121,10 +107,7 @@ export default {
     },
     handleErrors () {
       let errors = []
-      if (!this.deviceInfo.length) errors.push('未选择 device')
-      if (this.isJobResourcePicture && !this.curImgName) errors.push('请为图片命名')
-      this.curImgName = [this.normalKey, this.unitKey, this.itemName, 'cypress'].join('*')
-      if (this.curImgName.includes('*') || this.curImgName.includes('.')) errors.push('名称中不可包含 * 与 .')
+      if (!this.deviceInfo.length) errors.push('未选择设备')
       if (errors.length) {
         errors.forEach(error => {
           this.$Message.error({
@@ -139,7 +122,6 @@ export default {
       if (this.handleErrors()) {
         this.$store.commit('files/handleCurFile', { action: 'removeCurFile' })
         this.$store.commit('setIsLoading', true)
-        let screenShotName = addSuffix(this.curImgName.trim(), '.png')
         if (this.isJobResourcePicture) {
 
         }
@@ -147,7 +129,7 @@ export default {
           cabinet_ip: this.deviceInfo[0].cabinet_ip_address,
           device_label: this.deviceInfo[0].device_label,
           device_ip: this.deviceInfo[0].ip_address,
-          picture_name: screenShotName
+          picture_name: this.imgName
         }
         let screenshot = cypressGet({
           url: `http://${screenShotParams.cabinet_ip}:5000/pane/snap_shot/?device_label=${screenShotParams.device_label}&device_ip=${screenShotParams.device_ip}&picture_name=${screenShotParams.picture_name}`,
@@ -155,6 +137,7 @@ export default {
         })
         Promise.race([screenshot, cypressTimeout(20)]).then(({ status, response }) => {
           if (status === 200) {
+            this.$emit('handleImgName', this.imgName)
             // 找到同样前缀文件的位置
             let index = -1
             for (let i = 0; i < this.resFilesName.length; i++) {
@@ -164,25 +147,17 @@ export default {
               }
             }
             // 将截取的图片设置为当前文件以展示
-
             blobToDataURL(response).then(res => {
               this.$store.commit('files/handleCurFile', {
                 action: 'setCurFile',
                 data: {
                   dirty: false,
                   index,
-                  name: `${this.imgName.prefix}${this.curImgName.trim()}.png`,
+                  name: this.imgName,
                   file: res,
                   type: 'png'
                 }
               })
-              // if (this.isPicInput) {
-              //   this.$store.commit('files/addResFile', {
-              //     name: `ForPointSelect_${Math.random().toString(36).substr(2, 6)}.png`,
-              //     type: 'png',
-              //     file: res
-              //   })
-              // }
             })
           }
         }).catch(err => {
@@ -196,9 +171,6 @@ export default {
           this.$store.commit('setIsLoading', false)
         })
       }
-    },
-    setImgName () {
-      this.$emit('setImgName', this.curImgName.trim())
     }
   }
 }

@@ -15,12 +15,11 @@
     </div>
     <div v-show="editing" class="item-editing">
       <div>
-        {{tmachBlanks}}
         <div v-if="showInput">
           <Input
             v-for="(blank, index) in tmachBlanks"
             :key="index"
-            v-model="tmachBlanks[index].main"
+            v-model="tmachBlanks[index].content"
             clearable
           />
         </div>
@@ -28,30 +27,27 @@
           <AutoComplete
             v-for="(blank, index) in tmachBlanks"
             :key="index"
-            v-model="tmachBlanks[index].main"
+            v-model="tmachBlanks[index].content"
             clearable
           >
-            <!-- <div v-for="names in resFilesName" :key="names.title">
+            <div v-for="namesData in byProductsName" :key="namesData.title">
               <div class="auto-complete-title">
-                <span>{{ names.title }}</span>
+                <span>{{ namesData.title }}</span>
               </div>
-              <Option v-for="name in names.children" :key="name" :value="name"></Option>
-            </div> -->
+              <Option v-for="nameData in namesData.children" :key="nameData.loc" :value="nameData.text || nameData"></Option>
+            </div>
           </AutoComplete>
         </div>
         <ScreenShot
           v-if="showScreenShot"
-          :imgName="imgName"
-          @setImgName="setName"
+          @handleImgName="setName"
         ></ScreenShot>
         <FeaturePoint
           v-if="isJobResourceFile"
-          :areaFileName="areaFileName"
           @handleAreaFileName="setName"
         ></FeaturePoint>
         <Checkbox v-model="$store.state.item.saveToFinalResult" v-if="showCheckbox" style="float: right;">添加此图片至最终结果</Checkbox>
         <p class="instructions"><Tag>操作说明</Tag>{{ curItemMeaning }}</p>
-        {{itemData}}
       </div>
       <div>
         <Button type="primary" size="small" long @click="saveItemData" :loading="saving">
@@ -77,7 +73,7 @@ export default {
   components: { ScreenShot, FeaturePoint, Gallery },
   data () {
     return {
-      tmachBlanks: [{ main: 0 }],
+      tmachBlanks: [],
       tmachIndex: 0,
       preFileName: null,
       saving: false,
@@ -86,12 +82,13 @@ export default {
   },
   computed: {
     ...mapState('job', ['normalKey', 'config']),
+    ...mapGetters('job', ['byProductsName']),
     ...mapState('files', ['resFiles', 'curFile']),
     ...mapGetters('files', ['resFilesName']),
     ...mapState('unit', ['unitData']),
     ...mapGetters('unit', ['unitKey']),
     ...mapState('item', ['editing', 'itemData', 'saveToFinalResult']),
-    ...mapState('img', ['imgRecRate', 'coordinates', 'absoulteCoordinates']),
+    ...mapState('img', ['imgRecRate', 'coordinates', 'absCoordinates']),
     ...mapGetters('item', ['itemType', 'itemName', 'isPicInput', 'isOutputPicture', 'isOutputFile', 'isJobResourceFile', 'curItemMeaning']),
     titleInfo () {
       if (this.itemData.itemIndex !== undefined) {
@@ -155,14 +152,14 @@ export default {
         })
       }
     },
-    absoulteCoordinates (val) {
+    absCoordinates (val) {
       let { length } = this.tmachBlanks
       if (this.isPicInput) {
         if (this.tmachIndex + 2 > length) {
           this.tmachIndex = 0
         }
-        this.tmachBlanks.splice(this.tmachIndex, 1, val.x)
-        this.tmachBlanks.splice(this.tmachIndex + 1, 1, val.y)
+        this.tmachBlanks[this.tmachIndex].content = val.x
+        this.tmachBlanks[this.tmachIndex + 1].content = val.y
         this.tmachIndex += 2
       }
     }
@@ -170,26 +167,22 @@ export default {
   methods: {
     handleTmachBlanks (rawData) {
       let child = '<copy2rdsDatPath>'
-      let prefix = CONST.WILL_TOUCH_FILE.has(this.itemType) ? [this.normalKey, this.unitKey, this.itemName, ''].join('*') : ''
       let suffix = this.saveToFinalResult ? child : ''
       for (let key in CONST.FILL) {
         if (CONST.FILL[key].has(this.itemType)) {
           suffix = `.${key.toLowerCase()}${suffix}`
         }
       }
-      let tmachBlanks = rawData.map(item => item.trim().substring(5))
-      for (let i = 0; i < tmachBlanks.length; i++) {
-        let slices = tmachBlanks[i].split('*')
-        let lastSlice = slices.pop()
-        let suffixIndex = lastSlice.lastIndexOf('.')
-        tmachBlanks[i] = { prefix, suffix }
-        if (suffixIndex !== -1) {
-          tmachBlanks[i].main = lastSlice.substring(0, suffixIndex)
-        } else {
-          tmachBlanks[i].main = lastSlice
+      this.tmachBlanks = rawData.map(item => {
+        item = item.trim().substring(5)
+        if (suffix) {
+          item = item.split('.').shift()
         }
-      }
-      this.tmachBlanks = tmachBlanks
+        return {
+          content: this.isJobResourceFile ? [this.normalKey, this.unitKey, this.itemName].join('*') : item,
+          suffix
+        }
+      })
     },
     handleCurFile () {
       if (this.curFile) {
@@ -205,7 +198,7 @@ export default {
     saveFeaturePoint () { // 保存选取的区域信息
       if (this.willTouchFile && this.coordinates.length) {
         let nameInfo = this.tmachBlanks[0]
-        if (!nameInfo.main) {
+        if (!nameInfo.content) {
           this.$Message.error({
             background: true,
             content: '请为配置文件命名'
@@ -223,7 +216,7 @@ export default {
         // 找到同样前缀文件的位置
         let index = -1
         for (let i = 0; i < this.resFilesName.length; i++) {
-          if (this.resFilesName[i].startsWith(nameInfo.prefix)) {
+          if (this.resFilesName[i].startsWith(nameInfo.content)) {
             index = i
             break
           }
@@ -233,19 +226,19 @@ export default {
           data: {
             dirty: true,
             index: index === -1 ? this.resFilesName.length : index,
-            name: `${nameInfo.prefix}${nameInfo.main}${nameInfo.suffix}`,
+            name: `${nameInfo.content}${nameInfo.suffix}`,
             file: JSON.stringify(coordinateDataList, null, 4),
             type: 'json'
           }
         })
-        this.$store.commit('img/clearCoordinates')
+        this.$store.commit('img/handleCoordinate', { action: 'clear' })
       }
       return true
     },
     handleUnitData () { // 保存更新后的unitData
       let flag = true
       for (let i = 0; i < this.tmachBlanks.length; i++) {
-        if (!this.tmachBlanks[i].main.trim()) flag = false
+        if (!this.tmachBlanks[i].content.trim()) flag = false
         break
       }
       if (!flag) {
@@ -263,12 +256,7 @@ export default {
         curIndex = itemData.itemContent.content.indexOf(tmachBlanks[i], curIndex)
         temp = itemData.itemContent.content.split('')
         let target
-        let tepTmach = this.tmachBlanks[i]
-        if (tepTmach.main.split('*').length > 1) {
-          target = `Tmach${tepTmach.main}${tepTmach.suffix} `
-        } else {
-          target = `Tmach${tepTmach.prefix}${tepTmach.main}${tepTmach.suffix} `
-        }
+        target = `Tmach${this.tmachBlanks[i].content}${this.tmachBlanks[i].suffix} `
         temp.splice(curIndex, tmachBlanks[i].length, target)
         curIndex += target.length
         itemData.itemContent.content = temp.join('')
@@ -288,45 +276,51 @@ export default {
         this.$store.commit('item/handleShowItemEditor', false)
       }
     },
-    saveResFilesName () {
+    handleByProductsName () {
       if (CONST.WILL_TOUCH_NAME[this.itemType]) {
-        if (this.tmachBlanks[0] === undefined || this.tmachBlanks[0] === '') {
-          this.$Message.error({
-            content: '名字不能为空',
-            background: true
-          })
-          return false
-        }
-
-        let index
-        let outputFilesName
-        for (let i = 0; i < this.resFilesName.length; i++) {
-          if (this.resFilesName[i].key === this.itemType) {
-            outputFilesName = this.resFilesName[i].children
-            index = i
+        let { byProductsName } = this.config
+        let temp
+        let tempIdx
+        for (let i = 0; i < byProductsName.length; i++) {
+          if (byProductsName[i].key === this.itemType) {
+            temp = this.config.byProductsName[i].children
+            tempIdx = i
             break
           }
         }
-        for (let i = 0; i < outputFilesName.length; i++) {
-          if (suffixRemove(this.tmachBlanks[0]) === outputFilesName[i]) {
+        let byProductsInfo = {
+          loc: [this.normalKey, this.unitKey, this.itemName].join('*'),
+          text: this.tmachBlanks[0].content
+        }
+        let childIdx = -1
+        for (let i = 0; i < temp.length; i++) {
+          if (temp[i].loc !== byProductsInfo.loc && temp[i].text === byProductsInfo.text) {
             this.$Message.error({
-              content: '这个名字已经被占用了',
-              background: true
+              background: true,
+              content: '这个名字已经被占用了'
             })
             return false
           }
+          if (temp[i].loc === byProductsInfo.loc) {
+            childIdx = i
+            break
+          }
         }
-        this.$store.commit('files/addResFilesName', {
-          name: suffixRemove(this.tmachBlanks[0]),
-          index
+        this.$store.commit('job/handleConfig', {
+          action: 'addByProductsName',
+          data: {
+            type: tempIdx,
+            index: childIdx,
+            data: byProductsInfo
+          }
         })
       }
       return true
     },
     saveItemData () {
-      // if (!this.saveResFilesName()) return
-      if (!this.saveFeaturePoint()) return
       if (!this.handleUnitData()) return
+      if (!this.handleByProductsName()) return
+      if (!this.saveFeaturePoint()) return
       this.$store.commit('item/handleItemData', {
         action: 'setItemData',
         data: {
@@ -349,7 +343,7 @@ export default {
       // resFilesInfo[key] = `${key}*${name}`
       // this.$store.commit('job/setConfig', { resFilesInfo })
       // console.log(resFilesInfo)
-      this.tmachBlanks[0].main = name
+      this.tmachBlanks[0].content = name.split('.').shift()
     },
     setPreFileName () {
       if (this.willTouchFile) {

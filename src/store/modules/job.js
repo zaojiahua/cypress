@@ -9,7 +9,7 @@ let state = {
   draftId: undefined,
   draftLabel: undefined,
   normalData: null,
-  config: _.extend({}, CONST.JOB_DEFAULT_CONFIG)
+  config: _.cloneDeep(CONST.JOB_DEFAULT_CONFIG)
 }
 
 let mutations = {
@@ -71,11 +71,24 @@ let mutations = {
   setJobCustomTag (state, data) {
     state.jobInfo.custom_tag = data
   },
-  setConfig (state, data) {
-    if (data) {
+  handleConfig (state, { action, data }) {
+    if (action === 'init') {
+      state.config = _.cloneDeep(CONST.JOB_DEFAULT_CONFIG)
+    }
+    if (action === 'setConfig') {
       _.extend(state.config, data)
-    } else {
-      _.extend(state.config, CONST.JOB_DEFAULT_CONFIG)
+    }
+    if (action === 'setByProductsName') {
+      state.config.byProductsName.forEach((val, idx, arr) => {
+        _.extend(arr[idx], data[idx])
+      })
+    }
+    if (action === 'addByProductsName') {
+      if (data.index !== -1) {
+        state.config.byProductsName[data.type].children.splice(data.index, 1, data.data)
+      } else {
+        state.config.byProductsName[data.type].children.push(data.data)
+      }
     }
   }
 }
@@ -89,6 +102,9 @@ let getters = {
   },
   manufacturerId () {
     return state.jobInfo.manufacturer
+  },
+  byProductsName () {
+    return state.config.byProductsName
   }
 }
 

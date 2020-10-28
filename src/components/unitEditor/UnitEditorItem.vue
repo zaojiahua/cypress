@@ -121,7 +121,7 @@ export default {
       })
     },
     setCoordinateAndImgRecRate (name) { // 点击 类型为 jobResourceFile 的 item 时，如果存在相应文件，则将文件内的数据提取出来
-      this.$store.commit('img/clearCoordinates')
+      this.$store.commit('img/handleCoordinate', { action: 'clear' })
       let areasData
       for (let i = 0; i < this.resFiles.length; i++) {
         if (this.resFiles[i].name === name) {
@@ -134,10 +134,13 @@ export default {
           this.$store.commit('img/setImgRecRate', areasData[key])
         }
         if (key.startsWith('area')) {
-          let coordinate = {}
-          coordinate.coordinate_a = areasData[key].splice(0, 2).join(',')
-          coordinate.coordinate_b = areasData[key].join(',')
-          this.$store.commit('img/addCoordinate', coordinate)
+          this.$store.commit('img/handleCoordinate', {
+            action: 'add',
+            data: {
+              coordinate_a: areasData[key].splice(0, 2).join(','),
+              coordinate_b: areasData[key].join(',')
+            }
+          })
         }
       }
     },
@@ -169,7 +172,7 @@ export default {
             data: {
               dirty: true,
               index: this.resFilesName.indexOf(this.tmachBlanks[0].trim().substring(5)),
-              name: [this.normalKey, this.unitKey, this.itemData.itemName, this.tmachBlanks[0].trim().substring(5).split('*').pop()].join('*')
+              name: this.tmachBlanks[0].trim().substring(5)
             }
           })
         }

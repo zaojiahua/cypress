@@ -221,6 +221,7 @@ export default {
           data.append('job', id)
           for (let i = 0; i < resFiles.length; i++) {
             let { name, type, file } = resFiles[i]
+            if (name === 'FILES_NAME_CONFIG.json') continue
             if (type === 'png') {
               data.append('file', dataURLtoFile(file, name))
             } else {
@@ -253,18 +254,6 @@ export default {
         console.log(error)
       }
     },
-    removeInvalidFile (job) {
-      let normalBlocks = job.nodeDataArray.filter(item => item.category === 'normalBlock')
-      let resFile = {}
-      normalBlocks.forEach(val => {
-        Object.assign(resFile, val.resFile)
-      })
-      for (let i = this.resFiles.length - 1; i >= 0; i--) {
-        if (!this.resFiles[i].name.startsWith('ForPointSelect_') && !resFile[this.resFiles[i].name]) {
-          this.$store.commit('files/removeResFile', i)
-        }
-      }
-    },
     calcWingmanCount () {
       let wingman = new Array(4).fill(0)
       let normalBlocks = this.outerDiagram.findNodesByExample({ 'category': 'normalBlock' })
@@ -284,9 +273,9 @@ export default {
       return wingman.reduce((pre, cur) => cur > 0 ? 1 + pre : pre, 0)
     },
     async prepareJobInfo (saveAs, createNew, isDraft) {
-      let info = this._.cloneDeep(this.jobInfo)
       let { data: start } = this.outerDiagram.findNodeForKey(-1)
-      start.config = this._.cloneDeep(this.config)
+      this.outerDiagram.model.setDataProperty(start, 'config', this._.cloneDeep(this.config))
+      let info = this._.cloneDeep(this.jobInfo)
       info.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
       info.subsidiary_device_count = this.calcWingmanCount()
       if (shouldCreateNewTag('test_area', info)) {
@@ -298,7 +287,6 @@ export default {
         this.$store.dispatch('setBasicCustomTag')
       }
       info.author = localStorage.id
-      this.removeInvalidFile(info.ui_json_file)
       info.inner_job_list = []
       let innerJobs = this.outerDiagram.findNodesByExample({ 'category': 'Job' })
       innerJobs.each(node => {
@@ -317,11 +305,6 @@ export default {
     async _saveJob (e, saveAs = false, isDraft = true) {
       let id = this.jobId
       let info = await this.prepareJobInfo(saveAs, !id, isDraft)
-      this.$store.commit('files/addResFile', {
-        name: 'FILES_NAME_CONFIG.json',
-        type: 'json',
-        file: JSON.stringify(this.resFilesName, null, 2)
-      })
       if (saveAs) {
         if (this.draftId) {
           info.job_label = this.draftLabel
@@ -367,6 +350,8 @@ export default {
       return list
     },
     async prepareAutoSaveInfo () {
+      let { data: start } = this.outerDiagram.findNodeForKey(-1)
+      this.outerDiagram.model.setDataProperty(start, 'config', this._.cloneDeep(this.config))
       let info = this._.cloneDeep(this.jobInfo)
       if (shouldCreateNewTag('test_area', info)) {
         info.test_area = await createNewTag('test_area', info)
@@ -400,11 +385,6 @@ export default {
       if (curTime - this.lastActiveTime >= this.activeTimeInterval || !this._jobMsgRules() || !this.autoSaveToggle) return
       let info = await this.prepareAutoSaveInfo()
       info.job_label = this.draftLabel
-      this.$store.commit('files/addResFile', {
-        name: 'FILES_NAME_CONFIG.json',
-        type: 'json',
-        file: JSON.stringify(this.resFilesName, null, 2)
-      })
       if (!this.draftId) {
         try {
           let { status, data } = await saveJobFlowAndMsg(info)
@@ -454,9 +434,15 @@ export default {
                 reader.readAsDataURL(file.data)
               }
               reader.onload = () => {
+                filesData[index].file = reader.result
                 filesData[index].index = index
                 filesData[index].dirty = true
-                filesData[index].file = reader.result
+                if (filesData[index].name === 'FILES_NAME_CONFIG.json') {
+                  this.$store.commit('job/handleConfig', {
+                    action: 'setByProductsName',
+                    data: JSON.parse(reader.result)
+                  })
+                }
               }
             })
           }).then(() => {
@@ -464,7 +450,6 @@ export default {
               action: 'setResFiles',
               data: filesData
             })
-            console.log(this.resFilesName)
           })
         } else {
           throw new Error('依赖文件获取失败')
@@ -480,17 +465,8 @@ export default {
       this.$store.commit('job/setJobInfo', {})
       this.$store.commit('job/setOuterDiagramModel', null)
       this.$store.commit('job/setPreJobInfo', false)
-      this.$store.commit('job/setConfig', null)
-      this.$store.commit('files/clearResFiles')
-      let resFilesName = []
-      for (let key in CONST.WILL_TOUCH_NAME) {
-        resFilesName.push({
-          title: CONST.WILL_TOUCH_NAME[key],
-          key,
-          children: []
-        })
-      }
-      this.$store.commit('files/setResFilesName', JSON.stringify(resFilesName))
+      this.$store.commit('job/handleConfig', { action: 'init' })
+      this.$store.commit('files/handleResFiles', { action: 'clearResFiles' })
       if (this.countdown) {
         try {
           let { status } = await releaseOccupyDevice({
@@ -514,7 +490,7 @@ export default {
         }
       }
     },
-    cancelEdit () {
+    async cancelEdit () {
       this.autoSaveToggle = false
       if (this.draftId) {
         updateJobMsg(this.draftId, { job_deleted: true }).then(({ status }) => {
@@ -527,7 +503,7 @@ export default {
           }
         })
       }
-      this.clearData()
+      await this.clearData()
       this.$router.push({ path: '/jobList' })
     },
     dispatchMouseEvent (evt) {

@@ -41,9 +41,8 @@
     ></unit-template-editor>
     <unit-editor
       :showUnitEditor="showUnitEditor"
-      :unitData="unitData"
       @closeUnitEditor="closeUnitEditor"
-      @changeUnitColor="changeUnitColor"
+      @handleUnitColor="handleUnitColor"
       @saveUnit="saveUnit"
       @setUnitName="setUnitName"
     ></unit-editor>
@@ -85,14 +84,12 @@ export default {
       unitController: null,
       isDiagram: false,
       numOfWingman: 3,
-      showUnitEditor: false,
-      curUnitKey: undefined,
-      unitData: null
+      showUnitEditor: false
     }
   },
   computed: {
     ...mapState('job', ['normalData']),
-    ...mapState('unit', ['unitLists'])
+    ...mapState('unit', ['unitLists', 'unitData'])
   },
   watch: {
     normalData (val) {
@@ -226,33 +223,33 @@ export default {
     closeUnitEditor () {
       this.showUnitEditor = false
     },
-    changeUnitColor (hasCompleted) {
-      let currentNodeData = this.innerDiagram.findNodeForKey(this.unitData.unitNodeKey).data
-      if (hasCompleted) {
-        this.innerDiagram.model.setDataProperty(currentNodeData, 'color', CONST.COLORS.FINISH)
-        currentNodeData.completed = true
-      } else {
-        this.innerDiagram.model.setDataProperty(currentNodeData, 'color', CONST.COLORS.UNFINISHED)
-        currentNodeData.completed = false
-      }
+    handleUnitColor (isCompleted) {
+      this.innerDiagram.selection.each(({ data }) => {
+        this.innerDiagram.model.setDataProperty(data, 'color', isCompleted ? CONST.COLORS.FINISH : CONST.COLORS.UNFINISHED)
+      })
     },
-    saveUnit (unitData, unitResFileList) {
+    saveUnit (data) {
       this.closeUnitEditor()
-      let curUnitNode = this.innerDiagram.findNodeForKey(unitData.unitNodeKey)
-      this.innerDiagram.model.setDataProperty(curUnitNode.data, 'unitMsg', unitData.unitMsg)
-      this.innerDiagram.model.setDataProperty(curUnitNode.data, 'text', unitData.unitName)
-      if (unitResFileList.length) {
-        if (!curUnitNode.data.resFile) {
-          this.innerDiagram.model.setDataProperty(curUnitNode.data, 'resFile', {})
-        }
-        let { resFile } = curUnitNode.data
-        for (let item of unitResFileList) {
-          if (item.oldname !== item.newname) {
-            delete resFile[item.oldName]
-          }
-          resFile[item.newName] = true
-        }
-      }
+      this.innerDiagram.selection.each((node) => {
+        this.innerDiagram.model.setDataProperty(node.data, 'unitMsg', data.unitMsg)
+        this.innerDiagram.model.setDataProperty(node.data, 'text', data.unitName)
+      })
+      // this.closeUnitEditor()
+      // let curUnitNode = this.innerDiagram.findNodeForKey(unitData.key)
+      // this.innerDiagram.model.setDataProperty(curUnitNode.data, 'unitMsg', unitData.unitMsg)
+      // this.innerDiagram.model.setDataProperty(curUnitNode.data, 'text', unitData.unitName)
+      // if (unitResFileList.length) {
+      //   if (!curUnitNode.data.resFile) {
+      //     this.innerDiagram.model.setDataProperty(curUnitNode.data, 'resFile', {})
+      //   }
+      //   let { resFile } = curUnitNode.data
+      //   for (let item of unitResFileList) {
+      //     if (item.oldname !== item.newname) {
+      //       delete resFile[item.oldName]
+      //     }
+      //     resFile[item.newName] = true
+      //   }
+      // }
     },
     setUnitName (val) {
       this.unitData.unitName = val

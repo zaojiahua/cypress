@@ -1,20 +1,7 @@
-import _ from 'lodash'
-import CONST from 'constant/constant'
-
-let resFilesName = []
-for (let key in CONST.WILL_TOUCH_NAME) {
-  resFilesName.push({
-    title: CONST.WILL_TOUCH_NAME[key],
-    key,
-    children: []
-  })
-}
-
 let state = {
   resFiles: [],
   curFile: null,
   duplicatedFile: null,
-  resFilesName,
   showResFileModal: false
 }
 
@@ -30,12 +17,15 @@ let mutations = {
         state.resFiles.push(data)
       }
     }
-  },
-  removeResFile (state, index) {
-    state.resFiles.splice(index, 1)
-  },
-  clearResFiles (state) {
-    state.resFiles = []
+    if (action === 'removeResFile') {
+      state.resFiles.splice(data, 1)
+      for (let i = data; i < state.resFiles.length; i++) {
+        state.resFiles[i].index--
+      }
+    }
+    if (action === 'clearResFiles') {
+      state.resFiles = []
+    }
   },
   handleCurFile (state, { action, data }) {
     if (action === 'setCurFile') {
@@ -63,31 +53,6 @@ let mutations = {
     }
     if (action === 'removeCurFile') {
       state.curFile = null
-    }
-  },
-  setCurrentFile (state, data) {
-    if (data.byName) {
-      for (let i = 0; i < state.resFiles.length; i++) {
-        if (state.resFiles[i].name === data.name) {
-          state.curFile = state.resFiles[i]
-          break
-        }
-      }
-    } else {
-      state.curFile = data.currentFileInfo
-    }
-  },
-  addResFilesName (state, data) {
-    state.resFilesName[data.index].children.push(data.name)
-  },
-  setResFilesName (state, filesName) {
-    let preNames = JSON.parse(filesName)
-    for (let i = 0; i < state.resFilesName.length; i++) {
-      if (preNames[i]) {
-        Object.assign(state.resFilesName[i], preNames[i])
-      } else {
-        state.resFilesName[i].children = []
-      }
     }
   },
   setShowResFileModal (state) {

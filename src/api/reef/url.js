@@ -34,7 +34,7 @@ export default {
   job: (data) => `${reefPrefix}job/?fields=${joinFilter(jobFilter)}&job_deleted=False&limit=${data.pageSize}&offset=${data.offset}&ordering=-updated_time${data.filterUrlParam}`,
   jobDetail: (id) => `${reefPrefix}job/${id}/?fields=${joinFilter(jobDetailFilter)}&job_deleted=False`,
   saveJobFlowAndMsg: () => `${reefPrefix}job/`,
-  updateJobMsg: (id) => `${reefPrefix}job/${id}`,
+  updateJobMsg: (id) => `${reefPrefix}job/${id}/`,
   deleteTag: (id, type) => `${reefPrefix}${type}/${id}`,
   saveResFile: () => `${reefPrefix}job_upload_multi_res_file/`,
   getResFile: (id) => `${reefPrefix}job/${id}/?fields=${joinFilter(resFileFilter)}`,

@@ -23,7 +23,6 @@
       <div class="pane">
         <ItemEditor
           @updateUnitItem="updateUnitItem"
-          @arrangeFileName="arrangeFileName"
         ></ItemEditor>
       </div>
       <div class="pane">
@@ -56,12 +55,11 @@ export default {
   data () {
     return {
       curShowUnitEditor: this.showUnitEditor,
-      unitItems: [],
-      unitResFileList: []
+      unitItems: []
     }
   },
   computed: {
-    ...mapState('unit', ['itemHandBook', 'unitData'])
+    ...mapState('unit', ['unitData'])
   },
   watch: {
     showUnitEditor (val) {
@@ -80,32 +78,21 @@ export default {
         }
         this.curUnitData = copyOfVal
       }
-    },
-    itemHandBook (val) {
-      if (val.methods === 'add') {
-        val.data.itemID = Math.random().toString(16).slice(2, 8)
-        val.data.content = val.data.content.replace(/Tmach.*? /g, 'Tmach ')
-        this.curUnitData.unitMsg.execCmdDict.execCmdList.splice(val.index + 1, 0, val.data)
-      } else if (val.methods === 'remove') {
-        this.curUnitData.unitMsg.execCmdDict.execCmdList.splice(val.index, 1)
-      }
     }
   },
   methods: {
     closeUnitEditor (save) {
       this.unitItems = [...findComponentsDownward(this, 'UnitItem')]
       if (save) {
-        this.$emit('changeUnitColor', this.checkWeatherCompleted())
+        this.$emit('handleUnitColor', this.checkWeatherCompleted())
         let unitData = this._.cloneDeep(this.unitData)
-        let unitResFileList = this._.cloneDeep(this.unitResFileList)
-        this.unitResFileList = []
         let { unitMsg: { execCmdDict: { execCmdList } } } = unitData
         if (execCmdList) {
           execCmdList.forEach((val) => {
             delete val.itemID
           })
         }
-        this.$emit('saveUnit', unitData, unitResFileList)
+        this.$emit('saveUnit', unitData)
       }
       this.$emit('closeUnitEditor')
       this.unitItems.forEach(item => {
@@ -122,9 +109,6 @@ export default {
       let { unitMsg: { execCmdDict, execCmdDict: { execCmdList } } } = this.curUnitData
       let src = execCmdList || execCmdDict
       Object.assign(src[item.itemName], item.itemContent)
-    },
-    arrangeFileName (nameData) {
-      this.unitResFileList.push(nameData)
     }
   }
 }
