@@ -30,11 +30,20 @@
             v-model="tmachBlanks[index].content"
             clearable
           >
-            <div v-for="namesData in byProductsName" :key="namesData.title">
+            <div v-for="(namesData, pIdx) in byProductsName" :key="namesData.title">
               <div class="auto-complete-title">
                 <span>{{ namesData.title }}</span>
               </div>
-              <Option v-for="nameData in namesData.children" :key="nameData.loc" :value="nameData.text || nameData"></Option>
+              <Option
+                class="auto-item"
+                v-for="(nameData, sIdx) in namesData.children"
+                :key="nameData.loc"
+                :value="nameData.text || nameData"
+                @click.native="handleByProductsNameUser(pIdx, sIdx)"
+              >
+                <span>{{ nameData.text || nameData }}</span>
+                <span @click.stop="deleteByProductsName(pIdx, sIdx)">&times;</span>
+              </Option>
             </div>
           </AutoComplete>
         </div>
@@ -290,7 +299,8 @@ export default {
         }
         let byProductsInfo = {
           loc: [this.normalKey, this.unitKey, this.itemName].join('*'),
-          text: this.tmachBlanks[0].content
+          text: this.tmachBlanks[0].content,
+          user: []
         }
         let childIdx = -1
         for (let i = 0; i < temp.length; i++) {
@@ -338,11 +348,6 @@ export default {
       this.tmachIndex = 0
     },
     setName (name) {
-      // let resFilesInfo = this._.cloneDeep(this.config.resFilesInfo)
-      // let key = [this.normalKey, this.unitKey, this.itemData.itemName].join('*')
-      // resFilesInfo[key] = `${key}*${name}`
-      // this.$store.commit('job/setConfig', { resFilesInfo })
-      // console.log(resFilesInfo)
       this.tmachBlanks[0].content = name.split('.').shift()
     },
     setPreFileName () {
@@ -370,13 +375,31 @@ export default {
     },
     closeGallery (val) {
       this.gallery = val
+    },
+    deleteByProductsName (pIdx, sIdx) {
+      // let loc = this.byProductsName[pIdx].children[sIdx].loc.split('*')
+      // console.log(loc)
+      this.$store.commit('job/handleConfig', {
+        action: 'deleteByProductsName',
+        data: { pIdx, sIdx }
+      })
+    },
+    handleByProductsNameUser (pIdx, sIdx) {
+      console.log(pIdx, sIdx)
+      this.$store.commit('job/handleConfig', {
+        action: 'setByProductsNameUser',
+        data: {
+          pIdx,
+          sIdx,
+          user: [this.normalKey, this.unitKey, this.itemName].join('*')
+        }
+      })
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
-  @import '../../css/common.less';
   .item-editor-container {
     height: 100%;
     /deep/ .ivu-card-extra {
@@ -424,6 +447,17 @@ export default {
       .auto-complete-title {
         padding: 0 10px;
         font-weight: bold;
+      }
+      .auto-item {
+        display: flex;
+        justify-content: space-between;
+        & > span:last-child {
+          padding: .02em .3em;
+          border-radius: 50%;
+          &:hover {
+            background: skyblue;
+          }
+        }
       }
     }
   }

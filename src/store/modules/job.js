@@ -84,10 +84,26 @@ let mutations = {
       })
     }
     if (action === 'addByProductsName') {
+      let target = state.config.byProductsName[data.type].children
       if (data.index !== -1) {
-        state.config.byProductsName[data.type].children.splice(data.index, 1, data.data)
+        // let preText = target[data.index].text
+        target[data.index].text = data.data.text
+        // state.updateInfo = {
+        //   preText,
+        //   curText: data.data.text,
+        //   user: target[data.index].user
+        // }
       } else {
-        state.config.byProductsName[data.type].children.push(data.data)
+        target.push(data.data)
+      }
+    }
+    if (action === 'deleteByProductsName') {
+      state.config.byProductsName[data.pIdx].children.splice(data.sIdx, 1)
+    }
+    if (action === 'setByProductsNameUser') {
+      let target = state.config.byProductsName[data.pIdx].children[data.sIdx]
+      if (!target.user.includes(data.user)) {
+        target.user.push(data.user)
       }
     }
   }
