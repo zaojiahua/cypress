@@ -329,12 +329,6 @@ export function innerDiagramInit (context) {
       action: 'setUnitData',
       data: unitData
     })
-    // context.unitData = {
-    //   unitNodeKey: key,
-    //   unitName: text,
-    //   unitType: execModName,
-    //   unitMsg: context._.cloneDeep(unitMsg)
-    // }
   }
 
   unitTemplate.contextClick = function (e, node) {

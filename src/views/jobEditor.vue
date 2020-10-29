@@ -84,7 +84,7 @@ export default {
       rename: false,
       lastActiveTime: null,
       activeTimeInterval: 120000,
-      autoSaveInterval: 180000,
+      autoSaveInterval: 180000000,
       autoSaveTimer: null,
       autoSaveToggle: true,
       openNormalEditor: false,

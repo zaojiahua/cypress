@@ -158,6 +158,13 @@ export default {
             unitMsg: unit[1]['unit_content']
           })
         })
+        unitCategoryData.nodeDataArray.sort((a, b) => {
+          if (a.unitMsg.weight && b.unitMsg.weight) {
+            return a.unitMsg.weight - b.unitMsg.weight
+          }
+          if (!a.unitMsg.weight) return 1
+          if (!b.unitMsg.weight) return -1
+        })
         this.innerPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
       }
     },
@@ -165,11 +172,13 @@ export default {
       getJobUnitsBodyDict().then(({ status, data: { unit } }) => {
         if (status === 200) {
           let unitLists = {}
+          unit.sort((a, b) => a.unit_content.weight - b.unit_content.weight)
           unit.forEach((val, idx) => {
             if (!(val.type in unitLists)) unitLists[val.type] = {}
             unitLists[val.type][val.unit_name] = {
               unit_id: val.id,
               unit_content: val.unit_content
+              // unit_weight:
             }
           })
           this.$store.commit('unit/setUnitLists', unitLists)
