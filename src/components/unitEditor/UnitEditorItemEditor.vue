@@ -15,7 +15,6 @@
     </div>
     <div v-show="editing" class="item-editing">
       <div>
-        {{tmachBlanks}}
         <div v-if="showInput">
           <Input
             v-for="(blank, index) in tmachBlanks"
