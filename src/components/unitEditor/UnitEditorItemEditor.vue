@@ -15,6 +15,7 @@
     </div>
     <div v-show="editing" class="item-editing">
       <div>
+        {{tmachBlanks}}
         <div v-if="showInput">
           <Input
             v-for="(blank, index) in tmachBlanks"
@@ -49,11 +50,11 @@
         </div>
         <ScreenShot
           v-if="showScreenShot"
+          ref="screenShot"
           @handleImgName="setName"
         ></ScreenShot>
         <FeaturePoint
-          v-if="isJobResourceFile"
-          @handleAreaFileName="setName"
+          v-if="showFeaturePoint"
         ></FeaturePoint>
         <Checkbox v-model="$store.state.item.saveToFinalResult" v-if="showCheckbox" style="float: right;">添加此图片至最终结果</Checkbox>
         <p class="instructions"><Tag>操作说明</Tag>{{ curItemMeaning }}</p>
@@ -84,7 +85,6 @@ export default {
     return {
       tmachBlanks: [],
       tmachIndex: 0,
-      preFileName: null,
       saving: false,
       gallery: false
     }
@@ -98,7 +98,7 @@ export default {
     ...mapGetters('unit', ['unitKey']),
     ...mapState('item', ['editing', 'itemData', 'saveToFinalResult']),
     ...mapState('img', ['imgRecRate', 'coordinates', 'absCoordinates']),
-    ...mapGetters('item', ['itemType', 'itemName', 'isPicInput', 'isOutputPicture', 'isOutputFile', 'isJobResourceFile', 'curItemMeaning']),
+    ...mapGetters('item', ['itemType', 'itemName', 'isPicInput', 'isOutputPicture', 'isOutputFile', 'isJobResourceFile', 'curItemMeaning', 'isJobResourcePicture']),
     titleInfo () {
       if (this.itemData.itemIndex !== undefined) {
         return `(当前Item: ${this.itemData.itemIndex + 1})`
@@ -106,13 +106,17 @@ export default {
       return ''
     },
     showInput () {
-      return !CONST.NOT_SHOW_INPUT.has(this.itemType)
+      return CONST.SHOW_INPUT.has(this.itemType)
     },
     showAutoComplete () {
-      return !CONST.NOT_SHOW_AUTO_COMPLETE.has(this.itemType)
+      return CONST.SHOW_AUTO_COMPLETE.has(this.itemType)
     },
     showScreenShot () {
       return CONST.SHOW_SCREEN_SHOOT.has(this.itemType)
+    },
+    showFeaturePoint () {
+      return CONST.SHOW_FEATURE_POINT.has(this.itemType)
+      // isJobResourceFile
     },
     showCheckbox () {
       return this.isOutputPicture
@@ -123,28 +127,14 @@ export default {
     picUrl () {
       return this.resFiles.filter((val) => { return val.type === 'png' })
     },
-    areaFileName () {
-      if (!this.tmachBlanks[0].main) {
-        // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-        this.tmachBlanks[0].main = 'config_file'
-      }
-      return this.tmachBlanks[0]
-    },
-    imgName () {
-      return this.showInput ? {} : this.tmachBlanks[0]
+    loc () {
+      return [this.normalKey, this.unitKey, this.itemName].join('*')
     }
   },
   watch: {
     itemData (val) {
-      let child = '<copy2rdsDatPath>'
       if (!val.itemContent.content) return
-      if (val.itemContent.content.includes(child) && (this.isOutputPicture || this.isOutputFile)) {
-        this.$store.commit('item/handleSaveToFinal', true)
-      } else {
-        this.$store.commit('item/handleSaveToFinal', false)
-      }
       this.handleTmachBlanks(val.itemContent.content.match(/Tmach.*? /g))
-      // this.setPreFileName()
     },
     saveToFinalResult (val) {
       if (!(this.isOutputPicture || this.isOutputFile)) return
@@ -170,6 +160,12 @@ export default {
         this.tmachBlanks[this.tmachIndex].content = val.x
         this.tmachBlanks[this.tmachIndex + 1].content = val.y
         this.tmachIndex += 2
+      }
+    },
+    curFile (val) {
+      if (!val) return
+      if (this.isJobResourcePicture) {
+        this.tmachBlanks[0].content = suffixRemove(val.name)
       }
     }
   },
@@ -246,6 +242,7 @@ export default {
     },
     handleUnitData () { // 保存更新后的unitData
       let flag = true
+      // 检查是否存在空值
       for (let i = 0; i < this.tmachBlanks.length; i++) {
         if (!this.tmachBlanks[i].content.trim()) flag = false
         break
@@ -257,11 +254,12 @@ export default {
         })
         return flag
       }
+      // 保存修改后的itemData以及unitData
       let itemData = this._.cloneDeep(this.itemData)
       let tmachBlanks = itemData.itemContent.content.match(/Tmach.*? /g)
       let curIndex = 0
       let temp
-      for (let i = 0; i < tmachBlanks.length; i++) {
+      for (let i = 0; i < tmachBlanks.length; i++) { // 将用户输入的值插入
         curIndex = itemData.itemContent.content.indexOf(tmachBlanks[i], curIndex)
         temp = itemData.itemContent.content.split('')
         let target
@@ -269,6 +267,12 @@ export default {
         temp.splice(curIndex, tmachBlanks[i].length, target)
         curIndex += target.length
         itemData.itemContent.content = temp.join('')
+      }
+      if (this.showScreenShot && this.curFile) {
+        itemData.itemContent.pic = this.curFile.name
+      }
+      if (this.showFeaturePoint) {
+        itemData.itemContent.area = `${this.loc}.json`
       }
       this.$store.commit('item/handleItemData', {
         action: 'setItemData',
@@ -348,21 +352,8 @@ export default {
       this.tmachIndex = 0
     },
     setName (name) {
+      if (this.showScreenShot) return
       this.tmachBlanks[0].content = name.split('.').shift()
-    },
-    setPreFileName () {
-      if (this.willTouchFile) {
-        this.preFileName = this.tmachBlanks[0]
-      } else {
-        this.preFileName = null
-      }
-    },
-    arrangeFileName (newFileName) {
-      this.$emit('arrangeFileName', {
-        oldName: this.preFileName,
-        newName: newFileName
-      })
-      this.preFileName = null
     },
     getPic (val) {
       this.$store.commit('files/handleCurFile', {

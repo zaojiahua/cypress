@@ -50,7 +50,7 @@ export default {
     ...mapGetters('files', ['resFilesName']),
     ...mapState('img', ['coordinates']),
     ...mapState('item', ['saveToFinalResult']),
-    ...mapGetters('item', ['isJobResourcePicture', 'isJobResourceFile']),
+    ...mapGetters('item', ['isJobResourcePicture', 'isJobResourceFile', 'isOutputPicture', 'isOutputFile']),
     itemType () {
       return this.curItemContent.type
     },
@@ -60,9 +60,36 @@ export default {
     isPicInput () {
       return this.itemType === 'picInput'
     },
+    isJobResourceFileWithDefaultValue () {
+      return this.itemType === 'jobResourceFileWithDefaultValue'
+    },
     isCompleted () {
       if (this.isUxInput && this.uxInputDefaultValue) {
         this.setDefaultValue()
+        return true
+      }
+      // 设置默认的配置文件
+      if (this.isJobResourceFileWithDefaultValue && this.tmachBlanks.includes('Tmach ')) {
+        this.$store.commit('files/handleResFiles', {
+          action: 'addResFile',
+          data: {
+            dirty: true,
+            index: this.resFilesName.length,
+            name: `${this.loc}.json`,
+            file: JSON.stringify({ 'threshold': 0.99, 'area1': [ 0.0001, 0.0001, 0.9999, 0.9999 ] }, null, 4),
+            type: 'json'
+          }
+        })
+        for (let i = 0; i < this.tmachBlanks.length; i++) {
+          // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+          this.curItemContent.content = this.curItemContent.content.replace(this.tmachBlanks[i], `Tmach${this.loc}.json `)
+        }
+        // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+        this.curItemContent.area = `${this.loc}.json`
+        this.$store.commit('unit/handleUnitData', {
+          action: 'setItemData',
+          data: this._.cloneDeep(this.itemData)
+        })
         return true
       }
       for (let i = 0; i < this.tmachBlanks.length; i++) {
@@ -90,6 +117,9 @@ export default {
     disable () {
       let target = this.unitData.unitMsg.execCmdDict.execCmdList
       return target ? target.length > 1 : false
+    },
+    loc () {
+      return [this.normalKey, this.unitKey, this.itemData.itemName].join('*')
     }
   },
   methods: {
@@ -115,9 +145,12 @@ export default {
       }
     },
     addAreas () { // 显示标示区域
-      this.$store.commit('item/setAreasInfo', {
-        data: this._.cloneDeep(this.coordinates),
-        index: undefined
+      this.$store.commit('item/handleAreasInfo', {
+        action: 'set',
+        data: {
+          data: this._.cloneDeep(this.coordinates),
+          index: undefined
+        }
       })
     },
     setCoordinateAndImgRecRate (name) { // 点击 类型为 jobResourceFile 的 item 时，如果存在相应文件，则将文件内的数据提取出来
@@ -152,35 +185,33 @@ export default {
         })
         return
       }
-      // this.$store.commit('item/setAreasInfo', {
-      //   data: [],
-      //   index: undefined
-      // })
-      // if (this.saveToFinalResult) this.$store.commit('item/handleSaveToFinal', false)
-      // this.$store.commit('item/setCurrentItem', this.itemData)
       let itemData = this._.cloneDeep(this.itemData)
       itemData.itemIndex = this.itemIndex
       this.$store.commit('item/handleItemData', {
         action: 'setItemData',
         data: itemData
       })
-      this.$store.commit('item/handleShowItemEditor', true)
-      if (this.tmachBlanks[0].trim().length !== 0) {
-        if (this.isJobResourcePicture) {
-          this.$store.commit('files/handleCurFile', {
-            action: 'setCurFile',
-            data: {
-              dirty: true,
-              index: this.resFilesName.indexOf(this.tmachBlanks[0].trim().substring(5)),
-              name: this.tmachBlanks[0].trim().substring(5)
-            }
-          })
-        }
-        if (this.isJobResourceFile) {
-          this.setCoordinateAndImgRecRate(this.tmachBlanks[0].trim().substring(5))
-          this.addAreas()
-        }
+      let { pic, area, content } = itemData.itemContent
+      if (pic) {
+        this.$store.commit('files/handleCurFile', {
+          action: 'setCurFile',
+          data: {
+            dirty: true,
+            index: this.resFilesName.indexOf(pic),
+            name: pic
+          }
+        })
       }
+      if (area) {
+        this.setCoordinateAndImgRecRate(area)
+        this.addAreas()
+      }
+      if (content.includes('<copy2rdsDatPath>') && (this.isOutputPicture || this.isOutputFile)) {
+        this.$store.commit('item/handleSaveToFinal', true)
+      } else {
+        this.$store.commit('item/handleSaveToFinal', false)
+      }
+      this.$store.commit('item/handleShowItemEditor', true)
     },
     setDefaultValue () { // 给某些 item 内的选项设定默认值
       if (this.tmachBlanks.includes('Tmach ')) {

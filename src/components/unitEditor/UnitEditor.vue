@@ -98,6 +98,7 @@ export default {
       this.unitItems.forEach(item => {
         item.isClicked = false
       })
+      this.$store.commit('item/handleAreasInfo', { action: 'clear' })
       this.$store.commit('item/handleShowItemEditor', false)
       this.$store.commit('files/handleCurFile', { action: 'removeCurFile' })
       this.curUnitData = null

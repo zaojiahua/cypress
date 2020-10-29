@@ -11,7 +11,7 @@
         type="primary"
         @click.native="handleCoordinate"
         id='btn-confirm-area'
-        v-show="isJobResourceFile && this.curFile"
+        v-show="(isJobResourceFile || isJobResourceFileWithDefaultValue) && this.curFile"
       >确定</Button>
       <Button
         size="small"
@@ -64,7 +64,7 @@ export default {
     ...mapState(['isLoading']),
     ...mapState('files', ['resFiles', 'curFile']),
     ...mapState('item', ['areasInfo', 'itemData']),
-    ...mapGetters('item', ['isPicInput', 'isJobResourceFile', 'isJobResourcePicture']),
+    ...mapGetters('item', ['isPicInput', 'isJobResourceFile', 'isJobResourcePicture', 'isJobResourceFileWithDefaultValue']),
     ...mapGetters('img', ['imgRecRate']),
     editing () {
       return !!(this.curFile || this.isLoading)

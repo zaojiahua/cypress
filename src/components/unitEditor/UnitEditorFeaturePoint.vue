@@ -82,10 +82,13 @@ export default {
         data: index
       })
     },
-    showLabelArea (currentRowData, index) {
-      this.$store.commit('item/setAreasInfo', {
-        data: this._.cloneDeep(currentRowData),
-        index
+    showLabelArea (curRowData, index) {
+      this.$store.commit('item/handleAreasInfo', {
+        action: 'set',
+        data: {
+          data: this._.cloneDeep(curRowData),
+          index
+        }
       })
     }
   }

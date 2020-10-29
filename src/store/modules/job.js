@@ -38,22 +38,6 @@ let mutations = {
       }
     }
   },
-  setPreJobInfo (state, notClear) {
-    if (!notClear) state.preJobInfo = { dirty: false }
-    else {
-      state.preJobInfo = _.cloneDeep(state.jobInfo)
-      state.preJobInfo.dirty = true
-    }
-  },
-  recoverJobInfo (state) {
-    if (state.preJobInfo.dirty) {
-      state.jobInfo = _.cloneDeep(state.preJobInfo)
-      delete state.jobInfo.dirty
-    } else {
-      state.jobInfo = {}
-      state.preJobInfo = { dirty: false }
-    }
-  },
   setIsValidated (state, isValidated) {
     state.isValidated = isValidated
   },

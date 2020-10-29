@@ -23,14 +23,19 @@ let mutations = {
   handleShowItemEditor (state, editing) {
     state.editing = editing
   },
-  setCurrentItem (state, unitItem) {
-    state.itemData = unitItem
-  },
   handleSaveToFinal (state, toggle) {
     state.saveToFinalResult = toggle
   },
-  setAreasInfo (state, val) {
-    state.areasInfo = val
+  handleAreasInfo (state, { action, data }) {
+    if (action === 'set') {
+      state.areasInfo = data
+    }
+    if (action === 'clear') {
+      state.areasInfo = {
+        data: [],
+        idx: undefined
+      }
+    }
   }
 }
 
@@ -70,6 +75,9 @@ let getters = {
   },
   isInputVideo (state) {
     return state.itemData.itemContent.type === 'inputVideo'
+  },
+  isJobResourceFileWithDefaultValue (state) {
+    return state.itemData.itemContent.type === 'jobResourceFileWithDefaultValue'
   },
   curItemMeaning (state) {
     return state.itemData.itemContent.meaning

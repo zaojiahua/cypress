@@ -47,8 +47,7 @@
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import { blobToDataURL, cypressGet, cypressTimeout, suffixRemove } from 'lib/tools.js'
-import CONST from 'constant/constant'
+import { blobToDataURL, cypressGet, cypressTimeout } from 'lib/tools.js'
 
 export default {
   name: 'ScreenShot',
@@ -89,16 +88,6 @@ export default {
     ...mapGetters('device', ['deviceInfo']),
     imgName () {
       return `${[this.normalKey, this.unitKey, this.itemName].join('*')}.png`
-    }
-  },
-  watch: {
-    curFile (val) {
-      if (!val) return
-      if (CONST.SHOW_SCREEN_SHOOT.has(this.itemType)) {
-        this.curImgName = val.name
-        let slices = val.name.split('*')
-        this.curImgName = suffixRemove(slices.pop())
-      }
     }
   },
   methods: {
