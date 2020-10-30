@@ -202,6 +202,7 @@ export default {
           }
         })
       }
+      this.$store.commit('item/handleAreasInfo', { action: 'clear' })
       if (area) {
         this.setCoordinateAndImgRecRate(area)
         this.addAreas()
