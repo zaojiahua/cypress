@@ -221,6 +221,15 @@ export default {
           this.curItemContent.content = this.curItemContent.content.replace(this.tmachBlanks[i], 'Tmach' + this.uxInputDefaultValue[i] + ' ')
         }
         this.$emit('updateUnitItem', this._.cloneDeep(this.itemData))
+        let itemData = this._.cloneDeep(this.itemData)
+        this.$store.commit('item/handleItemData', {
+          action: 'setItemData',
+          data: itemData
+        })
+        this.$store.commit('unit/handleUnitData', {
+          action: 'setItemData',
+          data: itemData
+        })
       }
     },
     handleTmachBlanks () { // 获取 item 中需要修改的项
