@@ -127,7 +127,7 @@ export default {
       return this.resFiles.filter((val) => { return val.type === 'png' })
     },
     loc () {
-      return [this.normalKey, this.unitKey, this.itemName].join('&')
+      return [this.normalKey, this.unitKey, this.itemName].join('-')
     }
   },
   watch: {
@@ -183,7 +183,7 @@ export default {
           item = item.split('.').shift()
         }
         return {
-          content: this.isJobResourceFile ? [this.normalKey, this.unitKey, this.itemName].join('&') : item,
+          content: this.isJobResourceFile ? [this.normalKey, this.unitKey, this.itemName].join('-') : item,
           suffix
         }
       })
@@ -301,7 +301,7 @@ export default {
           }
         }
         let byProductsInfo = {
-          loc: [this.normalKey, this.unitKey, this.itemName].join('&'),
+          loc: [this.normalKey, this.unitKey, this.itemName].join('-'),
           text: this.tmachBlanks[0].content,
           user: []
         }
@@ -381,7 +381,7 @@ export default {
         data: {
           pIdx,
           sIdx,
-          user: [this.normalKey, this.unitKey, this.itemName].join('&')
+          user: [this.normalKey, this.unitKey, this.itemName].join('-')
         }
       })
     }

@@ -119,7 +119,7 @@ export default {
       return target ? target.length > 1 : false
     },
     loc () {
-      return [this.normalKey, this.unitKey, this.itemData.itemName].join('&')
+      return [this.normalKey, this.unitKey, this.itemData.itemName].join('-')
     }
   },
   methods: {
