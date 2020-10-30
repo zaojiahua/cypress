@@ -8,10 +8,18 @@
           <Button type="info" ghost size="large" @click="viewResFile" style="margin-right: 10px;">查看依赖文件</Button>
         </div>
         <div class="child-m-right--1 flex-row">
-          <Button type="primary" size="large" @click="saveJob" style="margin-right: 10px;">保存</Button>
-          <Button size="large" type="success" @click="saveAs" style="margin-right: 10px;">另存为</Button>
-          <Button type="primary" ghost size="large" @click="_saveJob" style="margin-right: 10px;">存草稿</Button>
-          <Button size="large" @click="cancelEdit">退出</Button>
+          <Dropdown @on-click="handleMenu">
+            <Button size="large">
+              菜单
+              <Icon type="ios-menu" />
+            </Button>
+            <DropdownMenu slot="list">
+              <DropdownItem name="save">保存</DropdownItem>
+              <DropdownItem name="saveAs">另存为</DropdownItem>
+              <DropdownItem name="saveDraft">存草稿</DropdownItem>
+              <DropdownItem name="quit">退出</DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
         </div>
       </div>
     </div>
@@ -23,16 +31,6 @@
       <Button type="primary" @click="setWingman(0)">主机</Button>
       <Button v-for="wingman in wingmans" :key="wingman" @click="setWingman(wingman)">{{wingman}} 号机</Button>
     </ButtonGroup>
-    <Modal v-model="rename" :closable="false" :mask-closeable="false" :styles="{ top: '42%' }">
-      <div slot="header" style="color:#f60;text-align:center">
-        <Icon type="ios-information-circle" style="font-size: 20px;"></Icon>
-        <span style="font-size: 18px;">重命名</span>
-      </div>
-      <Input placeholder="重命名" clearable v-model="$store.state.job.jobInfo.job_name" />
-      <div slot="footer" >
-        <Button type="primary" @click="_saveJob(true, true, false)">确定</Button>
-      </div>
-    </Modal>
     <job-in-job
       :jobModalShow="jobModalShow"
       :currentJobBlockText="currentJobBlockText"
@@ -81,7 +79,6 @@ export default {
       jobModalShow: false,
       currentJobBlockKey: null,
       currentJobBlockText: 'Job block',
-      rename: false,
       lastActiveTime: null,
       activeTimeInterval: 120000,
       autoSaveInterval: 180000,
@@ -165,7 +162,7 @@ export default {
                   marginTop: '16px'
                 },
                 on: {
-                  click: this._saveJob
+                  click: this.handleMenu('saveDraft')
                 }
               }, '存为草稿')
             ])
@@ -204,13 +201,6 @@ export default {
       }
       return flag
     },
-    saveJob (saveAs = false) {
-      if (!this._jobMsgRules() || this.isInvalidInnerJob()) return
-      if (this._jobFlowRules()) {
-        this.autoSaveToggle = false
-        this._saveJob(saveAs, false, false)
-      }
-    },
     async uploadFiles (id, info) {
       info.job_id = id
       let resFiles = this._.cloneDeep(this.resFiles)
@@ -229,16 +219,23 @@ export default {
             }
           }
           try {
-            let { status } = await jobResFilesSave(data)
-            if (status === 201) {
+            if (resFiles.length) {
+              let { status } = await jobResFilesSave(data)
+              if (status === 201) {
+                this.$Message.success({
+                  background: true,
+                  content: 'Job 保存成功'
+                })
+              } else {
+                this.$Message.error({
+                  background: true,
+                  content: '依赖文件上传失败'
+                })
+              }
+            } else {
               this.$Message.success({
                 background: true,
                 content: 'Job 保存成功'
-              })
-            } else {
-              this.$Message.error({
-                background: true,
-                content: '依赖文件上传失败'
               })
             }
           } catch (error) {
@@ -272,76 +269,108 @@ export default {
       })
       return wingman.reduce((pre, cur) => cur > 0 ? 1 + pre : pre, 0)
     },
-    async prepareJobInfo (saveAs, createNew, isDraft) {
+    async handleMenu (name) {
+      async function createNewJob (context, jobInfo) {
+        if (context.draftId) { // 将自动保存的Job正式保存下来
+          jobInfo.job_label = context.draftLabel
+          context.uploadFiles(context.draftId, jobInfo)
+        } else { // 创建新的Job
+          jobInfo.job_label = createJobLabel(context)
+          try {
+            let { status, data } = await saveJobFlowAndMsg(jobInfo)
+            let id
+            if (status === 201) id = data.id
+            context.uploadFiles(id, jobInfo)
+          } catch (err) {
+            console.log(err)
+          }
+        }
+      }
+      if (name === 'quit') {
+        this.autoSaveToggle = false
+        if (this.draftId) {
+          updateJobMsg(this.draftId, { job_deleted: true })
+        }
+      } else {
+        let id = this.jobId
+        let jobInfo = await this.prepareJobInfo()
+        if (name === 'saveDraft') {
+          jobInfo.draft = true
+          if (id) {
+            this.uploadFiles(id, jobInfo)
+            await this.clearData()
+            return
+          }
+        } else {
+          if (!this._jobFlowRules() || this.isInvalidInnerJob()) return
+          if (this._jobFlowRules()) this.autoSaveToggle = false
+          if (name === 'save') {
+            jobInfo.draft = false
+            if (id) {
+              this.uploadFiles(id, jobInfo)
+              if (this.draftId) {
+                updateJobMsg(this.draftId, { job_deleted: true })
+              }
+              await this.clearData()
+              return
+            }
+          }
+          if (name === 'saveAs') {
+            this.$Modal.confirm({
+              render: (h) => {
+                return h('Input', {
+                  props: {
+                    value: this.$store.state.job.jobInfo.job_name,
+                    autofocus: true,
+                    placeholder: '请输入新的用例名称'
+                  },
+                  on: {
+                    input: (val) => {
+                      this.value = val
+                    }
+                  }
+                })
+              },
+              onOk: async () => {
+                jobInfo.job_name = this.value
+                await createNewJob(this, jobInfo)
+                await this.clearData()
+              }
+            })
+            return
+          }
+        }
+        await createNewJob(this, jobInfo)
+      }
+      await this.clearData()
+    },
+    async prepareJobInfo () {
+      // 将配置信息保存在Start节点
       let { data: start } = this.outerDiagram.findNodeForKey(-1)
       this.outerDiagram.model.setDataProperty(start, 'config', this._.cloneDeep(this.config))
-      let info = this._.cloneDeep(this.jobInfo)
-      info.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
-      info.subsidiary_device_count = this.calcWingmanCount()
-      if (shouldCreateNewTag('test_area', info)) {
-        info.test_area = await createNewTag('test_area', info)
+      // 保存Job信息
+      let jobInfo = this._.cloneDeep(this.jobInfo)
+      jobInfo.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
+      jobInfo.subsidiary_device_count = this.calcWingmanCount()
+      jobInfo.author = localStorage.id
+      // 创建新的标签
+      if (shouldCreateNewTag('test_area', jobInfo)) {
+        jobInfo.test_area = await createNewTag('test_area', jobInfo)
         this.$store.dispatch('setBasicTestArea')
       }
-      if (shouldCreateNewTag('custom_tag', info)) {
-        info.custom_tag = await createNewTag('custom_tag', info)
+      if (shouldCreateNewTag('custom_tag', jobInfo)) {
+        jobInfo.custom_tag = await createNewTag('custom_tag', jobInfo)
         this.$store.dispatch('setBasicCustomTag')
       }
-      info.author = localStorage.id
-      info.inner_job_list = []
+      // 记录涉及到的InnerJob
+      jobInfo.inner_job_list = []
       let innerJobs = this.outerDiagram.findNodesByExample({ 'category': 'Job' })
       innerJobs.each(node => {
         if (node.data.jobLabel) {
-          info.inner_job_list.push(node.data.jobLabel)
+          jobInfo.inner_job_list.push(node.data.jobLabel)
         }
       })
-      if (saveAs || createNew) {
-        info.job_label = createJobLabel(this)
-      }
-      if (!saveAs) {
-        info.draft = isDraft
-      }
-      return info
-    },
-    async _saveJob (e, saveAs = false, isDraft = true) {
-      let id = this.jobId
-      let info = await this.prepareJobInfo(saveAs, !id, isDraft)
-      if (saveAs) {
-        if (this.draftId) {
-          info.job_label = this.draftLabel
-          this.uploadFiles(this.draftId, info)
-        } else {
-          try {
-            let { status, data } = await saveJobFlowAndMsg(info)
-            if (status === 201) id = data.id
-            this.uploadFiles(id, info)
-          } catch (error) {
-            console.log(error)
-          }
-        }
-      } else {
-        if (id) {
-          this.uploadFiles(id, info)
-          if (this.draftId) {
-            updateJobMsg(this.draftId, { job_deleted: true })
-          }
-        } else {
-          if (this.draftId) {
-            info.job_label = this.draftLabel
-            this.uploadFiles(this.draftId, info)
-          } else {
-            try {
-              let { status, data } = await saveJobFlowAndMsg(info)
-              if (status === 201) id = data.id
-              this.uploadFiles(id, info)
-            } catch (error) {
-              console.log(error)
-            }
-          }
-        }
-      }
-      await this.clearData()
-      this.$router.push({ path: '/jobList' })
-      this.$store.commit('setCurPage', 1)
+      return jobInfo
     },
     prepareInnerJobList () {
       let list = []
@@ -403,9 +432,6 @@ export default {
         desc: `已为您自动保存当前内容, 用例名称为 ${info.job_name}`,
         duration: 6
       })
-    },
-    saveAs () {
-      this.rename = true
     },
     jobModalClose (job) {
       this.jobModalShow = false
@@ -489,6 +515,8 @@ export default {
           })
         }
       }
+      this.$router.push({ path: '/jobList' })
+      this.$store.commit('setCurPage', 1)
     },
     async cancelEdit () {
       this.autoSaveToggle = false

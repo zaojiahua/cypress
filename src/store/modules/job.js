@@ -59,10 +59,7 @@ let mutations = {
     state.draftLabel = label
   },
   setNormalData (state, data) {
-    state.normalData = JSON.stringify(data, (key, val) => {
-      if (key === 'pb') return
-      return val
-    })
+    state.normalData = data
   },
   setNormalKey (state, key) {
     state.normalKey = key
@@ -116,7 +113,7 @@ let getters = {
     return parseInt(state.jobInfo.job_id)
   },
   normalKey (state) {
-    return JSON.parse(state.normalData).key
+    return state.normalData.key
   },
   manufacturerId () {
     return state.jobInfo.manufacturer

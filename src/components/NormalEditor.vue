@@ -93,8 +93,8 @@ export default {
   },
   watch: {
     normalData (val) {
-      this.curNormalData = JSON.parse(val)
-      this.innerDiagram.model = go.Model.fromJson(JSON.stringify(this.curNormalData.unitLists))
+      this.curNormalData = this._.cloneDeep(val)
+      this.innerDiagram.model = go.Model.fromJson(this.curNormalData.unitLists)
     },
     openNormalEditor (val) {
       if (val) this.getSelectedUnit(this.unitTemplateType)

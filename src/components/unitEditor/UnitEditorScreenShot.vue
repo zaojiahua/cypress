@@ -87,7 +87,7 @@ export default {
     ...mapGetters('item', ['itemType', 'isPicInput', 'isJobResourcePicture', 'itemName']),
     ...mapGetters('device', ['deviceInfo']),
     imgName () {
-      return `${[this.normalKey, this.unitKey, this.itemName].join('*')}.png`
+      return `${[this.normalKey, this.unitKey, this.itemName].join('&')}.png`
     }
   },
   methods: {
