@@ -76,7 +76,7 @@ export default {
             dirty: true,
             index: this.resFilesName.length,
             name: `${this.loc}.json`,
-            file: JSON.stringify({ 'threshold': 0.99, 'area1': [ 0.0001, 0.0001, 0.9999, 0.9999 ] }, null, 4),
+            file: JSON.stringify({ 'threshold': 0.99, 'area1': [ 0, 0, 0.99999, 0.99999 ] }, null, 4),
             type: 'json'
           }
         })
