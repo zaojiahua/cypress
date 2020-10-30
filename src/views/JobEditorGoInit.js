@@ -170,9 +170,6 @@ function outerDiagramInit (context) {
 
   const startTemplate = startNodeTemplate(CONST.COLORS.START)
   startTemplate.linkValidation = startValidation
-  startTemplate.click = (e, node) => {
-    console.log(node.data)
-  }
 
   const endTemplate = endNodeTemplate(CONST.COLORS.END)
   endTemplate.doubleClick = (e, node) => {
@@ -225,9 +222,8 @@ function outerDiagramInit (context) {
 
   normalBlockTemplate.doubleClick = function (e, node) {
     if (e.diagram instanceof go.Palette) return
-    let { data } = node
-    context.$store.commit('job/setNormalData', data)
-    context.$store.commit('job/setNormalKey', data.key)
+    let { data } = context._.cloneDeep(node)
+    context.$store.commit('job/handleNormalData', { action: 'set', data })
     context.outerDiagram.div.firstElementChild.blur()
     context.openNormalEditor = true
   }
@@ -419,7 +415,7 @@ function setOuterDiagramData (context) {
 }
 
 export function init (context) {
-  outerDiagramInit(context)
+  if (!context.outerDiagram) outerDiagramInit(context)
   outerPaletteInit(context)
   setOuterDiagramData(context)
 }

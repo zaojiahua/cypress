@@ -47,8 +47,8 @@
       @setUnitName="setUnitName"
     ></unit-editor>
     <div slot="footer">
-      <Button type="text" @click="save(false)">取消</Button>
-      <Button type="primary" @click="save(true)">确定</Button>
+      <Button type="text" @click="saveNormalData(false)">取消</Button>
+      <Button type="primary" @click="saveNormalData(true)">确定</Button>
     </div>
   </Modal>
 </template>
@@ -93,7 +93,7 @@ export default {
   },
   watch: {
     normalData (val) {
-      this.curNormalData = this._.cloneDeep(val)
+      this.curNormalData = val
       this.innerDiagram.model = go.Model.fromJson(this.curNormalData.unitLists)
     },
     openNormalEditor (val) {
@@ -115,7 +115,7 @@ export default {
         delete this.curNormalData.wingman
       }
     },
-    save (toggle) {
+    saveNormalData (toggle) {
       this.recordOrRemoveWingman()
       if (toggle) {
         this.curNormalData.unitLists = JSON.parse(this.innerDiagram.model.toJson())
@@ -134,12 +134,6 @@ export default {
         } else {
           this.curNormalData.color = CONST.COLORS.FINISH
         }
-        if (!this.curNormalData.resFile) {
-          this.curNormalData.resFile = {}
-        }
-        units.forEach((val) => {
-          Object.assign(this.curNormalData.resFile, val.resFile)
-        })
         this.$emit('saveNormalData', this._.cloneDeep(this.curNormalData))
       }
       this.$emit('closeNormalEditor')
@@ -242,23 +236,8 @@ export default {
       this.innerDiagram.selection.each((node) => {
         this.innerDiagram.model.setDataProperty(node.data, 'unitMsg', data.unitMsg)
         this.innerDiagram.model.setDataProperty(node.data, 'text', data.unitName)
+        this.innerDiagram.model.setDataProperty(node.data, 'completed', data.completed)
       })
-      // this.closeUnitEditor()
-      // let curUnitNode = this.innerDiagram.findNodeForKey(unitData.key)
-      // this.innerDiagram.model.setDataProperty(curUnitNode.data, 'unitMsg', unitData.unitMsg)
-      // this.innerDiagram.model.setDataProperty(curUnitNode.data, 'text', unitData.unitName)
-      // if (unitResFileList.length) {
-      //   if (!curUnitNode.data.resFile) {
-      //     this.innerDiagram.model.setDataProperty(curUnitNode.data, 'resFile', {})
-      //   }
-      //   let { resFile } = curUnitNode.data
-      //   for (let item of unitResFileList) {
-      //     if (item.oldname !== item.newname) {
-      //       delete resFile[item.oldName]
-      //     }
-      //     resFile[item.newName] = true
-      //   }
-      // }
     },
     setUnitName (val) {
       this.unitData.unitName = val

@@ -38,6 +38,11 @@ let mutations = {
       }
     }
   },
+  handleNormalData (state, { action, data }) {
+    if (action === 'set') {
+      state.normalData = data
+    }
+  },
   setIsValidated (state, isValidated) {
     state.isValidated = isValidated
   },
@@ -57,12 +62,6 @@ let mutations = {
   },
   setDraftLabel (state, label) {
     state.draftLabel = label
-  },
-  setNormalData (state, data) {
-    state.normalData = data
-  },
-  setNormalKey (state, key) {
-    state.normalKey = key
   },
   setJobTestArea (state, data) {
     state.jobInfo.test_area = data

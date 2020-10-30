@@ -92,12 +92,13 @@ export default {
             delete val.itemID
           })
         }
+        unitData.completed = this.unitItems.every((val) => val.isCompleted === true)
         this.$emit('saveUnit', unitData)
       }
-      this.$emit('closeUnitEditor')
       this.unitItems.forEach(item => {
         item.isClicked = false
       })
+      this.$emit('closeUnitEditor')
       this.$store.commit('item/handleAreasInfo', { action: 'clear' })
       this.$store.commit('item/handleShowItemEditor', false)
       this.$store.commit('files/handleCurFile', { action: 'removeCurFile' })

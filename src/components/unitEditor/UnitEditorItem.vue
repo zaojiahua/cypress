@@ -43,7 +43,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('job', ['normalKey']),
+    ...mapGetters('job', ['normalKey']),
     ...mapState('unit', ['unitData']),
     ...mapGetters('unit', ['unitKey']),
     ...mapState('files', ['resFiles', 'curFile']),

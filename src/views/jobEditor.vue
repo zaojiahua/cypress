@@ -91,8 +91,8 @@ export default {
     }
   },
   computed: {
-    ...mapState('job', ['jobInfo', 'outerDiagramModel', 'draftId', 'draftLabel', 'normalKey', 'config']),
-    ...mapGetters('job', ['jobId']),
+    ...mapState('job', ['jobInfo', 'outerDiagramModel', 'draftId', 'draftLabel', 'normalData', 'config']),
+    ...mapGetters('job', ['jobId', 'normalKey']),
     ...mapState('files', ['resFiles']),
     ...mapGetters('files', ['resFilesName']),
     ...mapState('device', ['countdown', 'deviceInfo'])
@@ -132,9 +132,9 @@ export default {
       this.outerDiagram.model.setDataProperty(node, 'explain', msg.explain)
     },
     saveNormalData (val) {
-      let curNormalData = this.outerDiagram.findNodeForKey(this.normalKey).data
+      let { data } = this.outerDiagram.findNodeForKey(this.normalKey)
       CONST.NORMAL_DATA_KEY.forEach((key) => {
-        this.outerDiagram.model.setDataProperty(curNormalData, key, val[key])
+        this.outerDiagram.model.setDataProperty(data, key, val[key])
       })
     },
     _jobFlowRules () {

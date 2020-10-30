@@ -89,8 +89,8 @@ export default {
     }
   },
   computed: {
-    ...mapState('job', ['normalKey', 'config']),
-    ...mapGetters('job', ['byProductsName']),
+    ...mapState('job', ['config']),
+    ...mapGetters('job', ['normalKey', 'byProductsName']),
     ...mapState('files', ['resFiles', 'curFile']),
     ...mapGetters('files', ['resFilesName']),
     ...mapState('unit', ['unitData']),
@@ -162,7 +162,7 @@ export default {
       }
     },
     curFile (val) {
-      if (!val) return
+      if (!val || !this.tmachBlanks[0]) return
       if (this.isJobResourcePicture) {
         this.tmachBlanks[0].content = suffixRemove(val.name)
       }
