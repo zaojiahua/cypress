@@ -14,9 +14,9 @@
       ></Table>
       <div class="child-m-right--1">
         <Button
-          @click="showDeviceSelectPage" type="primary" size="small" long
+          @click="showDeviceSelectPage" type="success"
         >选取设备</Button>
-        <Button type="primary" size="small" :loading="isLoading" @click="getImage" long>
+        <Button type="primary" :loading="isLoading" @click="getImage">
           <span v-if="!isLoading">获取截图</span>
           <span v-else>Loading...</span>
         </Button>
@@ -186,7 +186,7 @@ export default {
       }
       & > div:nth-child(2) {
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-end;
         & > div:first-child {
           flex: 1;
         }

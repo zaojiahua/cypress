@@ -31,7 +31,7 @@
           <Button type="primary" @click="endUnitContentEdit(true)">保存</Button>
         </div>
       </div>
-      <Button @click="editUnitContent" size="small"><Icon type="ios-clipboard-outline" />编辑</Button>
+      <Button @click="editUnitContent"><Icon type="ios-clipboard-outline" />编辑</Button>
     </div>
   </Card>
 </template>

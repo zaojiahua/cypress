@@ -59,7 +59,7 @@
         <p class="instructions"><Tag>操作说明</Tag>{{ curItemMeaning }}</p>
       </div>
       <div>
-        <Button type="primary" size="small" long @click="saveItemData" :loading="saving">
+        <Button type="primary" @click="saveItemData" :loading="saving">
           <span v-if="!saving">确定</span>
           <span v-else>saving...</span>
         </Button>
