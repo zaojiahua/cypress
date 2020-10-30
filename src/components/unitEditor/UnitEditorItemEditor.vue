@@ -1,7 +1,7 @@
 <template>
   <Card class="item-editor-container">
     <!-- title -->
-    <div slot="title">Item Editor &nbsp; {{ titleInfo }}</div>
+    <div slot="title">Item Editor</div>
     <!-- extra -->
     <Button
       slot="extra"
@@ -98,12 +98,6 @@ export default {
     ...mapState('item', ['editing', 'itemData', 'saveToFinalResult']),
     ...mapState('img', ['imgRecRate', 'coordinates', 'absCoordinates']),
     ...mapGetters('item', ['itemType', 'itemName', 'isPicInput', 'isOutputPicture', 'isOutputFile', 'isJobResourceFile', 'curItemMeaning', 'isJobResourcePicture']),
-    titleInfo () {
-      if (this.itemData.itemIndex !== undefined) {
-        return `(当前Item: ${this.itemData.itemIndex + 1})`
-      }
-      return ''
-    },
     showInput () {
       return CONST.SHOW_INPUT.has(this.itemType)
     },
