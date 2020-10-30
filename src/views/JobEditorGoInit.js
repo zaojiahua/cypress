@@ -390,9 +390,8 @@ function setOuterDiagramData (context) {
             })
             return context.$router.push({ path: '/' })
           }
-          context.outerDiagram.model = go.Model.fromJson(JSON.stringify(data))
+          context.outerDiagram.model = go.Model.fromJson(data)
           let { data: start } = context.outerDiagram.findNodeForKey(-1)
-          // todo
           context.$store.commit('job/handleConfig', {
             action: 'setConfig',
             data: start.config || {}

@@ -118,8 +118,8 @@ export default {
     saveNormalData (toggle) {
       this.recordOrRemoveWingman()
       if (toggle) {
-        this.curNormalData.unitLists = JSON.parse(this.innerDiagram.model.toJson())
-        let units = this.curNormalData.unitLists.nodeDataArray.filter(item => item.category === 'Unit')
+        this.curNormalData.unitLists = this.innerDiagram.model.toJson()
+        let units = JSON.parse(this.curNormalData.unitLists).nodeDataArray.filter(item => item.category === 'Unit')
         if (units.some(item => CONST.STAR.has(item.unitMsg.execModName))) {
           if (units.some(item => item.star === CONST.COLORS.RESULT)) {
             this.curNormalData.star = CONST.COLORS.RESULT

@@ -350,7 +350,7 @@ export default {
       this.outerDiagram.model.setDataProperty(start, 'config', this._.cloneDeep(this.config))
       // 保存Job信息
       let jobInfo = this._.cloneDeep(this.jobInfo)
-      jobInfo.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
+      jobInfo.ui_json_file = this.outerDiagram.model.toJson()
       jobInfo.subsidiary_device_count = this.calcWingmanCount()
       jobInfo.author = localStorage.id
       // 创建新的标签
