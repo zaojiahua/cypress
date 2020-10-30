@@ -203,6 +203,7 @@ export default {
         })
       }
       this.$store.commit('item/handleAreasInfo', { action: 'clear' })
+      this.$store.commit('img/handleCoordinate', { action: 'clear' })
       if (area) {
         this.setCoordinateAndImgRecRate(area)
         this.addAreas()
