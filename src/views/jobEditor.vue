@@ -305,7 +305,7 @@ export default {
             return
           }
         } else {
-          if (!this._jobFlowRules() || this.isInvalidInnerJob()) return
+          if (!this._jobMsgRules() || !this._jobFlowRules() || this.isInvalidInnerJob()) return
           if (this._jobFlowRules()) this.autoSaveToggle = false
           if (name === 'save') {
             jobInfo.draft = false
@@ -447,7 +447,6 @@ export default {
         this.outerDiagram.model.setDataProperty(currentJobBlockData, 'text', job.job_name)
         this.outerDiagram.model.setDataProperty(currentJobBlockData, 'jobId', job.id)
         this.outerDiagram.model.setDataProperty(currentJobBlockData, 'jobLabel', job.job_label)
-        console.log(currentJobBlockData)
       }
     },
     viewResFile () {

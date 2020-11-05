@@ -393,7 +393,6 @@ function setOuterDiagramData (context) {
         if (typeof data === 'string') {
           data = JSON.parse(data)
         }
-        console.log(data)
         if (status === 200) {
           if (JSON.stringify(data) === '{}') {
             context.$Message.err({
