@@ -235,6 +235,9 @@ export default {
     },
     handleUnitData () { // 保存更新后的unitData
       let flag = true
+      if (this.curFile && this.isJobResourcePicture) {
+        this.tmachBlanks[0].content = suffixRemove(this.curFile.name)
+      }
       // 检查是否存在空值
       for (let i = 0; i < this.tmachBlanks.length; i++) {
         if (!this.tmachBlanks[i].content.trim()) flag = false
