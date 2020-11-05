@@ -161,7 +161,7 @@ export default {
       devicesData: [],
       deviceTotalNum: 0,
       currentPage: 1,
-      pageSize: 20,
+      pageSize: parseInt(localStorage.getItem('device-management:DEFAULT_PAGE_SIZE')) || 20,
       pageOffset: 0,
       deviceStatusFilterList: ['idle'],
       deviceSelected: null
@@ -195,7 +195,7 @@ export default {
         deviceStatus
       })
       if (status === 200) {
-        this.deviceTotalNum = Number(headers['total-count'])
+        this.deviceTotalNum = parseInt(headers['total-count'])
         let deviceIdList = []
         this.devicesData = util.validate(getDeviceListSerializer, data['devices'])
         this.devicesData.forEach(device => {

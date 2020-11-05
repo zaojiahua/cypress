@@ -9,7 +9,7 @@
     <div>
       <div class="child-m-right--1 flex-row m-b--1">
         <div class="child-m-right--1 flex-row">
-          <Upload ref="upload"
+          <!-- <Upload ref="upload"
             :show-upload-list="false"
             :format="['zip']"
             :on-format-error="handleFormatError"
@@ -17,11 +17,11 @@
             :data="uploadData"
             :on-success="handleUploadSuccess">
             <Button icon="ios-cloud-upload-outline">导入用例</Button>
-          </Upload>
+          </Upload> -->
         </div>
         <div class="child-m-right--1 flex-row">
           <Tag size="large" style="margin-top: 0; margin-bottom: 0;"> 已选 {{Object.keys(this.selectedJobs).length}} 个</Tag>
-          <Button type="success" icon="ios-cloud-download" @click="exportJobs">导出用例</Button>
+          <!-- <Button type="success" icon="ios-cloud-download" @click="exportJobs">导出用例</Button> -->
           <Button type="warning" icon="ios-qr-scanner" @click="clear">取消选择</Button>
           <Button type="error" icon="md-trash" @click="delSelectedJobs">批量删除</Button>
         </div>

@@ -11,7 +11,7 @@
       />
       <Icon type="ios-arrow-up" class="collapse__header-arrow-up" v-show="collapseIsOpen" @click="handleCollapse"/>
       <Icon type="ios-arrow-down" class="collapse__header-arrow-down" v-show="!collapseIsOpen" @click="handleCollapse"/>
-      <Button type="error" icon="ios-trash" @click="deleteFilterFactor" v-show="filterConditions.length !== 0">删除</Button>
+      <!-- <Button type="error" icon="ios-trash" @click="deleteFilterFactor" v-show="filterConditions.length !== 0">删除</Button> -->
       <Button icon="ios-close" class="filter__clear" @click="clearFilterFactor" v-show="filterConditions.length !== 0">清除</Button>
     </div>
     <transition name="slide-fade">
