@@ -113,14 +113,7 @@ function setOutputNormalBlock (context, isOutput) {
         } else {
           if (isOutput) {
             if (finalResultBlock) {
-              let { unitLists } = finalResultBlock.data
-              let curUnitLists
-              if (typeof unitLists !== 'object') {
-                curUnitLists = JSON.parse(unitLists)
-              } else {
-                curUnitLists = unitLists
-              }
-              let finalResultUnit = curUnitLists.nodeDataArray.filter(node => node.category === 'Unit' && node.unitMsg.finalResult)
+              let finalResultUnit = JSON.parse(finalResultBlock.data.unitLists).nodeDataArray.filter(node => node.category === 'Unit' && node.unitMsg.finalResult)
               if (finalResultUnit.length > 0) {
                 context.$Message.error({
                   content: '结果Block有且只能有一个'
