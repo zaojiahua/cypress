@@ -32,7 +32,11 @@ function setOutputNormalBlock (context, isOutput) {
     })
     return
   }
-  context.outerDiagram.selection.each(({ data, data: { unitLists: { linkDataArray, nodeDataArray } } }) => {
+  context.outerDiagram.selection.each(({ data, data: { unitLists } }) => {
+    if (typeof unitLists !== 'object') {
+      unitLists = JSON.parse(unitLists)
+    }
+    let { nodeDataArray, linkDataArray } = unitLists
     // 找到最后一个有star属性的unit
     let starUnitArray = nodeDataArray.filter((val, index) => {
       return val.category === 'Unit' && val.star
@@ -89,6 +93,7 @@ function setOutputNormalBlock (context, isOutput) {
           content: '已将该Block设为结果Block'
         })
         context.outerDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
+        context.outerDiagram.model.setDataProperty(data, 'unitLists', JSON.stringify(unitLists))
       }
       if (context.config.finalResultKey) {
         if (context.config.finalResultKey === data.key) {
@@ -103,11 +108,19 @@ function setOutputNormalBlock (context, isOutput) {
               content: '已将该Block设为NormalBlock'
             })
             context.outerDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
+            context.outerDiagram.model.setDataProperty(data, 'unitLists', JSON.stringify(unitLists))
           }
         } else {
           if (isOutput) {
             if (finalResultBlock) {
-              let finalResultUnit = finalResultBlock.data.unitLists.nodeDataArray.filter(node => node.category === 'Unit' && node.unitMsg.finalResult)
+              let { unitLists } = finalResultBlock.data
+              let curUnitLists
+              if (typeof unitLists !== 'object') {
+                curUnitLists = JSON.parse(unitLists)
+              } else {
+                curUnitLists = unitLists
+              }
+              let finalResultUnit = curUnitLists.nodeDataArray.filter(node => node.category === 'Unit' && node.unitMsg.finalResult)
               if (finalResultUnit.length > 0) {
                 context.$Message.error({
                   content: '结果Block有且只能有一个'
@@ -123,6 +136,7 @@ function setOutputNormalBlock (context, isOutput) {
                   content: '已将该Block设为结果Block'
                 })
                 context.outerDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
+                context.outerDiagram.model.setDataProperty(data, 'unitLists', JSON.stringify(unitLists))
               }
             } else {
               lastStarUnit.star = CONST.COLORS.RESULT
@@ -135,6 +149,7 @@ function setOutputNormalBlock (context, isOutput) {
                 content: '已将该Block设为结果Block'
               })
               context.outerDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
+              context.outerDiagram.model.setDataProperty(data, 'unitLists', JSON.stringify(unitLists))
             }
           }
         }
