@@ -398,6 +398,11 @@ function setOuterDiagramData (context) {
             })
             return context.$router.push({ path: '/' })
           }
+          data.nodeDataArray.forEach((val, idx, arr) => {
+            if ('unitLists' in val) {
+              arr[idx].unitLists = JSON.stringify(val.unitLists)
+            }
+          })
           context.outerDiagram.model = go.Model.fromJson(data)
           let { data: start } = context.outerDiagram.findNodeForKey(-1)
           context.$store.commit('job/handleConfig', {
