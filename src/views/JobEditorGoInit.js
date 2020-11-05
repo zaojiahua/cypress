@@ -390,6 +390,10 @@ function setOuterDiagramData (context) {
   } else {
     if (context.jobInfo.job_flow) {
       getBlockFlowDict4Font(context.jobInfo.job_flow).then(({ status, data }) => {
+        if (typeof data === 'string') {
+          data = JSON.parse(data)
+        }
+        console.log(data)
         if (status === 200) {
           if (JSON.stringify(data) === '{}') {
             context.$Message.err({
@@ -399,7 +403,7 @@ function setOuterDiagramData (context) {
             return context.$router.push({ path: '/' })
           }
           data.nodeDataArray.forEach((val, idx, arr) => {
-            if ('unitLists' in val) {
+            if ('unitLists' in val && typeof val.unitLists === 'object') {
               arr[idx].unitLists = JSON.stringify(val.unitLists)
             }
           })

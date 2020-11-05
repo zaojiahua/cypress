@@ -91,7 +91,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('job', ['jobInfo', 'outerDiagramModel', 'draftId', 'draftLabel', 'normalData', 'config']),
+    ...mapState('job', ['jobInfo', 'outerDiagramModel', 'isValidated', 'draftId', 'draftLabel', 'normalData', 'config']),
     ...mapGetters('job', ['jobId', 'normalKey']),
     ...mapState('files', ['resFiles']),
     ...mapGetters('files', ['resFilesName']),
@@ -295,6 +295,9 @@ export default {
         let id = this.jobId
         let jobInfo = await this.prepareJobInfo()
         if (name === 'saveDraft') {
+          if (!this._jobMsgRules()) {
+            return
+          }
           jobInfo.draft = true
           if (id) {
             this.uploadFiles(id, jobInfo)
@@ -337,7 +340,6 @@ export default {
                 await this.clearData()
               }
             })
-            return
           }
         }
         await createNewJob(this, jobInfo)
@@ -352,7 +354,7 @@ export default {
       let jobInfo = this._.cloneDeep(this.jobInfo)
       jobInfo.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
       jobInfo.ui_json_file.nodeDataArray.forEach((val, idx, arr) => {
-        if ('unitLists' in val) {
+        if ('unitLists' in val && typeof val.unitLists === 'string') {
           arr[idx].unitLists = JSON.parse(val.unitLists)
         }
       })
@@ -497,6 +499,7 @@ export default {
       this.$store.commit('job/setOuterDiagramModel', null)
       this.$store.commit('job/handleJobInfo', { action: 'setPreJobInfo', data: false })
       this.$store.commit('job/handleConfig', { action: 'init' })
+      this.$store.commit('job/setIsValidated', false)
       this.$store.commit('files/handleResFiles', { action: 'clearResFiles' })
       if (this.countdown) {
         try {
