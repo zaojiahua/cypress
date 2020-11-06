@@ -51,7 +51,7 @@ export function jobFlowValidation (vueObj) {
         let preNormalBlockData = link.fromNode.data
         if (preNormalBlockData.category === 'normalBlock') {
           // self.outerDiagram.model.setDataProperty(preNormalBlockData, 'star', true)
-          let imgToolUnits = preNormalBlockData.unitLists.nodeDataArray.filter(item => item.category === 'Unit' && CONST.IMGTOOL.has(item.unitMsg.execModName))
+          let imgToolUnits = JSON.parse(preNormalBlockData.unitLists).nodeDataArray.filter(item => item.category === 'Unit' && CONST.IMGTOOL.has(item.unitMsg.execModName))
           if (!imgToolUnits.length) {
             myDiagramEventValidationHint.add('SwitchBlock 节点前的 NormalBlock 未包含类型为 "图像识别" 的 Unit')
           }

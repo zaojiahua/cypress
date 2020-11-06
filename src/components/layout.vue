@@ -6,7 +6,6 @@
           <b>ANGELREEF</b><span>®</span>
         </div>
         <div class="flex-row">
-          {{isValidated}}
           <div class="countdown" v-if="countdown">
             距设备释放还有：
             <Countdown
