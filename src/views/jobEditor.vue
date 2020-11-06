@@ -304,6 +304,13 @@ export default {
             return
           }
         } else {
+          if (this.innerJobNum !== jobInfo.inner_job_list.length) {
+            this.$Message.error({
+              background: true,
+              content: '不允许存在空的Job块'
+            })
+            return
+          }
           if (!this._jobMsgRules() || !this._jobFlowRules() || this.isInvalidInnerJob()) return
           if (this._jobFlowRules()) this.autoSaveToggle = false
           if (name === 'save') {
@@ -371,6 +378,7 @@ export default {
       // 记录涉及到的InnerJob
       jobInfo.inner_job_list = []
       let innerJobs = this.outerDiagram.findNodesByExample({ 'category': 'Job' })
+      this.innerJobNum = innerJobs.count
       innerJobs.each(node => {
         if (node.data.jobLabel) {
           jobInfo.inner_job_list.push(node.data.jobLabel)
