@@ -161,7 +161,7 @@ export default {
       devicesData: [],
       deviceTotalNum: 0,
       currentPage: 1,
-      pageSize: parseInt(localStorage.getItem('device-management:DEFAULT_PAGE_SIZE')) || 20,
+      pageSize: parseInt(localStorage.getItem('device-management:DEFAULT_PAGE_SIZE')) === 0 ? 20 : parseInt(localStorage.getItem('device-management:DEFAULT_PAGE_SIZE')),
       pageOffset: 0,
       deviceStatusFilterList: ['idle'],
       deviceSelected: null
@@ -267,7 +267,7 @@ export default {
       localStorage.setItem('device-management:DEFAULT_DEVICE_COLUMN', this.deviceColumnChecked.join(','))
     }
     this.deviceColumnChecked = localStorage.getItem('device-management:DEFAULT_DEVICE_COLUMN').split(',')
-    this.pageSize = Number(localStorage.getItem('device-management:DEFAULT_PAGE_SIZE'))
+    this.pageSize = parseInt(localStorage.getItem('device-management:DEFAULT_PAGE_SIZE')) === 0 ? 20 : parseInt(localStorage.getItem('device-management:DEFAULT_PAGE_SIZE'))
   }
 }
 </script>
