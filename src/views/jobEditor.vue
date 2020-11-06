@@ -340,6 +340,7 @@ export default {
                 await this.clearData()
               }
             })
+            return
           }
         }
         await createNewJob(this, jobInfo)
@@ -524,22 +525,6 @@ export default {
       }
       this.$router.push({ path: '/jobList' })
       this.$store.commit('setCurPage', 1)
-    },
-    async cancelEdit () {
-      this.autoSaveToggle = false
-      if (this.draftId) {
-        updateJobMsg(this.draftId, { job_deleted: true }).then(({ status }) => {
-          if (status === 200) {
-            this.$Notice.warning({
-              title: '温馨提示',
-              desc: `已为您将自动保存的草稿删除`,
-              duration: 6
-            })
-          }
-        })
-      }
-      await this.clearData()
-      this.$router.push({ path: '/jobList' })
     },
     dispatchMouseEvent (evt) {
       switch (evt.type) {
