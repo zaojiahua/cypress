@@ -295,9 +295,8 @@ export default {
         let id = this.jobId
         let jobInfo = await this.prepareJobInfo()
         if (name === 'saveDraft') {
-          if (!this._jobMsgRules()) {
-            return
-          }
+          if (!this._jobMsgRules()) return
+          this.autoSaveToggle = false
           jobInfo.draft = true
           if (id) {
             this.uploadFiles(id, jobInfo)
@@ -340,7 +339,6 @@ export default {
                 await this.clearData()
               }
             })
-            return
           }
         }
         await createNewJob(this, jobInfo)
