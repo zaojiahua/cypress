@@ -346,6 +346,7 @@ export default {
                 await this.clearData()
               }
             })
+            return
           }
         }
         await createNewJob(this, jobInfo)
