@@ -70,6 +70,12 @@ export default {
       return this.unitData.unitMsg.ocrChoice
     }
   },
+  watch: {
+    ocrChoice (val) {
+      if (val === 1) this.ocrChoiceToggle = true
+      if (val === 2) this.ocrChoiceToggle = false
+    }
+  },
   methods: {
     handleOcrChoice (val) {
       let { unitMsg } = this._.cloneDeep(this.unitData)
