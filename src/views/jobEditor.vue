@@ -296,10 +296,12 @@ export default {
         let jobInfo = await this.prepareJobInfo()
         if (name === 'saveDraft') {
           if (!this._jobMsgRules()) return
-          this.autoSaveToggle = false
           jobInfo.draft = true
           if (id) {
             this.uploadFiles(id, jobInfo)
+            if (this.draftId) {
+              updateJobMsg(this.draftId, { job_deleted: true })
+            }
             await this.clearData()
             return
           }
