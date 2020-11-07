@@ -3,6 +3,7 @@
     <!-- title -->
     <div slot="title">
       <span>Unit Items &nbsp; ({{ numOfItems }})</span>
+      {{ocrChoice}}
     </div>
     <!-- extra -->
     <div slot="extra" v-show="ocrChoice">
@@ -36,7 +37,7 @@ export default {
   components: { UnitItem },
   data () {
     return {
-      ocrChoiceToggle: true,
+      ocrChoiceToggle: this.ocrChoice === 1,
       curUnitItem: undefined
     }
   },
