@@ -1,5 +1,5 @@
 <template>
-  <div class="item" :class="{active: isClicked, disabled: !isEditable}" @click="handleItemClick">
+  <div class="item" :class="{active: isActive, disabled: !isEditable}" @click="handleItemClick">
     <p class="item-content" >
       <Tag :color="tagColor" style="border-radius: 50%">
         {{ itemIndex + 1 }}
@@ -10,13 +10,12 @@
     </p>
     <div class="btn-list" v-if="isPicInput">
       <span class="add-new-item" @click.stop="handleItem(true)"> + </span>
-      <span class="remove-item" @click.stop="handleItem(false)"> - </span>
+      <span class="remove-item" :class="disable ? '' : 'disable'" @click.stop="handleItem(false)"> - </span>
     </div>
   </div>
 </template>
 
 <script>
-import { findBrothersComponents } from 'lib/tools.js'
 import { mapGetters, mapState } from 'vuex'
 import CONST from 'constant/constant'
 
@@ -24,12 +23,13 @@ export default {
   name: 'UnitItem',
   props: {
     itemData: Object,
-    itemIndex: Number
+    itemIndex: Number,
+    isActive: Boolean
   },
   data () {
     return {
       isClicked: false,
-      currentItem: this.itemData.itemContent,
+      curItemContent: this.itemData.itemContent,
       tmachBlanks: [],
       itemDesc: CONST.ITEM_DESC
     }
@@ -37,18 +37,22 @@ export default {
   watch: {
     itemData (val) {
       if (val) {
-        this.currentItem = val.itemContent
+        this.curItemContent = val.itemContent
         this.handleTmachBlanks()
       }
     }
   },
   computed: {
-    ...mapState('files', ['resFiles', 'currentFile']),
+    ...mapGetters('job', ['normalKey']),
+    ...mapState('unit', ['unitData']),
+    ...mapGetters('unit', ['unitKey']),
+    ...mapState('files', ['resFiles', 'curFile']),
+    ...mapGetters('files', ['resFilesName']),
     ...mapState('img', ['coordinates']),
     ...mapState('item', ['saveToFinalResult']),
-    ...mapGetters('item', ['isJobResourcePicture', 'isJobResourceFile']),
+    ...mapGetters('item', ['isJobResourcePicture', 'isJobResourceFile', 'isOutputPicture', 'isOutputFile']),
     itemType () {
-      return this.currentItem.type
+      return this.curItemContent.type
     },
     isUxInput () {
       return this.itemType === 'uxInput'
@@ -56,9 +60,36 @@ export default {
     isPicInput () {
       return this.itemType === 'picInput'
     },
+    isJobResourceFileWithDefaultValue () {
+      return this.itemType === 'jobResourceFileWithDefaultValue'
+    },
     isCompleted () {
       if (this.isUxInput && this.uxInputDefaultValue) {
         this.setDefaultValue()
+        return true
+      }
+      // 设置默认的配置文件
+      if (this.isJobResourceFileWithDefaultValue && this.tmachBlanks.includes('Tmach ')) {
+        this.$store.commit('files/handleResFiles', {
+          action: 'addResFile',
+          data: {
+            dirty: true,
+            index: this.resFilesName.length,
+            name: `${this.loc}.json`,
+            file: JSON.stringify({ 'threshold': 0.99, 'area1': [ 0, 0, 0.99999, 0.99999 ] }, null, 4),
+            type: 'json'
+          }
+        })
+        for (let i = 0; i < this.tmachBlanks.length; i++) {
+          // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+          this.curItemContent.content = this.curItemContent.content.replace(this.tmachBlanks[i], `Tmach${this.loc}.json `)
+        }
+        // eslint-disable-next-line vue/no-side-effects-in-computed-properties
+        this.curItemContent.area = `${this.loc}.json`
+        this.$store.commit('unit/handleUnitData', {
+          action: 'setItemData',
+          data: this._.cloneDeep(this.itemData)
+        })
         return true
       }
       for (let i = 0; i < this.tmachBlanks.length; i++) {
@@ -69,8 +100,8 @@ export default {
       return true
     },
     uxInputDefaultValue () {
-      if ('defaultValue' in this.currentItem) {
-        return this.currentItem.defaultValue.split(' ')
+      if ('defaultValue' in this.curItemContent) {
+        return this.curItemContent.defaultValue.split(' ')
       }
       return null
     },
@@ -78,42 +109,52 @@ export default {
       return !this.isEditable ? '#aaaaaa' : this.isCompleted ? 'success' : 'error'
     },
     isEditable () {
-      if (this.itemType === 'jobResourceFile' && !this.currentFile) {
+      if (this.itemType === 'jobResourceFile' && !this.curFile) {
         return false
       }
       return true
+    },
+    disable () {
+      let target = this.unitData.unitMsg.execCmdDict.execCmdList
+      return target ? target.length > 1 : false
+    },
+    loc () {
+      return [this.normalKey, this.unitKey, this.itemData.itemName].join('_')
     }
   },
   methods: {
     handleItem (flag) { // 当 item 类型 为 picInput 时，可以复制或删除本身
+      let itemContent = this._.cloneDeep(this.itemData.itemContent)
+      itemContent.content = itemContent.content.replace(/Tmach.*? /g, 'Tmach ')
+      itemContent.itemId = Math.random().toString(36).substr(2, 6)
+      let { unitMsg } = this._.cloneDeep(this.unitData)
+      let { execCmdDict: { execCmdList: target } } = unitMsg
       if (flag) {
-        this.$store.commit('unit/setItemHandBook', {
-          methods: 'add',
-          index: Number(this.itemData.itemName),
-          data: this._.cloneDeep(this.currentItem)
+        target.splice(Number(this.itemData.itemName) + 1, 0, itemContent)
+        this.$store.commit('unit/handleUnitData', {
+          action: 'setUnitMsg',
+          data: unitMsg
         })
       } else {
-        this.$store.commit('unit/setItemHandBook', {
-          methods: 'remove',
-          index: Number(this.itemData.itemName)
+        if (target.length === 1) return
+        target.splice(Number(this.itemData.itemName), 1)
+        this.$store.commit('unit/handleUnitData', {
+          action: 'setUnitMsg',
+          data: unitMsg
         })
       }
     },
-    handleClicked () { // 点击 item 时取消对兄弟节点的聚焦
-      this.isClicked = true
-      let unitItemBrothers = findBrothersComponents(this, 'UnitItem')
-      unitItemBrothers.forEach(bro => {
-        bro.isClicked = false
-      })
-    },
     addAreas () { // 显示标示区域
-      this.$store.commit('item/setAreasInfo', {
-        data: this._.cloneDeep(this.coordinates),
-        index: undefined
+      this.$store.commit('item/handleAreasInfo', {
+        action: 'set',
+        data: {
+          data: this._.cloneDeep(this.coordinates),
+          index: undefined
+        }
       })
     },
     setCoordinateAndImgRecRate (name) { // 点击 类型为 jobResourceFile 的 item 时，如果存在相应文件，则将文件内的数据提取出来
-      this.$store.commit('img/clearCoordinates')
+      this.$store.commit('img/handleCoordinate', { action: 'clear' })
       let areasData
       for (let i = 0; i < this.resFiles.length; i++) {
         if (this.resFiles[i].name === name) {
@@ -126,10 +167,13 @@ export default {
           this.$store.commit('img/setImgRecRate', areasData[key])
         }
         if (key.startsWith('area')) {
-          let coordinate = {}
-          coordinate.coordinate_a = areasData[key].splice(0, 2).join(',')
-          coordinate.coordinate_b = areasData[key].join(',')
-          this.$store.commit('img/addCoordinate', coordinate)
+          this.$store.commit('img/handleCoordinate', {
+            action: 'add',
+            data: {
+              coordinate_a: areasData[key].splice(0, 2).join(','),
+              coordinate_b: areasData[key].join(',')
+            }
+          })
         }
       }
     },
@@ -141,37 +185,55 @@ export default {
         })
         return
       }
-      this.handleClicked()
-      this.$store.commit('item/setAreasInfo', {
-        data: [],
-        index: undefined
+      let itemData = this._.cloneDeep(this.itemData)
+      itemData.itemIndex = this.itemIndex
+      this.$store.commit('item/handleItemData', {
+        action: 'setItemData',
+        data: itemData
       })
-      if (this.saveToFinalResult) this.$store.commit('item/setSaveToFinal', false)
-      this.$store.commit('item/setCurrentItem', this.itemData)
-      this.$store.commit('item/setShowItemEditor', true)
-      if (this.tmachBlanks[0].trim().length !== 0) {
-        if (this.isJobResourcePicture) {
-          this.$store.commit('files/setCurrentFile', {
-            byName: true,
-            name: this.tmachBlanks[0].trim().substring(5)
-          })
-        }
-        if (this.isJobResourceFile) {
-          this.setCoordinateAndImgRecRate(this.tmachBlanks[0].trim().substring(5))
-          this.addAreas()
-        }
+      let { pic, area, content } = itemData.itemContent
+      if (pic) {
+        this.$store.commit('files/handleCurFile', {
+          action: 'setCurFile',
+          data: {
+            dirty: true,
+            index: this.resFilesName.indexOf(pic),
+            name: pic
+          }
+        })
       }
+      this.$store.commit('item/handleAreasInfo', { action: 'clear' })
+      this.$store.commit('img/handleCoordinate', { action: 'clear' })
+      if (area) {
+        this.setCoordinateAndImgRecRate(area)
+        this.addAreas()
+      }
+      if (content.includes('<copy2rdsDatPath>') && (this.isOutputPicture || this.isOutputFile)) {
+        this.$store.commit('item/handleSaveToFinal', true)
+      } else {
+        this.$store.commit('item/handleSaveToFinal', false)
+      }
+      this.$store.commit('item/handleShowItemEditor', true)
     },
     setDefaultValue () { // 给某些 item 内的选项设定默认值
       if (this.tmachBlanks.includes('Tmach ')) {
         for (let i = 0; i < this.tmachBlanks.length; i++) {
-          this.currentItem.content = this.currentItem.content.replace(this.tmachBlanks[i], 'Tmach' + this.uxInputDefaultValue[i] + ' ')
+          this.curItemContent.content = this.curItemContent.content.replace(this.tmachBlanks[i], 'Tmach' + this.uxInputDefaultValue[i] + ' ')
         }
         this.$emit('updateUnitItem', this._.cloneDeep(this.itemData))
+        let itemData = this._.cloneDeep(this.itemData)
+        this.$store.commit('item/handleItemData', {
+          action: 'setItemData',
+          data: itemData
+        })
+        this.$store.commit('unit/handleUnitData', {
+          action: 'setItemData',
+          data: itemData
+        })
       }
     },
     handleTmachBlanks () { // 获取 item 中需要修改的项
-      this.tmachBlanks = this.currentItem.content.match(/Tmach.*? /g)
+      this.tmachBlanks = this.curItemContent.content.match(/Tmach.*? /g)
     }
   },
   mounted () {
@@ -236,6 +298,9 @@ export default {
     .remove-item {
       background: rgb(214, 50, 32);
       cursor: default;
+    }
+    .disable {
+      background: #cccccc;
     }
   }
 }

@@ -4,7 +4,7 @@ import { startValidation } from '../core/validation/operationValidation/job'
 import { commonValidation } from '../core/validation/common'
 import { unitListValidation } from '../core/validation/operationValidation/block'
 
-import { getBlockFlowDict4Font } from '../api/reef/jobFlow'
+import { getBlockFlowDict4Font } from '../api/reef/request'
 
 import {
   MAKE,
@@ -32,7 +32,11 @@ function setOutputNormalBlock (context, isOutput) {
     })
     return
   }
-  context.outerDiagram.selection.each(({ data, data: { unitLists: { linkDataArray, nodeDataArray } } }) => {
+  context.outerDiagram.selection.each(({ data, data: { unitLists } }) => {
+    if (typeof unitLists !== 'object') {
+      unitLists = JSON.parse(unitLists)
+    }
+    let { nodeDataArray, linkDataArray } = unitLists
     // 找到最后一个有star属性的unit
     let starUnitArray = nodeDataArray.filter((val, index) => {
       return val.category === 'Unit' && val.star
@@ -81,27 +85,35 @@ function setOutputNormalBlock (context, isOutput) {
       if (context.config.finalResultKey === 0 && isOutput) {
         lastStarUnit.star = CONST.COLORS.RESULT
         lastStarUnit.unitMsg.finalResult = true
-        context.$store.commit('job/setConfig', { finalResultKey: data.key })
+        context.$store.commit('job/handleConfig', {
+          action: 'setConfig',
+          data: { finalResultKey: data.key }
+        })
         context.$Message.success({
           content: '已将该Block设为结果Block'
         })
         context.outerDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
+        context.outerDiagram.model.setDataProperty(data, 'unitLists', JSON.stringify(unitLists))
       }
       if (context.config.finalResultKey) {
         if (context.config.finalResultKey === data.key) {
           if (!isOutput) {
             lastStarUnit.star = CONST.COLORS.STAR
             delete lastStarUnit.unitMsg.finalResult
-            context.$store.commit('job/setConfig', { finalResultKey: 0 })
+            context.$store.commit('job/handleConfig', {
+              action: 'setConfig',
+              data: { finalResultKey: 0 }
+            })
             context.$Message.success({
               content: '已将该Block设为NormalBlock'
             })
             context.outerDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
+            context.outerDiagram.model.setDataProperty(data, 'unitLists', JSON.stringify(unitLists))
           }
         } else {
           if (isOutput) {
             if (finalResultBlock) {
-              let finalResultUnit = finalResultBlock.data.unitLists.nodeDataArray.filter(node => node.category === 'Unit' && node.unitMsg.finalResult)
+              let finalResultUnit = JSON.parse(finalResultBlock.data.unitLists).nodeDataArray.filter(node => node.category === 'Unit' && node.unitMsg.finalResult)
               if (finalResultUnit.length > 0) {
                 context.$Message.error({
                   content: '结果Block有且只能有一个'
@@ -109,20 +121,28 @@ function setOutputNormalBlock (context, isOutput) {
               } else {
                 lastStarUnit.star = CONST.COLORS.RESULT
                 lastStarUnit.unitMsg.finalResult = true
-                context.$store.commit('job/setConfig', { finalResultKey: data.key })
+                context.$store.commit('job/handleConfig', {
+                  action: 'setConfig',
+                  data: { finalResultKey: data.key }
+                })
                 context.$Message.success({
                   content: '已将该Block设为结果Block'
                 })
                 context.outerDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
+                context.outerDiagram.model.setDataProperty(data, 'unitLists', JSON.stringify(unitLists))
               }
             } else {
               lastStarUnit.star = CONST.COLORS.RESULT
               lastStarUnit.unitMsg.finalResult = true
-              context.$store.commit('job/setConfig', { finalResultKey: data.key })
+              context.$store.commit('job/handleConfig', {
+                action: 'setConfig',
+                data: { finalResultKey: data.key }
+              })
               context.$Message.success({
                 content: '已将该Block设为结果Block'
               })
               context.outerDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
+              context.outerDiagram.model.setDataProperty(data, 'unitLists', JSON.stringify(unitLists))
             }
           }
         }
@@ -142,9 +162,9 @@ function outerDiagramInit (context) {
     // layout: MAKE(go.LayeredDigraphLayout, { direction: 90, layerSpacing: 40, columnSpacing: 30, setsPortSpots: true }),
     linkTemplate: linkTemplateStyle(),
     'draggingTool.isGridSnapEnabled': true,
-    'linkingTool.portGravity': 40,
+    'linkingTool.portGravity': 60,
     'linkingTool.linkValidation': commonValidation,
-    'relinkingTool.portGravity': 40,
+    'relinkingTool.portGravity': 60,
     'relinkingTool.linkValidation': commonValidation,
     'toolManager.mouseWheelBehavior': go.ToolManager.WheelZoom,
     'LinkDrawn': showLinkLabel,
@@ -152,7 +172,8 @@ function outerDiagramInit (context) {
     'undoManager.isEnabled': true,
     mouseDrop: function (e) {
       finishDrop(e, null)
-    }
+    },
+    'commandHandler.canDeleteSelection': deleteNode
   })
 
   const startTemplate = startNodeTemplate(CONST.COLORS.START)
@@ -209,14 +230,24 @@ function outerDiagramInit (context) {
 
   normalBlockTemplate.doubleClick = function (e, node) {
     if (e.diagram instanceof go.Palette) return
-    let { data } = node
-    context.$store.commit('job/setNormalData', data)
-    context.$store.commit('job/setNormalKey', data.key)
+    let { data } = context._.cloneDeep(node)
+    context.$store.commit('job/handleNormalData', { action: 'set', data })
     context.outerDiagram.div.firstElementChild.blur()
     context.openNormalEditor = true
   }
-  normalBlockTemplate.contextClick = function (e, node) {
-    console.log(node.data)
+
+  function deleteNode () { // 删除节点时同步更新配置信息
+    return context.outerDiagram.selection.all(function ({ data }) {
+      if (data.category === 'normalBlock') {
+        if (data.star === CONST.COLORS.RESULT) {
+          context.$store.commit('job/handleConfig', {
+            action: 'setConfig',
+            data: { finalResultKey: 0 }
+          })
+        }
+      }
+      return true
+    })
   }
 
   const jobBlockTemplate = baseNodeTemplateForPort(CONST.COLORS.JOB, 'Rectangle')
@@ -285,13 +316,23 @@ export function innerDiagramInit (context) {
   unitTemplate.doubleClick = function (e, node) {
     if (e.diagram instanceof go.Palette) return
     context.showUnitEditor = true
-    let { key, text, unitMsg, unitMsg: { execModName } } = node.data
-    context.unitData = {
-      unitNodeKey: key,
+    let { key, text, unitMsg, unitMsg: { execModName } } = context._.cloneDeep(node.data)
+    let { execCmdDict: { execCmdList: target } } = unitMsg
+    if (target) {
+      target.forEach((val, idx, arr) => {
+        arr[idx].itemId = Math.random().toString(36).substr(2, 6)
+      })
+    }
+    let unitData = {
+      unitKey: key,
       unitName: text,
       unitType: execModName,
-      unitMsg: context._.cloneDeep(unitMsg)
+      unitMsg
     }
+    context.$store.commit('unit/handleUnitData', {
+      action: 'setUnitData',
+      data: unitData
+    })
   }
 
   unitTemplate.contextClick = function (e, node) {
@@ -349,6 +390,9 @@ function setOuterDiagramData (context) {
   } else {
     if (context.jobInfo.job_flow) {
       getBlockFlowDict4Font(context.jobInfo.job_flow).then(({ status, data }) => {
+        if (typeof data === 'string') {
+          data = JSON.parse(data)
+        }
         if (status === 200) {
           if (JSON.stringify(data) === '{}') {
             context.$Message.err({
@@ -357,9 +401,17 @@ function setOuterDiagramData (context) {
             })
             return context.$router.push({ path: '/' })
           }
-          context.outerDiagram.model = go.Model.fromJson(JSON.stringify(data))
+          data.nodeDataArray.forEach((val, idx, arr) => {
+            if ('unitLists' in val && typeof val.unitLists === 'object') {
+              arr[idx].unitLists = JSON.stringify(val.unitLists)
+            }
+          })
+          context.outerDiagram.model = go.Model.fromJson(data)
           let { data: start } = context.outerDiagram.findNodeForKey(-1)
-          context.$store.commit('job/setConfig', start.config || {})
+          context.$store.commit('job/handleConfig', {
+            action: 'setConfig',
+            data: start.config || {}
+          })
         } else {
           throw new Error('获取 Job 信息失败')
         }
@@ -378,7 +430,7 @@ function setOuterDiagramData (context) {
 }
 
 export function init (context) {
-  outerDiagramInit(context)
+  if (!context.outerDiagram) outerDiagramInit(context)
   outerPaletteInit(context)
   setOuterDiagramData(context)
 }

@@ -1,27 +1,30 @@
 <template>
-  <div class="card item-list">
-    <div class="card-title title">
+  <Card class="unit-item-list-card">
+    <!-- title -->
+    <div slot="title">
       <span>Unit Items &nbsp; ({{ numOfItems }})</span>
-      <div class="engine" v-show="curOcrChoice !== 0">
-        <span>OCR引擎：</span>
-        <Switch false-color="#ff4949" v-model="ocrChoiceToggle" @on-change="changeOcrEngine">
-          <span slot="open">1</span>
-          <span slot="close">2</span>
-        </Switch>
-      </div>
+      {{ocrChoice}}
     </div>
-    <div class="card-body item-list-content">
-      <transition-group name="item" tag="div">
-        <UnitItem
-          v-for="(item, index) in curUnitItemsData"
-          :key="item.itemContent.itemID || index"
-          :itemData="item"
-          :itemIndex="index"
-          @updateUnitItem="updateUnitItem"
-        ></UnitItem>
-      </transition-group>
+    <!-- extra -->
+    <div slot="extra" v-show="ocrChoice">
+      <span>OCR引擎：</span>
+      <Switch false-color="#ff4949" v-model="ocrChoiceToggle" @on-change="handleOcrChoice">
+        <span slot="open">1</span>
+        <span slot="close">2</span>
+      </Switch>
     </div>
-  </div>
+    <!-- body -->
+    <transition-group name="item" tag="div" class="item-container">
+      <UnitItem
+        v-for="(item, index) in unitItemsData"
+        :key="item.itemContent.itemId || index"
+        :itemData="item"
+        :itemIndex="index"
+        :isActive="curUnitItem === index"
+        @click.native="handleItemClick(index)"
+      ></UnitItem>
+    </transition-group>
+  </Card>
 </template>
 
 <script>
@@ -32,95 +35,92 @@ import { mapState } from 'vuex'
 export default {
   name: 'UnitItemList',
   components: { UnitItem },
-  props: {
-    unitItemsData: Array,
-    ocrChoice: Number
-  },
   data () {
     return {
-      curUnitItemsData: this.unitItemsData,
-      ocrChoiceToggle: true,
-      curOcrChoice: 0
+      ocrChoiceToggle: this.ocrChoice === 1,
+      curUnitItem: undefined
     }
   },
   computed: {
-    ...mapState('unit', ['openRawUnit']),
-    numOfItems () {
-      return this.curUnitItemsData ? this.curUnitItemsData.length : 0
+    ...mapState('unit', ['unitData']),
+    unitItemsData: { // 在当前的Unit信息中提取Items的信息
+      get () {
+        if (!this.unitData.unitMsg) return
+        let { unitMsg } = this._.cloneDeep(this.unitData)
+        let src = unitMsg.execCmdDict.execCmdList || unitMsg.execCmdDict
+        let unitItemsData = []
+        for (let key in src) {
+          if (src[key].type !== 'noChange') { // 只提取需要用户操作的Item信息
+            let { order } = src[key]
+            if (order) {
+              unitItemsData[order - 1] = { 'itemName': key, 'itemContent': src[key] }
+            } else {
+              unitItemsData.push({ 'itemName': key, 'itemContent': src[key] })
+            }
+          }
+        }
+        return unitItemsData
+      },
+      set (val) { /* 取消报错 */ }
+    },
+    numOfItems () { // Item的数量
+      return this.unitItemsData ? this.unitItemsData.length : 0
+    },
+    ocrChoice () { // 如果保存了文字识别引擎的编号，则返回，否则返回0
+      if (!this.unitData.unitMsg) return
+      return this.unitData.unitMsg.ocrChoice
     }
   },
   watch: {
-    openRawUnit (val) {
-      this.itemList.classList.toggle('collapse')
-    },
-    unitItemsData (val) {
-      this.curUnitItemsData = []
-      if (val) {
-        for (let i = 0; i < val.length; i++) {
-          let order = Number(val[i].itemContent.order) || i + 1
-          this.curUnitItemsData[order - 1] = val[i]
-        }
-      }
-    },
     ocrChoice (val) {
-      if (val === 1) {
-        this.ocrChoiceToggle = true
-      }
-      if (val === 2) {
-        this.ocrChoiceToggle = false
-      }
-      this.curOcrChoice = val
+      if (val === 1) this.ocrChoiceToggle = true
+      if (val === 2) this.ocrChoiceToggle = false
     }
   },
   methods: {
-    updateUnitItem (currentItem) {
-      this.$emit('updateUnitItem', currentItem)
+    handleOcrChoice (val) {
+      let { unitMsg } = this._.cloneDeep(this.unitData)
+      unitMsg.ocrChoice = val ? 1 : 2
+      this.$store.commit('unit/handleUnitData', {
+        action: 'setUnitMsg',
+        data: unitMsg
+      })
     },
-    changeOcrEngine (val) {
-      if (val) {
-        this.curOcrChoice = 1
-      } else {
-        this.curOcrChoice = 2
-      }
-      this.$emit('updateOcrChoice', this.curOcrChoice)
+    handleItemClick (index) {
+      this.curUnitItem = index
     }
-  },
-  mounted () {
-    this.itemList = document.querySelector('.item-list')
   }
 }
 </script>
 
 <style lang="less" scoped>
   @import '../../css/common.less';
-  .item-list {
-    overflow: auto;
-    margin-bottom: 1em;
-    .title {
-      position: relative;
-      .engine {
-        position: absolute;
-        right: 1em;
-        top: 0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-    }
-    .item-list-content {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      .item-enter-active, .item-leave-active {
-        transition: all 1s;
-      }
-      .item-enter, .item-leave-to {
-        opacity: 0;
-        transform: translateX(100%);
-      }
-    }
-  }
-  .collapse {
+  .unit-item-list-card {
     flex: 1;
+    margin-bottom: 1em;
+    /deep/ .ivu-card-extra {
+      top: 10px;
+    }
+    /deep/ .ivu-card-body {
+      height: calc(100% - 44px);
+    }
+    .item-container {
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      & > div:first-child {
+        margin-top: 0;
+      }
+      & > div:last-child {
+        margin-bottom: 0;
+      }
+    }
+    .item-enter-active, .item-leave-active {
+      transition: all .3s;
+    }
+    .item-enter, .item-leave-to {
+      opacity: 0;
+      transform: translateX(100%);
+    }
   }
 </style>

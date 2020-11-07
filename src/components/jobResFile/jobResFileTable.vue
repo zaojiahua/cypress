@@ -30,14 +30,14 @@ export default {
         return []
       }
     },
-    currentFile: {
+    curFile: {
       type: Number,
       default: 0
     }
   },
   data () {
     return {
-      currentRow: this.currentFile
+      currentRow: this.curFile
     }
   },
   methods: {
@@ -49,7 +49,7 @@ export default {
       if (this.data.length - 1 === index) {
         this.showFile(index - 1)
       }
-      this.$store.commit('files/removeResFile', index)
+      this.$store.commit('files/handleResFiles', { action: 'removeResFile', data: index })
     }
   }
 }

@@ -49,6 +49,7 @@ export function linkTemplateStyle () {
       relinkableTo: true,
       reshapable: true,
       resegmentable: false, // 用户是否可以更改链接中的段数，默认为false
+
       // layoutConditions: go.Part.LayoutAdded | go.Part.LayoutRemoved,
       // mouse-overs subtly highlight links:
       mouseEnter: function (e, link) { link.findObject('HIGHLIGHT').stroke = 'rgba(30,144,255,0.2)' },
@@ -59,6 +60,8 @@ export function linkTemplateStyle () {
     new go.Binding('points').makeTwoWay(),
     MAKE(go.Shape, // the highlight shape, normally transparent
       { isPanelMain: true, strokeWidth: 8, stroke: 'transparent', name: 'HIGHLIGHT' }),
+    MAKE(go.Shape,
+      { isPanelMain: true, strokeWidth: 40, stroke: 'transparent' }),
     MAKE(go.Shape, // the link path shape
       { isPanelMain: true, stroke: 'gray', strokeWidth: 2 },
       new go.Binding('stroke', 'isSelected', function (sel) { return sel ? 'dodgerblue' : 'gray' }).ofObject()),

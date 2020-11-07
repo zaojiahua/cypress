@@ -26,7 +26,7 @@
         </ButtonGroup>
         <ButtonGroup vertical size="default" v-else>
           <Button type="primary" @click="setWingman(0)">主机</Button>
-          <Button v-for="wingman in wingmans" :key="wingman" @click="setWingman(wingman)">{{wingman}} 号机</Button>
+          <Button v-for="wingman in numOfWingman" :key="wingman" @click="setWingman(wingman)">{{wingman}} 号机</Button>
         </ButtonGroup>
       </div>
     </div>
@@ -41,15 +41,14 @@
     ></unit-template-editor>
     <unit-editor
       :showUnitEditor="showUnitEditor"
-      :unitData="unitData"
       @closeUnitEditor="closeUnitEditor"
-      @changeUnitColor="changeUnitColor"
+      @handleUnitColor="handleUnitColor"
       @saveUnit="saveUnit"
       @setUnitName="setUnitName"
     ></unit-editor>
     <div slot="footer">
-      <Button type="text" @click="save(false)">取消</Button>
-      <Button type="primary" @click="save(true)">确定</Button>
+      <Button type="text" @click="saveNormalData(false)">取消</Button>
+      <Button type="primary" @click="saveNormalData(true)">确定</Button>
     </div>
   </Modal>
 </template>
@@ -60,7 +59,7 @@ import CONST from 'constant/constant'
 import unitTemplateEditor from '_c/unitTemplateEditor'
 import UnitEditor from '_c/unitEditor/UnitEditor.vue'
 import { innerDiagramInit, innerPaletteInit } from '../views/JobEditorGoInit'
-import { getJobUnitsBodyDict, deleteUnitTemplate } from 'api/reef/unit'
+import { getJobUnitsBodyDict, deleteUnitTemplate } from 'api/reef/request'
 
 export default {
   name: 'NormalEditor',
@@ -84,30 +83,43 @@ export default {
       openUnitTemplateEditor: false,
       unitController: null,
       isDiagram: false,
-      wingmans: 3,
-      showUnitEditor: false,
-      curUnitKey: undefined,
-      unitData: null
+      numOfWingman: 3,
+      showUnitEditor: false
     }
   },
   computed: {
     ...mapState('job', ['normalData']),
-    ...mapState('unit', ['unitLists'])
+    ...mapState('unit', ['unitLists', 'unitData'])
   },
   watch: {
     normalData (val) {
-      this.curNormalData = JSON.parse(val)
-      this.innerDiagram.model = go.Model.fromJson(JSON.stringify(this.curNormalData.unitLists))
+      this.curNormalData = val
+      this.innerDiagram.model = go.Model.fromJson(this.curNormalData.unitLists)
     },
     openNormalEditor (val) {
       if (val) this.getSelectedUnit(this.unitTemplateType)
     }
   },
   methods: {
-    save (toggle) {
+    recordOrRemoveWingman () {
+      let wingman = new Array(4).fill(0)
+      let flag = false
+      let units = this.innerDiagram.findNodesByExample({ 'category': 'Unit' })
+      units.each(({ data }) => {
+        if (data.assistDevice) wingman[data.assistDevice]++
+        flag = true
+      })
+      if (flag) { // 使用了僚机才记录
+        this.curNormalData.wingman = wingman
+      } else {
+        delete this.curNormalData.wingman
+      }
+    },
+    saveNormalData (toggle) {
+      this.recordOrRemoveWingman()
       if (toggle) {
-        this.curNormalData.unitLists = JSON.parse(this.innerDiagram.model.toJson())
-        let units = this.curNormalData.unitLists.nodeDataArray.filter(item => item.category === 'Unit')
+        this.curNormalData.unitLists = this.innerDiagram.model.toJson()
+        let units = JSON.parse(this.curNormalData.unitLists).nodeDataArray.filter(item => item.category === 'Unit')
         if (units.some(item => CONST.STAR.has(item.unitMsg.execModName))) {
           if (units.some(item => item.star === CONST.COLORS.RESULT)) {
             this.curNormalData.star = CONST.COLORS.RESULT
@@ -122,13 +134,6 @@ export default {
         } else {
           this.curNormalData.color = CONST.COLORS.FINISH
         }
-        if (!this.curNormalData.resFile) {
-          this.curNormalData.resFile = {}
-        }
-        units.forEach((val) => {
-          Object.assign(this.curNormalData.resFile, val.resFile)
-        })
-
         this.$emit('saveNormalData', this._.cloneDeep(this.curNormalData))
       }
       this.$emit('closeNormalEditor')
@@ -147,6 +152,13 @@ export default {
             unitMsg: unit[1]['unit_content']
           })
         })
+        unitCategoryData.nodeDataArray.sort((a, b) => {
+          if (a.unitMsg.weight && b.unitMsg.weight) {
+            return a.unitMsg.weight - b.unitMsg.weight
+          }
+          if (!a.unitMsg.weight) return 1
+          if (!b.unitMsg.weight) return -1
+        })
         this.innerPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
       }
     },
@@ -154,11 +166,13 @@ export default {
       getJobUnitsBodyDict().then(({ status, data: { unit } }) => {
         if (status === 200) {
           let unitLists = {}
+          unit.sort((a, b) => a.unit_content.weight - b.unit_content.weight)
           unit.forEach((val, idx) => {
             if (!(val.type in unitLists)) unitLists[val.type] = {}
             unitLists[val.type][val.unit_name] = {
               unit_id: val.id,
               unit_content: val.unit_content
+              // unit_weight:
             }
           })
           this.$store.commit('unit/setUnitLists', unitLists)
@@ -195,60 +209,35 @@ export default {
     closeContextMenu () {
       this.unitController.style.display = 'none'
     },
-    setWingman (wingmanId) {
-      let curUnit = this.innerDiagram.findNodeForKey(this.curUnitKey)
-      if (wingmanId) {
-        if (!curUnit.data.assistDevice) {
-          this.$store.commit('job/handleWingmanCount', {
-            action: 'plus',
-            wingman: wingmanId
-          })
+    setWingman (wingmanId) { // 记录僚机使用情况
+      this.innerDiagram.selection.each(({ data }) => {
+        if (data.category !== 'Unit') return
+        if (wingmanId) { // 设置为僚机
+          this.innerDiagram.model.setDataProperty(data, 'assistDevice', wingmanId)
+          this.innerDiagram.model.setDataProperty(data.unitMsg, 'assistDevice', wingmanId)
+        } else { // 设置为主机
+          this.innerDiagram.model.setDataProperty(data, 'assistDevice', null)
+          this.innerDiagram.model.setDataProperty(data.unitMsg, 'assistDevice', null)
+          delete data.assistDevice
+          delete data.unitMsg.assistDevice
         }
-        this.innerDiagram.model.setDataProperty(curUnit.data, 'assistDevice', wingmanId)
-        this.innerDiagram.model.setDataProperty(curUnit.data.unitMsg, 'assistDevice', wingmanId)
-      } else {
-        if (curUnit.data.assistDevice) {
-          this.$store.commit('job/handleWingmanCount', {
-            action: 'reduce',
-            wingman: curUnit.data.unitMsg.assistDevice
-          })
-        }
-        this.innerDiagram.model.setDataProperty(curUnit.data, 'assistDevice', null)
-        this.innerDiagram.model.setDataProperty(curUnit.data.unitMsg, 'assistDevice', null)
-        delete curUnit.data.assistDevice
-        delete curUnit.data.unitMsg.assistDevice
-      }
+      })
     },
     closeUnitEditor () {
       this.showUnitEditor = false
     },
-    changeUnitColor (hasCompleted) {
-      let currentNodeData = this.innerDiagram.findNodeForKey(this.unitData.unitNodeKey).data
-      if (hasCompleted) {
-        this.innerDiagram.model.setDataProperty(currentNodeData, 'color', CONST.COLORS.FINISH)
-        currentNodeData.completed = true
-      } else {
-        this.innerDiagram.model.setDataProperty(currentNodeData, 'color', CONST.COLORS.UNFINISHED)
-        currentNodeData.completed = false
-      }
+    handleUnitColor (isCompleted) {
+      this.innerDiagram.selection.each(({ data }) => {
+        this.innerDiagram.model.setDataProperty(data, 'color', isCompleted ? CONST.COLORS.FINISH : CONST.COLORS.UNFINISHED)
+      })
     },
-    saveUnit (unitData, unitResFileList) {
+    saveUnit (data) {
       this.closeUnitEditor()
-      let curUnitNode = this.innerDiagram.findNodeForKey(unitData.unitNodeKey)
-      this.innerDiagram.model.setDataProperty(curUnitNode.data, 'unitMsg', unitData.unitMsg)
-      this.innerDiagram.model.setDataProperty(curUnitNode.data, 'text', unitData.unitName)
-      if (unitResFileList.length) {
-        if (!curUnitNode.data.resFile) {
-          this.innerDiagram.model.setDataProperty(curUnitNode.data, 'resFile', {})
-        }
-        let { resFile } = curUnitNode.data
-        for (let item of unitResFileList) {
-          if (item.oldname !== item.newname) {
-            delete resFile[item.oldName]
-          }
-          resFile[item.newName] = true
-        }
-      }
+      this.innerDiagram.selection.each((node) => {
+        this.innerDiagram.model.setDataProperty(node.data, 'unitMsg', data.unitMsg)
+        this.innerDiagram.model.setDataProperty(node.data, 'text', data.unitName)
+        this.innerDiagram.model.setDataProperty(node.data, 'completed', data.completed)
+      })
     },
     setUnitName (val) {
       this.unitData.unitName = val

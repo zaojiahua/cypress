@@ -11,13 +11,7 @@ import CONST from '../constant/constant'
 import util from '../lib/util/validate.js'
 import _ from 'lodash'
 import { serializer } from '../lib/util/jobListSerializer'
-import { getJobTestAreaList } from '../api/reef/jobTestArea'
-import { getCustomTagList } from '../api/reef/customTag'
-import { getReefUserList } from '../api/reef/reefUser'
-import { getPhoneModelList } from '../api/reef/phoneModel'
-import { getAndroidVersionList } from '../api/reef/androidVersion'
-import { getRomVersionList } from '../api/reef/romVersion'
-import { getManufacturerList } from 'api/reef/manufacturer'
+import { getJobTestAreaList, getCustomTagList, getReefUserList, getPhoneModelList, getAndroidVersionList, getRomVersionList, getManufacturerList } from '../api/reef/request'
 
 Vue.use(Vuex)
 

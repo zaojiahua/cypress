@@ -3,21 +3,23 @@ import files from './files'
 let state = {
   imgRecRate: 0.99,
   coordinates: [],
-  absoulteCoordinates: null
+  absCoordinates: null
 }
 
 let mutations = {
-  addCoordinate (state, coordinate) {
-    state.coordinates.push(coordinate)
+  handleCoordinate (state, { action, data }) {
+    if (action === 'add') {
+      state.coordinates.push(data)
+    }
+    if (action === 'remove') {
+      state.coordinates.splice(data, 1)
+    }
+    if (action === 'clear') {
+      state.coordinates = []
+    }
   },
-  removeCoordinate (state, index) {
-    state.coordinates.splice(index, 1)
-  },
-  clearCoordinates (state) {
-    state.coordinates = []
-  },
-  setAbsoluteCoordinates (state, absoulteCoordinates) {
-    state.absoulteCoordinates = absoulteCoordinates
+  setAbsoluteCoordinates (state, absCoordinates) {
+    state.absCoordinates = absCoordinates
   },
   setImgRecRate (state, imgRecRate) {
     state.imgRecRate = imgRecRate

@@ -10,26 +10,19 @@
       <span>UNIT EDITOR</span>
       <div class="unit-name">
         <Tag class="unit-name-tag" color="green" size="large">UNIT NAME</Tag>
-        <Input class="unit-name-input" v-model="unitName" clearable></Input>
+        <Input class="unit-name-input" v-model="unitData.unitName" clearable></Input>
       </div>
     </div>
     <div class="body">
       <div class="pane">
         <ItemList
-          :ocrChoice="ocrChoice"
-          :unitItemsData="unitItemsData"
           @updateUnitItem="updateUnitItem"
-          @updateOcrChoice="updateOcrChoice"
         ></ItemList>
-        <RawUnit
-          :unitData="curUnitData"
-          @updateRawUnit="updateRawUnit"
-        ></RawUnit>
+        <RawUnit></RawUnit>
       </div>
       <div class="pane">
         <ItemEditor
           @updateUnitItem="updateUnitItem"
-          @arrangeFileName="arrangeFileName"
         ></ItemEditor>
       </div>
       <div class="pane">
@@ -57,48 +50,16 @@ export default {
   name: 'UnitEditor',
   components: { ItemList, RawUnit, ItemEditor, Utils },
   props: {
-    showUnitEditor: Boolean,
-    unitData: Object
+    showUnitEditor: Boolean
   },
   data () {
     return {
       curShowUnitEditor: this.showUnitEditor,
-      curUnitData: this.unitData,
-      unitItems: [],
-      unitResFileList: []
+      unitItems: []
     }
   },
   computed: {
-    ...mapState('unit', [
-      'itemHandBook'
-    ]),
-    unitName: {
-      get () {
-        return this.curUnitData ? this.curUnitData.unitName : ''
-      },
-      set (val) {
-        this.curUnitData.unitName = val
-      }
-    },
-    unitItemsData () {
-      if (!this.curUnitData) return
-      let { unitMsg: { execCmdDict, execCmdDict: { execCmdList } } } = this._.cloneDeep(this.curUnitData)
-      let src = execCmdList || execCmdDict
-      let unitItemsData = []
-      for (let key in src) {
-        if (src[key].type !== 'noChange') {
-          unitItemsData.push({
-            'itemName': key,
-            'itemContent': this._.cloneDeep(src[key])
-          })
-        }
-      }
-      return unitItemsData
-    },
-    ocrChoice () {
-      if (!this.curUnitData) return
-      return this.curUnitData.unitMsg.ocrChoice ? this.curUnitData.unitMsg.ocrChoice : 0
-    }
+    ...mapState('unit', ['unitData'])
   },
   watch: {
     showUnitEditor (val) {
@@ -117,39 +78,30 @@ export default {
         }
         this.curUnitData = copyOfVal
       }
-    },
-    itemHandBook (val) {
-      if (val.methods === 'add') {
-        val.data.itemID = Math.random().toString(16).slice(2, 8)
-        val.data.content = val.data.content.replace(/Tmach.*? /g, 'Tmach ')
-        this.curUnitData.unitMsg.execCmdDict.execCmdList.splice(val.index + 1, 0, val.data)
-      } else if (val.methods === 'remove') {
-        this.curUnitData.unitMsg.execCmdDict.execCmdList.splice(val.index, 1)
-      }
     }
   },
   methods: {
     closeUnitEditor (save) {
       this.unitItems = [...findComponentsDownward(this, 'UnitItem')]
       if (save) {
-        this.$emit('changeUnitColor', this.checkWeatherCompleted())
-        let unitData = this._.cloneDeep(this.curUnitData)
-        let unitResFileList = this._.cloneDeep(this.unitResFileList)
-        this.unitResFileList = []
+        this.$emit('handleUnitColor', this.checkWeatherCompleted())
+        let unitData = this._.cloneDeep(this.unitData)
         let { unitMsg: { execCmdDict: { execCmdList } } } = unitData
         if (execCmdList) {
           execCmdList.forEach((val) => {
             delete val.itemID
           })
         }
-        this.$emit('saveUnit', unitData, unitResFileList)
+        unitData.completed = this.unitItems.every((val) => val.isCompleted === true)
+        this.$emit('saveUnit', unitData)
       }
-      this.$emit('closeUnitEditor')
       this.unitItems.forEach(item => {
         item.isClicked = false
       })
-      this.$store.commit('item/setShowItemEditor', false)
-      this.$store.commit('files/removeCurrentFile')
+      this.$emit('closeUnitEditor')
+      this.$store.commit('item/handleAreasInfo', { action: 'clear' })
+      this.$store.commit('item/handleShowItemEditor', false)
+      this.$store.commit('files/handleCurFile', { action: 'removeCurFile' })
       this.curUnitData = null
     },
     checkWeatherCompleted () {
@@ -159,15 +111,6 @@ export default {
       let { unitMsg: { execCmdDict, execCmdDict: { execCmdList } } } = this.curUnitData
       let src = execCmdList || execCmdDict
       Object.assign(src[item.itemName], item.itemContent)
-    },
-    updateRawUnit (unitContent) {
-      this.curUnitData.unitMsg = JSON.parse(unitContent)
-    },
-    arrangeFileName (nameData) {
-      this.unitResFileList.push(nameData)
-    },
-    updateOcrChoice (data) {
-      this.curUnitData.unitMsg.ocrChoice = data
     }
   }
 }

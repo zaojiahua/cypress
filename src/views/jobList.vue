@@ -9,7 +9,7 @@
     <div>
       <div class="child-m-right--1 flex-row m-b--1">
         <div class="child-m-right--1 flex-row">
-          <Upload ref="upload"
+          <!-- <Upload ref="upload"
             :show-upload-list="false"
             :format="['zip']"
             :on-format-error="handleFormatError"
@@ -17,11 +17,11 @@
             :data="uploadData"
             :on-success="handleUploadSuccess">
             <Button icon="ios-cloud-upload-outline">导入用例</Button>
-          </Upload>
+          </Upload> -->
         </div>
         <div class="child-m-right--1 flex-row">
           <Tag size="large" style="margin-top: 0; margin-bottom: 0;"> 已选 {{Object.keys(this.selectedJobs).length}} 个</Tag>
-          <Button type="success" icon="ios-cloud-download" @click="exportJobs">导出用例</Button>
+          <!-- <Button type="success" icon="ios-cloud-download" @click="exportJobs">导出用例</Button> -->
           <Button type="warning" icon="ios-qr-scanner" @click="clear">取消选择</Button>
           <Button type="error" icon="md-trash" @click="delSelectedJobs">批量删除</Button>
         </div>
@@ -50,7 +50,7 @@ import { getSelectedJobs } from 'api/coral/jobLibSvc'
 import { jobLibSvcURL } from '../config/index'
 import { serializer, jobSerializer } from 'lib/util/jobListSerializer'
 import jobListFilter from '../components/jobListFilter'
-import { getJobDetail, getJobList, patchUpdateJob } from 'api/reef/job'
+import { getJobDetail, getJobList, updateJobMsg } from 'api/reef/request'
 import { mapState } from 'vuex'
 
 export default {
@@ -220,7 +220,7 @@ export default {
         CONST.COMPLEX_JOB_KEY.forEach(val => {
           jobInfo[val] = job[val].map(item => item.id)
         })
-        this.$store.commit('job/setJobInfo', jobInfo)
+        this.$store.commit('job/handleJobInfo', { action: 'setJobInfo', data: jobInfo })
       })
     },
     onRowClick (curData, index) { // 单击表格某一行
@@ -325,7 +325,7 @@ export default {
           content: '您真的要删除这些用例吗？',
           onOk: () => {
             this.jobIdList.forEach(async (id) => {
-              await patchUpdateJob(id, { job_deleted: true })
+              await updateJobMsg(id, { job_deleted: true })
             })
             setTimeout(() => {
               if (this.jobData.length - this.jobIdList.length === 0 && this.curPage > 1) {

@@ -20,15 +20,25 @@ export default {
   },
   WILL_TOUCH_FILE: new Set([
     'jobResourceFile',
-    'jobResourcePicture'
+    'jobResourcePicture',
+    'jobResourceFileWithDefaultValue'
   ]),
   WILL_TOUCH_NAME: {
     'outputFile': '文件名称',
     'outputPicture': '图片名称',
     'outputVideo': '视频名称'
   },
+  JOB_DEFAULT_CONFIG: {
+    finalResultKey: 0,
+    byProductsName: [
+      { 'title': '文件名称', 'key': 'outputFile', 'children': [] },
+      { 'title': '图片名称', 'key': 'outputPicture', 'children': [] },
+      { 'title': '视频名称', 'key': 'outputVideo', 'children': [] }
+    ]
+  },
   ITEM_DESC: {
     'jobResourceFile': '图片配置文件',
+    'jobResourceFileWithDefaultValue': '带有默认值的图片配置文件',
     'jobResourcePicture': '参考标准图片',
     'inputPicture': '输入图片名称',
     'outputPicture': '输出图片名称',
@@ -39,9 +49,31 @@ export default {
     'uxInput': '手动输入参数',
     'picInput': '从图片选取坐标点'
   },
+  SHOW_INPUT: new Set([
+    'outputPicture',
+    'outputVideo',
+    'outputFile',
+    'uxInput',
+    'picInput'
+  ]),
+  SHOW_AUTO_COMPLETE: new Set([
+    'inputPicture',
+    'inputVideo',
+    'inputFile'
+  ]),
+  SHOW_SCREEN_SHOOT: new Set([
+    'jobResourcePicture',
+    'picInput',
+    'jobResourceFileWithDefaultValue'
+  ]),
+  SHOW_FEATURE_POINT: new Set([
+    'jobResourceFile',
+    'jobResourceFileWithDefaultValue'
+  ]),
   FILL: {
     JSON: new Set([
-      'jobResourceFile'
+      'jobResourceFile',
+      'jobResourceFileWithDefaultValue'
     ]),
     TXT: new Set([
       'inputFile',
@@ -57,26 +89,6 @@ export default {
       'outputVideo'
     ])
   },
-  NOT_SHOW_AUTO_COMPLETE: new Set([
-    'jobResourceFile',
-    'jobResourcePicture',
-    'picInput',
-    'uxInput',
-    'outputFile',
-    'outputPicture',
-    'outputVideo'
-  ]),
-  NOT_SHOW_INPUT: new Set([
-    'inputPicture',
-    'jobResourceFile',
-    'jobResourcePicture',
-    'inputVideo',
-    'inputFile'
-  ]),
-  SHOW_SCREEN_SHOOT: new Set([
-    'jobResourcePicture',
-    'picInput'
-  ]),
   IMGTOOL: new Set([
     'IMGTOOL',
     'COMPLEX'
@@ -131,10 +143,6 @@ export default {
   COMPLEX_JOB_KEY: ['test_area', 'android_version', 'custom_tag', 'phone_models', 'rom_version'],
   USER_INFO: ['id', 'username', 'groups', 'token'],
   SERIALIZER_KEY: ['manufacturer', 'androidVersion', 'customTag', 'testArea'],
-  JOB_DEFAULT_CONFIG: {
-    wingman: [0, 0, 0, 0],
-    finalResultKey: 0
-  },
   BASIC_DATA_KEYS: [
     {
       camelCase: 'testArea',
@@ -171,5 +179,12 @@ export default {
       underlineCase: 'manufacturer',
       orderCase: 'manufacturer_name'
     }
-  ]
+  ],
+  NORMAL_DATA_KEY: ['text', 'star', 'color', 'unitLists', 'resFile', 'wingman'],
+  DEFAULT_UNIT_DATA: {
+    unitKey: undefined,
+    unitName: undefined,
+    unitType: undefined,
+    unitMsg: null
+  }
 }

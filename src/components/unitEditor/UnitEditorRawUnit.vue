@@ -1,120 +1,108 @@
 <template>
-  <div style="felx: 1;" class="raw-unit-card card">
-    <p class="card-title flex-row">
-      Raw Unit &nbsp; ({{ unitType }} Unit)
-      <Icon
-        type="ios-arrow-up"
-        slot="extra" size="20"
-        v-show="!openRawUnit"
-        @click="open(true)"
-      />
+  <Card class="raw-unit-card" :class="foldRawUnit ? 'fold-raw-unit' : null">
+    <!-- title -->
+    <div slot="title">
+      Raw Unit &nbsp; ({{ unitData.unitType }} Unit)
+    </div>
+    <!-- extra -->
+    <div slot="extra">
       <Icon
         type="ios-arrow-down"
-        slot="extra" size="20"
-        v-show="openRawUnit"
-        @click="open(false)"
+        size="20"
+        v-show="!foldRawUnit"
+        @click="handleFoldRawUnit"
       />
-    </p>
-    <div v-show="editing" class="card-body">
-      <div class="raw-unit-mask"></div>
-      <div class="unit-msg">
-        <Input type="textarea" :autosize="{minRows: 2,maxRows: 17}" class="unit-msg-edit" v-model="currentUnitContent"/>
-      </div>
+      <Icon
+        type="ios-arrow-up"
+        size="20"
+        v-show="foldRawUnit"
+        @click="handleFoldRawUnit"
+      />
     </div>
-    <div v-show="editing" class="btns card-footer child-m-right--1" style="justify-content: flex-end;">
-      <Button @click="cancelEditCurrentUnitContent">取消</Button>
-      <Button type="primary" @click="saveCurrentUnitContent">保存</Button>
-    </div>
-    <div v-show="!editing" class="card-body">
-      <div class="unit-msg">
+    <!-- body -->
+    <div class="raw-unit-container">
+      <div class="raw-unit-content">
         <pre>{{ unitContent }}</pre>
       </div>
+      <div v-show="editing">
+        <Input type="textarea" v-model="unitContent"/>
+        <div class="btns">
+          <Button @click="endUnitContentEdit(false)">取消</Button>
+          <Button type="primary" @click="endUnitContentEdit(true)">保存</Button>
+        </div>
+      </div>
+      <Button @click="editUnitContent"><Icon type="ios-clipboard-outline" />编辑</Button>
     </div>
-    <div v-show="!editing" class="btns card-footer">
-      <Button @click="editCurrentUnitContent"><Icon type="ios-clipboard-outline" />编辑</Button>
-    </div>
-  </div>
+  </Card>
 </template>
 
 <script>
 import { isJsonString, insertAfterCursor } from 'lib/tools.js'
-
 import { mapState } from 'vuex'
 
 export default {
   name: 'RawUnit',
-  props: {
-    unitData: Object
-  },
   data () {
     return {
+      foldRawUnit: false,
       editing: false,
-      currentUnitContent: this.unitContent
-    }
-  },
-  watch: {
-    unitContent (val) {
-      this.currentUnitContent = val
-    },
-    openRawUnit (val) {
-      this.rawUnitCard.classList.toggle('collapse')
+      curUnitContent: undefined
     }
   },
   computed: {
-    ...mapState('unit', ['openRawUnit']),
-    unitType () {
-      return this.unitData ? this.unitData.unitType : ''
-    },
-    unitContent () {
-      if (this.unitData) {
-        let { unitMsg, unitMsg: { execCmdDict: { execCmdList } } } = this._.cloneDeep(this.unitData)
-        if (execCmdList) {
-          execCmdList.forEach((val) => {
-            delete val.itemID
-          })
+    ...mapState('unit', ['unitData']),
+    unitContent: {
+      get () {
+        if (this.unitData.unitMsg) {
+          let { unitMsg, unitMsg: { execCmdDict: { execCmdList } } } = this._.cloneDeep(this.unitData)
+          if (execCmdList) {
+            execCmdList.forEach((val, idx, arr) => {
+              delete arr[idx].itemId
+            })
+          }
+          return JSON.stringify(unitMsg, null, 2)
         }
-        return JSON.stringify(unitMsg, null, 2)
+        return ''
+      },
+      set (val) {
+        this.curUnitContent = val
       }
-      return ''
     }
   },
   methods: {
-    editCurrentUnitContent () {
+    editUnitContent () {
       this.editing = true
-      let pre = document.querySelector('pre')
-      let unitContentEdit = document.querySelector('.unit-msg-edit')
-      unitContentEdit.style.width = pre.scrollWidth + 'px'
+      this.curUnitContent = this.unitContent
     },
-    cancelEditCurrentUnitContent () {
-      this.editing = false
-      this.currentUnitContent = this.unitContent
-    },
-    saveCurrentUnitContent () {
-      if (!isJsonString(this.currentUnitContent)) {
-        this.$Message.error({
-          background: true,
-          content: '不是 JSON 格式'
-        })
-      } else {
-        this.$emit('updateRawUnit', this.currentUnitContent)
-        this.$Message.success({
-          background: true,
-          content: '保存成功'
-        })
-        this.editing = false
+    endUnitContentEdit (save) {
+      if (save) {
+        if (!isJsonString(this.unitContent)) {
+          this.$Message.error({
+            background: true,
+            content: '不是 JSON 格式'
+          })
+          return
+        } else {
+          this.$store.commit('unit/handleUnitData', {
+            action: 'setUnitMsg',
+            data: JSON.parse(this.curUnitContent)
+          })
+          this.$Message.success({
+            background: true,
+            content: '保存成功'
+          })
+        }
       }
+      this.editing = false
     },
     handleKeydown (event) {
       let insertStr = '  '
       event.preventDefault()
       insertAfterCursor(event.target, insertStr)
     },
-    open (open) {
-      this.$store.commit('unit/handleOpenRawUnit', open)
+    handleFoldRawUnit (toggle) {
+      this.foldRawUnit = !this.foldRawUnit
     }
-  },
-  mounted () {
-    this.rawUnitCard = document.querySelector('.raw-unit-card')
   }
 }
 </script>
@@ -122,30 +110,61 @@ export default {
 <style lang="less" scoped>
 @import '../../css/common.less';
 .raw-unit-card {
-  .raw-unit-mask {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background-color: rgba(0, 0, 0, .8);
-    z-index: @mask;
+  flex: 1;
+  max-height: calc(50% - 16px);
+  /deep/ .ivu-card-extra {
+    top: 10px;
   }
-  .unit-msg {
-    width: 100%;
-    z-index: @overMask;
+  /deep/ .ivu-card-body {
+    height: calc(100% - 44px);
   }
-  .unit-msg-edit {
-    z-index: @overMask;
-  }
-  .btns {
+  .raw-unit-container {
     display: flex;
-    align-items: center;
-    z-index: @overMask;
+    flex-direction: column;
+    justify-content: space-around;
+    height: 100%;
+    .raw-unit-content {
+      overflow: auto;
+      height: 100%;
+      margin-bottom: 1em;
+      pre {
+        margin: 0;
+      }
+    }
+    .raw-unit-content + div {
+      display: flex;
+      position: fixed;
+      flex-direction: column;
+      justify-content: space-around;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      padding: 6em;
+      background-color: rgba(0, 0, 0, .8);
+      z-index: @mask;
+      & > div:first-child {
+        flex: 1;
+        margin-bottom: 1em;
+        /deep/ .ivu-input {
+          height: 100%;
+          max-height: 100%;
+        }
+      }
+      .btns {
+        display: flex;
+        justify-content: flex-end;
+        & > Button:first-child {
+          margin-right: 1em;
+        }
+      }
+    }
   }
 }
-.collapse {
-  flex: 0;
-  height: 52px;
+.fold-raw-unit {
+  max-height: 44px;
+  /deep/ .ivu-card-body {
+    display: none;
+  }
 }
 </style>

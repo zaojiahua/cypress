@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import { login } from 'api/reef/user'
+import { login } from 'api/reef/request'
 import CONST from 'constant/constant'
 export default {
   name: 'login',

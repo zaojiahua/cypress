@@ -1,13 +1,16 @@
 <template>
-  <div class="mb-1">
-    <Divider orientation="left">选取特征点</Divider>
+  <Card class="feature-point-container">
+    <!-- title -->
+    <p slot="title">
+      <Divider orientation="left" style="margin: 0;">选取特征点</Divider>
+    </p>
+    <!-- body -->
     <Table
       :columns="coordinateColumn"
       :data="coordinates"
       border
       max-height="556"
       size="small"
-      class="mb-1"
       @on-row-click="showLabelArea"
     >
       <template slot-scope="{ row, index }" slot="action">
@@ -15,30 +18,16 @@
       </template>
     </Table>
     <div class="file-info">
-      <div class="file-name">
-        <Tag color="blue" size="large" class="tag">文件名称</Tag>
-        <Input
-          placeholder="为选取的特征点们取一个名字吧"
-          @input="setFeaturePointFileName"
-          v-model="currentFeaturePointFileName"
-          style="flex: 1;"
-          clearable
-        ></Input>
-      </div>
       <div class="recognition-rate">
-        <Tag color="blue" size="large" class="tag">识别率</Tag>
-        <InputNumber
-          :max="100"
-          :min="0"
-          v-model="imgRecRate"
-          style="flex: 1;"
-          placeholder="识别率标准..."
-          :formatter="value => `${value}%`"
-          :parser="value => value.replace('%', '')"
-        ></InputNumber>
+        <Poptip trigger="focus">
+          <Input v-model="imgRecRate" size="small" placeholder="请设定识别率">
+            <span slot="prepend">识别率</span>
+          </Input>
+          <div slot="content">{{ `${this.imgRecRate}%` }}</div>
+        </Poptip>
       </div>
     </div>
-  </div>
+  </Card>
 </template>
 
 <script>
@@ -46,9 +35,6 @@ import { mapState } from 'vuex'
 
 export default {
   name: 'FeaturePoint',
-  props: {
-    featurePointFileName: String
-  },
   data () {
     return {
       coordinateColumn: [
@@ -73,8 +59,7 @@ export default {
           width: 150,
           align: 'center'
         }
-      ],
-      currentFeaturePointFileName: this.featurePointFileName
+      ]
     }
   },
   computed: {
@@ -92,15 +77,18 @@ export default {
   },
   methods: {
     remove (index) {
-      this.$store.commit('img/removeCoordinate', index)
+      this.$store.commit('img/handleCoordinate', {
+        action: 'remove',
+        data: index
+      })
     },
-    setFeaturePointFileName () {
-      this.$emit('setFeaturePointFileName', this.currentFeaturePointFileName)
-    },
-    showLabelArea (currentRowData, index) {
-      this.$store.commit('item/setAreasInfo', {
-        data: this._.cloneDeep(currentRowData),
-        index
+    showLabelArea (curRowData, index) {
+      this.$store.commit('item/handleAreasInfo', {
+        action: 'set',
+        data: {
+          data: this._.cloneDeep(curRowData),
+          index
+        }
       })
     }
   }
@@ -108,26 +96,36 @@ export default {
 </script>
 
 <style lang="less" scoped>
-  .mb-1 {
-    margin-bottom: 10px;
-  }
-  .file-info {
-    display: flex;
-    justify-content: space-between;
-    .tag {
-      line-height: 32px;
+  .feature-point-container {
+     /deep/ .ivu-card-head {
+      border-bottom: 0;
+      & > .ivu-divider {
+        margin: 0;
+      }
     }
-    .file-name {
+    /deep/ .ivu-card-body {
+      padding: 0 1em 1em;
+      & > * {
+        margin-bottom: 1em;
+      }
+      & > div:last-child {
+        margin-bottom: 0;
+      }
+    }
+    .file-info {
       display: flex;
-      flex: 1;
       justify-content: space-between;
-      align-items: center;
-      margin-right: 20px;
-    }
-    .recognition-rate {
-      display: flex;
-      flex: 1;
-      align-items: center;
+      .recognition-rate {
+        flex: 1;
+        align-items: center;
+        height: 24px;
+        /deep/ .ivu-poptip {
+          width: 100%;
+          & > .ivu-poptip-rel {
+            width: 100%;
+          }
+        }
+      }
     }
   }
 </style>

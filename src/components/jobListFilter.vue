@@ -11,7 +11,7 @@
       />
       <Icon type="ios-arrow-up" class="collapse__header-arrow-up" v-show="collapseIsOpen" @click="handleCollapse"/>
       <Icon type="ios-arrow-down" class="collapse__header-arrow-down" v-show="!collapseIsOpen" @click="handleCollapse"/>
-      <Button type="error" icon="ios-trash" @click="deleteFilterFactor" v-show="filterConditions.length !== 0">删除</Button>
+      <!-- <Button type="error" icon="ios-trash" @click="deleteFilterFactor" v-show="filterConditions.length !== 0">删除</Button> -->
       <Button icon="ios-close" class="filter__clear" @click="clearFilterFactor" v-show="filterConditions.length !== 0">清除</Button>
     </div>
     <transition name="slide-fade">
@@ -52,7 +52,7 @@
 <script>
 import { mapState } from 'vuex'
 import CONST from '../constant/constant'
-import { deleteTag } from '../api/reef/job'
+import { deleteTag } from '../api/reef/request'
 
 export default {
   data () {
@@ -179,7 +179,7 @@ export default {
         let conditionStr = key + '__id__in=' + 'ReefList[' + condition.join('{%,%}') + ']'
         factors.push(conditionStr)
       })
-      return `&job_name__icontains=${this.keyword}&${factors.join('&')}`
+      return `&job_name__icontains=${this.keyword}&${factors.join('_')}`
     },
     getFilteredJob () { // 筛选条件改变时触发该函数，获取符合条件的job
       this.$emit('getFilterParam', this.getUrlParam())

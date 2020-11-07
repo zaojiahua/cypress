@@ -1,7 +1,8 @@
 let state = {
-  showItemEditor: false,
-  currentItem: {
+  editing: false,
+  itemData: {
     itemName: '',
+    itemIndex: undefined,
     itemContent: ''
   },
   saveToFinalResult: false,
@@ -12,56 +13,74 @@ let state = {
 }
 
 let mutations = {
-  setShowItemEditor (state, showItemEditor) {
-    state.showItemEditor = showItemEditor
+  handleItemData (state, { action, data }) {
+    switch (action) {
+      case 'setItemData':
+        state.itemData = data
+        break
+    }
   },
-  setCurrentItem (state, unitItem) {
-    state.currentItem = unitItem
+  handleShowItemEditor (state, editing) {
+    state.editing = editing
   },
-  setSaveToFinal (state, toggle) {
+  handleSaveToFinal (state, toggle) {
     state.saveToFinalResult = toggle
   },
-  setAreasInfo (state, val) {
-    state.areasInfo = val
+  handleAreasInfo (state, { action, data }) {
+    if (action === 'set') {
+      state.areasInfo = data
+    }
+    if (action === 'clear') {
+      state.areasInfo = {
+        data: [],
+        idx: undefined
+      }
+    }
   }
 }
 
 let getters = {
   itemType (state) {
-    return state.currentItem.itemContent.type
+    return state.itemData.itemContent.type
+  },
+  itemName (state) {
+    return state.itemData.itemName
   },
   isUxInput (state) {
-    return state.currentItem.itemContent.type === 'uxInput'
+    return state.itemData.itemContent.type === 'uxInput'
   },
   isPicInput (state) {
-    return state.currentItem.itemContent.type === 'picInput'
+    return state.itemData.itemContent.type === 'picInput'
   },
   isOutputPicture (state) {
-    return state.currentItem.itemContent.type === 'outputPicture'
+    return state.itemData.itemContent.type === 'outputPicture'
   },
   isOutputFile (state) {
-    return state.currentItem.itemContent.type === 'outputFile'
+    return state.itemData.itemContent.type === 'outputFile'
   },
   isJobResourcePicture (state) {
-    return state.currentItem.itemContent.type === 'jobResourcePicture'
+    return state.itemData.itemContent.type === 'jobResourcePicture'
   },
   isJobResourceFile (state) {
-    return state.currentItem.itemContent.type === 'jobResourceFile'
+    return state.itemData.itemContent.type === 'jobResourceFile'
   },
   isInputFile (state) {
-    return state.currentItem.itemContent.type === 'inputFile'
+    return state.itemData.itemContent.type === 'inputFile'
   },
   isInputPicture (state) {
-    return state.currentItem.itemContent.type === 'inputPicture'
+    return state.itemData.itemContent.type === 'inputPicture'
   },
   isOutputVideo (state) {
-    return state.currentItem.itemContent.type === 'outputVideo'
+    return state.itemData.itemContent.type === 'outputVideo'
   },
   isInputVideo (state) {
-    return state.currentItem.itemContent.type === 'inputVideo'
+    return state.itemData.itemContent.type === 'inputVideo'
   },
-  currentItemMeaning (state) {
-    return state.currentItem.itemContent.meaning
+  isJobResourceFileWithDefaultValue (state) {
+    return state.itemData.itemContent.type === 'jobResourceFileWithDefaultValue'
+  },
+  curItemMeaning (state) {
+    return state.itemData.itemContent.meaning
   }
 }
 

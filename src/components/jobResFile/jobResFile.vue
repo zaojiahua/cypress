@@ -3,9 +3,9 @@
     <Tabs>
       <TabPane :label="label" name="files">
         <div class="res-file">
-          <job-res-file-table style="width: 45%;" :columns="filesColumn" :data="resFiles" :currentFile="currentFile" @showFile="showFile"></job-res-file-table>
+          <job-res-file-table style="width: 45%;" :columns="filesColumn" :data="resFiles" :curFile="curFile" @showFile="showFile"></job-res-file-table>
           <div class="res-file-show">
-              <job-res-file-show style="width: 96%;" :filesData="resFiles" :currentFile="currentFile" @saveChange="saveChange"></job-res-file-show>
+              <job-res-file-show style="width: 96%;" :filesData="resFiles" :curFile="curFile" @saveChange="saveChange"></job-res-file-show>
           </div>
         </div>
         <div slot="footer">
@@ -54,7 +54,7 @@
 import jobResFileShow from './jobResFileShow'
 import jobResFileTable from './jobResFileTable'
 
-import { suffixAutoRemove } from 'lib/tools'
+import { suffixRemove } from 'lib/tools'
 
 import { mapState } from 'vuex'
 
@@ -82,7 +82,7 @@ export default {
           title: 'Action'
         }
       ],
-      currentFile: 0,
+      curFile: 0,
       fileData: null,
       checkDuplicateNameModal: false,
       overwriteAt: null,
@@ -119,14 +119,14 @@ export default {
       this.$store.commit('files/setShowResFileModal')
     },
     saveChange (file) { // 保存对依赖文件的修改
-      this.resFiles[this.currentFile].file = file
+      this.resFiles[this.curFile].file = file
       this.$Message.success({
         background: true,
         content: '修改成功'
       })
     },
     showFile (index) { // 展示依赖文件的内容
-      this.currentFile = index
+      this.curFile = index
     },
     overwrite () {
       this.resFiles.splice(this.overwriteAt, 1, this.fileData)
@@ -146,7 +146,7 @@ export default {
     checkDuplicateName () {
       let flag = true
       for (let i = 0; i < this.resFiles.length; i++) {
-        if (suffixAutoRemove(this.resFiles[i].name) === this.newName && this.fileData.type === this.resFiles[i].type) {
+        if (suffixRemove(this.resFiles[i].name) === this.newName && this.fileData.type === this.resFiles[i].type) {
           flag = false
           break
         }

@@ -3,7 +3,7 @@
     <div
       v-for="(file, index) in filesData"
       :key="index"
-      v-show="index === currentFile"
+      v-show="index === curFile"
       class="file-container"
     >
       <div v-if="file.type === 'jpg' || file.type === 'png' || file.type === 'jpeg'" class="img">
@@ -35,7 +35,7 @@ export default {
       type: Array,
       required: true
     },
-    currentFile: {
+    curFile: {
       type: Number,
       default: 0
     }

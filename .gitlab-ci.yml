@@ -9,7 +9,6 @@ variables:
   TMach20: "root@10.80.20.138"
 
 
-
 docker-deploy:
   stage: deploy
   script:
@@ -62,15 +61,3 @@ tmach20-docker-deploy:
     - ssh $TMach20 . /root/cypress-vue/cypress_build_images.sh
   only:
     - R4
-
-tmach20-old-docker-deploy:
-  stage: deploy
-  script:
-    - npm install
-    - cp -rf src/assets/js/go.js node_modules/gojs/release
-    - npm run build
-    - ssh $TMach20 rm -rf /root/cypress-vue/
-    - rsync -av -e ssh --exclude={node_modules,public,src,.git} . $TMach20:/root/cypress-vue/
-    - ssh $TMach20 . /root/cypress-vue/cypress_build_images_new.sh
-  only:
-    - rebuild

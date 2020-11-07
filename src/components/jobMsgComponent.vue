@@ -77,8 +77,7 @@
 <script>
 import util from 'lib/util/validate.js'
 import { jobSerializer } from 'lib/util/jobListSerializer'
-import { patchUpdateJob } from 'api/reef/job'
-import { controlDevice, releaseOccupyDevice } from 'api/reef/device'
+import { controlDevice, releaseOccupyDevice, updateJobMsg } from 'api/reef/request'
 import jobDeviceSelect from '../components/jobDeviceSelect'
 import { shouldCreateNewTag, createNewTag } from 'lib/tools'
 
@@ -175,7 +174,7 @@ export default {
       }
     },
     showDrawer (val) {
-      if (val === false && !this.isJobEditor) this.$store.commit('job/recoverJobInfo')
+      if (val === false && !this.isJobEditor) this.$store.commit('job/handleJobInfo', { action: 'recoverJobInfo' })
     },
     deviceInfo (newVal, oldVal) { // 设备信息变化时检测是否和已填信息发生冲突并进行处理
       this.$store.commit('device/setPreDeviceInfo', oldVal)
@@ -197,7 +196,7 @@ export default {
       }, 800)
 
       if (this.draftId) {
-        patchUpdateJob(this.draftId, { job_deleted: true }).then(({ status }) => {
+        updateJobMsg(this.draftId, { job_deleted: true }).then(({ status }) => {
           if (status === 200) {
           } else {
             console.log('删除自动备份文件失败，错误码: ' + status)
@@ -210,8 +209,8 @@ export default {
 
       // 清空失效的数据
       this.$store.commit('job/setOuterDiagramModel', null)
-      this.$store.commit('job/setPreJobInfo', false)
-      this.$store.commit('files/clearResFiles')
+      this.$store.commit('job/handleJobInfo', { action: 'setPreJobInfo', data: false })
+      this.$store.commit('files/handleResFiles', { action: 'clearResFiles' })
 
       if (this.countdown) {
         this.checkConflict(true, false)
@@ -294,7 +293,7 @@ export default {
         }
         if (valid) { // 通过验证
           setTimeout(() => {
-            patchUpdateJob(this.jobId, this.jobInfo).then(() => {
+            updateJobMsg(this.jobId, this.jobInfo).then(() => {
               this.$Message.info('修改成功')
               this.$store.commit('refreshJobList')
             }).catch(error => {

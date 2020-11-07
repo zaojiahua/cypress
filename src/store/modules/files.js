@@ -1,97 +1,58 @@
-import CONST from 'constant/constant'
-
-let resFilesName = []
-for (let key in CONST.WILL_TOUCH_NAME) {
-  resFilesName.push({
-    title: CONST.WILL_TOUCH_NAME[key],
-    key,
-    children: []
-  })
-}
-
 let state = {
   resFiles: [],
-  currentFile: null,
-  isDuplicatedFile: false,
+  curFile: null,
   duplicatedFile: null,
-  resFilesName,
   showResFileModal: false
 }
 
 let mutations = {
-  setResFiles (state, resFiles) {
-    state.resFiles = resFiles
+  handleResFiles (state, { action, data }) {
+    if (action === 'setResFiles') {
+      state.resFiles = data
+    }
+    if (action === 'addResFile') {
+      if (data.index !== -1) {
+        state.resFiles.splice(data.index, 1, data)
+      } else {
+        state.resFiles.push(data)
+      }
+    }
+    if (action === 'removeResFile') {
+      state.resFiles.splice(data, 1)
+      for (let i = data; i < state.resFiles.length; i++) {
+        state.resFiles[i].index--
+      }
+    }
+    if (action === 'clearResFiles') {
+      state.resFiles = []
+    }
   },
-  addResFile (state, resFile) {
-    let resFiles = state.resFiles
-    let index = resFiles.findIndex(file => file.name === resFile.name)
-    if (index !== -1) {
-      if (resFile.name !== 'FILES_NAME_CONFIG.json') {
-        state.isDuplicatedFile = true
-        state.duplicatedFile = {
-          index,
-          resFile
+  handleCurFile (state, { action, data }) {
+    if (action === 'setCurFile') {
+      if (data.dirty) {
+        if (data.index !== -1) {
+          state.curFile = state.resFiles[data.index]
+          state.curFile.name = data.name
         }
       } else {
-        state.resFiles.splice(index, 1, resFile)
+        state.curFile = data
       }
-      return
     }
-    state.resFiles.push(resFile)
-    if (resFile.type === 'png') {
-      state.currentFile = resFile
-    }
-  },
-  removeResFile (state, index) {
-    state.resFiles.splice(index, 1)
-  },
-  clearResFiles (state) {
-    state.resFiles = []
-  },
-  setCurrentFile (state, data) {
-    if (data.byName) {
-      for (let i = 0; i < state.resFiles.length; i++) {
-        if (state.resFiles[i].name === data.name) {
-          state.currentFile = state.resFiles[i]
-          break
+    if (action === 'addCurFile') {
+      if (!state.curFile) return
+      let { dirty, index } = state.curFile
+      if (!dirty) {
+        state.curFile.dirty = true
+        if (index !== -1) {
+          state.resFiles.splice(index, 1, state.curFile)
+        } else {
+          state.curFile.index = state.resFiles.length
+          state.resFiles.push(state.curFile)
         }
       }
-    } else {
-      state.currentFile = data.currentFileInfo
     }
-  },
-  removeCurrentFile (state) {
-    state.currentFile = null
-  },
-  setIsDuplicatedFile (state, isDuplicatedFile) {
-    state.isDuplicatedFile = isDuplicatedFile
-  },
-  renameDuplicatedFile (state, newName) {
-    if (!newName.endsWith(state.duplicatedFile.resFile.type)) {
-      state.duplicatedFile.resFile.name = newName + '.' + state.duplicatedFile.resFile.type
-    } else {
-      state.duplicatedFile.resFile.name = newName
-    }
-    state.resFiles.push(state.duplicatedFile.resFile)
-    state.isDuplicatedFile = false
-    state.currentFile = state.duplicatedFile.resFile
-  },
-  setDuplicatedFile (state) {
-    state.resFiles.splice(state.duplicatedFile.index, 1, state.duplicatedFile.resFile)
-    state.isDuplicatedFile = false
-    state.currentFile = state.duplicatedFile.resFile
-  },
-  addResFilesName (state, data) {
-    state.resFilesName[data.index].children.push(data.name)
-  },
-  setResFilesName (state, filesName) {
-    let preNames = JSON.parse(filesName)
-    for (let i = 0; i < state.resFilesName.length; i++) {
-      if (preNames[i]) {
-        Object.assign(state.resFilesName[i], preNames[i])
-      } else {
-        state.resFilesName[i].children = []
-      }
+    if (action === 'removeCurFile') {
+      state.curFile = null
     }
   },
   setShowResFileModal (state) {
@@ -100,7 +61,9 @@ let mutations = {
 }
 
 let getters = {
-
+  resFilesName (state) {
+    return state.resFiles.map(item => item.name)
+  }
 }
 
 export default {
