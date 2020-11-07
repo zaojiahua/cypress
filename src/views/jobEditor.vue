@@ -273,14 +273,14 @@ export default {
       async function createNewJob (context, jobInfo) {
         if (context.draftId) { // 将自动保存的Job正式保存下来
           jobInfo.job_label = context.draftLabel
-          context.uploadFiles(context.draftId, jobInfo)
+          await context.uploadFiles(context.draftId, jobInfo)
         } else { // 创建新的Job
           jobInfo.job_label = createJobLabel(context)
           try {
             let { status, data } = await saveJobFlowAndMsg(jobInfo)
             let id
             if (status === 201) id = data.id
-            context.uploadFiles(id, jobInfo)
+            await context.uploadFiles(id, jobInfo)
           } catch (err) {
             console.log(err)
           }
@@ -298,7 +298,7 @@ export default {
           if (!this._jobMsgRules()) return
           jobInfo.draft = true
           if (id) {
-            this.uploadFiles(id, jobInfo)
+            await this.uploadFiles(id, jobInfo)
             if (this.draftId) {
               updateJobMsg(this.draftId, { job_deleted: true })
             }
@@ -318,7 +318,7 @@ export default {
           if (name === 'save') {
             jobInfo.draft = false
             if (id) {
-              this.uploadFiles(id, jobInfo)
+              await this.uploadFiles(id, jobInfo)
               if (this.draftId) {
                 updateJobMsg(this.draftId, { job_deleted: true })
               }
@@ -436,13 +436,13 @@ export default {
           let { status, data } = await saveJobFlowAndMsg(info)
           if (status === 201) {
             this.$store.commit('job/setDraftId', data.id)
-            this.uploadFiles(data.id, info)
+            await this.uploadFiles(data.id, info)
           }
         } catch (error) {
           console.log(error)
         }
       } else {
-        this.uploadFiles(this.draftId, info)
+        await this.uploadFiles(this.draftId, info)
       }
       this.$Notice.success({
         title: '温馨提示',
