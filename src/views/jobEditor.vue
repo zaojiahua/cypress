@@ -510,6 +510,7 @@ export default {
       this.$store.commit('job/handleConfig', { action: 'init' })
       this.$store.commit('job/setIsValidated', false)
       this.$store.commit('files/handleResFiles', { action: 'clearResFiles' })
+      this.autoSaveToggle = false
       if (this.countdown) {
         try {
           let { status } = await releaseOccupyDevice({
