@@ -259,7 +259,7 @@ export default {
         curIndex = itemData.itemContent.content.indexOf(tmachBlanks[i], curIndex)
         temp = itemData.itemContent.content.split('')
         let target
-        target = `Tmach${this.tmachBlanks[i].content}${this.tmachBlanks[i].suffix} `
+        target = `Tmach${this.tmachBlanks[i].content.trim()}${this.tmachBlanks[i].suffix} `
         temp.splice(curIndex, tmachBlanks[i].length, target)
         curIndex += target.length
         itemData.itemContent.content = temp.join('')
@@ -299,7 +299,7 @@ export default {
         }
         let byProductsInfo = {
           loc: [this.normalKey, this.unitKey, this.itemName].join('_'),
-          text: this.tmachBlanks[0].content,
+          text: this.tmachBlanks[0].content.trim(),
           user: []
         }
         let childIdx = -1
