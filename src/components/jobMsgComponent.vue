@@ -397,6 +397,9 @@ export default {
         }
       }
     }
+  },
+  mounted () {
+    if (!this.basicData) this.$store.dispatch('setBasicData')
   }
 }
 </script>
