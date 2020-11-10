@@ -342,6 +342,9 @@ export default {
     },
     getFilterParam (val) {
       this.filterUrlParam = val
+      if (this.filterUrlParam) {
+        this.curPage = 1
+      }
       this.jobPageChange()
     },
     setTableHeight () {
