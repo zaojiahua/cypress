@@ -126,7 +126,7 @@ export default {
   },
   watch: {
     itemData (val) {
-      if (!val.itemContent.content) return
+      if (!val || !val.itemContent.content) return
       this.handleTmachBlanks(val.itemContent.content.match(/Tmach.*? /g))
     },
     saveToFinalResult (val) {

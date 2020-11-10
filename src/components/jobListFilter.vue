@@ -179,7 +179,7 @@ export default {
         let conditionStr = key + '__id__in=' + 'ReefList[' + condition.join('{%,%}') + ']'
         factors.push(conditionStr)
       })
-      return `&job_name__icontains=${this.keyword}&${factors.join('_')}`
+      return `${this.keyword.trim() ? `&job_name__icontains=${this.keyword.trim()}&` : '&'}${factors.join('_')}`
     },
     getFilteredJob () { // 筛选条件改变时触发该函数，获取符合条件的job
       this.$emit('getFilterParam', this.getUrlParam())
