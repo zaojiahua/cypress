@@ -37,7 +37,7 @@ export default {
   components: { UnitItem },
   data () {
     return {
-      ocrChoiceToggle: this.ocrChoice === 1,
+      ocrChoiceToggle: undefined,
       curUnitItem: undefined
     }
   },
@@ -73,8 +73,7 @@ export default {
   },
   watch: {
     ocrChoice (val) {
-      if (val === 1) this.ocrChoiceToggle = true
-      if (val === 2) this.ocrChoiceToggle = false
+      this.ocrChoiceToggle = val === 1
     }
   },
   methods: {

@@ -18,6 +18,9 @@ let mutations = {
       case 'setItemData':
         state.itemData = data
         break
+      case 'clearItemData':
+        state.itemData = null
+        break
     }
   },
   handleShowItemEditor (state, editing) {
@@ -41,45 +44,59 @@ let mutations = {
 
 let getters = {
   itemType (state) {
+    if (!state.itemData) return
     return state.itemData.itemContent.type
   },
   itemName (state) {
+    if (!state.itemData) return
     return state.itemData.itemName
   },
   isUxInput (state) {
+    if (!state.itemData) return
     return state.itemData.itemContent.type === 'uxInput'
   },
   isPicInput (state) {
+    if (!state.itemData) return
     return state.itemData.itemContent.type === 'picInput'
   },
   isOutputPicture (state) {
+    if (!state.itemData) return
     return state.itemData.itemContent.type === 'outputPicture'
   },
   isOutputFile (state) {
+    if (!state.itemData) return
     return state.itemData.itemContent.type === 'outputFile'
   },
   isJobResourcePicture (state) {
+    if (!state.itemData) return
     return state.itemData.itemContent.type === 'jobResourcePicture'
   },
   isJobResourceFile (state) {
+    if (!state.itemData) return
     return state.itemData.itemContent.type === 'jobResourceFile'
   },
   isInputFile (state) {
+    if (!state.itemData) return
     return state.itemData.itemContent.type === 'inputFile'
   },
   isInputPicture (state) {
+    if (!state.itemData) return
     return state.itemData.itemContent.type === 'inputPicture'
   },
   isOutputVideo (state) {
+    if (!state.itemData) return
     return state.itemData.itemContent.type === 'outputVideo'
   },
   isInputVideo (state) {
+    if (!state.itemData) return
     return state.itemData.itemContent.type === 'inputVideo'
   },
   isJobResourceFileWithDefaultValue (state) {
+    if (!state.itemData) return
     return state.itemData.itemContent.type === 'jobResourceFileWithDefaultValue'
   },
   curItemMeaning (state) {
+    if (!state.itemData) return
     return state.itemData.itemContent.meaning
   }
 }

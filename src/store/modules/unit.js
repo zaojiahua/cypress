@@ -13,6 +13,9 @@ let mutations = {
       case 'setUnitData':
         state.unitData = data
         break
+      case 'clearUnitData':
+        state.unitData = {}
+        break
       case 'setUnitMsg':
         state.unitData.unitMsg = data
         break

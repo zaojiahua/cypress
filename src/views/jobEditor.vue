@@ -510,6 +510,8 @@ export default {
       this.$store.commit('job/handleConfig', { action: 'init' })
       this.$store.commit('job/setIsValidated', false)
       this.$store.commit('files/handleResFiles', { action: 'clearResFiles' })
+      this.$store.commit('unit/handleUnitData', { action: 'clearUnitData' })
+      this.$store.commit('item/handleItemData', { action: 'clearItemData' })
       this.autoSaveToggle = false
       if (this.countdown) {
         try {
