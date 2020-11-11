@@ -144,8 +144,7 @@ export default {
         let errorNum = 1
         let errorMessage = ''
         myDiagramEventValidationHint.forEach(element => {
-          errorMessage += errorNum + '.' + element + '<br/>'
-          errorNum++
+          errorMessage = `${errorMessage}${errorNum++}.${element}<br/>`
         })
         // message提示
         this.$Notice.error({
@@ -162,7 +161,7 @@ export default {
                   marginTop: '16px'
                 },
                 on: {
-                  click: this.handleMenu('saveDraft')
+                  click: () => this.handleMenu('saveDraft')
                 }
               }, '存为草稿')
             ])
@@ -303,7 +302,6 @@ export default {
               updateJobMsg(this.draftId, { job_deleted: true })
             }
             await this.clearData()
-            return
           }
         } else {
           if (this.innerJobNum !== jobInfo.inner_job_list.length) {
@@ -348,7 +346,6 @@ export default {
                 await this.clearData()
               }
             })
-            return
           }
         }
         await createNewJob(this, jobInfo)

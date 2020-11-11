@@ -68,7 +68,7 @@ export default {
     unitData: {
       deep: true,
       handler (newVal) {
-        if (!newVal) return
+        if (!newVal || !newVal.unitMsg) return
         let copyOfVal = this._.cloneDeep(newVal)
         let { unitMsg: { execCmdDict: { execCmdList } } } = copyOfVal
         if (execCmdList) {
