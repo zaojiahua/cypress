@@ -302,6 +302,7 @@ export default {
               updateJobMsg(this.draftId, { job_deleted: true })
             }
             await this.clearData()
+            return
           }
         } else {
           if (this.innerJobNum !== jobInfo.inner_job_list.length) {
