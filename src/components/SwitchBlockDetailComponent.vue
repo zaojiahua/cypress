@@ -4,9 +4,9 @@
     :value="switchBlockModalShow"
     :mask-closable="false"
     :closable="false">
-    <Form ref="switchBlockForm" :label-width="80" :model="switchBlockInfo" :rules="switchBlocRules">
+    <Form ref="switchBlockForm" :label-width="80" :model="switchBlockInfo" :rules="switchBlocRules" @submit.native.prevent>
       <FormItem label="name" prop="switchBlockName">
-        <Input v-model="switchBlockInfo.switchBlockName" placeholder="Enter something..."/>
+        <Input v-model="switchBlockInfo.switchBlockName" placeholder="Enter something..." @on-enter="submit"/>
       </FormItem>
     </Form>
 
