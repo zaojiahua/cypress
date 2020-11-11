@@ -51,6 +51,9 @@
       @save="switchBlockSave"
       @clear="switchBlockInfo = {}">
     </switch-block-detail-component>
+    <div class="saving-mask" v-if="saving">
+      <CypressLoader :size="400"></CypressLoader>
+    </div>
   </div>
 </template>
 <script>
@@ -58,6 +61,7 @@ import { init } from './JobEditorGoInit'
 import jobInJob from '_c/jobInJob'
 import jobResFile from '_c/jobResFile/jobResFile.vue'
 import NormalEditor from '_c/NormalEditor.vue'
+import CypressLoader from '_c/common/Loader.vue'
 import CONST from 'constant/constant'
 import SwitchBlockDetailComponent from '_c/SwitchBlockDetailComponent'
 import { jobFlowValidation } from '../core/validation/finalValidation/job'
@@ -67,7 +71,7 @@ import { releaseOccupyDevice, updateJobMsg, jobResFilesSave, getJobResFilesList,
 
 export default {
   name: 'jobEditor',
-  components: { SwitchBlockDetailComponent, jobInJob, jobResFile, NormalEditor },
+  components: { SwitchBlockDetailComponent, jobInJob, jobResFile, NormalEditor, CypressLoader },
   data () {
     return {
       outerDiagram: null,
@@ -87,7 +91,8 @@ export default {
       openNormalEditor: false,
       wingmanCount: 0,
       wingmans: 3,
-      jobController: null
+      jobController: null,
+      saving: false
     }
   },
   computed: {
@@ -108,6 +113,12 @@ export default {
         }
       },
       deep: true
+    },
+    saving (val) {
+      if (!val) {
+        this.$router.push({ path: '/jobList' })
+        this.$store.commit('setCurPage', 1)
+      }
     }
   },
   beforeRouteLeave  (to, from, next) {
@@ -201,6 +212,7 @@ export default {
       return flag
     },
     async uploadFiles (id, info) {
+      this.saving = true
       info.job_id = id
       let resFiles = this._.cloneDeep(this.resFiles)
       try {
@@ -239,6 +251,8 @@ export default {
             }
           } catch (error) {
             console.log(error)
+          } finally {
+            this.saving = false
           }
         } else {
           this.$Message.error({
@@ -290,6 +304,8 @@ export default {
         if (this.draftId) {
           updateJobMsg(this.draftId, { job_deleted: true })
         }
+        this.$router.push({ path: '/jobList' })
+        this.$store.commit('setCurPage', 1)
       } else {
         let id = this.jobId
         let jobInfo = await this.prepareJobInfo()
@@ -347,6 +363,7 @@ export default {
                 await this.clearData()
               }
             })
+            return
           }
         }
         await createNewJob(this, jobInfo)
@@ -533,8 +550,6 @@ export default {
           })
         }
       }
-      this.$router.push({ path: '/jobList' })
-      this.$store.commit('setCurPage', 1)
     },
     dispatchMouseEvent (evt) {
       switch (evt.type) {
@@ -609,6 +624,18 @@ export default {
     display: none;
     position: absolute;
     z-index: 100;
+  }
+  .saving-mask {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, .6);
+    z-index: 1000;
   }
 }
 </style>
