@@ -85,7 +85,7 @@ export default {
       currentJobBlockText: 'Job block',
       lastActiveTime: null,
       activeTimeInterval: 120000,
-      autoSaveInterval: 180000,
+      autoSaveInterval: 1800000,
       autoSaveTimer: null,
       autoSaveToggle: true,
       openNormalEditor: false,
