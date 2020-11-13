@@ -312,6 +312,7 @@ export default {
         if (name === 'saveDraft') {
           if (!this._jobMsgRules()) return
           jobInfo.draft = true
+          this.autoSaveToggle = false
           if (id) {
             await this.uploadFiles(id, jobInfo)
             if (this.draftId) {
