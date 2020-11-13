@@ -115,7 +115,7 @@ export default {
       deep: true
     },
     saving (val) {
-      if (!val) {
+      if (!val && !this.autoSaveToggle) {
         this.$router.push({ path: '/jobList' })
         this.$store.commit('setCurPage', 1)
       }
@@ -432,6 +432,7 @@ export default {
       info.subsidiary_device_count = this.calcWingmanCount()
       info.author = localStorage.id
       info.job_name += '_AUTOSAVE'
+      info.draft = true
       info.inner_job_list = this.prepareInnerJobList()
       if (this.draftLabel) {
         info.job_label = this.draftLabel
@@ -578,6 +579,7 @@ export default {
   mounted () {
     init(this) // 创建画板与画布并绘制流程图
     if (!this.resFiles.length) this.handleResFile()
+    this.autoSaveToggle = true
     this.jobController = document.getElementById('job-controller')
     this.autoSaveTimer = setInterval(this.autoSave, this.autoSaveInterval) // 300000
     window.addEventListener('contextmenu', this.dispatchMouseEvent)

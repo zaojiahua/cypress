@@ -130,7 +130,7 @@ export default {
             // 找到同样前缀文件的位置
             let index = -1
             for (let i = 0; i < this.resFilesName.length; i++) {
-              if (this.resFilesName[i].startsWith(this.imgName.prefix)) {
+              if (this.resFilesName[i].startsWith(this.imgName)) {
                 index = i
                 break
               }

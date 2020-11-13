@@ -67,7 +67,7 @@
       <div slot="footer" style="display: flex; justify-content: space-between;">
         <Button @click="handleConflict">取消</Button>
         <div>
-          <Button type="success" @click="deviceInfoAppend">追加</Button>
+          <Button type="success" :disabled="!canAppend" @click="deviceInfoAppend">追加</Button>
           <Button type="primary" @click="deviceInfoReplace">替换</Button>
         </div>
       </div>
@@ -137,7 +137,8 @@ export default {
           ]
         }
       ],
-      curJobType: []
+      curJobType: [],
+      canAppend: true
     }
   },
   computed: {
@@ -351,10 +352,12 @@ export default {
           return
         }
         if (this.jobInfo.manufacturer !== this.deviceInfo.manufacturer_id) {
+          this.canAppend = false
           this.handleConflict()
           return
         }
         let same = true
+        this.canAppend = true
         this.phoneModelFlag = true
         this.romVersionFlag = true
         this.androidVersionFlag = true

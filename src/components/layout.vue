@@ -145,6 +145,7 @@ export default {
         })
       } finally {
         this.$store.commit('device/setCountdown')
+        this.$store.commit('device/clearDeviceInfo')
         this.$store.commit('device/clearPreDeviceInfo')
       }
     },
