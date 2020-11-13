@@ -52,7 +52,7 @@
       @clear="switchBlockInfo = {}">
     </switch-block-detail-component>
     <div class="saving-mask" v-if="saving">
-      <CypressLoader :size="400"></CypressLoader>
+      <CypressLoader :size="60"></CypressLoader>
     </div>
   </div>
 </template>
@@ -86,7 +86,6 @@ export default {
       lastActiveTime: null,
       activeTimeInterval: 120000,
       autoSaveInterval: 180000,
-      autoSaveTimer: null,
       autoSaveToggle: true,
       openNormalEditor: false,
       wingmanCount: 0,
@@ -130,7 +129,6 @@ export default {
   beforeDestroy () {
     window.removeEventListener('contextmenu', this.dispatchMouseEvent)
     window.removeEventListener('mousemove', this.dispatchMouseEvent)
-    window.clearInterval(this.autoSaveTimer)
   },
   methods: {
     closeNormalEditor () {
@@ -211,18 +209,18 @@ export default {
       }
       return flag
     },
-    async uploadFiles (id, info) {
+    async uploadFiles (id, info) { // 保存依赖文件，失败则抛出异常
       this.saving = true
       info.job_id = id
       let resFiles = this._.cloneDeep(this.resFiles)
       try {
-        let { status } = await updateJobMsg(id, info)
+        let { status } = await updateJobMsg(id, info) // 更新右侧抽屉内的信息
         if (status === 200) {
           let data = new FormData()
           data.append('job', id)
           for (let i = 0; i < resFiles.length; i++) {
             let { name, type, file } = resFiles[i]
-            if (name === 'FILES_NAME_CONFIG.json') continue
+            if (name === 'FILES_NAME_CONFIG.json') continue // 兼容老版本
             if (type === 'png') {
               data.append('file', dataURLtoFile(file, name))
             } else {
@@ -231,37 +229,20 @@ export default {
           }
           try {
             if (resFiles.length) {
-              let { status } = await jobResFilesSave(data)
-              if (status === 201) {
-                this.$Message.success({
-                  background: true,
-                  content: 'Job 保存成功'
-                })
-              } else {
-                this.$Message.error({
-                  background: true,
-                  content: '依赖文件上传失败'
-                })
-              }
-            } else {
-              this.$Message.success({
-                background: true,
-                content: 'Job 保存成功'
-              })
+              await jobResFilesSave(data) // 保存依赖文件
             }
           } catch (error) {
             console.log(error)
-          } finally {
-            this.saving = false
+            throw new Error('Job保存失败')
           }
         } else {
-          this.$Message.error({
-            background: true,
-            content: 'Job 保存失败'
-          })
+          throw new Error('Job保存失败')
         }
       } catch (error) {
         console.log(error)
+        throw new Error(error)
+      } finally {
+        this.saving = false
       }
     },
     calcWingmanCount () {
@@ -283,10 +264,14 @@ export default {
       return wingman.reduce((pre, cur) => cur > 0 ? 1 + pre : pre, 0)
     },
     async handleMenu (name) {
-      async function createNewJob (context, jobInfo) {
+      async function createNewJob (context, jobInfo) { // 复用自动保存的用俐/创建新用俐
         if (context.draftId) { // 将自动保存的Job正式保存下来
           jobInfo.job_label = context.draftLabel
-          await context.uploadFiles(context.draftId, jobInfo)
+          try {
+            await context.uploadFiles(context.draftId, jobInfo)
+          } catch (error) {
+            throw new Error(error)
+          }
         } else { // 创建新的Job
           jobInfo.job_label = createJobLabel(context)
           try {
@@ -296,6 +281,7 @@ export default {
             await context.uploadFiles(id, jobInfo)
           } catch (err) {
             console.log(err)
+            throw new Error(err)
           }
         }
       }
@@ -314,7 +300,15 @@ export default {
           jobInfo.draft = true
           this.autoSaveToggle = false
           if (id) {
-            await this.uploadFiles(id, jobInfo)
+            try {
+              await this.uploadFiles(id, jobInfo)
+            } catch (error) {
+              this.$Message({
+                background: true,
+                content: error
+              })
+              return
+            }
             if (this.draftId) {
               updateJobMsg(this.draftId, { job_deleted: true })
             }
@@ -334,7 +328,15 @@ export default {
           if (name === 'save') {
             jobInfo.draft = false
             if (id) {
-              await this.uploadFiles(id, jobInfo)
+              try {
+                await this.uploadFiles(id, jobInfo)
+              } catch (error) {
+                this.$Message({
+                  background: true,
+                  content: error
+                })
+                return
+              }
               if (this.draftId) {
                 updateJobMsg(this.draftId, { job_deleted: true })
               }
@@ -360,14 +362,30 @@ export default {
               },
               onOk: async () => {
                 jobInfo.job_name = this.value
-                await createNewJob(this, jobInfo)
+                try {
+                  await createNewJob(this, jobInfo)
+                } catch (error) {
+                  this.$Message({
+                    background: true,
+                    content: error
+                  })
+                  return
+                }
                 await this.clearData()
               }
             })
             return
           }
         }
-        await createNewJob(this, jobInfo)
+        try {
+          await createNewJob(this, jobInfo)
+        } catch (error) {
+          this.$Message({
+            background: true,
+            content: error
+          })
+          return
+        }
       }
       await this.clearData()
     },
@@ -457,15 +475,15 @@ export default {
           }
         } catch (error) {
           console.log(error)
+          throw new Error('自动保存失败')
         }
       } else {
-        await this.uploadFiles(this.draftId, info)
+        try {
+          await this.uploadFiles(this.draftId, info)
+        } catch (error) {
+          throw new Error(error)
+        }
       }
-      this.$Notice.success({
-        title: '温馨提示',
-        desc: `已为您自动保存当前内容, 用例名称为 ${info.job_name}`,
-        duration: 6
-      })
     },
     jobModalClose (job) {
       this.jobModalShow = false
@@ -582,7 +600,20 @@ export default {
     if (!this.resFiles.length) this.handleResFile()
     this.autoSaveToggle = true
     this.jobController = document.getElementById('job-controller')
-    this.autoSaveTimer = setInterval(this.autoSave, this.autoSaveInterval) // 300000
+    let timer = setInterval(async () => {
+      try {
+        await this.autoSave()
+      } catch (error) {
+        this.$Message({
+          background: true,
+          content: error
+        })
+      }
+    }, this.autoSaveInterval)
+    this.$once('hook:beforeDestroy', () => {
+      clearInterval(timer)
+      timer = null
+    })
     window.addEventListener('contextmenu', this.dispatchMouseEvent)
     window.addEventListener('mousemove', this.dispatchMouseEvent)
     window.addEventListener('beforeunload', () => {
