@@ -72,7 +72,7 @@ export default {
   data () {
     return {
       isCollapsed: true,
-      username: localStorage.username,
+      username: sessionStorage.username || localStorage.username,
       totalTime: 30,
       remindTime: 5
     }
@@ -87,14 +87,14 @@ export default {
         title: '您确定要登出?',
         onOk: () => {
           this.$Loading.start()
-          this.$router.push({ name: 'login' })
-          this.$Message.success('登出成功!')
-          this.$Loading.finish()
           // 登出后不能通过后退键回到TMach操作页面中
           CONST.USER_INFO.forEach((val) => {
             sessionStorage.removeItem(val)
             localStorage.removeItem(val)
           })
+          this.$router.push({ name: 'login' })
+          this.$Message.success('登出成功!')
+          this.$Loading.finish()
         }
       })
     },

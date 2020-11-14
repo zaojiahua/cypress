@@ -26,7 +26,8 @@
       <p v-show="!editing">还没有可以展示/编辑的文件</p>
       <transition name="fade-loader">
         <CypressLoader
-          :size="200"
+          :size="60"
+          :fillColor="'#999'"
           v-show="isLoading"
         ></CypressLoader>
       </transition>

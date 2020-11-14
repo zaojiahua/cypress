@@ -4,10 +4,10 @@
     <div></div>
     <div></div>
   </div> -->
-  <!-- <svg version="1.1" class="loader" x="0px" y="0px"
+  <svg version="1.1" class="loader" x="0px" y="0px"
     :style="loaderSize"
     viewBox="0 0 100 100" enable-background="new 0 0 0 0" xml:space="preserve">
-    <circle fill="#fff" stroke="none" cx="6" cy="50" r="6">
+    <circle :fill="fillColor" stroke="none" cx="6" cy="50" r="6">
       <animateTransform
         attributeName="transform"
         dur="1s"
@@ -16,7 +16,7 @@
         repeatCount="indefinite"
         begin="0.1"/>
     </circle>
-    <circle fill="#fff" stroke="none" cx="30" cy="50" r="6">
+    <circle :fill="fillColor" stroke="none" cx="30" cy="50" r="6">
       <animateTransform
         attributeName="transform"
         dur="1s"
@@ -25,7 +25,7 @@
         repeatCount="indefinite"
         begin="0.2"/>
     </circle>
-    <circle fill="#fff" stroke="none" cx="54" cy="50" r="6">
+    <circle :fill="fillColor" stroke="none" cx="54" cy="50" r="6">
       <animateTransform
         attributeName="transform"
         dur="1s"
@@ -34,8 +34,8 @@
         repeatCount="indefinite"
         begin="0.3"/>
     </circle>
-  </svg> -->
-  <svg version="1.1"
+  </svg>
+  <!-- <svg version="1.1"
     class="loader" :style="loaderSize"
     viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve"
   >
@@ -61,13 +61,17 @@
         fill="freeze"
         begin="0s;strokeBox.end"/>
     </rect>
-  </svg>
+  </svg> -->
 </template>
 <script>
 export default {
   name: 'CypressLoader',
   props: {
-    size: Number
+    size: Number,
+    fillColor: {
+      type: String,
+      default: '#fff'
+    }
   },
   computed: {
     loaderSize () {

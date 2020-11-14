@@ -104,7 +104,7 @@ export default {
   watch: {
     jobInfo: {
       handler: function (val) {
-        if (val.job_type === 'InnerJob' && this.config.finalResultKey) {
+        if (val.job_type === 'InnerJob' && this.config.finalResultKey) { // 如果当前用例为innerjob且已经指定了结果block，则提醒用户错误
           this.$Message.error({
             background: true,
             content: '无法为内嵌用例指定结果Block'
@@ -114,14 +114,14 @@ export default {
       deep: true
     },
     saving (val) {
-      if (!val && !this.autoSaveToggle) {
+      if (!val && !this.autoSaveToggle) { // 保存动作结束时，且自动保存没有开启则跳转到jobList页面
         this.$router.push({ path: '/jobList' })
         this.$store.commit('setCurPage', 1)
       }
     }
   },
   beforeRouteLeave  (to, from, next) {
-    if (to.name === 'jobList' && this.autoSaveToggle) {
+    if (to.name === 'jobList' && this.autoSaveToggle) { // 离开jobEditor页面去往jobList页面时，如果自动保存处于开启状态，则将当前用例逻辑流保存到store中
       this.$store.commit('job/setOuterDiagramModel', this.outerDiagram.model.toJson())
     }
     next()
@@ -131,7 +131,7 @@ export default {
     window.removeEventListener('mousemove', this.dispatchMouseEvent)
   },
   methods: {
-    closeNormalEditor () {
+    closeNormalEditor () { // 关闭Normal块的编辑页面
       this.openNormalEditor = false
     },
     switchBlockSave (msg) {
@@ -140,13 +140,13 @@ export default {
       this.outerDiagram.model.setDataProperty(node, 'fileName', msg.fileName)
       this.outerDiagram.model.setDataProperty(node, 'explain', msg.explain)
     },
-    saveNormalData (val) {
+    saveNormalData (val) { // 将编辑后的的内容更新到当前Normal块中
       let { data } = this.outerDiagram.findNodeForKey(this.normalKey)
       CONST.NORMAL_DATA_KEY.forEach((key) => {
         this.outerDiagram.model.setDataProperty(data, key, val[key])
       })
     },
-    _jobFlowRules () {
+    _jobFlowRules () { // 获取逻辑流的错误并弹出显示
       const myDiagramEventValidationHint = jobFlowValidation(this)
       // 错误提示
       if (myDiagramEventValidationHint.size !== 0) {
@@ -179,16 +179,16 @@ export default {
         return false
       } else return true
     },
-    _jobMsgRules () {
+    _jobMsgRules () { // 右侧抽屉中的表单信息是否通过校验
       let flag = false
       if (this.$store.state.job.isValidated) {
         flag = true
-      } else {
+      } else { // 否，弹出右侧抽屉
         this.$store.commit('handleShowDrawer')
       }
       return flag
     },
-    isInvalidInnerJob () {
+    isInvalidInnerJob () { // 检测是否是合法的innerjob，见下文Message中的content
       let flag = false
       let { count } = this.outerDiagram.findNodesByExample({ 'category': 'Job' })
       if (this.jobInfo.job_type === 'InnerJob') {
@@ -214,7 +214,7 @@ export default {
       info.job_id = id
       let resFiles = this._.cloneDeep(this.resFiles)
       try {
-        let { status } = await updateJobMsg(id, info) // 更新右侧抽屉内的信息
+        let { status } = await updateJobMsg(id, info) // 更新jobInfo
         if (status === 200) {
           let data = new FormData()
           data.append('job', id)
@@ -229,7 +229,7 @@ export default {
           }
           try {
             if (resFiles.length) {
-              await jobResFilesSave(data) // 保存依赖文件
+              await jobResFilesSave(data) // 更新依赖文件
             }
           } catch (error) {
             console.log(error)
@@ -245,7 +245,7 @@ export default {
         this.saving = false
       }
     },
-    calcWingmanCount () {
+    calcWingmanCount () { // 计算用到的僚机数量, 僚机信息保存在normal/job块的data中
       let wingman = new Array(4).fill(0)
       let normalBlocks = this.outerDiagram.findNodesByExample({ 'category': 'normalBlock' })
       normalBlocks.each(({ data }) => {
@@ -263,7 +263,7 @@ export default {
       })
       return wingman.reduce((pre, cur) => cur > 0 ? 1 + pre : pre, 0)
     },
-    async handleMenu (name) {
+    async handleMenu (name) { // 点击菜单项时动作分发
       async function createNewJob (context, jobInfo) { // 复用自动保存的用俐/创建新用俐
         if (context.draftId) { // 将自动保存的Job正式保存下来
           jobInfo.job_label = context.draftLabel
@@ -285,7 +285,7 @@ export default {
           }
         }
       }
-      if (name === 'quit') {
+      if (name === 'quit') { // 退出
         this.autoSaveToggle = false
         if (this.draftId) {
           updateJobMsg(this.draftId, { job_deleted: true })
@@ -295,7 +295,7 @@ export default {
       } else {
         let id = this.jobId
         let jobInfo = await this.prepareJobInfo()
-        if (name === 'saveDraft') {
+        if (name === 'saveDraft') { // 存草稿
           if (!this._jobMsgRules()) return
           jobInfo.draft = true
           this.autoSaveToggle = false
@@ -325,7 +325,7 @@ export default {
           }
           if (!this._jobMsgRules() || !this._jobFlowRules() || this.isInvalidInnerJob()) return
           if (this._jobFlowRules()) this.autoSaveToggle = false
-          if (name === 'save') {
+          if (name === 'save') { // 保存
             jobInfo.draft = false
             if (id) {
               try {
@@ -344,7 +344,7 @@ export default {
               return
             }
           }
-          if (name === 'saveAs') {
+          if (name === 'saveAs') { // 另存为
             this.$Modal.confirm({
               render: (h) => {
                 return h('Input', {
@@ -389,7 +389,7 @@ export default {
       }
       await this.clearData()
     },
-    async prepareJobInfo () {
+    async prepareJobInfo () { // 返回保存用例时需要的信息
       // 将配置信息保存在Start节点
       let { data: start } = this.outerDiagram.findNodeForKey(-1)
       this.outerDiagram.model.setDataProperty(start, 'config', this._.cloneDeep(this.config))
@@ -423,7 +423,7 @@ export default {
       })
       return jobInfo
     },
-    prepareInnerJobList () {
+    prepareInnerJobList () { // 保存用到的innerjob的joblabel
       let list = []
       let innerJobs = this.outerDiagram.findNodesByExample({ 'category': 'Job' })
       innerJobs.each(node => { if (node.data.jobLabel) { list.push(node.data.jobLabel) } })
@@ -485,7 +485,7 @@ export default {
         }
       }
     },
-    jobModalClose (job) {
+    jobModalClose (job) { // 关闭innerJob的选取页面, 并将选取的innerjob信息保存下来
       this.jobModalShow = false
       if (job.id) {
         let currentJobBlockData = this.outerDiagram.findNodeForKey(this.currentJobBlockKey).data
@@ -494,10 +494,10 @@ export default {
         this.outerDiagram.model.setDataProperty(currentJobBlockData, 'jobLabel', job.job_label)
       }
     },
-    viewResFile () {
+    viewResFile () { // 打开依赖文件的展示页面
       this.$store.commit('files/setShowResFileModal')
     },
-    handleResFile () { // 获取依赖文件
+    handleResFile () { // jobEditor挂载时获取依赖文件
       if (!this.jobId) return
       getJobResFilesList(this.jobId).then(({ status, data }) => {
         if (status === 200) {
@@ -527,21 +527,23 @@ export default {
               action: 'setResFiles',
               data: filesData
             })
+          }).catch((error) => {
+            throw new Error(error)
           })
         } else {
           throw new Error('依赖文件获取失败')
         }
       }).catch(err => {
         console.log(err)
-        this.$Message.error({ background: true, content: '依赖文件获取失败' })
+        this.$Message.error({ background: true, content: err })
       })
     },
-    async clearData () {
-      this.$store.commit('job/setDraftId', null)
-      this.$store.commit('job/setDraftLabel', null)
-      this.$store.commit('job/handleJobInfo', { action: 'setJobInfo', data: {} })
-      this.$store.commit('job/setOuterDiagramModel', null)
-      this.$store.commit('job/handleJobInfo', { action: 'setPreJobInfo', data: false })
+    async clearData () { // 清空用到的信息
+      this.$store.commit('job/setDraftId', null) // 清除自动保存的用例的Id
+      this.$store.commit('job/setDraftLabel', null) // 清除自动保存的用例的label
+      this.$store.commit('job/handleJobInfo', { action: 'setJobInfo', data: {} }) // 清空jobInfo
+      this.$store.commit('job/setOuterDiagramModel', null) // 清空画布信息
+      this.$store.commit('job/handleJobInfo', { action: 'setPreJobInfo', data: false }) // 清空上一次选择的job的信息
       this.$store.commit('job/handleConfig', { action: 'init' })
       this.$store.commit('job/setIsValidated', false)
       this.$store.commit('files/handleResFiles', { action: 'clearResFiles' })
@@ -573,15 +575,15 @@ export default {
     },
     dispatchMouseEvent (evt) {
       switch (evt.type) {
-        case 'mousemove':
+        case 'mousemove': // 记录最后移动鼠标的时间
           this.lastActiveTime = Date.now()
           break
-        case 'contextmenu':
+        case 'contextmenu': // 阻止鼠标右键的默认行为
           evt.preventDefault()
           break
       }
     },
-    setWingman (id) {
+    setWingman (id) { // 设置僚机
       let curJobBlock = this.outerDiagram.findNodeForKey(this.currentJobBlockKey)
       if (id) {
         this.outerDiagram.model.setDataProperty(curJobBlock.data, 'assistDevice', id)
@@ -600,7 +602,7 @@ export default {
     if (!this.resFiles.length) this.handleResFile()
     this.autoSaveToggle = true
     this.jobController = document.getElementById('job-controller')
-    let timer = setInterval(async () => {
+    let timer = setInterval(async () => { // 设置自动保存的自动循环
       try {
         await this.autoSave()
       } catch (error) {
@@ -610,13 +612,13 @@ export default {
         })
       }
     }, this.autoSaveInterval)
-    this.$once('hook:beforeDestroy', () => {
+    this.$once('hook:beforeDestroy', () => { // 离开jobEditor时清除定时器
       clearInterval(timer)
       timer = null
     })
     window.addEventListener('contextmenu', this.dispatchMouseEvent)
     window.addEventListener('mousemove', this.dispatchMouseEvent)
-    window.addEventListener('beforeunload', () => {
+    window.addEventListener('beforeunload', () => { // 刷新/关闭页面时删除自动保存的用例
       if (this.draftId) updateJobMsg(this.draftId, { job_deleted: true })
       this.$store.commit('job/setDraftId', null)
     })

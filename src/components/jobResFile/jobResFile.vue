@@ -24,37 +24,12 @@
         </Upload>
       </TabPane>
     </Tabs>
-
-    <Modal v-model="checkDuplicateNameModal" :styles="{top: '48%'}" :mask-closable="false"  :closable="false">
-      <p slot="header">
-        <Icon type="ios-alert-outline" style="color:orange;font-size:1.2em;font-weight:bold;" />
-        温馨提示
-      </p>
-      <p style="width:100%;text-align:center;">已存在同名文件，请选择您要进行的操作。</p>
-      <div slot="footer">
-        <Button type="warning" @click="overwrite">覆盖同名文件</Button>
-        <Button type="primary" @click="rename">重命名</Button>
-      </div>
-    </Modal>
-    <Modal v-model="renameModal" :styles="{top: '48%'}" :mask-closable="false" :closable="false">
-      <p slot="header">
-        <Icon type="ios-clipboard-outline" style="color:orange;font-size:1.2em;font-weight:bold;" />
-        请填写新的名字
-      </p>
-      <Input v-model="newName"/>
-      <div slot="footer">
-        <Button type="info" @click="checkDuplicateName">检测名称是否可用</Button>
-        <Button type="success" @click="setNewName" :disabled="this.checkState ? false : true">确定</Button>
-      </div>
-    </Modal>
   </Modal>
 </template>
 
 <script>
 import jobResFileShow from './jobResFileShow'
 import jobResFileTable from './jobResFileTable'
-
-import { suffixRemove } from 'lib/tools'
 
 import { mapState } from 'vuex'
 
@@ -84,9 +59,7 @@ export default {
       ],
       curFile: 0,
       fileData: null,
-      checkDuplicateNameModal: false,
       overwriteAt: null,
-      renameModal: false,
       newName: '',
       checkState: null,
       label: (h) => {
@@ -127,31 +100,6 @@ export default {
     },
     showFile (index) { // 展示依赖文件的内容
       this.curFile = index
-    },
-    overwrite () {
-      this.resFiles.splice(this.overwriteAt, 1, this.fileData)
-      this.checkDuplicateNameModal = false
-    },
-    rename () {
-      this.checkDuplicateNameModal = false
-      this.renameModal = true
-    },
-    setNewName () {
-      this.fileData.name = this.newName + '.' + this.fileData.type
-      this.resFiles.push(this.fileData)
-      this.renameModal = false
-      this.checkState = null
-      this.$bus.emit('setNewName', this.newName + '.' + this.fileData.type)
-    },
-    checkDuplicateName () {
-      let flag = true
-      for (let i = 0; i < this.resFiles.length; i++) {
-        if (suffixRemove(this.resFiles[i].name) === this.newName && this.fileData.type === this.resFiles[i].type) {
-          flag = false
-          break
-        }
-      }
-      this.checkState = flag
     },
     getFileData (tmachBlanks, itemType) {
       if (!tmachBlanks[0]) return

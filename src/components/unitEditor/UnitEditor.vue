@@ -73,7 +73,7 @@ export default {
         let { unitMsg: { execCmdDict: { execCmdList } } } = copyOfVal
         if (execCmdList) {
           execCmdList.forEach((val, idx) => {
-            val.itemID = Math.random().toString(16).slice(2, 8)
+            val.itemID = Math.random().toString(16).slice(2, 8) // 为每一个unitItem生成一个id, 减少不必要的重新渲染
           })
           copyOfVal.unitMsg.execCmdDict.execCmdList = execCmdList
         }
@@ -85,7 +85,7 @@ export default {
     closeUnitEditor (save) {
       this.unitItems = [...findComponentsDownward(this, 'UnitItem')]
       if (save) {
-        this.$emit('handleUnitColor', this.checkWeatherCompleted())
+        this.$emit('handleUnitColor', this.checkWeatherCompleted()) // 检查当前unit是否编辑完成, 以决定unit块的颜色
         let unitData = this._.cloneDeep(this.unitData)
         let { unitMsg: { execCmdDict: { execCmdList } } } = unitData
         if (execCmdList) {
@@ -93,22 +93,22 @@ export default {
             delete val.itemID
           })
         }
-        unitData.completed = this.unitItems.every((val) => val.isCompleted === true)
+        unitData.completed = this.checkWeatherCompleted()
         this.$emit('saveUnit', unitData)
       }
-      this.unitItems.forEach(item => {
+      this.unitItems.forEach(item => { // 使每一个unitItem处于非点击状态
         item.isClicked = false
       })
-      this.$emit('closeUnitEditor')
-      this.$store.commit('item/handleAreasInfo', { action: 'clear' })
-      this.$store.commit('item/handleShowItemEditor', false)
-      this.$store.commit('files/handleCurFile', { action: 'removeCurFile' })
-      this.curUnitData = null
+      this.$emit('closeUnitEditor') // 关闭unitEditor
+      this.$store.commit('item/handleAreasInfo', { action: 'clear' }) // 清除当前选区信息
+      this.$store.commit('item/handleShowItemEditor', false) // 关闭itemEditor
+      this.$store.commit('files/handleCurFile', { action: 'removeCurFile' }) // 清空当前显示的图片的信息
+      this.curUnitData = null // 清空当前unit的副本信息
     },
-    checkWeatherCompleted () {
+    checkWeatherCompleted () { // 如果每一个unitItem都编辑完成了, 则该unit也编辑完成了
       return this.unitItems.every(unitItem => unitItem.isCompleted === true)
     },
-    updateUnitItem (item) {
+    updateUnitItem (item) { // 接受来自unitList.unitEditor的数据, 并将对应的数据更新
       let { unitMsg: { execCmdDict, execCmdDict: { execCmdList } } } = this.curUnitData
       let src = execCmdList || execCmdDict
       Object.assign(src[item.itemName], item.itemContent)

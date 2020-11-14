@@ -20,7 +20,7 @@ export default {
   name: 'Gallery',
   props: {
     open: Boolean,
-    mode: {
+    mode: { // 决定缩略图的展示模式(水平/竖直), 参数传递错误时采用水平模式
       type: String,
       default: 'horizontal',
       validator: (val) => {
@@ -29,7 +29,7 @@ export default {
         }
       }
     },
-    picUrl: {
+    picUrl: { // 需要展示的图片的数组, 数组元素结构为 { name: '', file: ''} file为图片的url
       type: Array,
       default () {
         return [
@@ -100,11 +100,11 @@ export default {
   },
   data () {
     return {
-      curPic: {
+      curPic: { // 当前选中的图片, 点击确定时会将该字段返回给父组件
         file: '',
         name: ''
       },
-      curPicIdx: 0,
+      curPicIdx: 0, // 当前选中图片的位置下标
       curOpen: false
     }
   },
@@ -117,7 +117,7 @@ export default {
     curPic (val) {
       let image = new Image()
       image.src = this.curPic.file
-      image.onload = () => {
+      image.onload = () => { // 使图片尺寸自适应
         if (image.width > image.height) {
           this.picDom.style.width = '100%'
           this.picDom.style.maxWidth = '100%'
@@ -132,11 +132,11 @@ export default {
     }
   },
   methods: {
-    selectPic (pic, idx) {
+    selectPic (pic, idx) { // 点击缩略图时选中图片
       this.curPic = pic
       this.curPicIdx = idx
     },
-    close (toggle) {
+    close (toggle) { // 关闭时根据参数决定是否将当前显示图片的数据传回
       if (toggle) {
         this.$emit('getPic', this.curPic)
       }
