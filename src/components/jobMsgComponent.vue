@@ -89,8 +89,17 @@ export default {
   data () {
     return {
       curManufacturer: {},
+      /*
+        curManufacturer, 存放当前选中机型的厂商信息, 以及该厂商名下的设备的机型/ROM版本信息
+        {
+          "id": xxx,
+          "manufacturer_name": "Xiaomi",
+          "phonemodel": [{ "id": xx, "phone_model_name": "polaris" }, ...],
+          "romversion": [{ "id": 1, "version": "9.11.25" }, ...]
+        }
+      */
       disabled: true,
-      validateRules: {
+      validateRules: { // 表单验证规则
         job_name: [{
           required: true, message: '用例名称不能为空', trigger: 'blur,change'
         }],
@@ -115,7 +124,7 @@ export default {
       },
       job: util.validate(jobSerializer, {}),
       isConflicted: false,
-      jobTypes: [
+      jobTypes: [ // 用例类型, 用于级联选择器
         {
           value: 'Joblib',
           label: '功能测试',
@@ -162,7 +171,7 @@ export default {
     }
   },
   watch: {
-    jobInfo (val) {
+    jobInfo (val) { // jobInfo(用例信息)变化是, 记录job的类型与二级类型
       if (val.job_type) {
         this.curJobType.splice(0, 1, val.job_type)
       } else {
@@ -174,7 +183,7 @@ export default {
         this.curJobType.splice(1, 1)
       }
     },
-    showDrawer (val) {
+    showDrawer (val) { // 在jobEditor页面之外的页面关闭右侧抽屉时清除当前选中的用例信息
       if (val === false && !this.isJobEditor) this.$store.commit('job/handleJobInfo', { action: 'recoverJobInfo' })
     },
     deviceInfo (newVal, oldVal) { // 设备信息变化时检测是否和已填信息发生冲突并进行处理
@@ -190,7 +199,7 @@ export default {
     }
   },
   methods: {
-    enterJobEditor () {
+    enterJobEditor () { // 路由到jobEditor页面
       setTimeout(() => { // 延时关闭右侧抽屉
         this.$store.commit('handleShowDrawer')
         this.closeDrawer()
@@ -213,7 +222,7 @@ export default {
       this.$store.commit('job/handleJobInfo', { action: 'setPreJobInfo', data: false })
       this.$store.commit('files/handleResFiles', { action: 'clearResFiles' })
 
-      if (this.countdown) {
+      if (this.countdown) { // 选取设备的时候, 检测和当前用例信息是否有冲突
         this.checkConflict(true, false)
       }
 
@@ -228,7 +237,7 @@ export default {
       this.jobInfo.phone_models = []
       this.jobInfo.rom_version = []
     },
-    resetManufacturter () {
+    resetManufacturter () { // 重新设置厂商信息
       for (let i = 0; i < this.manufacturer.length; i++) {
         if (this.manufacturer[i].id === this.jobInfo.manufacturer) {
           this.curManufacturer = this.manufacturer[i]
@@ -237,8 +246,8 @@ export default {
         }
       }
     },
-    async controlDevice () {
-      if (this.preDeviceInfo) {
+    async controlDevice () { // 选取设备
+      if (this.preDeviceInfo) { // 如果之前选择的设备还没有到期则释放
         try {
           // eslint-disable-next-line camelcase
           let { id, device_name } = this.preDeviceInfo
@@ -257,7 +266,7 @@ export default {
           console.log(error)
         }
       }
-      try {
+      try { // 控制选中的设备
         // eslint-disable-next-line camelcase
         let { id, device_name } = this.deviceInfo
         let { status } = await controlDevice({
@@ -270,22 +279,22 @@ export default {
             // eslint-disable-next-line camelcase
             content: `成功占用设备 ${device_name}`
           })
-          this.$store.commit('device/setCountdown', true)
+          this.$store.commit('device/setCountdown', true) // 显示倒计时
         }
       } catch (error) {
         console.log(error)
       }
     },
     saveChange () { // 保存对当前 Job 的修改
-      this.$refs.form.validate(async (valid) => {
-        if (shouldCreateNewTag('test_area', this.jobInfo)) {
-          let data = await createNewTag('test_area', this.jobInfo)
-          this.$store.dispatch('setBasicTestArea')
+      this.$refs.form.validate(async (valid) => { // 表单验证
+        if (shouldCreateNewTag('test_area', this.jobInfo)) { // 检测是否应该创建新的测试用途标签
+          let data = await createNewTag('test_area', this.jobInfo) // 创建新的标签
+          this.$store.dispatch('setBasicTestArea') // 更新基础信息中的测试用途
           setTimeout(() => {
             this.$store.commit('job/setJobTestArea', data)
           }, 400)
         }
-        if (shouldCreateNewTag('custom_tag', this.jobInfo)) {
+        if (shouldCreateNewTag('custom_tag', this.jobInfo)) { // 同上
           let data = await createNewTag('custom_tag', this.jobInfo)
           this.$store.dispatch('setBasicCustomTag')
           setTimeout(() => {
@@ -294,7 +303,7 @@ export default {
         }
         if (valid) { // 通过验证
           setTimeout(() => {
-            updateJobMsg(this.jobId, this.jobInfo).then(() => {
+            updateJobMsg(this.jobId, this.jobInfo).then(() => { // 更新用例信息
               this.$Message.info('修改成功')
               this.$store.commit('refreshJobList')
             }).catch(error => {
@@ -344,18 +353,19 @@ export default {
         })
       }
     },
-    async checkConflict (formToggle, deviceToggle) {
+    async checkConflict (formToggle, deviceToggle) { // 检测选中的设备和用例信息是否有冲突
       if (!this.jobInfo || !this.deviceInfo) return
-      if (deviceToggle) {
+      if (deviceToggle) { // 选取设备时
         if (!this.jobInfo.manufacturer) {
           this.deviceInfoReplace(false)
           return
         }
-        if (this.jobInfo.manufacturer !== this.deviceInfo.manufacturer_id) {
+        if (this.jobInfo.manufacturer !== this.deviceInfo.manufacturer_id) { // 厂商不一样时只能替换
           this.canAppend = false
           this.handleConflict()
           return
         }
+        // 厂商相同时, 检测其他内容是否相同
         let same = true
         this.canAppend = true
         this.phoneModelFlag = true
@@ -375,11 +385,11 @@ export default {
         }
         if (!same) { // 有冲突则进行处理
           this.handleConflict()
-        } else {
+        } else { // 无冲突则控制当前设备
           this.controlDevice()
         }
       }
-      if (formToggle) {
+      if (formToggle) { // 手动更新表单信息时
         if (!this.deviceInfo) return
         if (
           this.jobInfo.manufacturer !== this.deviceInfo.manufacturer_id ||
@@ -396,13 +406,13 @@ export default {
               content: '当前设备与 Job 冲突，已自动释放。'
             })
           }
-          this.$store.commit('device/setCountdown')
+          this.$store.commit('device/setCountdown') // 取消计时
         }
       }
     }
   },
   mounted () {
-    if (!this.basicData) this.$store.dispatch('setBasicData')
+    if (!this.basicData) this.$store.dispatch('setBasicData') // 挂载时如果没有基本信息, 则获取
   }
 }
 </script>

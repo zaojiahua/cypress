@@ -77,6 +77,20 @@ export default {
       unitTemplateType: '',
       startUnitTemplateType: '基础操作',
       curNormalData: {},
+      /*
+        curNormalData 结构:
+        {
+          category: "normalBlock",
+          text: "normalBlock的名字",
+          unitLists: {
+            class: "",
+            linkFromPortIdProperty: "fromPort",
+            linkToPortIdProperty: "toPort",
+            nodeDataArray: [],
+            linkDataArray: []
+          }
+        }
+      */
       unitTemplateId: undefined,
       unitTemplateName: '',
       unitTemplateContent: '',
