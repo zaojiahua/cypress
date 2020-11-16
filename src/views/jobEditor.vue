@@ -361,6 +361,29 @@ export default {
                     input: (val) => {
                       this.value = val
                     }
+                  },
+                  nativeOn: {
+                    keydown: async (e) => {
+                      switch (e.keyCode) {
+                        case 13: // enter
+                          jobInfo.job_name = e.target.value
+                          try {
+                            await createNewJob(this, jobInfo)
+                          } catch (error) {
+                            this.$Message.error({
+                              background: true,
+                              content: error
+                            })
+                            return
+                          }
+                          await this.clearData()
+                          this.$Modal.remove()
+                          break
+                        case 27: // esc
+                          this.$Modal.remove()
+                          break
+                      }
+                    }
                   }
                 })
               },
