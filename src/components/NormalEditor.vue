@@ -247,9 +247,11 @@ export default {
     saveUnit (data) { // 将传入的unit信息保存到逻辑流中
       this.closeUnitEditor()
       this.innerDiagram.selection.each((node) => {
-        this.innerDiagram.model.setDataProperty(node.data, 'unitMsg', data.unitMsg)
-        this.innerDiagram.model.setDataProperty(node.data, 'text', data.unitName)
-        this.innerDiagram.model.setDataProperty(node.data, 'completed', data.completed)
+        if (node.category === 'Unit') {
+          this.innerDiagram.model.setDataProperty(node.data, 'unitMsg', data.unitMsg)
+          this.innerDiagram.model.setDataProperty(node.data, 'text', data.unitName)
+          this.innerDiagram.model.setDataProperty(node.data, 'completed', data.completed)
+        }
       })
     },
     setUnitName (val) {
