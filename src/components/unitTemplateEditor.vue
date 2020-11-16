@@ -87,7 +87,7 @@ export default {
       this.currentUnitType = this.unitTemplateType
       this.newUnitName = ''
     },
-    jsonFormatCheck (str) {
+    jsonFormatCheck (str) { // 检查是否是JSON格式
       if (!isJsonString(str)) {
         this.$Message.error({
           background: true,
@@ -102,13 +102,13 @@ export default {
       this._reset()
       this.$emit('closeUnitTemplateEditor')
     },
-    _saveAs () {
+    _saveAs () { // 另存为一个新的unit模板
       let unitInfo = {
         unit_name: this.newUnitName,
         unit_content: JSON.parse(this.currentUnitTemplateContent),
         type: this.currentUnitType
       }
-      createNewUnitTemplate(unitInfo).then((res) => {
+      createNewUnitTemplate(unitInfo).then((res) => { // 保存新建的unit模板并更新ui显示
         if (res.status === 201) {
           this.$Message.success({
             background: true,
@@ -122,12 +122,12 @@ export default {
       this.setNewUnitName = false
       this.closeUnitTemplateEditor()
     },
-    saveAs () {
+    saveAs () { // 点击另存为时显示重命名
       if (this.jsonFormatCheck(this.currentUnitTemplateContent)) {
         this.setNewUnitName = true
       }
     },
-    async updateUnitTemplate () {
+    async updateUnitTemplate () { // 更新当前unit模板
       if (this.jsonFormatCheck(this.currentUnitTemplateContent)) {
         let unitInfo = {
           unit_name: this.unitTemplateName,
@@ -154,15 +154,14 @@ export default {
         this.closeUnitTemplateEditor()
       }
     },
-    handleKeydown (event) {
+    handleKeydown (event) { // 键盘按键事件分发
       switch (event.keyCode) {
-        case 9: // tab
+        case 9: // tab   按下时填入两个空格
           let insertStr = '  '
           event.preventDefault()
           insertAfterCursor(event.target, insertStr)
           break
         case 27: // esc
-          console.log(event.keyCode, this)
           this.closeUnitTemplateEditor()
           break
       }

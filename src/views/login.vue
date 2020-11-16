@@ -27,6 +27,11 @@ export default {
       keepLogin: false
     }
   },
+  watch: {
+    keepLogin (val) {
+      localStorage.setItem('LOGIN:KEEP_LOGIN', val)
+    }
+  },
   methods: {
     login () {
       login(this.username, this.password).then(({ status, data }) => {
@@ -59,6 +64,9 @@ export default {
       this.$router.push('/')
     }
     next()
+  },
+  mounted () {
+    this.keepLogin = !!localStorage.getItem('LOGIN:KEEP_LOGIN')
   }
 }
 </script>

@@ -238,6 +238,10 @@ export default {
         } else {
           throw new Error('Job保存失败')
         }
+        this.$Message.success({
+          background: true,
+          content: '用例保存成功'
+        })
       } catch (error) {
         console.log(error)
         throw new Error(error)
@@ -303,7 +307,7 @@ export default {
             try {
               await this.uploadFiles(id, jobInfo)
             } catch (error) {
-              this.$Message({
+              this.$Message.error({
                 background: true,
                 content: error
               })
@@ -331,7 +335,7 @@ export default {
               try {
                 await this.uploadFiles(id, jobInfo)
               } catch (error) {
-                this.$Message({
+                this.$Message.error({
                   background: true,
                   content: error
                 })
@@ -365,7 +369,7 @@ export default {
                 try {
                   await createNewJob(this, jobInfo)
                 } catch (error) {
-                  this.$Message({
+                  this.$Message.error({
                     background: true,
                     content: error
                   })
@@ -380,7 +384,7 @@ export default {
         try {
           await createNewJob(this, jobInfo)
         } catch (error) {
-          this.$Message({
+          this.$Message.error({
             background: true,
             content: error
           })
@@ -606,7 +610,7 @@ export default {
       try {
         await this.autoSave()
       } catch (error) {
-        this.$Message({
+        this.$Message.error({
           background: true,
           content: error
         })
