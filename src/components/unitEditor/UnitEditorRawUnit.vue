@@ -70,20 +70,20 @@ export default {
     }
   },
   methods: {
-    editUnitContent () {
+    editUnitContent () { // 打开rawUnit编辑界面, 并对当前内容做备份
       this.editing = true
       this.curUnitContent = this.unitContent
     },
-    endUnitContentEdit (save) {
-      if (save) {
-        if (!isJsonString(this.unitContent)) {
+    endUnitContentEdit (save) { // 结束编辑
+      if (save) { // 保存
+        if (!isJsonString(this.unitContent)) { // 不是JSON格式
           this.$Message.error({
             background: true,
             content: '不是 JSON 格式'
           })
           return
-        } else {
-          this.$store.commit('unit/handleUnitData', {
+        } else { // 是JSON格式
+          this.$store.commit('unit/handleUnitData', { // 同步更新当前用到的unitData
             action: 'setUnitMsg',
             data: JSON.parse(this.curUnitContent)
           })
@@ -93,16 +93,29 @@ export default {
           })
         }
       }
-      this.editing = false
+      this.editing = false // 关闭编辑页面
     },
-    handleKeydown (event) {
-      let insertStr = '  '
-      event.preventDefault()
-      insertAfterCursor(event.target, insertStr)
+    handleKeydown (event) { // 分发按键事件
+      switch (event.keyCode) {
+        case 9: // tab 插入两个空格
+          let insertStr = '  '
+          event.preventDefault()
+          insertAfterCursor(event.target, insertStr)
+          break
+        case 27:
+          this.endUnitContentEdit(false)
+          break
+      }
     },
     handleFoldRawUnit (toggle) {
       this.foldRawUnit = !this.foldRawUnit
     }
+  },
+  mounted () {
+    window.addEventListener('keydown', this.handleKeydown)
+  },
+  beforeDestroy () {
+    window.removeEventListener('keydown', this.handleKeydown)
   }
 }
 </script>

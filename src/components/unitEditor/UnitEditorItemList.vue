@@ -77,7 +77,7 @@ export default {
     }
   },
   methods: {
-    handleOcrChoice (val) {
+    handleOcrChoice (val) { // 更改当前unit使用的ocr引擎
       let { unitMsg } = this._.cloneDeep(this.unitData)
       unitMsg.ocrChoice = val ? 1 : 2
       this.$store.commit('unit/handleUnitData', {
@@ -85,7 +85,7 @@ export default {
         data: unitMsg
       })
     },
-    handleItemClick (index) {
+    handleItemClick (index) { // 记录当前点击的unitItem
       this.curUnitItem = index
     }
   }

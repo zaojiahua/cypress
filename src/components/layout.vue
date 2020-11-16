@@ -104,14 +104,14 @@ export default {
       }
       this.$router.push({ path: '/jobList' })
     },
-    enterJobEditor () {
+    enterJobEditor () { // 路由跳转到jobEditor页面
       let routeOptions = { name: 'jobEditor' }
-      if (JSON.stringify(this.jobInfo) !== '{}') {
+      if (JSON.stringify(this.jobInfo) !== '{}') { // 如果当前用例信息不为空
         routeOptions.query = { jobId: this.jobInfo.job_id }
-      } else if (this.preJobInfo) {
+      } else if (this.preJobInfo) { // 当前用例为空 且 前一个用例信息不为空
         routeOptions.query = { jobId: this.preJobInfo.job_id }
         this.$store.commit('job/handleJobInfo', { action: 'recoverJobInfo' })
-      } else {
+      } else { // 设置用例信息
         this.$store.commit('job/handleJobInfo', { action: 'setJobInfo', data: {} })
       }
       setTimeout(() => {
@@ -149,7 +149,7 @@ export default {
         this.$store.commit('device/clearPreDeviceInfo')
       }
     },
-    async extendTime () {
+    async extendTime () { // 设备占用延时
       // eslint-disable-next-line camelcase
       let { id, device_name } = this.deviceInfo
       try {
