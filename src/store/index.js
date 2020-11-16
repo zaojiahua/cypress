@@ -25,11 +25,11 @@ export default new Vuex.Store({
     img
   },
   state: {
-    showDrawer: false,
+    showDrawer: false, // 是否显示右侧抽屉
     isLoading: false,
-    curPage: 1,
-    refresh: false,
-    basicData: null
+    curPage: 1, // 当前jobList页
+    refresh: false, // 控制是否刷新jobList页面
+    basicData: null // 基本的信息, 如job_test_area/custom_tag/phone_model等信息
   },
   mutations: {
     handleShowDrawer (state) {

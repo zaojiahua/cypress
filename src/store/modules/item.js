@@ -1,12 +1,12 @@
 let state = {
   editing: false,
-  itemData: {
+  itemData: { // 点击unitItem时获取
     itemName: '',
     itemIndex: undefined,
     itemContent: ''
   },
-  saveToFinalResult: false,
-  areasInfo: {
+  saveToFinalResult: false, // 是否保存到最终结果
+  areasInfo: { // 用于在界面上标识选取的区域
     data: [],
     idx: undefined
   }

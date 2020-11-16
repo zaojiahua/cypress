@@ -1,8 +1,8 @@
 let state = {
-  selectDevice: false,
-  deviceInfo: null,
-  preDeviceInfo: null,
-  countdown: false
+  selectDevice: false, // 是否打开设备选择界面
+  deviceInfo: null, // 当前选中的设备
+  preDeviceInfo: null, // 之前选中的 倒计时中的设备
+  countdown: false // 是否显示倒计时组件CountDown
 }
 
 let mutations = {
