@@ -37,13 +37,13 @@ export default {
     }
   },
   watch: {
-    imgSrc (val) { 
+    imgSrc (val) {
       this.drawImg(val)
     },
     areasInfo (val) { // 传入选取信息时
       this.context2D.clearRect(0, 0, this.canvasW, this.canvasH) // 清空当前绘制的内容
       val.forEach((v, i) => {
-        if (v.h < 1 && v.w < 1) { // 传入的是小数
+        if (v.h <= 1 && v.w <= 1) { // 传入的是小数
           let x = v.x * this.canvasW
           let y = v.y * this.canvasH
           let w = v.w * this.canvasW
