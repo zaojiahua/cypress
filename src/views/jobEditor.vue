@@ -367,7 +367,7 @@ export default {
                     keydown: async (e) => {
                       switch (e.keyCode) {
                         case 13: // enter
-                          jobInfo.job_name = e.target.value
+                          jobInfo.job_name = e.target.value.trim() || jobInfo.job_name
                           try {
                             await createNewJob(this, jobInfo)
                           } catch (error) {
@@ -389,7 +389,7 @@ export default {
                 })
               },
               onOk: async () => {
-                jobInfo.job_name = this.value
+                jobInfo.job_name = this.value.trim() || jobInfo.job_name
                 try {
                   await createNewJob(this, jobInfo)
                 } catch (error) {
