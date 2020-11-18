@@ -627,7 +627,7 @@ export default {
   },
   mounted () {
     init(this) // 创建画板与画布并绘制流程图
-    if (!this.resFiles.length) this.handleResFile()
+    if (!this.resFiles.length) this.handleResFile() // 如果还未获取依赖文件，则获取
     this.autoSaveToggle = true
     this.jobController = document.getElementById('job-controller')
     let timer = setInterval(async () => { // 设置自动保存的自动循环

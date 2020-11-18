@@ -58,10 +58,6 @@ export default {
         }
       ],
       curFile: 0,
-      fileData: null,
-      overwriteAt: null,
-      newName: '',
-      checkState: null,
       label: (h) => {
         return h('div', [
           h('span', '依赖文件'),
@@ -100,53 +96,7 @@ export default {
     },
     showFile (index) { // 展示依赖文件的内容
       this.curFile = index
-    },
-    getFileData (tmachBlanks, itemType) {
-      if (!tmachBlanks[0]) return
-      for (let i = 0; i < this.resFiles.length; i++) {
-        if (this.resFiles[i].name === tmachBlanks[0]) {
-          /**
-           * 将文件展示在 UnitEditor 中
-           * 由 unitEditorUtils 组件响应
-           */
-          this.$bus.emit('showFile', {
-            'fileToShow': this.resFiles[i].file,
-            'fileName': this.resFiles[i].name,
-            'itemType': itemType,
-            'isScreenShot': true
-          })
-          break
-        }
-      }
     }
-  },
-  created () {
-    this.$bus.on('addResFile', fileData => {
-      let resFiles = this.resFiles
-      let flag = true
-      for (let i = 0; i < resFiles.length; i++) {
-        if (fileData.name === resFiles[i].name && fileData.type === resFiles[i].type) {
-          flag = false
-          this.overwriteAt = i
-          break
-        }
-      }
-      if (!flag) {
-        this.fileData = fileData
-        this.checkDuplicateNameModal = true
-      } else {
-        resFiles.push(fileData)
-      }
-    })
-    /**
-     * 获取 UnitItem 的依赖文件数据
-     * 来自 unitEditorUnitItem 组件
-     */
-    this.$bus.on('getFileData', this.getFileData)
-  },
-  beforeDestroy () {
-    this.$bus.off('addResFile')
-    this.$bus.off('getFileData', this.getFileData)
   }
 }
 </script>
