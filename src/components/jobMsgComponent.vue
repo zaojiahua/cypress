@@ -112,12 +112,13 @@ export default {
         manufacturer: [{
           required: true, type: 'number', message: '厂商信息不能为空', trigger: 'change'
         }],
-        phone_models: [{
-          required: true, type: 'array', min: 1, message: '适配机型不能为空', trigger: 'change'
-        }],
-        rom_version: [{
-          required: true, type: 'array', min: 1, message: 'ROM版本不能为空', trigger: 'change'
-        }],
+        // 暂时去掉了对适配机型及Rom版本的表单验证
+        // phone_models: [{
+        //   required: true, type: 'array', min: 1, message: '适配机型不能为空', trigger: 'change'
+        // }],
+        // rom_version: [{
+        //   required: true, type: 'array', min: 1, message: 'ROM版本不能为空', trigger: 'change'
+        // }],
         android_version: [{
           required: true, type: 'array', min: 1, message: '适配系统不能为空', trigger: 'change'
         }]
