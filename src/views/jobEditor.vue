@@ -83,8 +83,8 @@ export default {
       jobModalShow: false,
       currentJobBlockKey: null,
       currentJobBlockText: 'Job block',
-      lastActiveTime: null,
-      activeTimeInterval: 120000,
+      lastActiveTime: null, // 记录最后移动鼠标的时间
+      activeTimeInterval: 120000, //记录页面无操作最大时间，超过则不进行自动保存
       autoSaveInterval: 180000,
       autoSaveTimer: null,
       autoSaveToggle: true,
@@ -210,7 +210,7 @@ export default {
       }
       return flag
     },
-    async uploadFiles (id, info) { // 保存依赖文件，失败则抛出异常
+    async uploadFiles (id, info) { // 保存依赖文件，更新job Msg (job attr)失败则抛出异常
       this.saving = true
       info.job_id = id
       let resFiles = this._.cloneDeep(this.resFiles)
