@@ -69,7 +69,7 @@ export default {
       deep: true,
       handler (newVal) {
         if (!newVal || !newVal.unitMsg) return
-        let copyOfVal = this._.cloneDeep(newVal)
+        let copyOfVal = this._.cloneDeep(newVal) //深拷贝
         let { unitMsg: { execCmdDict: { execCmdList } } } = copyOfVal
         if (execCmdList) {
           execCmdList.forEach((val, idx) => {

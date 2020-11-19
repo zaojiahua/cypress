@@ -234,7 +234,7 @@ function outerDiagramInit (context) {
     if (e.diagram instanceof go.Palette) return
     let { data } = context._.cloneDeep(node)
     context.$store.commit('job/handleNormalData', { action: 'set', data })
-    context.outerDiagram.div.firstElementChild.blur()
+    context.outerDiagram.div.firstElementChild.blur()  // 失去焦点，防止粘贴错误
     context.openNormalEditor = true
   }
 

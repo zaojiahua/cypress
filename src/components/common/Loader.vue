@@ -1,4 +1,5 @@
 <template>
+  <!-- 加载动画 -->
   <!-- <div class="loader" :style="loaderSize">
     <div></div>
     <div></div>

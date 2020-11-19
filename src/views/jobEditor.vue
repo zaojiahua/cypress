@@ -91,7 +91,7 @@ export default {
       openNormalEditor: false,
       wingmanCount: 0,
       wingmans: 3,
-      jobController: null,
+      jobController: null, // unit 右键菜单栏dom对象
       saving: false
     }
   },
@@ -114,7 +114,7 @@ export default {
       },
       deep: true
     },
-    saving (val) {
+    saving (val) { //监听saving字段
       if (!val && !this.autoSaveToggle) { // 保存动作结束时，且自动保存没有开启则跳转到jobList页面
         this.$router.push({ path: '/jobList' })
         this.$store.commit('setCurPage', 1)
@@ -627,7 +627,8 @@ export default {
   },
   mounted () {
     init(this) // 创建画板与画布并绘制流程图
-    if (!this.resFiles.length) this.handleResFile() // 如果还未获取依赖文件，则获取
+    debugger
+    if (!this.resFiles.length) this.handleResFile()
     this.autoSaveToggle = true
     this.jobController = document.getElementById('job-controller')
     let timer = setInterval(async () => { // 设置自动保存的自动循环
@@ -644,8 +645,8 @@ export default {
       clearInterval(timer)
       timer = null
     })
-    window.addEventListener('contextmenu', this.dispatchMouseEvent)
-    window.addEventListener('mousemove', this.dispatchMouseEvent)
+    window.addEventListener('contextmenu', this.dispatchMouseEvent) //右键菜单栏
+    window.addEventListener('mousemove', this.dispatchMouseEvent) //
     window.addEventListener('beforeunload', () => { // 刷新/关闭页面时删除自动保存的用例
       if (this.draftId) updateJobMsg(this.draftId, { job_deleted: true })
       this.$store.commit('job/setDraftId', null)

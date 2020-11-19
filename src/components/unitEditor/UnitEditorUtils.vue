@@ -132,7 +132,7 @@ export default {
       if (val.point) this.point = this._.cloneDeep(val.point)
       if (val.offset) this.offset = this._.cloneDeep(val.offset)
     },
-    normalizeAreasInfo (val) {
+    normalizeAreasInfo (val) { // 特征点区域数据整理
       let areasInfo = []
       if (Array.isArray(val.data)) {
         val.data.forEach(val => {

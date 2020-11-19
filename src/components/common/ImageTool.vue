@@ -345,7 +345,7 @@ export default {
     this.canvas.addEventListener('mousemove', this.dispatchMouseEvent)
     this.canvas.addEventListener('mouseup', this.dispatchMouseEvent)
     this.canvas.addEventListener('mouseleave', this.dispatchMouseEvent)
-    this.context2D = this.canvas.getContext('2d')
+    this.context2D = this.canvas.getContext('2d') // 使用canvas
     this.drawImg(this.imgSrc)
   }
 }
