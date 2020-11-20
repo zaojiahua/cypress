@@ -6,6 +6,7 @@
         <div class="child-m-right--1 flex-row">
           <Button type="primary" @click="$store.commit('handleShowDrawer')" size="large" style="margin-right: 10px;">用例详情</Button>
           <Button type="info" ghost size="large" @click="viewResFile" style="margin-right: 10px;">查看依赖文件</Button>
+          {{draftLabel}}{{jobLabel}}
         </div>
         <div class="child-m-right--1 flex-row">
           <Dropdown @on-click="handleMenu">
@@ -85,19 +86,20 @@ export default {
       currentJobBlockText: 'Job block',
       lastActiveTime: null, // 记录最后移动鼠标的时间
       activeTimeInterval: 120000, //记录页面无操作最大时间，超过则不进行自动保存
-      autoSaveInterval: 180000,
+      autoSaveInterval: 3000,
       autoSaveTimer: null,
       autoSaveToggle: true,
       openNormalEditor: false,
       wingmanCount: 0,
       wingmans: 3,
       jobController: null, // unit 右键菜单栏dom对象
-      saving: false
+      saving: false,
+      jobLabelDuplicate: 'duplicate'
     }
   },
   computed: {
     ...mapState('job', ['jobInfo', 'outerDiagramModel', 'isValidated', 'draftId', 'draftLabel', 'normalData', 'config']),
-    ...mapGetters('job', ['jobId', 'normalKey']),
+    ...mapGetters('job', ['jobId','jobLabel', 'normalKey']),
     ...mapState('files', ['resFiles']),
     ...mapGetters('files', ['resFilesName']),
     ...mapState('device', ['countdown', 'deviceInfo'])
@@ -277,7 +279,7 @@ export default {
           } catch (error) {
             throw new Error(error)
           }
-        } else { // 创建新的Job
+        } else { // 没有草稿的job,创建新的Job
           jobInfo.job_label = createJobLabel(context)
           try {
             let { status, data } = await saveJobFlowAndMsg(jobInfo)
@@ -300,7 +302,7 @@ export default {
       } else {
         let id = this.jobId
         let jobInfo = await this.prepareJobInfo()
-        if (name === 'saveDraft') { // 存草稿
+        if (name === 'saveDraft') { // 存草稿，可跳过校验
           if (!this._jobMsgRules()) return
           jobInfo.draft = true
           this.autoSaveToggle = false
@@ -330,9 +332,10 @@ export default {
           }
           if (!this._jobMsgRules() || !this._jobFlowRules() || this.isInvalidInnerJob()) return
           if (this._jobFlowRules()) this.autoSaveToggle = false
-          if (name === 'save') { // 保存
+          if (name === 'save') { // 保存，如果已经存在则更新并返回，如果不存在则创建
             jobInfo.draft = false
-            if (id) {
+            if (id) { //id 存在表明是更新
+              // console.log("更新")
               try {
                 await this.uploadFiles(id, jobInfo)
               } catch (error) {
@@ -364,12 +367,13 @@ export default {
                     }
                   },
                   nativeOn: {
-                    keydown: async (e) => {
+                    keydown: async (e) => { // 监听键盘的操作
                       switch (e.keyCode) {
                         case 13: // enter
                           jobInfo.job_name = e.target.value.trim() || jobInfo.job_name
                           try {
-                            await createNewJob(this, jobInfo)
+                            console.log()
+                            await createNewJob(this, jobInfo)  // 监听回车（）enter 触发 的另存为
                           } catch (error) {
                             this.$Message.error({
                               background: true,
@@ -380,7 +384,7 @@ export default {
                           await this.clearData()
                           this.$Modal.remove()
                           break
-                        case 27: // esc
+                        case 27: // 监听esc 触发 取消
                           this.$Modal.remove()
                           break
                       }
@@ -391,7 +395,7 @@ export default {
               onOk: async () => {
                 jobInfo.job_name = this.value.trim() || jobInfo.job_name
                 try {
-                  await createNewJob(this, jobInfo)
+                  await createNewJob(this, jobInfo) // input框确认按钮的确认触发的保存
                 } catch (error) {
                   this.$Message.error({
                     background: true,
@@ -406,6 +410,7 @@ export default {
           }
         }
         try {
+          // console.log("创建一个全新的job")
           await createNewJob(this, jobInfo)
         } catch (error) {
           this.$Message.error({
@@ -478,21 +483,31 @@ export default {
       info.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
       info.subsidiary_device_count = this.calcWingmanCount()
       info.author = localStorage.id
-      info.job_name += '_AUTOSAVE'
+      // info.job_name += '_AUTOSAVE'
       info.draft = true
       info.inner_job_list = this.prepareInnerJobList()
-      if (this.draftLabel) {
-        info.job_label = this.draftLabel
-      } else {
-        info.job_label = createJobLabel(this)
-        this.$store.commit('job/setDraftLabel', info.job_label)
+      if (!this.draftLabel) { // 第一次自动保存
+        if (!info.job_label){ // 编辑的job数据库没有，是一个新建的job
+          const job_label = createJobLabel(this)
+          this.$store.commit('job/setJobLabel', job_label)
+          console.log(this.jobLabel)
+          console.log(this.test_area)
+          // setTimeout(() =>
+          //   this.$store.commit('job/setJobLabel', job_label)
+          // }, 400)
+        }
+        // info.job_label = this.draftLabel
+        this.$store.commit('job/setDraftLabel', `${this.jobLabel}_${this.jobLabelDuplicate}`) // 设置副本的jobLabel
       }
+      info.job_label = this.draftLabel
       return info
     },
     async autoSave () {
       let curTime = Date.now()
       if (curTime - this.lastActiveTime >= this.activeTimeInterval || !this._jobMsgRules() || !this.autoSaveToggle) return
       let info = await this.prepareAutoSaveInfo()
+      // console.log(this.jobLabel)
+      // console.log(this.draftLabel)
       info.job_label = this.draftLabel
       if (!this.draftId) {
         try {
@@ -627,7 +642,6 @@ export default {
   },
   mounted () {
     init(this) // 创建画板与画布并绘制流程图
-    debugger
     if (!this.resFiles.length) this.handleResFile()
     this.autoSaveToggle = true
     this.jobController = document.getElementById('job-controller')

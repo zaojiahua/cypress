@@ -99,7 +99,7 @@ export default {
       })
     },
     viewJobList () {
-      if (this.$route.name === 'jobEditor') {
+      if (this.$route.name === 'jobEditor') { //如果是从jobEditor跳转的则保存起来，用于下一次进入jobEditor是展示
         this.$store.commit('job/handleJobInfo', { action: 'setPreJobInfo', data: true })
       }
       this.$router.push({ path: '/jobList' })

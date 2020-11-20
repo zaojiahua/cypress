@@ -7,15 +7,16 @@ let state = {
   isValidated: false, // 右侧抽屉中的表单信息是否通过验证
   outerDiagramModel: null, // jobEditor界面的逻辑流信息
   draftId: undefined, // 自动保存的用例的id及joblabel, 更改自动保存的逻辑之后可能会用不到了
-  draftLabel: undefined,
+  draftLabel: undefined, //自动保存的用例的joblabel
   normalData: null, // 双击normalBlock后获取到该数据, normalEditor界面会用到
   config: _.cloneDeep(CONST.JOB_DEFAULT_CONFIG)
 }
 
-let mutations = {
+let t = {
   handleJobInfo (state, { action, data }) {
     if (action === 'setJobInfo') {
       state.jobInfo = data
+      delete state.jobInfo.job_label
       if (!state.preJobInfo.dirty) {
         state.preJobInfo = _.cloneDeep(data)
         state.preJobInfo.dirty = false
@@ -62,6 +63,9 @@ let mutations = {
   },
   setDraftLabel (state, label) {
     state.draftLabel = label
+  },
+  setJobLabel (state, label) {
+    state.jobInfo.job_label = label
   },
   setJobTestArea (state, data) {
     state.jobInfo.test_area = data
@@ -110,6 +114,9 @@ let mutations = {
 let getters = {
   jobId (state) {
     return parseInt(state.jobInfo.job_id)
+  },
+  jobLabel (state) {
+    return state.jobInfo.job_label
   },
   normalKey (state) {
     return state.normalData.key
