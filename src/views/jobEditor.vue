@@ -490,14 +490,9 @@ export default {
         if (!info.job_label){ // 编辑的job数据库没有，是一个新建的job
           const job_label = createJobLabel(this)
           this.$store.commit('job/setJobLabel', job_label)
-          console.log(this.jobLabel)
-          console.log(this.test_area)
-          // setTimeout(() =>
-          //   this.$store.commit('job/setJobLabel', job_label)
-          // }, 400)
         }
         // info.job_label = this.draftLabel
-        this.$store.commit('job/setDraftLabel', `${this.jobLabel}_${this.jobLabelDuplicate}`) // 设置副本的jobLabel
+        this.$store.commit('job/setDraftLabel', `${this.jobInfo.job_label}_${this.jobLabelDuplicate}`) // 设置副本的jobLabel
       }
       info.job_label = this.draftLabel
       return info

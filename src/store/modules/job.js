@@ -12,7 +12,7 @@ let state = {
   config: _.cloneDeep(CONST.JOB_DEFAULT_CONFIG)
 }
 
-let t = {
+let mutations = {
   handleJobInfo (state, { action, data }) {
     if (action === 'setJobInfo') {
       state.jobInfo = data
