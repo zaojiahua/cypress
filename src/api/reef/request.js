@@ -100,6 +100,14 @@ const releaseOccupyDevice = (data) => {
 }
 
 // job
+const getJobId = (jobLabel) => {
+  return axios.request({
+    url: url.jobSingleId(jobLabel)
+  })
+}
+
+
+
 const getJobList = (data) => {
   return axios.request({
     url: url.job(data)
@@ -107,6 +115,7 @@ const getJobList = (data) => {
 }
 
 const getJobDetail = (id) => {
+  // getJobDetail 需要job id 获取单个job 因此不能加条件 （如：job_deleted=true）
   return axios.request({
     url: url.jobDetail(id)
   })
@@ -203,6 +212,7 @@ export {
   controlDevice,
   releaseOccupyDevice,
   saveJobFlowAndMsg,
+  getJobId,
   getJobList,
   getJobDetail,
   updateJobMsg,

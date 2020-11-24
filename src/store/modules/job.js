@@ -9,14 +9,15 @@ let state = {
   draftId: undefined, // 自动保存的用例的id及joblabel, 更改自动保存的逻辑之后可能会用不到了
   draftLabel: undefined, //自动保存的用例的joblabel
   normalData: null, // 双击normalBlock后获取到该数据, normalEditor界面会用到
-  config: _.cloneDeep(CONST.JOB_DEFAULT_CONFIG)
+  config: _.cloneDeep(CONST.JOB_DEFAULT_CONFIG),
+  jobLabelDuplicate: 'duplicate',
+
 }
 
 let mutations = {
   handleJobInfo (state, { action, data }) {
     if (action === 'setJobInfo') {
       state.jobInfo = data
-      delete state.jobInfo.job_label
       if (!state.preJobInfo.dirty) {
         state.preJobInfo = _.cloneDeep(data)
         state.preJobInfo.dirty = false
@@ -61,9 +62,16 @@ let mutations = {
   setDraftId (state, id) {
     state.draftId = id
   },
-  setDraftLabel (state, label) {
-    state.draftLabel = label
+  setDraftLabel (state, label) { // 传入正在传入的job的jobLabel
+    if (label === null)
+      { state.draftLabel = label}
+    else
+      {state.draftLabel = `${label}_${state.jobLabelDuplicate}`}
   },
+  // setJobId (state, jobId) {
+  //   state.jobInfo.job_id = jobId
+  // },
+
   setJobLabel (state, label) {
     state.jobInfo.job_label = label
   },
@@ -115,9 +123,9 @@ let getters = {
   jobId (state) {
     return parseInt(state.jobInfo.job_id)
   },
-  jobLabel (state) {
-    return state.jobInfo.job_label
-  },
+  // getJobLabel (state) {
+  //   return state.jobInfo.job_label
+  // },
   normalKey (state) {
     return state.normalData.key
   },

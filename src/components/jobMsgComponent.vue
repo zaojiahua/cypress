@@ -77,7 +77,7 @@
 <script>
 import util from 'lib/util/validate.js'
 import { jobSerializer } from 'lib/util/jobListSerializer'
-import { controlDevice, releaseOccupyDevice, updateJobMsg } from 'api/reef/request'
+import {controlDevice, getJobId, releaseOccupyDevice, updateJobMsg} from 'api/reef/request'
 import jobDeviceSelect from '../components/jobDeviceSelect'
 import { shouldCreateNewTag, createNewTag } from 'lib/tools'
 
@@ -153,7 +153,7 @@ export default {
   },
   computed: {
     ...mapState(['showDrawer', 'basicData']),
-    ...mapState('job', ['jobInfo', 'draftId']),
+    ...mapState('job', ['jobInfo', 'draftId', 'draftLabel']),
     ...mapGetters('job', ['jobId']),
     ...mapState('device', ['deviceInfo', 'preDeviceInfo', 'countdown']),
     isJobEditor () { // 是否在 JobEditor 页面
@@ -200,22 +200,26 @@ export default {
     }
   },
   methods: {
-    enterJobEditor () { // 路由到jobEditor页面
+    async enterJobEditor () { // 路由到jobEditor页面
       setTimeout(() => { // 延时关闭右侧抽屉
         this.$store.commit('handleShowDrawer')
         this.closeDrawer()
       }, 800)
 
       if (this.draftId) {
-        updateJobMsg(this.draftId, { job_deleted: true }).then(({ status }) => {
-          if (status === 200) {
-          } else {
-            console.log('删除自动备份文件失败，错误码: ' + status)
-          }
-          this.$store.commit('job/setDraftId', null)
-        }).catch(err => {
-          console.log(err)
-        })
+        let { status } = await updateJobMsg(this.draftId, { job_deleted: true })
+        if (status === 200) {
+        } else {
+          console.log('删除自动备份文件失败，错误码: ' + status)
+        }
+      }
+
+      this.$store.commit('job/setDraftLabel',this.jobInfo.job_label)
+      let { data: { jobs } } = await getJobId(this.draftLabel)
+      if (jobs.length !== 0) { //表明存在
+        this.$store.commit('job/setDraftId', jobs[0].id)
+      }else{
+        this.$store.commit('job/setDraftId', null)
       }
 
       // 清空失效的数据

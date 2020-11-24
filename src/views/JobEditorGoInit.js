@@ -412,12 +412,12 @@ export function innerPaletteInit (context) {
   context.getSelectedUnit('基础操作')
 }
 
-function setOuterDiagramData (context) { // 打开jobEditor页面时设置数据
+export function setOuterDiagramData (context,job_flow = null) { // 打开jobEditor页面时设置数据
   if (context.outerDiagramModel !== null && JSON.parse(context.outerDiagramModel).nodeDataArray.length > 1) { // 如果逻辑流存在且节点数量多于1个
     context.outerDiagram.model = go.Model.fromJson(context.outerDiagramModel) // 恢复之前保存的逻辑流
   } else { // 如果逻辑流不存在
-    if (context.jobInfo.job_flow) { // 如果jobInfo里有job_flow字段, 则获取逻辑流并展示
-      getBlockFlowDict4Font(context.jobInfo.job_flow).then(({ status, data }) => {
+    if (job_flow) { // 如果jobInfo里有job_flow字段, 则获取逻辑流并展示
+      getBlockFlowDict4Font(job_flow).then(({ status, data }) => {
         if (typeof data === 'string') {
           data = JSON.parse(data)
         }
@@ -460,5 +460,5 @@ function setOuterDiagramData (context) { // 打开jobEditor页面时设置数据
 export function init (context) {
   if (!context.outerDiagram) outerDiagramInit(context)
   outerPaletteInit(context)
-  setOuterDiagramData(context)
+  setOuterDiagramData(context, context.jobInfo.job_flow)
 }

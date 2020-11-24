@@ -205,26 +205,25 @@ export default {
       }
       this.getFilteredJobs()
     },
-    getJobInfo (jobId) {
-      getJobDetail(jobId).then(res => {
-        let job = util.validate(jobSerializer, res.data)
-        let jobInfo = {
-          manufacturer: job.phone_models[0].manufacturer.id,
-          author: parseInt(localStorage.id || sessionStorage.id),
-          job_id: job.id,
-          job_flow: job.ui_json_file
-        }
-        CONST.SIMPLE_JOB_KEY.forEach(val => {
-          jobInfo[val] = job[val]
-        })
-        CONST.COMPLEX_JOB_KEY.forEach(val => {
-          jobInfo[val] = job[val].map(item => item.id)
-        })
-        this.$store.commit('job/handleJobInfo', { action: 'setJobInfo', data: jobInfo })
+    async getJobInfo (jobId) {
+      let { data } = await getJobDetail(jobId)
+      let job = util.validate(jobSerializer, data)
+      let jobInfo = {
+        manufacturer: (job.phone_models.length === 0) ? null : job.phone_models[0].manufacturer.id, // todo: 写了manufacturer 没写phonemodel
+        author: parseInt(localStorage.id || sessionStorage.id),
+        job_id: job.id,
+        job_flow: job.ui_json_file
+      }
+      CONST.SIMPLE_JOB_KEY.forEach(val => {
+        jobInfo[val] = job[val]
       })
+      CONST.COMPLEX_JOB_KEY.forEach(val => {
+        jobInfo[val] = job[val].map(item => item.id)
+      })
+      this.$store.commit('job/handleJobInfo', { action: 'setJobInfo', data: jobInfo })
     },
-    onRowClick (curData, index) { // 单击表格某一行
-      this.getJobInfo(curData.id)
+    async onRowClick (curData, index) { // 单击表格某一行
+      await this.getJobInfo(curData.id)
       this.$store.commit('handleShowDrawer')
     },
     selectedJobsChange (selection) {
