@@ -109,6 +109,7 @@ const getJobId = (jobLabel) => {
 
 
 const getJobList = (data) => {
+  // console.log(url.job(data))
   return axios.request({
     url: url.job(data)
   })

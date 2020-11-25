@@ -142,7 +142,7 @@ export default {
         let data = newVal[newVal.length - 1].split(':')
         this.filterFactors[data[0]].values.push(newVal[newVal.length - 1])
         this.filterFactorNum[this.curTab]++
-      } else { // 当筛选条件变少时, 找到去掉的项, 并将修改相关书军
+      } else { // 当筛选条件变少时, 找到去掉的项, 并将修改相关数据
         for (let i = 0; i < oldVal.length; i++) {
           if (newVal[i] !== oldVal[i]) {
             let data = oldVal[i].split(':')
@@ -188,13 +188,13 @@ export default {
         else if (key === 'phone_model') key = 'phone_models'
         else if (key === 'reefuser') key = 'author'
 
-        condition.forEach(item => {
-          item = key + '__id=' + item
-        })
+        // condition.forEach(item => {
+        //   item = key + '__id=' + item
+        // })
         let conditionStr = key + '__id__in=' + 'ReefList[' + condition.join('{%,%}') + ']'
         factors.push(conditionStr)
       })
-      return `${this.keyword.trim() ? `&job_name__icontains=${this.keyword.trim()}&` : '&'}${factors.join('_')}`
+      return `${this.keyword.trim() ? `&job_name__icontains=${this.keyword.trim()}&` : '&'}${factors.join('&')}`
     },
     getFilteredJob () { // 筛选条件改变时触发该函数，获取符合条件的job
       this.$emit('getFilterParam', this.getUrlParam())

@@ -14,10 +14,10 @@
             class-name="vertical-center-modal">
             <p>替换内容包括运行流程图，依赖文件以及用例的详细信息，且不可逆</p>
           </Modal>
-          <p>jobId: {{jobId}}</p>
-          <p>jobLabel: {{jobInfo.job_label}}</p>
-          <p>jobDr: {{duplicateId}}</p>
-          <p>jobLabelDr: {{duplicateLabel}}</p>
+<!--          <p>jobId: {{jobId}}</p>-->
+<!--          <p>jobLabel: {{jobInfo.job_label}}</p>-->
+<!--          <p>jobDr: {{duplicateId}}</p>-->
+<!--          <p>jobLabelDr: {{duplicateLabel}}</p>-->
         </div>
         <div class="child-m-right--1 flex-row">
           <Dropdown @on-click="handleMenu">
