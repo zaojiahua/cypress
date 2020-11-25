@@ -6,8 +6,8 @@ let state = {
   preJobInfo: { dirty: false }, // 编辑过程中回到jobList页面查看其他用例基本信息时, 为防止继续编辑时信息丢失, 在这里做备份
   isValidated: false, // 右侧抽屉中的表单信息是否通过验证
   outerDiagramModel: null, // jobEditor界面的逻辑流信息
-  draftId: undefined, // 自动保存的用例的id及joblabel, 更改自动保存的逻辑之后可能会用不到了
-  draftLabel: undefined, //自动保存的用例的joblabel
+  duplicateId: null, // 自动保存的副本用例的id及jobLabel, 更改自动保存的逻辑之后可能会用不到了
+  duplicateLabel: null, //自动保存的副本用例的jobLabel
   normalData: null, // 双击normalBlock后获取到该数据, normalEditor界面会用到
   config: _.cloneDeep(CONST.JOB_DEFAULT_CONFIG),
   jobLabelDuplicate: 'duplicate',
@@ -59,14 +59,14 @@ let mutations = {
       }
     }
   },
-  setDraftId (state, id) {
-    state.draftId = id
+  setDuplicateId (state, id) {
+    state.duplicateId = id
   },
-  setDraftLabel (state, label) { // 传入正在传入的job的jobLabel
+  setDuplicateLabel (state, label) { // 传入正在传入的job的jobLabel
     if (label === null)
-      { state.draftLabel = label}
+      { state.duplicateLabel = label}
     else
-      {state.draftLabel = `${label}_${state.jobLabelDuplicate}`}
+      {state.duplicateLabel = `${label}_${state.jobLabelDuplicate}`}
   },
   // setJobId (state, jobId) {
   //   state.jobInfo.job_id = jobId

@@ -153,7 +153,7 @@ export default {
   },
   computed: {
     ...mapState(['showDrawer', 'basicData']),
-    ...mapState('job', ['jobInfo', 'draftId', 'draftLabel']),
+    ...mapState('job', ['jobInfo', 'duplicateId', 'duplicateLabel']),
     ...mapGetters('job', ['jobId']),
     ...mapState('device', ['deviceInfo', 'preDeviceInfo', 'countdown']),
     isJobEditor () { // 是否在 JobEditor 页面
@@ -206,20 +206,20 @@ export default {
         this.closeDrawer()
       }, 800)
 
-      // if (this.draftId) {
-      //   let { status } = await updateJobMsg(this.draftId, { job_deleted: true })
+      // if (this.duplicateId) {
+      //   let { status } = await updateJobMsg(this.duplicateId, { job_deleted: true })
       //   if (status === 200) {
       //   } else {
       //     console.log('删除自动备份文件失败，错误码: ' + status)
       //   }
       // }
 
-      this.$store.commit('job/setDraftLabel',this.jobInfo.job_label)
-      let { data: { jobs } } = await getJobId(this.draftLabel)
+      this.$store.commit('job/setDuplicateLabel',this.jobInfo.job_label)
+      let { data: { jobs } } = await getJobId(this.duplicateLabel)
       if (jobs.length !== 0) { //表明存在
-        this.$store.commit('job/setDraftId', jobs[0].id)
+        this.$store.commit('job/setDuplicateId', jobs[0].id)
       }else{
-        this.$store.commit('job/setDraftId', null)
+        this.$store.commit('job/setDuplicateId', null)
       }
 
       // 清空失效的数据

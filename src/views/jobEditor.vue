@@ -6,7 +6,7 @@
         <div class="child-m-right--1 flex-row">
           <Button type="primary" @click="$store.commit('handleShowDrawer')" size="large" style="margin-right: 10px;">用例详情</Button>
           <Button type="info" ghost size="large" @click="viewResFile" style="margin-right: 10px;">查看依赖文件</Button>
-          <Button type="info" ghost size="large" :disabled="!draftId" @click="duplicateTipModal = true" style="margin-right: 10px;">使用副本</Button>
+          <Button type="info" ghost size="large" :disabled="!duplicateId" @click="duplicateTipModal = true" style="margin-right: 10px;">使用副本</Button>
           <Modal
             title="确认使用副本替换当前的编辑内容吗？"
             v-model="duplicateTipModal"
@@ -16,8 +16,8 @@
           </Modal>
           <p>jobId: {{jobId}}</p>
           <p>jobLabel: {{jobInfo.job_label}}</p>
-          <p>jobDr: {{draftId}}</p>
-          <p>jobLabelDr: {{draftLabel}}</p>
+          <p>jobDr: {{duplicateId}}</p>
+          <p>jobLabelDr: {{duplicateLabel}}</p>
         </div>
         <div class="child-m-right--1 flex-row">
           <Dropdown @on-click="handleMenu">
@@ -120,7 +120,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('job', ['jobInfo', 'outerDiagramModel', 'isValidated', 'draftId', 'draftLabel', 'normalData', 'config', 'jobLabelDuplicate']),
+    ...mapState('job', ['jobInfo', 'outerDiagramModel', 'isValidated', 'duplicateId', 'duplicateLabel', 'normalData', 'config', 'jobLabelDuplicate']),
     ...mapGetters('job', ['jobId', 'normalKey']),
     ...mapState('files', ['resFiles']),
     ...mapGetters('files', ['resFilesName']),
@@ -308,8 +308,8 @@ export default {
       }
       if (name === 'quit') { // 退出
         this.autoSaveToggle = false
-        // if (this.draftId) {
-        //   await updateJobMsg(this.draftId, { job_deleted: true })
+        // if (this.duplicateId) {
+        //   await updateJobMsg(this.duplicateId, { job_deleted: true })
         // }
         this.$router.push({ path: '/jobList' })
         this.$store.commit('setCurPage', 1)
@@ -332,8 +332,8 @@ export default {
               })
               return
             }
-            // if (this.draftId) { // todo:将副本删除
-            //   updateJobMsg(this.draftId, { job_deleted: true })
+            // if (this.duplicateId) { // todo:将副本删除
+            //   updateJobMsg(this.duplicateId, { job_deleted: true })
             // }
             // await this.clearData()
             // return
@@ -375,8 +375,8 @@ export default {
                 })
                 return
               }
-              // if (this.draftId) {
-              //   updateJobMsg(this.draftId, { job_deleted: true })
+              // if (this.duplicateId) {
+              //   updateJobMsg(this.duplicateId, { job_deleted: true })
               // }
               // await this.clearData()
               // return
@@ -460,7 +460,6 @@ export default {
           }
         }
       }
-      console.log(11111111)
       await this.clearData()
     },
     async prepareJobInfo () { // 返回保存用例时需要的信息
@@ -486,14 +485,8 @@ export default {
         this.$store.dispatch('setBasicCustomTag')
       }
       // 记录涉及到的InnerJob
-      jobInfo.inner_job_list = []
-      let innerJobs = this.outerDiagram.findNodesByExample({ 'category': 'Job' })
-      this.innerJobNum = innerJobs.count
-      innerJobs.each(node => {
-        if (node.data.jobLabel) {
-          jobInfo.inner_job_list.push(node.data.jobLabel)
-        }
-      })
+      jobInfo.inner_job_list = this.prepareInnerJobList()
+      this.innerJobNum = jobInfo.inner_job_list.length
       return jobInfo
     },
     prepareInnerJobList () { // 保存用到的innerjob的joblabel
@@ -527,33 +520,33 @@ export default {
       info.draft = true
       info.job_deleted = true // 副本设置成用户不可见
       info.inner_job_list = this.prepareInnerJobList()
-      if (!this.draftLabel) { // 第一次自动保存
+      if (!this.duplicateLabel) { // 第一次自动保存
         if (!info.job_label) { // 编辑的job数据库没有，是一个新建的job
           const job_label = createJobLabel(this)
           this.$store.commit('job/setJobLabel', job_label)
         }
-        this.$store.commit('job/setDraftLabel', this.jobInfo.job_label) // 设置副本的jobLabel
+        this.$store.commit('job/setDuplicateLabel', this.jobInfo.job_label) // 设置副本的jobLabel
       }
-      info.job_label = this.draftLabel
+      info.job_label = this.duplicateLabel
       return info
     },
     async autoSave () {
       let curTime = Date.now()
       if (curTime - this.lastActiveTime >= this.activeTimeInterval || !this._jobMsgRules() || !this.autoSaveToggle) return
       let info = await this.prepareAutoSaveInfo()
-      if (!this.draftId) { // 第一次自动保存时，需要判断副本job_label是否存在，存在着更新，否则创建
+      if (!this.duplicateId) { // 第一次自动保存时，需要判断副本job_label是否存在，存在则更新，否则创建
         console.log("第一次保存")
         try {
           let { data: { jobs } } = await getJobId(info.job_label)
           console.log(jobs)
           if (jobs.length !== 0) {
-            this.$store.commit('job/setDraftId', jobs[0].id)
+            this.$store.commit('job/setDuplicateId', jobs[0].id)
             console.log(info)
-            await this.uploadFiles(this.draftId, info)
+            await this.uploadFiles(this.duplicateId, info)
           }else{ // 没有副本则创建副本
             let { status, data } = await saveJobFlowAndMsg(info)
             if (status === 201) {
-              this.$store.commit('job/setDraftId', data.id)
+              this.$store.commit('job/setDuplicateId', data.id)
               await this.uploadFiles(data.id, info)
             }
           }
@@ -564,8 +557,8 @@ export default {
       } else
         {
         try {
-          console.log("DI二次包场")
-          await this.uploadFiles(this.draftId, info)
+          console.log("非第一次自动保存")
+          await this.uploadFiles(this.duplicateId, info)
         } catch (error) {
           throw new Error(error)
         }
@@ -625,8 +618,8 @@ export default {
       })
     },
     async clearData () { // 清空用到的信息
-      this.$store.commit('job/setDraftId', null) // 清除自动保存的用例的Id
-      this.$store.commit('job/setDraftLabel', null) // 清除自动保存的用例的label
+      this.$store.commit('job/setDuplicateId', null) // 清除自动保存的用例的Id
+      this.$store.commit('job/setDuplicateLabel', null) // 清除自动保存的用例的label
       this.$store.commit('job/handleJobInfo', { action: 'setJobInfo', data: {} }) // 清空jobInfo
       this.$store.commit('job/setOuterDiagramModel', null) // 清空画布信息
       this.$store.commit('job/handleJobInfo', { action: 'setPreJobInfo', data: false }) // 清空上一次选择的job的信息
@@ -708,12 +701,12 @@ export default {
         context.$store.commit('job/handleJobInfo', { action: 'setJobInfo', data: jobInfo })
       }
 
-      await setJobMsg(this, this.draftId)
+      await setJobMsg(this, this.duplicateId)
 
       this.$store.commit('job/setOuterDiagramModel', null)
       setOuterDiagramData(this, this.jobInfo.job_flow) //展示副本的流程图
 
-      this.handleResFile(this.draftId)
+      this.handleResFile(this.duplicateId)
 
       this.$store.commit('handleShowDrawer')
     }
@@ -744,8 +737,8 @@ export default {
       event.returnValue = "撒打算打算打算打算打算"
     })
     window.addEventListener('onunload', () => { // 刷新/关闭页面确认后删除自动保存的用例 todo:不起效果
-      // if (this.draftId) updateJobMsg(this.draftId, { job_deleted: true })
-      this.$store.commit('job/setDraftId', null)
+      // if (this.duplicateId) updateJobMsg(this.duplicateId, { job_deleted: true })
+      this.$store.commit('job/setDuplicateId', null)
     })
   }
 }
