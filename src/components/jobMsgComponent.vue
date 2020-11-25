@@ -206,13 +206,13 @@ export default {
         this.closeDrawer()
       }, 800)
 
-      if (this.draftId) {
-        let { status } = await updateJobMsg(this.draftId, { job_deleted: true })
-        if (status === 200) {
-        } else {
-          console.log('删除自动备份文件失败，错误码: ' + status)
-        }
-      }
+      // if (this.draftId) {
+      //   let { status } = await updateJobMsg(this.draftId, { job_deleted: true })
+      //   if (status === 200) {
+      //   } else {
+      //     console.log('删除自动备份文件失败，错误码: ' + status)
+      //   }
+      // }
 
       this.$store.commit('job/setDraftLabel',this.jobInfo.job_label)
       let { data: { jobs } } = await getJobId(this.draftLabel)

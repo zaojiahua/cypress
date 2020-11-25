@@ -308,9 +308,9 @@ export default {
       }
       if (name === 'quit') { // 退出
         this.autoSaveToggle = false
-        if (this.draftId) {
-          await updateJobMsg(this.draftId, { job_deleted: true })
-        }
+        // if (this.draftId) {
+        //   await updateJobMsg(this.draftId, { job_deleted: true })
+        // }
         this.$router.push({ path: '/jobList' })
         this.$store.commit('setCurPage', 1)
       } else // 非退出的操作
@@ -332,9 +332,9 @@ export default {
               })
               return
             }
-            if (this.draftId) { // todo:将副本删除
-              updateJobMsg(this.draftId, { job_deleted: true })
-            }
+            // if (this.draftId) { // todo:将副本删除
+            //   updateJobMsg(this.draftId, { job_deleted: true })
+            // }
             // await this.clearData()
             // return
           }
@@ -375,9 +375,9 @@ export default {
                 })
                 return
               }
-              if (this.draftId) {
-                updateJobMsg(this.draftId, { job_deleted: true })
-              }
+              // if (this.draftId) {
+              //   updateJobMsg(this.draftId, { job_deleted: true })
+              // }
               // await this.clearData()
               // return
             }
@@ -744,7 +744,7 @@ export default {
       event.returnValue = "撒打算打算打算打算打算"
     })
     window.addEventListener('onunload', () => { // 刷新/关闭页面确认后删除自动保存的用例 todo:不起效果
-      if (this.draftId) updateJobMsg(this.draftId, { job_deleted: true })
+      // if (this.draftId) updateJobMsg(this.draftId, { job_deleted: true })
       this.$store.commit('job/setDraftId', null)
     })
   }
