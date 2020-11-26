@@ -47,19 +47,19 @@ export function linkTemplateStyle () {
       toShortLength: 4,
       relinkableFrom: true,
       relinkableTo: true,
-      reshapable: true,
+      reshapable: false,
       resegmentable: false, // 用户是否可以更改链接中的段数，默认为false
 
       // layoutConditions: go.Part.LayoutAdded | go.Part.LayoutRemoved,
       // mouse-overs subtly highlight links:
-      mouseEnter: function (e, link) { link.findObject('HIGHLIGHT').stroke = 'rgba(30,144,255,0.2)' },
-      mouseLeave: function (e, link) { link.findObject('HIGHLIGHT').stroke = 'transparent' },
+      mouseEnter: function (e, link) { link.findObject('HL').stroke = 'rgba(30,144,255,0.2)' },
+      mouseLeave: function (e, link) { link.findObject('HL').stroke = 'transparent' },
       mouseDrop: dropOntoLink,
       selectionAdorned: false
     },
     new go.Binding('points').makeTwoWay(),
     MAKE(go.Shape, // the highlight shape, normally transparent
-      { isPanelMain: true, strokeWidth: 8, stroke: 'transparent', name: 'HIGHLIGHT' }),
+      { isPanelMain: true, strokeWidth: 8, stroke: 'transparent', name: 'HL' }),
     MAKE(go.Shape,
       { isPanelMain: true, strokeWidth: 40, stroke: 'transparent' }),
     MAKE(go.Shape, // the link path shape
@@ -207,12 +207,8 @@ export function baseGroupTemplate (context) {
       // isSubGraphExpanded: false,// only show the Group itself, not any of its members
       ungroupable: true,
       // highlight when dragging into the Group
-      mouseDragEnter: function (e, grp, prev) {
-        highlightGroup(e, grp, true)
-      },
-      mouseDragLeave: function (e, grp, next) {
-        highlightGroup(e, grp, false)
-      },
+      mouseDragEnter: (e, grp, prev) => highlightGroup(e, grp, true),
+      mouseDragLeave: (e, grp, next) => highlightGroup(e, grp, false),
       memberAdded: function (t, n) { // 判断当前 Unit 是否已经编辑完成，并改变 Unit 状态
         let { data: { unitMsg: { execModName, execCmdDict, execCmdDict: { execCmdList } } } } = n
         let target = execCmdList || execCmdDict

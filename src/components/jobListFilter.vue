@@ -85,8 +85,23 @@ export default {
         }
       ],
       filterData: {}, // 提供的筛选条件
+      /*
+        filterData结构
+        {
+          "job_test_area": [{ "description": xx, "id": xx }, ...],
+          "custom_tag": [{"custom_tag_name": xx, "id": xx}, ...],
+          "reefuser": [{"username": xx, "last_name": xx, "id": xx}, ...],
+          "phone_model": [{"id": xx, "phone_model_name": xx}, ...],
+          "android_version": [{"id": xx, "version": xx}, ...],
+          "rom_version": ["id": xx, "version": xx}, ...]
+        }
+      */
       filterConditions: [], // 已选的筛选条件
-      filterFactors: {
+      /*
+        filterConditions子元素来自filterData, 结构示例如下(custom_tag):
+          custom_tag : custom_tag数组中元素的下标 : custom_tag数组中元素的描述字段(如 description/custom_tag_name 等) : 元素id
+      */
+      filterFactors: { // 将勾选的筛选条件分组存储下来, valuse数组中的元素格式同 filterConditions
         'phone_model': {
           title: '适用机型',
           values: []
@@ -112,10 +127,10 @@ export default {
           values: []
         }
       },
-      curTab: '0',
-      filterFactorNum: new Array(6).fill(0),
-      keyword: '',
-      collapseIsOpen: true
+      curTab: '0', // 当前标签页
+      filterFactorNum: new Array(6).fill(0), // 将各个标签页中选中项的数量保存下来
+      keyword: '', // 搜索的关键字
+      collapseIsOpen: true // 是否展开搜索框下方的标签页
     }
   },
   computed: {
@@ -123,11 +138,11 @@ export default {
   },
   watch: {
     filterConditions (newVal, oldVal) {
-      if (newVal.length > oldVal.length) {
+      if (newVal.length > oldVal.length) { // 当筛选条件增多时, 将新增的项存入对应的filterFactors分组中, 并使filterFactorNum对应位置元素+1
         let data = newVal[newVal.length - 1].split(':')
         this.filterFactors[data[0]].values.push(newVal[newVal.length - 1])
         this.filterFactorNum[this.curTab]++
-      } else {
+      } else { // 当筛选条件变少时, 找到去掉的项, 并将修改相关书军
         for (let i = 0; i < oldVal.length; i++) {
           if (newVal[i] !== oldVal[i]) {
             let data = oldVal[i].split(':')
@@ -141,9 +156,9 @@ export default {
           }
         }
       }
-      this.getFilteredJob()
+      this.getFilteredJob() // 获取当前筛选条件下的用例
     },
-    basicData (val) {
+    basicData (val) { // 当basicData变化时,重新设置filterData(通常在第一次挂载/刷新页面/添加新标签时触发)
       for (let i = 0; i < val.length - 1; i++) {
         this.$set(this.filterData, CONST.BASIC_DATA_KEYS[i].underlineCase, val[i])
       }
@@ -179,7 +194,7 @@ export default {
         let conditionStr = key + '__id__in=' + 'ReefList[' + condition.join('{%,%}') + ']'
         factors.push(conditionStr)
       })
-      return `&job_name__icontains=${this.keyword}&${factors.join('_')}`
+      return `${this.keyword.trim() ? `&job_name__icontains=${this.keyword.trim()}&` : '&'}${factors.join('_')}`
     },
     getFilteredJob () { // 筛选条件改变时触发该函数，获取符合条件的job
       this.$emit('getFilterParam', this.getUrlParam())
@@ -188,7 +203,7 @@ export default {
       this.filterConditions = []
       this.getFilteredJob()
     },
-    close (key, index) {
+    close (key, index) { // 关闭标签页下方的小标签时触发, 在筛选条件中删除对应的元素
       let temp = this.filterFactors[key].values[index]
       this.filterFactors[key].values.splice(index, 1)
       let tempIndex = this.filterConditions.findIndex((val, idx) => {
@@ -197,30 +212,30 @@ export default {
       this.filterConditions.splice(tempIndex, 1)
       this.getFilteredJob()
     },
-    changeTab (index) {
+    changeTab (index) { // 切换标签页时触发, 记录当前标签页的位置
       this.curTab = index
     },
-    clearFilterFactor () {
+    clearFilterFactor () { // 清空筛选条件
       this.filterConditions = []
       for (let key in this.filterFactors) {
         this.filterFactors[key].values = []
       }
     },
-    deleteFilterFactor () {
+    deleteFilterFactor () { // 删除标签时触发
       Promise.all(this.filterConditions.map(val => {
         let data = val.split(':')
         return deleteTag(data[0], data[3])
       })).then(res => {
-        this.$store.dispatch('setBasicData')
+        this.$store.dispatch('setBasicData') // 重新获取基础数据
         this.clearFilterFactor()
       })
     },
-    handleCollapse () {
+    handleCollapse () { // 折叠/展开搜索框下方的标签页与筛选条件总览
       this.collapseIsOpen = !this.collapseIsOpen
     }
   },
   mounted () {
-    if (JSON.stringify(this.filterData) === '{}') {
+    if (JSON.stringify(this.filterData) === '{}') { // 挂载时设置filterData
       if (!this.basicData) return
       for (let i = 0; i < this.basicData.length - 1; i++) {
         this.$set(this.filterData, CONST.BASIC_DATA_KEYS[i].underlineCase, this.basicData[i])

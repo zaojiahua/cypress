@@ -23,14 +23,13 @@ export default {
       aspectRatio: 1.0,
       sizeRatio: 1.0,
       eventTypes: ['选区', '选点', '测距'],
-      eventType: '选区',
+      eventType: '选区', // 当前功能
       canvasToggle: false,
       outputInfo: null
     }
   },
   computed: {
     offsetString () {
-      console.log(this.outputInfo)
       if (this.outputInfo && this.outputInfo.offset) {
         return `offsetX: ${this.outputInfo.offset.offsetX}, offsetY: ${this.outputInfo.offset.offsetY}`
       }
@@ -41,17 +40,17 @@ export default {
     imgSrc (val) {
       this.drawImg(val)
     },
-    areasInfo (val) {
-      this.context2D.clearRect(0, 0, this.canvasW, this.canvasH)
+    areasInfo (val) { // 传入选取信息时
+      this.context2D.clearRect(0, 0, this.canvasW, this.canvasH) // 清空当前绘制的内容
       val.forEach((v, i) => {
-        if (v.h < 1 && v.w < 1) {
+        if (v.h <= 1 && v.w <= 1) { // 传入的是小数
           let x = v.x * this.canvasW
           let y = v.y * this.canvasH
           let w = v.w * this.canvasW
           let h = v.h * this.canvasH
-          this.drawRect(x, y, w, h, 'rgba(87, 250, 255, .4)', 'rgba(87, 250, 255, .4)')
-          this.fillText(val.index + 1 ? val.index + 1 + '' : i + 1 + '', x + w / 2, y + h / 2 + 14, 'white', 'center', 'bottom', '24px sans-serif')
-        } else {
+          this.drawRect(x, y, w, h, 'rgba(87, 250, 255, .4)', 'rgba(87, 250, 255, .4)') // 画出区域
+          this.fillText(val.index + 1 ? val.index + 1 + '' : i + 1 + '', x + w / 2, y + h / 2 + 14, 'white', 'center', 'bottom', '24px sans-serif') // 填入区域序号
+        } else { // 传入的是真实尺寸
           this.drawRect(v.x, v.y, v.w, v.h, 'rgba(87, 250, 255, .4)', 'rgba(87, 250, 255, .4)')
           this.fillText(val.index + 1 ? val.index + 1 + '' : i + 1 + '', v.x + v.w / 2, v.y + v.h / 2 + 14, 'white', 'center', 'bottom', '24px sans-serif')
         }
@@ -62,7 +61,7 @@ export default {
     drawImg (src) {
       let img = new Image()
       img.setAttribute('src', src)
-      img.onload = () => {
+      img.onload = () => { // 图片加载完成时调整大小以适应屏幕
         this.imageH = img.height
         this.imageW = img.width
         this.aspectRatio = img.height / img.width
@@ -81,14 +80,14 @@ export default {
     setEventType (idx) {
       this.eventType = this.eventTypes[idx]
     },
-    setOffScreenCanvas (img) {
+    setOffScreenCanvas (img) { // 设置离屏画布, 取色器与放大镜功能可以在这里扩充
       this.offscreenCanvas = document.createElement('canvas')
       this.offscreenContext = this.offscreenCanvas.getContext('2d')
       this.offscreenCanvas.width = img.width
       this.offscreenCanvas.height = img.height
       this.offscreenContext.drawImage(img, 0, 0, this.offscreenCanvas.width, this.offscreenCanvas.height)
     },
-    fillCircle (x, y, radius, fillStyle = '#F76132') {
+    fillCircle (x, y, radius, fillStyle = '#F76132') { // 画圆
       if (this.context2D !== null) {
         this.context2D.save()
         this.context2D.fillStyle = fillStyle
@@ -99,7 +98,7 @@ export default {
         this.context2D.restore()
       }
     },
-    fillText (text, x, y, color = 'white', align = 'left', baseline = 'top', font = '14px sans-serif') {
+    fillText (text, x, y, color = 'white', align = 'left', baseline = 'top', font = '14px sans-serif') { // 绘制文本
       if (this.context2D !== null) {
         this.context2D.save()
         this.context2D.textAlign = align
@@ -110,7 +109,7 @@ export default {
         this.context2D.restore()
       }
     },
-    strokeLine (x0, y0, x1, y1) {
+    strokeLine (x0, y0, x1, y1) { // 画线
       if (this.context2D !== null) {
         this.context2D.save()
         this.context2D.lineWidth = 2
@@ -122,7 +121,7 @@ export default {
         this.context2D.restore()
       }
     },
-    drawRect (x, y, w, h, fillStyle = 'rgba(77,160,155,0.4)', strokeStyle = '#2d8cf0') {
+    drawRect (x, y, w, h, fillStyle = 'rgba(77,160,155,0.4)', strokeStyle = '#2d8cf0') { // 画长方体
       if (this.context2D !== null) {
         this.context2D.save()
         this.context2D.fillStyle = fillStyle
@@ -139,7 +138,7 @@ export default {
         this.context2D.restore()
       }
     },
-    drawTriangle (x0, y0, x1, y1) {
+    drawTriangle (x0, y0, x1, y1) { // 画三角形
       if (this.context2D === null) {
         return
       }
@@ -156,7 +155,7 @@ export default {
       this.context2D.fill()
       this.context2D.restore()
     },
-    dispatchMouseEvent (evt) {
+    dispatchMouseEvent (evt) { // 分发鼠标事件
       let { type, offsetX, offsetY } = evt
       switch (this.eventType) {
         case '选区':
@@ -346,7 +345,7 @@ export default {
     this.canvas.addEventListener('mousemove', this.dispatchMouseEvent)
     this.canvas.addEventListener('mouseup', this.dispatchMouseEvent)
     this.canvas.addEventListener('mouseleave', this.dispatchMouseEvent)
-    this.context2D = this.canvas.getContext('2d')
+    this.context2D = this.canvas.getContext('2d') // 使用canvas
     this.drawImg(this.imgSrc)
   }
 }

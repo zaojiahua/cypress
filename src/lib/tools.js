@@ -1,8 +1,6 @@
 import CONST from 'constant/constant'
 import { baseURL } from '../config'
 import axios from '../api'
-import { method } from 'lodash'
-import { reject, resolve } from 'core-js/fn/promise'
 
 export function isJsonString (str) {
   try {

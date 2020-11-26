@@ -72,7 +72,7 @@ export default {
   data () {
     return {
       isCollapsed: true,
-      username: localStorage.username,
+      username: sessionStorage.username || localStorage.username,
       totalTime: 30,
       remindTime: 5
     }
@@ -87,14 +87,14 @@ export default {
         title: '您确定要登出?',
         onOk: () => {
           this.$Loading.start()
-          this.$router.push({ name: 'login' })
-          this.$Message.success('登出成功!')
-          this.$Loading.finish()
           // 登出后不能通过后退键回到TMach操作页面中
           CONST.USER_INFO.forEach((val) => {
             sessionStorage.removeItem(val)
             localStorage.removeItem(val)
           })
+          this.$router.push({ name: 'login' })
+          this.$Message.success('登出成功!')
+          this.$Loading.finish()
         }
       })
     },
@@ -104,14 +104,14 @@ export default {
       }
       this.$router.push({ path: '/jobList' })
     },
-    enterJobEditor () {
+    enterJobEditor () { // 路由跳转到jobEditor页面
       let routeOptions = { name: 'jobEditor' }
-      if (JSON.stringify(this.jobInfo) !== '{}') {
+      if (JSON.stringify(this.jobInfo) !== '{}') { // 如果当前用例信息不为空
         routeOptions.query = { jobId: this.jobInfo.job_id }
-      } else if (this.preJobInfo) {
+      } else if (this.preJobInfo) { // 当前用例为空 且 前一个用例信息不为空
         routeOptions.query = { jobId: this.preJobInfo.job_id }
         this.$store.commit('job/handleJobInfo', { action: 'recoverJobInfo' })
-      } else {
+      } else { // 设置用例信息
         this.$store.commit('job/handleJobInfo', { action: 'setJobInfo', data: {} })
       }
       setTimeout(() => {
@@ -145,10 +145,11 @@ export default {
         })
       } finally {
         this.$store.commit('device/setCountdown')
+        this.$store.commit('device/clearDeviceInfo')
         this.$store.commit('device/clearPreDeviceInfo')
       }
     },
-    async extendTime () {
+    async extendTime () { // 设备占用延时
       // eslint-disable-next-line camelcase
       let { id, device_name } = this.deviceInfo
       try {

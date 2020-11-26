@@ -27,6 +27,11 @@ export default {
       keepLogin: false
     }
   },
+  watch: {
+    keepLogin (val) {
+      localStorage.setItem('LOGIN:KEEP_LOGIN', val)
+    }
+  },
   methods: {
     login () {
       login(this.username, this.password).then(({ status, data }) => {
@@ -42,8 +47,8 @@ export default {
         this.$router.push('/')
       }).catch(error => {
         let errorMsg = ''
-        if (error.response.status === 400) {
-          errorMsg = '错误的 用户名称 或 密码 ！'
+        if (error.response.status >= 401) {
+          errorMsg = '错误的 用户名 或 密码 ！'
         } else if (error.response.status >= 500) {
           errorMsg = '服务器错误！'
         } else {
@@ -56,9 +61,12 @@ export default {
   },
   beforeRouteEnter (to, from, next) {
     if (sessionStorage.getItem('token') || localStorage.getItem('token')) {
-      this.route.push('/')
+      this.$router.push('/')
     }
     next()
+  },
+  mounted () {
+    this.keepLogin = !!localStorage.getItem('LOGIN:KEEP_LOGIN')
   }
 }
 </script>

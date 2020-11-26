@@ -18,38 +18,38 @@ import {
   baseGroupTemplate
 } from './jobEditorCommon'
 
-function setOutputNormalBlock (context, isOutput) {
+function setOutputNormalBlock (context, isOutput) { // 指定结果Block
   if (isOutput && context.jobInfo.job_type === 'InnerJob') {
     context.$Message.error({
       content: '无法为内嵌用例指定结果Block'
     })
     return
   }
-  let iterator = context.outerDiagram.selection
-  if (iterator.count > 1) {
+  let iterator = context.outerDiagram.selection // 获取当前选中节点的迭代器
+  if (iterator.count > 1) { // 只能将一个节点指定为结果Block
     context.$Message.error({
       content: '仅可选取一个Block'
     })
     return
   }
   context.outerDiagram.selection.each(({ data, data: { unitLists } }) => {
-    if (typeof unitLists !== 'object') {
+    if (typeof unitLists !== 'object') { // 兼容处理
       unitLists = JSON.parse(unitLists)
     }
     let { nodeDataArray, linkDataArray } = unitLists
     // 找到最后一个有star属性的unit
-    let starUnitArray = nodeDataArray.filter((val, index) => {
-      return val.category === 'Unit' && val.star
+    let starUnitArray = nodeDataArray.filter((val, index) => { // 获取带有star属性的unit节点
+      return val.category === 'Unit' && 'star' in val
     })
     let lastStarUnit = null
-    if (starUnitArray.length === 1) {
+    if (starUnitArray.length === 1) { // 仅有一个unit节点时,该节点即为目标unit
       lastStarUnit = starUnitArray[0]
     } else if (starUnitArray.length > 1) {
       let linkDataMap = new Map()
       linkDataArray.forEach((val) => {
         linkDataMap.set(val.from, val.to)
       })
-      let startKey = nodeDataArray.filter(val => {
+      let startKey = nodeDataArray.filter(val => { // 找到start节点
         return val.category === 'Start'
       })[0].key
       let next = linkDataMap.get(startKey)
@@ -64,8 +64,9 @@ function setOutputNormalBlock (context, isOutput) {
         }
       }
       let lastStarUnitIndex = 0
-      starUnitArray.forEach((val, idx, arr) => {
+      starUnitArray.forEach((val, idx, arr) => { // 清除所有unit的结果标记, 并找到最后一个unit
         arr[idx].star = CONST.COLORS.STAR
+        arr[idx].unitMsg.finalResult = null
         delete arr[idx].unitMsg.finalResult
         let tempIndex = nodeOrderArray.indexOf(val.group)
         if (tempIndex > lastStarUnitIndex) {
@@ -82,7 +83,7 @@ function setOutputNormalBlock (context, isOutput) {
     // 设定结果Block
     if (data.star) {
       let finalResultBlock = context.outerDiagram.findNodeForKey(context.config.finalResultKey)
-      if (context.config.finalResultKey === 0 && isOutput) {
+      if (context.config.finalResultKey === 0 && isOutput) { // 如果要设定结果Block且当前不存在结果Block
         lastStarUnit.star = CONST.COLORS.RESULT
         lastStarUnit.unitMsg.finalResult = true
         context.$store.commit('job/handleConfig', {
@@ -95,10 +96,11 @@ function setOutputNormalBlock (context, isOutput) {
         context.outerDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
         context.outerDiagram.model.setDataProperty(data, 'unitLists', JSON.stringify(unitLists))
       }
-      if (context.config.finalResultKey) {
-        if (context.config.finalResultKey === data.key) {
-          if (!isOutput) {
+      if (context.config.finalResultKey) { // 如果结果Block已经存在
+        if (context.config.finalResultKey === data.key) { // 如果结果block为当前block
+          if (!isOutput) { // 如果要将结果Block恢复为普通block
             lastStarUnit.star = CONST.COLORS.STAR
+            lastStarUnit.unitMsg.finalResult = null
             delete lastStarUnit.unitMsg.finalResult
             context.$store.commit('job/handleConfig', {
               action: 'setConfig',
@@ -110,9 +112,9 @@ function setOutputNormalBlock (context, isOutput) {
             context.outerDiagram.model.setDataProperty(data, 'star', lastStarUnit.star)
             context.outerDiagram.model.setDataProperty(data, 'unitLists', JSON.stringify(unitLists))
           }
-        } else {
-          if (isOutput) {
-            if (finalResultBlock) {
+        } else { // 如果结果block不是当前block
+          if (isOutput) { // 要设置结果block
+            if (finalResultBlock) { // 结果block存在的话
               let finalResultUnit = JSON.parse(finalResultBlock.data.unitLists).nodeDataArray.filter(node => node.category === 'Unit' && node.unitMsg.finalResult)
               if (finalResultUnit.length > 0) {
                 context.$Message.error({
@@ -232,7 +234,7 @@ function outerDiagramInit (context) {
     if (e.diagram instanceof go.Palette) return
     let { data } = context._.cloneDeep(node)
     context.$store.commit('job/handleNormalData', { action: 'set', data })
-    context.outerDiagram.div.firstElementChild.blur()
+    context.outerDiagram.div.firstElementChild.blur()  // 失去焦点，防止粘贴错误
     context.openNormalEditor = true
   }
 
@@ -335,14 +337,40 @@ export function innerDiagramInit (context) {
     })
   }
 
-  unitTemplate.contextClick = function (e, node) {
+  unitTemplate.contextClick = function (e, node) { // 右键点击左侧unit模板
     if (e.diagram instanceof go.Palette) {
-      if (!sessionStorage.groups.includes('Admin')) {
-        context.$Notice.warning({
-          title: '温馨提醒',
-          desc: '该功能仅限管理员使用，请切换您的账号或重新登录。'
-        })
-        return
+      let keepLogin = localStorage.getItem('LOGIN:KEEP_LOGIN')
+      if (keepLogin) {
+        if (!localStorage.groups) {
+          context.$Notice.warning({
+            title: '温馨提醒',
+            desc: '用户权限信息丢失,请重新登录。'
+          })
+          return
+        }
+        if (!localStorage.groups.includes('Admin')) {
+          context.$Notice.warning({
+            title: '温馨提醒',
+            desc: '该功能仅限管理员使用，请切换您的账号或重新登录。'
+          })
+          return
+        }
+      }
+      if (!keepLogin) {
+        if (!sessionStorage.groups) {
+          context.$Notice.warning({
+            title: '温馨提醒',
+            desc: '用户权限信息丢失,请重新登录。'
+          })
+          return
+        }
+        if (!sessionStorage.groups.includes('Admin')) {
+          context.$Notice.warning({
+            title: '温馨提醒',
+            desc: '该功能仅限管理员使用，请切换您的账号或重新登录。'
+          })
+          return
+        }
       }
       context.isDiagram = false
       context.unitTemplateName = node.data.text
@@ -384,11 +412,11 @@ export function innerPaletteInit (context) {
   context.getSelectedUnit('基础操作')
 }
 
-function setOuterDiagramData (context) {
-  if (context.outerDiagramModel !== null && JSON.parse(context.outerDiagramModel).nodeDataArray.length > 1) {
-    context.outerDiagram.model = go.Model.fromJson(context.outerDiagramModel)
-  } else {
-    if (context.jobInfo.job_flow) {
+function setOuterDiagramData (context) { // 打开jobEditor页面时设置数据
+  if (context.outerDiagramModel !== null && JSON.parse(context.outerDiagramModel).nodeDataArray.length > 1) { // 如果逻辑流存在且节点数量多于1个
+    context.outerDiagram.model = go.Model.fromJson(context.outerDiagramModel) // 恢复之前保存的逻辑流
+  } else { // 如果逻辑流不存在
+    if (context.jobInfo.job_flow) { // 如果jobInfo里有job_flow字段, 则获取逻辑流并展示
       getBlockFlowDict4Font(context.jobInfo.job_flow).then(({ status, data }) => {
         if (typeof data === 'string') {
           data = JSON.parse(data)
@@ -423,7 +451,7 @@ function setOuterDiagramData (context) {
         })
         return context.$router.push({ path: '/' })
       })
-    } else {
+    } else { // job_flow字段不存在, 显示默认节点(包含一个start节点)
       context.outerDiagram.model = go.Model.fromJson(CONST.BASIC_OUTER_DIAGRAM_MODEL)
     }
   }

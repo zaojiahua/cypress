@@ -1,9 +1,9 @@
 import files from './files'
 
 let state = {
-  imgRecRate: 0.99,
-  coordinates: [],
-  absCoordinates: null
+  imgRecRate: 0.99, // 图片识别率
+  coordinates: [], // 选取区域的信息保存在这里
+  absCoordinates: null // 选点的绝对位置
 }
 
 let mutations = {
@@ -28,7 +28,6 @@ let mutations = {
     state.coordinates = []
     let areasData
     let { resFiles } = files.state.resFiles
-    console.log(name, resFiles)
     for (let i = 0; i < resFiles.length; i++) {
       if (resFiles[i].name === name) {
         areasData = JSON.parse(resFiles[i].file)

@@ -41,11 +41,11 @@ let mutations = {
     if (action === 'addCurFile') {
       if (!state.curFile) return
       let { dirty, index } = state.curFile
-      if (!dirty) {
+      if (!dirty) { // 如果是新获取的文件
         state.curFile.dirty = true
-        if (index !== -1) {
+        if (index !== -1) { // 存在同名文件则替换
           state.resFiles.splice(index, 1, state.curFile)
-        } else {
+        } else { // 否则放入队尾
           state.curFile.index = state.resFiles.length
           state.resFiles.push(state.curFile)
         }

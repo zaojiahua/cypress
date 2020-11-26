@@ -1,4 +1,5 @@
 <template>
+  <!-- 倒计时组件, 传入总时间与提醒快要到期的时间 -->
   <span>{{hour}}:{{minute}}:{{second}}</span>
 </template>
 
@@ -35,7 +36,7 @@ export default {
     startCount () {
       let totalTimer = window.setInterval(() => {
         if (this.countdown === 0) {
-          window.clearInterval(totalTimer)
+          clearInterval(totalTimer)
           this.$emit('timeout')
         } else {
           this.countdown--
@@ -44,6 +45,10 @@ export default {
           }
         }
       }, 1000)
+      this.$once('hook:beforeDestroy', () => {
+        clearInterval(totalTimer)
+        totalTimer = null
+      })
     },
     restart () {
       this.countdown = this.totalTime * 60

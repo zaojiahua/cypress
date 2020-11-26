@@ -37,7 +37,7 @@ export default {
   components: { UnitItem },
   data () {
     return {
-      ocrChoiceToggle: this.ocrChoice === 1,
+      ocrChoiceToggle: undefined,
       curUnitItem: undefined
     }
   },
@@ -73,12 +73,11 @@ export default {
   },
   watch: {
     ocrChoice (val) {
-      if (val === 1) this.ocrChoiceToggle = true
-      if (val === 2) this.ocrChoiceToggle = false
+      this.ocrChoiceToggle = val === 1
     }
   },
   methods: {
-    handleOcrChoice (val) {
+    handleOcrChoice (val) { // 更改当前unit使用的ocr引擎
       let { unitMsg } = this._.cloneDeep(this.unitData)
       unitMsg.ocrChoice = val ? 1 : 2
       this.$store.commit('unit/handleUnitData', {
@@ -86,7 +85,7 @@ export default {
         data: unitMsg
       })
     },
-    handleItemClick (index) {
+    handleItemClick (index) { // 记录当前点击的unitItem
       this.curUnitItem = index
     }
   }

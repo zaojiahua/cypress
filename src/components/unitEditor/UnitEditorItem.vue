@@ -202,6 +202,7 @@ export default {
           }
         })
       }
+      // 将上一次操作的选点和图片上的操作清空
       this.$store.commit('item/handleAreasInfo', { action: 'clear' })
       this.$store.commit('img/handleCoordinate', { action: 'clear' })
       if (area) {

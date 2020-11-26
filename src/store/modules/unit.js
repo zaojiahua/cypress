@@ -2,9 +2,9 @@ import _ from 'lodash'
 import CONST from '../../constant/constant'
 
 let state = {
-  unitData: _.extend({}, CONST.DEFAULT_UNIT_DATA),
-  unitLists: null,
-  unitTypes: []
+  unitData: _.extend({}, CONST.DEFAULT_UNIT_DATA), // 双击unit时获取, 用于unitEditor
+  unitLists: null, // unit模板保存在这里
+  unitTypes: [] // unit模板的分类保存在这里
 }
 
 let mutations = {
@@ -12,6 +12,9 @@ let mutations = {
     switch (action) {
       case 'setUnitData':
         state.unitData = data
+        break
+      case 'clearUnitData':
+        state.unitData = {}
         break
       case 'setUnitMsg':
         state.unitData.unitMsg = data

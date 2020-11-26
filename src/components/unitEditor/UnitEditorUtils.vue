@@ -26,7 +26,8 @@
       <p v-show="!editing">还没有可以展示/编辑的文件</p>
       <transition name="fade-loader">
         <CypressLoader
-          :size="200"
+          :size="60"
+          :fillColor="'#999'"
           v-show="isLoading"
         ></CypressLoader>
       </transition>
@@ -131,7 +132,7 @@ export default {
       if (val.point) this.point = this._.cloneDeep(val.point)
       if (val.offset) this.offset = this._.cloneDeep(val.offset)
     },
-    normalizeAreasInfo (val) {
+    normalizeAreasInfo (val) { // 特征点区域数据整理
       let areasInfo = []
       if (Array.isArray(val.data)) {
         val.data.forEach(val => {

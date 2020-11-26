@@ -74,9 +74,23 @@ export default {
     return {
       innerPalette: null,
       innerDiagram: null,
-      unitTemplateType: '',
-      startUnitTemplateType: '基础操作',
+      unitTemplateType: '', // 左侧显示的unit模板分类
+      defaultUnitTemplateType: '基础操作', // 默认显示的unit模板类, 当某个种类下的unit被全部删除完时会用到
       curNormalData: {},
+      /*
+        curNormalData 结构:
+        {
+          category: "normalBlock",
+          text: "normalBlock的名字",
+          unitLists: {
+            class: "",
+            linkFromPortIdProperty: "fromPort",
+            linkToPortIdProperty: "toPort",
+            nodeDataArray: [],
+            linkDataArray: []
+          }
+        }
+      */
       unitTemplateId: undefined,
       unitTemplateName: '',
       unitTemplateContent: '',
@@ -92,91 +106,90 @@ export default {
     ...mapState('unit', ['unitLists', 'unitData'])
   },
   watch: {
-    normalData (val) {
+    normalData (val) { // 切换normalBlock/更新normalBlock的数据时重新渲染逻辑流
       this.curNormalData = val
       this.innerDiagram.model = go.Model.fromJson(this.curNormalData.unitLists)
     },
-    openNormalEditor (val) {
+    openNormalEditor (val) { // 打开normalEditor时展示unit模板
       if (val) this.getSelectedUnit(this.unitTemplateType)
     }
   },
   methods: {
-    recordOrRemoveWingman () {
+    recordOrRemoveWingman () { // 记录或者删除僚机信息
       let wingman = new Array(4).fill(0)
       let flag = false
       let units = this.innerDiagram.findNodesByExample({ 'category': 'Unit' })
-      units.each(({ data }) => {
+      units.each(({ data }) => { // 统计各个unit内记录的僚机信息
         if (data.assistDevice) wingman[data.assistDevice]++
         flag = true
       })
       if (flag) { // 使用了僚机才记录
         this.curNormalData.wingman = wingman
-      } else {
+      } else { // 否则删除该字段
         delete this.curNormalData.wingman
       }
     },
-    saveNormalData (toggle) {
+    saveNormalData (toggle) { // 保存NormalBlock的信息
       this.recordOrRemoveWingman()
       if (toggle) {
-        this.curNormalData.unitLists = this.innerDiagram.model.toJson()
+        this.curNormalData.unitLists = this.innerDiagram.model.toJson() // 将NormalEditor的逻辑流保存下来
+        // 获取所有的unit组成的数组
         let units = JSON.parse(this.curNormalData.unitLists).nodeDataArray.filter(item => item.category === 'Unit')
-        if (units.some(item => CONST.STAR.has(item.unitMsg.execModName))) {
-          if (units.some(item => item.star === CONST.COLORS.RESULT)) {
+        if (units.some(item => CONST.STAR.has(item.unitMsg.execModName))) { // 如果这些unit中存在可以设为结果Block的unit
+          if (units.some(item => item.star === CONST.COLORS.RESULT)) { // 如果存在结果unit,则将当前Normal设为结果block
             this.curNormalData.star = CONST.COLORS.RESULT
-          } else {
+          } else { // 否则为普通的normalBlock
             this.curNormalData.star = CONST.COLORS.STAR
           }
-        } else {
+        } else { // 否则取消右上角的黄色标识
           this.curNormalData.star = null
         }
-        if (units.length === 0 || units.some(item => item.completed === false)) {
-          this.curNormalData.color = CONST.COLORS.UNFINISHED
-        } else {
-          this.curNormalData.color = CONST.COLORS.FINISH
+        if (units.length === 0 || units.some(item => item.completed === false)) { // 如果没有unit或存在未完成的unit
+          this.curNormalData.color = CONST.COLORS.UNFINISHED // 标识normal为未完成的红色
+        } else { // 否则
+          this.curNormalData.color = CONST.COLORS.FINISH // 标识normal为已完成的绿色
         }
-        this.$emit('saveNormalData', this._.cloneDeep(this.curNormalData))
+        this.$emit('saveNormalData', this._.cloneDeep(this.curNormalData)) // 将编辑完成后的normalData传递给jobEditor并触发保存操作
       }
-      this.$emit('closeNormalEditor')
+      this.$emit('closeNormalEditor') // 关闭NormalEditor
     },
-    getSelectedUnit (name) {
+    getSelectedUnit (name) { // 展示选中的分类下的unit模板
       if (!this.unitLists) return
-      let unitCategoryData = { nodeDataArray: [] }
-      if (!this.unitLists[name]) name = this.startUnitTemplateType
+      let nodeDataArray = []
+      if (!this.unitLists[name]) name = this.defaultUnitTemplateType
       this.unitTemplateType = name
-      if (this.unitLists[name]) {
-        Object.entries(this.unitLists[name]).forEach((unit) => {
-          unitCategoryData.nodeDataArray.push({
+      if (this.unitLists[name]) { // 如果当前分类存在
+        Object.entries(this.unitLists[name]).forEach((unit) => { // 将该分类下的unit模板记录下来
+          nodeDataArray.push({
             category: 'Unit',
             text: unit[0],
             unit_id: unit[1]['unit_id'],
             unitMsg: unit[1]['unit_content']
           })
         })
-        unitCategoryData.nodeDataArray.sort((a, b) => {
+        nodeDataArray.sort((a, b) => { // 根据weight字段决定显示顺序
           if (a.unitMsg.weight && b.unitMsg.weight) {
             return a.unitMsg.weight - b.unitMsg.weight
           }
           if (!a.unitMsg.weight) return 1
           if (!b.unitMsg.weight) return -1
         })
-        this.innerPalette.model = new go.GraphLinksModel(unitCategoryData.nodeDataArray)
+        this.innerPalette.model = new go.GraphLinksModel(nodeDataArray) // 渲染排序后的nit模板
       }
     },
-    updateUnitLists (unitTemplateType = undefined) {
+    updateUnitLists (unitTemplateType = undefined) { // 更新unit模板信息
       getJobUnitsBodyDict().then(({ status, data: { unit } }) => {
         if (status === 200) {
           let unitLists = {}
-          unit.sort((a, b) => a.unit_content.weight - b.unit_content.weight)
           unit.forEach((val, idx) => {
             if (!(val.type in unitLists)) unitLists[val.type] = {}
             unitLists[val.type][val.unit_name] = {
               unit_id: val.id,
               unit_content: val.unit_content
-              // unit_weight:
             }
           })
-          this.$store.commit('unit/setUnitLists', unitLists)
-          if (unitTemplateType) this.getSelectedUnit(unitTemplateType)
+          this.$store.commit('unit/setUnitLists', unitLists) // 保存unit模板的信息
+          if (unitTemplateType) this.getSelectedUnit(unitTemplateType) // 显示当前选中种类的unit模板
         } else {
           throw new Error('获取 Unit 列表失败')
         }
@@ -185,11 +198,11 @@ export default {
         this.$Message.error({ background: true, content: '获取 Unit 列表失败' })
       })
     },
-    handleUnitTemplateEditor (toggle) {
+    handleUnitTemplateEditor (toggle) { // 打开/关闭Unit模板编辑页面
       this.openUnitTemplateEditor = toggle
       this.closeContextMenu()
     },
-    delUnitTemplate () {
+    delUnitTemplate () { // 删除选中的单个unit模板
       this.$Modal.confirm({
         title: '温馨提示',
         content: '确定要删除当前 Unit 模板吗？',
@@ -199,7 +212,7 @@ export default {
           let { status } = await deleteUnitTemplate(this.unitTemplateId)
           if (status === 204) {
             this.$Message.success({ background: true, content: '删除成功' })
-            setTimeout(() => { this.updateUnitLists(this.unitTemplateType) }, 300)
+            setTimeout(() => { this.updateUnitLists(this.unitTemplateType) }, 300) // 延时获取更新后的模板信息
           } else {
             this.$Message.error({ background: true, content: '删除失败' })
           }
@@ -223,20 +236,22 @@ export default {
         }
       })
     },
-    closeUnitEditor () {
+    closeUnitEditor () { // 关闭unitEditor
       this.showUnitEditor = false
     },
-    handleUnitColor (isCompleted) {
+    handleUnitColor (isCompleted) { // 标识unit是否编辑完成
       this.innerDiagram.selection.each(({ data }) => {
         this.innerDiagram.model.setDataProperty(data, 'color', isCompleted ? CONST.COLORS.FINISH : CONST.COLORS.UNFINISHED)
       })
     },
-    saveUnit (data) {
+    saveUnit (data) { // 将传入的unit信息保存到逻辑流中
       this.closeUnitEditor()
       this.innerDiagram.selection.each((node) => {
-        this.innerDiagram.model.setDataProperty(node.data, 'unitMsg', data.unitMsg)
-        this.innerDiagram.model.setDataProperty(node.data, 'text', data.unitName)
-        this.innerDiagram.model.setDataProperty(node.data, 'completed', data.completed)
+        if (node.category === 'Unit') {
+          this.innerDiagram.model.setDataProperty(node.data, 'unitMsg', data.unitMsg)
+          this.innerDiagram.model.setDataProperty(node.data, 'text', data.unitName)
+          this.innerDiagram.model.setDataProperty(node.data, 'completed', data.completed)
+        }
       })
     },
     setUnitName (val) {
@@ -244,9 +259,9 @@ export default {
     }
   },
   mounted () {
-    innerDiagramInit(this)
+    innerDiagramInit(this) // 挂载时初始化NormalEditor的画布与画板
     innerPaletteInit(this)
-    this.updateUnitLists()
+    this.updateUnitLists() // 获取unit模板
     this.unitController = document.querySelector('#unit-controller')
   }
 }

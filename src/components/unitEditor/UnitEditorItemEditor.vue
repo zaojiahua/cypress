@@ -83,9 +83,14 @@ export default {
   data () {
     return {
       tmachBlanks: [],
+      /*
+        tmachBlanks 数据结构:
+        [{ content: xxx, suffix: xxx }, ...]
+        解析execCmdDict/execCmdList内元素content字段的"Tmach "或"Tmachxxxxx "(注意最后一位是空格)的内容, "xxxxx"部分去掉后缀后填入content, 后缀填入suffix部分
+      */
       tmachIndex: 0,
-      saving: false,
-      gallery: false
+      saving: false, // 为true时显示加载动画
+      gallery: false // 是否打开画廊 (Gallery组件, 用于选取一张图片并展示/编辑)
     }
   },
   computed: {
@@ -98,53 +103,52 @@ export default {
     ...mapState('item', ['editing', 'itemData', 'saveToFinalResult']),
     ...mapState('img', ['imgRecRate', 'coordinates', 'absCoordinates']),
     ...mapGetters('item', ['itemType', 'itemName', 'isPicInput', 'isOutputPicture', 'isOutputFile', 'isJobResourceFile', 'curItemMeaning', 'isJobResourcePicture']),
-    showInput () {
+    showInput () { // 如果CONST.SHOW_INPUT这一Set中包含该itemType(即execCmdDict/execCmdList内子元素的type字段), 则显示Input组件
       return CONST.SHOW_INPUT.has(this.itemType)
     },
-    showAutoComplete () {
+    showAutoComplete () { // 同上, 是否显示AutoComplete组件
       return CONST.SHOW_AUTO_COMPLETE.has(this.itemType)
     },
-    showScreenShot () {
+    showScreenShot () { // 同上, 是否显示截图功能组件
       return CONST.SHOW_SCREEN_SHOOT.has(this.itemType)
     },
-    showFeaturePoint () {
+    showFeaturePoint () { // 同上, 是否显示特征点选取组件
       return CONST.SHOW_FEATURE_POINT.has(this.itemType)
-      // isJobResourceFile
     },
-    showCheckbox () {
-      return this.isOutputPicture
-    },
-    willTouchFile () {
+    willTouchFile () { // 同上, 是否会产生保存选取信息的依赖文件
       return CONST.WILL_TOUCH_FILE.has(this.itemType)
     },
-    picUrl () {
+    showCheckbox () { // 目前只有outputPicture这一type需要该功能, 后期扩展可同上处理
+      return this.isOutputPicture
+    },
+    picUrl () { // 返回png文件组成的数组
       return this.resFiles.filter((val) => { return val.type === 'png' })
     },
-    loc () {
+    loc () { // 当前编辑中的unitItem的位置, eg: -2_-4_inputImgFile / -3_-5_4
       return [this.normalKey, this.unitKey, this.itemName].join('_')
     }
   },
   watch: {
-    itemData (val) {
-      if (!val.itemContent.content) return
+    itemData (val) { // unitItem用到的数据变化时, 更新this.tmachBlanks
+      if (!val || !val.itemContent.content) return
       this.handleTmachBlanks(val.itemContent.content.match(/Tmach.*? /g))
     },
-    saveToFinalResult (val) {
+    saveToFinalResult (val) { // 该字段变化时
       if (!(this.isOutputPicture || this.isOutputFile)) return
       let suffix = '<copy2rdsDatPath>'
-      if (val) {
+      if (val) { // 值为true, 将后缀'<copy2rdsDatPath>'添加到用户输入内容尾部
         this.tmachBlanks.forEach((item, idx, arr) => {
           if (!item.suffix.endsWith(suffix)) {
             arr[idx].suffix += suffix
           }
         })
-      } else {
+      } else { // 值为false, 去掉后缀'<copy2rdsDatPath>'
         this.tmachBlanks.forEach((item, idx, arr) => {
           arr[idx].suffix = arr[idx].suffix.replace(suffix, '')
         })
       }
     },
-    absCoordinates (val) {
+    absCoordinates (val) { // 选点/选区绝对值
       let { length } = this.tmachBlanks
       if (this.isPicInput) {
         if (this.tmachIndex + 2 > length) {
@@ -155,20 +159,21 @@ export default {
         this.tmachIndex += 2
       }
     },
-    curFile (val) {
+    curFile (val) { // 当前显示的图片变化时
       if (!val || !this.tmachBlanks[0]) return
-      if (this.isJobResourcePicture) {
-        this.tmachBlanks[0].content = suffixRemove(val.name)
+      if (this.isJobResourcePicture) { // 如果unitItem的type为jobResourcePicture
+        this.tmachBlanks[0].content = suffixRemove(val.name) // 将文件的名字填入第一个空里
       }
     }
   },
   methods: {
-    handleTmachBlanks (rawData) {
+    handleTmachBlanks (rawData) { // 传入原始数组, 返回修改后的tmach数组
       let child = '<copy2rdsDatPath>'
-      let suffix = this.saveToFinalResult ? child : ''
+      let suffix = this.saveToFinalResult ? child : '' // 如果要保存到最终结果, 后缀需要添加宏命令'<copy2rdsDatPath>'
       for (let key in CONST.FILL) {
         if (CONST.FILL[key].has(this.itemType)) {
           suffix = `.${key.toLowerCase()}${suffix}`
+          break
         }
       }
       this.tmachBlanks = rawData.map(item => {
@@ -177,41 +182,34 @@ export default {
           item = item.split('.').shift()
         }
         return {
-          content: this.isJobResourceFile ? [this.normalKey, this.unitKey, this.itemName].join('_') : item,
+          content: this.isJobResourceFile ? this.loc : item,
           suffix
         }
       })
     },
     handleCurFile () {
-      if (this.curFile) {
+      if (this.curFile) { // 如果当前展示的图片不为空
         let options
-        if (this.curFile.dirty) {
-          options = { action: 'clearCurFile' }
-        } else {
-          options = { action: 'addCurFile' }
+        if (this.curFile.dirty) { // 如果该图片之前已经存在
+          options = { action: 'clearCurFile' } // 将当前文件置空
+        } else { // 该图片是新截取的
+          options = { action: 'addCurFile' } // 将该图片添加到依赖文件列表中
         }
         this.$store.commit('files/handleCurFile', options)
       }
     },
     saveFeaturePoint () { // 保存选取的区域信息
-      if (this.willTouchFile && this.coordinates.length) {
+      if (this.willTouchFile && this.coordinates.length) { // 如果会产生关于选区信息的依赖文件且选区信息不为空
         let nameInfo = this.tmachBlanks[0]
-        if (!nameInfo.content) {
-          this.$Message.error({
-            background: true,
-            content: '请为配置文件命名'
-          })
-          return false
-        }
         let coordinateNum = 1
-        let coordinateDataList = {}
-        coordinateDataList.threshold = this.imgRecRate
+        let coordinateDataList = {} // 存放选区信息
+        coordinateDataList.threshold = this.imgRecRate // 图片识别率
         for (let i = 0; i < this.coordinates.length; i++) {
           let area = 'area' + coordinateNum++
           let coordinateRowList = this.coordinates[i].coordinate_a.split(',').concat(this.coordinates[i].coordinate_b.split(',')).map(parseFloat)
           coordinateDataList[area] = coordinateRowList
         }
-        // 找到同样前缀文件的位置
+        // 查看是否存在同名文件, 有则覆盖
         let index = -1
         for (let i = 0; i < this.resFilesName.length; i++) {
           if (this.resFilesName[i].startsWith(nameInfo.content)) {
@@ -219,31 +217,30 @@ export default {
             break
           }
         }
-        this.$store.commit('files/handleResFiles', {
+        this.$store.commit('files/handleResFiles', { // 将选区信息依赖文件保存下来
           action: 'addResFile',
           data: {
-            dirty: true,
+            dirty: true, // 标识是否是新获得的图片
             index: index === -1 ? this.resFilesName.length : index,
             name: `${nameInfo.content}${nameInfo.suffix}`,
             file: JSON.stringify(coordinateDataList, null, 4),
             type: 'json'
           }
         })
-        this.$store.commit('img/handleCoordinate', { action: 'clear' })
+        this.$store.commit('img/handleCoordinate', { action: 'clear' }) // 清除选区信息
       }
-      return true
     },
     handleUnitData () { // 保存更新后的unitData
       let flag = true
-      if (this.curFile && this.isJobResourcePicture) {
-        this.tmachBlanks[0].content = suffixRemove(this.curFile.name)
+      if (this.curFile && this.isJobResourcePicture) { // 如果当前显示的图片不为空且itemType为jobResourcePicture
+        this.tmachBlanks[0].content = suffixRemove(this.curFile.name) // 将当前图片的名字去掉后缀后保存
       }
       // 检查是否存在空值
       for (let i = 0; i < this.tmachBlanks.length; i++) {
         if (!this.tmachBlanks[i].content.trim()) flag = false
         break
       }
-      if (!flag) {
+      if (!flag) { //  存在则报错并终止
         this.$Message.error({
           background: true,
           content: '不允许填入空值'
@@ -264,17 +261,17 @@ export default {
         curIndex += target.length
         itemData.itemContent.content = temp.join('')
       }
-      if (this.showScreenShot && this.curFile) {
+      if (this.showScreenShot && this.curFile) { // 如果要显示截图工具且当前图片不为空, 将图片名称保存在itemData的pic字段中
         itemData.itemContent.pic = this.curFile.name
       }
-      if (this.showFeaturePoint) {
+      if (this.showFeaturePoint) { // 如果要显示选区/选点工具, 将配置文件的名称保存在itemData的area字段中
         itemData.itemContent.area = `${this.loc}.json`
       }
-      this.$store.commit('item/handleItemData', {
+      this.$store.commit('item/handleItemData', { // 设置当前的itemData
         action: 'setItemData',
         data: itemData
       })
-      this.$store.commit('unit/handleUnitData', {
+      this.$store.commit('unit/handleUnitData', { // 将当前itemData同步更新到其父元素unitData中
         action: 'setItemData',
         data: itemData
       })
@@ -282,11 +279,11 @@ export default {
     },
     handleShowItemEditor () {
       if (!this.isPicInput) {
-        this.$store.commit('item/handleShowItemEditor', false)
+        this.$store.commit('item/handleShowItemEditor', false) // 关闭itemEditor
       }
     },
     handleByProductsName () {
-      if (CONST.WILL_TOUCH_NAME[this.itemType]) {
+      if (CONST.WILL_TOUCH_NAME[this.itemType]) { // 如果该类型的itemType会生成一个name, 例如 截图保存 这个unit
         let { byProductsName } = this.config
         let temp
         let tempIdx
@@ -298,7 +295,7 @@ export default {
           }
         }
         let byProductsInfo = {
-          loc: [this.normalKey, this.unitKey, this.itemName].join('_'),
+          loc: this.loc,
           text: this.tmachBlanks[0].content.trim(),
           user: []
         }
@@ -330,7 +327,7 @@ export default {
     saveItemData () {
       if (!this.handleUnitData()) return
       if (!this.handleByProductsName()) return
-      if (!this.saveFeaturePoint()) return
+      this.saveFeaturePoint()
       this.$store.commit('item/handleItemData', {
         action: 'setItemData',
         data: {
@@ -347,23 +344,23 @@ export default {
       this.handleShowItemEditor()
       this.tmachIndex = 0
     },
-    setName (name) {
+    setName (name) { // 截图时将图片名称保存下来
       if (this.showScreenShot) return
       this.tmachBlanks[0].content = name.split('.').shift()
     },
-    getPic (val) {
+    getPic (val) { // 将在画廊中选取的图片展示出来
       this.$store.commit('files/handleCurFile', {
         action: 'setCurFile',
         data: val
       })
-      if (this.showScreenShot && !(this.showInput || this.showAutoComplete)) {
+      if (this.showScreenShot && !(this.showInput || this.showAutoComplete)) { // 如果要显示截图工具, 且不展示Input组件和AutoComplete组件, 将该图片名称填入tmachBlanks相应位置
         this.setName(suffixRemove(val.name))
       }
     },
-    closeGallery (val) {
+    closeGallery (val) { // 关闭画廊
       this.gallery = val
     },
-    deleteByProductsName (pIdx, sIdx) {
+    deleteByProductsName (pIdx, sIdx) { // 删除不需要的运行过程中截取的图片的名称
       // let loc = this.byProductsName[pIdx].children[sIdx].loc.split('*')
       // console.log(loc)
       this.$store.commit('job/handleConfig', {
@@ -371,14 +368,13 @@ export default {
         data: { pIdx, sIdx }
       })
     },
-    handleByProductsNameUser (pIdx, sIdx) {
-      console.log(pIdx, sIdx)
+    handleByProductsNameUser (pIdx, sIdx) { // 记录哪些位置用到了运行过程中截取的图片的名称
       this.$store.commit('job/handleConfig', {
         action: 'setByProductsNameUser',
         data: {
           pIdx,
           sIdx,
-          user: [this.normalKey, this.unitKey, this.itemName].join('_')
+          user: this.loc
         }
       })
     }
