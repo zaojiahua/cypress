@@ -3,6 +3,7 @@
     <div class="container" @click="closeContextMenu">
       <header>
         <Input clearable size="large" v-model="curNormalData.text" />
+        {{finalResKey}}
       </header>
       <nav>
         <Dropdown trigger="click" @on-click="getSelectedUnit" style="width: 100%; margin-bottom: 1em;">
@@ -24,10 +25,23 @@
           <Button type="error" @click="delUnitTemplate">删除</Button>
           <Button type="success" @click="handleUnitTemplateEditor(true)">编辑</Button>
         </ButtonGroup>
-        <ButtonGroup vertical size="default" v-else>
-          <Button type="primary" @click="setWingman(0)">主机</Button>
-          <Button v-for="wingman in numOfWingman" :key="wingman" @click="setWingman(wingman)">{{wingman}} 号机</Button>
-        </ButtonGroup>
+        <Dropdown trigger="custom" :visible="true" v-else>
+          <DropdownMenu slot="list">
+            <Dropdown v-for="{name, data, visible, func} in dropdownMenuData" :key="name" placement="right-start" @on-click="handleClick($event, func)">
+              <DropdownItem :disabled="visible">
+                {{name}}
+                <Icon type="ios-arrow-forward"></Icon>
+              </DropdownItem>
+              <DropdownMenu v-for="{name, key} in data" :key="key" slot="list">
+                <DropdownItem :disabled="visible" :name="key">{{name}} </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+          </DropdownMenu>
+        </Dropdown>
+<!--        <ButtonGroup vertical size="default" v-else>-->
+<!--          <Button type="primary" @click="setWingman(0)">主机</Button>-->
+<!--          <Button v-for="wingman in numOfWingman" :key="wingman" @click="setWingman(wingman)">{{wingman}} 号机</Button>-->
+<!--        </ButtonGroup>-->
       </div>
     </div>
     <unit-template-editor
@@ -68,12 +82,17 @@ export default {
     openNormalEditor: {
       type: Boolean,
       default: false
-    }
+    },
+    // finalResKey: {
+    //   type: String,
+    //   default: null
+    // }
   },
   data () {
     return {
       innerPalette: null,
       innerDiagram: null,
+      finalResKey: null,
       unitTemplateType: '', // 左侧显示的unit模板分类
       defaultUnitTemplateType: '基础操作', // 默认显示的unit模板类, 当某个种类下的unit被全部删除完时会用到
       curNormalData: {},
@@ -97,12 +116,38 @@ export default {
       openUnitTemplateEditor: false,
       unitController: null,
       isDiagram: false,
-      numOfWingman: 3,
-      showUnitEditor: false
+      numOfWingman: 3, //可设置的僚机个数
+      showUnitEditor: false,
+      dropdownMenuData:[
+        {
+          name: "unit类型",
+          // data:["结果unit","非结果unit"],
+          data:[
+            {name:"非结果unit",key:0},
+            {name:"结果unit",key:1}
+          ],
+          visible: true, // 默认不允许
+          func: this.setUnitCategory
+
+        },
+        {
+          name: "运行载体",
+          data:[
+            {name:"主机",key:0},
+            {name:"一号僚机",key:1},
+            {name:"二号僚机",key:2},
+            {name:"三号僚机",key:3}
+            ],
+          visible: false,
+          func: this.setWingman
+
+        }
+      ]
+
     }
   },
   computed: {
-    ...mapState('job', ['normalData']),
+    ...mapState('job', ['normalData','config']),
     ...mapState('unit', ['unitLists', 'unitData'])
   },
   watch: {
@@ -111,10 +156,52 @@ export default {
       this.innerDiagram.model = go.Model.fromJson(this.curNormalData.unitLists)
     },
     openNormalEditor (val) { // 打开normalEditor时展示unit模板
-      if (val) this.getSelectedUnit(this.unitTemplateType)
+      if (val) {
+        console.log(this._.cloneDeep(this.config.finalResultKey))
+        this.getSelectedUnit(this.unitTemplateType)
+        this.finalResKey = this._.cloneDeep(this.config.finalResultKey)
+
+      }
     }
   },
   methods: {
+    handleClick(key, func){
+      if (undefined !== key) {
+        func(key)
+      }else{
+        console.log(key,func)
+      }
+    },
+    setUnitCategory(key) { // 改变unit类型
+      if (this.innerDiagram.selection.count > 1) {
+        this.$Message.error({
+          content: '仅可选取一个Unit'
+        })
+        return
+      }
+      let { data } = this.innerDiagram.selection.first()
+      if (data.category !== 'Unit') return
+      if (key) { // 结果unit
+        if (this.finalResKey){ // 有设置结果unit
+          if (this.finalResKey !== `${this.normalData.key},${data.key}`){ // 且不是当前unit
+            this.$Message.error({ background: true, content: '结果unit有且只能有一个' })
+          }
+        }else // 没有设置结果unit
+          {
+            this.innerDiagram.model.setDataProperty(data, 'star', CONST.COLORS.RESULT)
+            let unitMsg = this._.cloneDeep(data.unitMsg)
+            unitMsg.finalResult = true
+            this.innerDiagram.model.setDataProperty(data, 'unitMsg', unitMsg)
+            this.finalResKey = `${this.normalData.key},${data.key}`
+          }
+      } else { // 定义成非结果unit
+        if (this.finalResKey === `${this.normalData.key},${data.key}`) this.finalResKey = null // 操作的对象死结果unit 则将结果unit清空
+        this.innerDiagram.model.setDataProperty(data, 'star', CONST.COLORS.STAR)
+        let unitMsg = this._.cloneDeep(data.unitMsg)
+        delete unitMsg.finalResult
+        this.innerDiagram.model.setDataProperty(data, 'unitMsg', unitMsg)
+      }
+    },
     recordOrRemoveWingman () { // 记录或者删除僚机信息
       let wingman = new Array(4).fill(0)
       let flag = false
@@ -129,7 +216,7 @@ export default {
         delete this.curNormalData.wingman
       }
     },
-    saveNormalData (toggle) { // 保存NormalBlock的信息
+    saveNormalData (toggle) { // 保存NormalBlock的信息 只有保存的时候才可以吸入unit信息，其他时候也不要将unit写到store,因为用户可以选择取消
       this.recordOrRemoveWingman()
       if (toggle) {
         this.curNormalData.unitLists = this.innerDiagram.model.toJson() // 将NormalEditor的逻辑流保存下来
@@ -150,6 +237,7 @@ export default {
           this.curNormalData.color = CONST.COLORS.FINISH // 标识normal为已完成的绿色
         }
         this.$emit('saveNormalData', this._.cloneDeep(this.curNormalData)) // 将编辑完成后的normalData传递给jobEditor并触发保存操作
+        this.$emit('saveFinalResKey', this.finalResKey)
       }
       this.$emit('closeNormalEditor') // 关闭NormalEditor
     },
@@ -221,6 +309,9 @@ export default {
     },
     closeContextMenu () {
       this.unitController.style.display = 'none'
+    },
+    openContextMenu () {
+      this.unitController.style.display = 'block'
     },
     setWingman (wingmanId) { // 记录僚机使用情况
       this.innerDiagram.selection.each(({ data }) => {

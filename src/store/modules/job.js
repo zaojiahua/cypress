@@ -50,14 +50,6 @@ let mutations = {
   },
   setOuterDiagramModel (state, diagramModel) {
     state.outerDiagramModel = diagramModel
-    if (diagramModel) {
-      let finalResultBlock = JSON.parse(diagramModel).nodeDataArray.filter((val) => {
-        return val.category === 'normalBlock' && val.star === CONST.COLORS.RESULT
-      })[0]
-      if (finalResultBlock) {
-        state.config.finalResultKey = finalResultBlock.key
-      }
-    }
   },
   setDuplicateId (state, id) {
     state.duplicateId = id

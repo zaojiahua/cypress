@@ -56,6 +56,7 @@
       :openNormalEditor="openNormalEditor"
       @closeNormalEditor="closeNormalEditor"
       @saveNormalData="saveNormalData"
+      @saveFinalResKey="saveFinalResKey"
     ></NormalEditor>
     <switch-block-detail-component
       :switch-block-info="switchBlockInfo"
@@ -129,7 +130,7 @@ export default {
   watch: {
     jobInfo: {
       handler: function (val) {
-        if (val.job_type === 'InnerJob' && this.config.finalResultKey) { // 如果当前用例为innerjob且已经指定了结果block，则提醒用户错误
+        if (val.job_type === 'InnerJob' && this.config.finalResultKey) { // 如果当前用例为innerjob且已经指定了结果unit，则提醒用户错误
           this.$Message.error({
             background: true,
             content: '无法为内嵌用例指定结果Block'
@@ -147,6 +148,8 @@ export default {
   },
   beforeRouteLeave  (to, from, next) {
     if (to.name === 'jobList' && this.autoSaveToggle) { // 离开jobEditor页面去往jobList页面时，如果自动保存处于开启状态，则将当前用例逻辑流保存到store中
+      let start_node = this.outerDiagram.model.findNodeDataForKey(-1)
+      this.outerDiagram.model.setDataProperty(start_node, 'config', this._.cloneDeep(this.config))
       this.$store.commit('job/setOuterDiagramModel', this.outerDiagram.model.toJson())
     }
     next()
@@ -169,6 +172,12 @@ export default {
       let { data } = this.outerDiagram.findNodeForKey(this.normalKey)
       CONST.NORMAL_DATA_KEY.forEach((key) => {
         this.outerDiagram.model.setDataProperty(data, key, val[key])
+      })
+    },
+    saveFinalResKey(val){
+      this.$store.commit('job/handleConfig', {
+        action: 'setConfig',
+        data: { finalResultKey: val }
       })
     },
     _jobFlowRules () { // 获取逻辑流的错误并弹出显示
@@ -220,7 +229,7 @@ export default {
         if (this.config.finalResultKey) {
           this.$Message.error({
             background: true,
-            content: '无法为内嵌用例指定结果Block'
+            content: '无法为内嵌用例指定结果unit'
           })
           flag = true
         }
@@ -662,7 +671,7 @@ export default {
           break
       }
     },
-    setWingman (id) { // 设置僚机
+    setWingman (id) { // 设置执行inner job的僚机
       let curJobBlock = this.outerDiagram.findNodeForKey(this.currentJobBlockKey)
       if (id) {
         this.outerDiagram.model.setDataProperty(curJobBlock.data, 'assistDevice', id)

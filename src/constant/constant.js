@@ -29,7 +29,7 @@ export default {
     'outputVideo': '视频名称'
   },
   JOB_DEFAULT_CONFIG: {
-    finalResultKey: 0,
+    finalResultKey: null, // 默认没有结果unit ,格式为 "NorBlockKey,UnitKey"
     byProductsName: [
       { 'title': '文件名称', 'key': 'outputFile', 'children': [] },
       { 'title': '图片名称', 'key': 'outputPicture', 'children': [] },
