@@ -301,8 +301,29 @@ export function innerDiagramInit (context) {
     'commandHandler.archetypeGroupData': { category: 'UnitList', text: 'UnitList', isGroup: true },
     mouseDrop: function (e) {
       finishDrop(e, null)
-    }
+    },
+    'commandHandler.canDeleteSelection': deleteNode
   })
+
+
+  function deleteNode () { // 删除节点时同步更新配置信息
+    context.innerDiagram.selection.each(node =>{
+      let {data: { category, star } } = node
+      if (category === 'Unit') {
+        if (star === CONST.COLORS.RESULT) {
+          context.finalResKey = null
+        }
+      }
+      else if (category === 'UnitList'){
+        node.memberParts.iterator.each(part => {
+          if (part.data.star === CONST.COLORS.RESULT) {
+            context.finalResKey = null
+          }
+        })
+      }
+    })
+    return true
+  }
 
   // -------------从Palette拖拽节点的触发事件，判断Unit是否被UnitList包含------------
   context.innerDiagram.addDiagramListener('externalobjectsdropped', function (e) {
@@ -424,6 +445,18 @@ function adapter (config, context) {
   return config
 }
 
+function checkFinalResultKey(finalResultKey,context){ // norBlockKey,unitKey
+  if(finalResultKey){
+    let [norBlockKey,unitKey]  = finalResultKey.split(",").map(item => Number.parseInt(item))
+    let { data: { star, unitLists } } = context.outerDiagram.findNodeForKey(norBlockKey)
+    if (star === CONST.COLORS.RESULT){
+      let finalResultUnit = JSON.parse(unitLists).nodeDataArray.filter(node=> node.category === 'Unit' && node.star === CONST.COLORS.RESULT)[0]
+      if (!finalResultUnit || finalResultUnit.key === unitKey) return true
+    }
+    return false
+  }
+}
+
 export function setOuterDiagramData (context,job_flow = null) { // 打开jobEditor页面时设置数据
   if (context.outerDiagramModel !== null && JSON.parse(context.outerDiagramModel).nodeDataArray.length > 1) { // 如果逻辑流存在且节点数量多于1个
     context.outerDiagram.model = go.Model.fromJson(context.outerDiagramModel) // 恢复之前保存的逻辑流
@@ -450,6 +483,13 @@ export function setOuterDiagramData (context,job_flow = null) { // 打开jobEdit
           let { data: start, data: { config } } = context.outerDiagram.findNodeForKey(-1)
           // 之前的结果norBlock  finalResultKey: 'norBlockKey' Number ,现在更改成结果unit finalResultKey:norBlockKey,UnitKey String, 但要适配原来的更改
           let newConfig = adapter(config, context)
+          if (!checkFinalResultKey(newConfig.finalResultKey,context)){
+            newConfig.finalResultKey = null
+            context.$Message.error({
+              background: true,
+              content: '结果unit设置有误,请重新设置'
+            })
+          }
           context.$store.commit('job/handleConfig', {
             action: 'setConfig',
             data: newConfig || {}

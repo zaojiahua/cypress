@@ -3,7 +3,6 @@
     <div class="container" @click="closeContextMenu">
       <header>
         <Input clearable size="large" v-model="curNormalData.text" />
-        {{finalResKey}}
       </header>
       <nav>
         <Dropdown trigger="click" @on-click="getSelectedUnit" style="width: 100%; margin-bottom: 1em;">
