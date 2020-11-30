@@ -446,15 +446,15 @@ function adapter (config, context) {
 }
 
 function checkFinalResultKey(finalResultKey,context){ // norBlockKey,unitKey
-  if(finalResultKey){
-    let [norBlockKey,unitKey]  = finalResultKey.split(",").map(item => Number.parseInt(item))
-    let { data: { star, unitLists } } = context.outerDiagram.findNodeForKey(norBlockKey)
-    if (star === CONST.COLORS.RESULT){
-      let finalResultUnit = JSON.parse(unitLists).nodeDataArray.filter(node=> node.category === 'Unit' && node.star === CONST.COLORS.RESULT)[0]
-      if (!finalResultUnit || finalResultUnit.key === unitKey) return true
-    }
-    return false
+  if(!finalResultKey) return true
+
+  let [norBlockKey,unitKey]  = finalResultKey.split(",").map(item => Number.parseInt(item))
+  let { data: { star, unitLists } } = context.outerDiagram.findNodeForKey(norBlockKey)
+  if (star === CONST.COLORS.RESULT){
+    let finalResultUnit = JSON.parse(unitLists).nodeDataArray.filter(node=> node.category === 'Unit' && node.star === CONST.COLORS.RESULT)[0]
+    if (!finalResultUnit || finalResultUnit.key === unitKey) return true
   }
+  return false
 }
 
 export function setOuterDiagramData (context,job_flow = null) { // 打开jobEditor页面时设置数据
