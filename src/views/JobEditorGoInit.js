@@ -185,6 +185,7 @@ function outerDiagramInit (context) {
 
   const endTemplate = endNodeTemplate(CONST.COLORS.END)
   endTemplate.doubleClick = (e, node) => {
+    if (e.diagram instanceof go.Palette) return
     if (node.data.text === 'End') {
       context.outerDiagram.model.setDataProperty(node.data, 'text', 'Fail')
       context.outerDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.FAIL)
