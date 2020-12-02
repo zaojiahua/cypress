@@ -21,10 +21,10 @@
           <MenuItem name="1">
             {{ username }}
           </MenuItem>
-          <MenuItem name="2" to="about">
-            关于TMach
-            <Icon type="ios-help-circle-outline" size="24"/>
-          </MenuItem>
+<!--          <MenuItem name="2" to="about">-->
+<!--            关于TMach-->
+<!--            <Icon type="ios-help-circle-outline" size="24"/>-->
+<!--          </MenuItem>-->
           <MenuItem name="3" @click.native="logout">
             登出
             <Icon type="ios-exit-outline" size="24">
