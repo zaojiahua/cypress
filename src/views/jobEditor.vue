@@ -146,6 +146,25 @@ export default {
       }
     }
   },
+  beforeRouteEnter (to, from, next) {
+    // 在渲染该组件的对应路由被 confirm 前调用
+    // 不！能！获取组件实例 `this`
+    // 因为当守卫执行前，组件实例还没被创建
+    if (from.name !== 'jobList' && to.query.jobId) {
+      next ({ name: 'jobList'})
+    }else{
+      next()
+    }
+
+  },
+    // beforeRouteLeave (to, from, next) {
+    //   const answer = window.confirm('Do you really want to leave? you have unsaved changes!')
+    //   if (answer) {
+    //     next()
+    //   } else {
+    //     next(false)
+    //   }
+    // },
   beforeRouteLeave  (to, from, next) {
     if (to.name === 'jobList' && this.autoSaveToggle) { // 离开jobEditor页面去往jobList页面时，如果自动保存处于开启状态，则将当前用例逻辑流保存到store中
       let start_node = this.outerDiagram.model.findNodeDataForKey(-1)
