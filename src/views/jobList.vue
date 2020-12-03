@@ -178,7 +178,6 @@ export default {
       getJobList({
         pageSize: this.pageSize,
         offset: this.offset,
-        authorId: parseInt(localStorage.id || sessionStorage.id),
         filterUrlParam
       }).then(res => {
         this.currentPageSelectedJobs = {}

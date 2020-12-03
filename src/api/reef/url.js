@@ -31,7 +31,7 @@ export default {
   deviceBattery: (data) => `${reefPrefix}get_device_power_battery_level/?device_id=${data}`,
   controlDevice: () => `${coralPrefix}control_device/`,
   releaseDevice: () => `${coralPrefix}release_occupy_device/`,
-  job: (data) => `${reefPrefix}job/?fields=${joinFilter(jobFilter)}&job_deleted=False&author_id=${data.authorId}&limit=${data.pageSize}&offset=${data.offset}&ordering=-updated_time${data.filterUrlParam}`,
+  job: (data) => `${reefPrefix}job/?fields=${joinFilter(jobFilter)}&job_deleted=False&limit=${data.pageSize}&offset=${data.offset}&ordering=-updated_time${data.filterUrlParam}`,
   jobSingleId: (job_label) => `${reefPrefix}job/?fields=id&job_label=${job_label}`,
   jobDetail: (id) => `${reefPrefix}job/${id}/?fields=${joinFilter(jobDetailFilter)}`,
   saveJobFlowAndMsg: () => `${reefPrefix}job/`,
