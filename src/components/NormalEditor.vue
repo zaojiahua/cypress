@@ -37,10 +37,10 @@
             </Dropdown>
           </DropdownMenu>
         </Dropdown>
-<!--        <ButtonGroup vertical size="default" v-else>-->
-<!--          <Button type="primary" @click="setWingman(0)">主机</Button>-->
-<!--          <Button v-for="wingman in numOfWingman" :key="wingman" @click="setWingman(wingman)">{{wingman}} 号机</Button>-->
-<!--        </ButtonGroup>-->
+        <!--        <ButtonGroup vertical size="default" v-else>-->
+        <!--          <Button type="primary" @click="setWingman(0)">主机</Button>-->
+        <!--          <Button v-for="wingman in numOfWingman" :key="wingman" @click="setWingman(wingman)">{{wingman}} 号机</Button>-->
+        <!--        </ButtonGroup>-->
       </div>
     </div>
     <unit-template-editor
@@ -136,7 +136,7 @@ export default {
             {name:"一号僚机",key:1},
             {name:"二号僚机",key:2},
             {name:"三号僚机",key:3}
-            ],
+          ],
           visible: false,
           func: this.setWingman
 
@@ -186,19 +186,13 @@ export default {
             this.$Message.error({ background: true, content: '结果unit有且只能有一个' })
           }
         }else // 没有设置结果unit
-          {
-            this.innerDiagram.model.setDataProperty(data, 'star', CONST.COLORS.RESULT)
-            let unitMsg = this._.cloneDeep(data.unitMsg)
-            unitMsg.finalResult = true
-            this.innerDiagram.model.setDataProperty(data, 'unitMsg', unitMsg)
-            this.finalResKey = `${this.normalData.key},${data.key}`
-          }
+        {
+          this.innerDiagram.model.setDataProperty(data, 'star', CONST.COLORS.RESULT)
+          this.finalResKey = `${this.normalData.key},${data.key}`
+        }
       } else { // 定义成非结果unit
         if (this.finalResKey === `${this.normalData.key},${data.key}`) this.finalResKey = null // 操作的对象死结果unit 则将结果unit清空
         this.innerDiagram.model.setDataProperty(data, 'star', CONST.COLORS.STAR)
-        let unitMsg = this._.cloneDeep(data.unitMsg)
-        delete unitMsg.finalResult
-        this.innerDiagram.model.setDataProperty(data, 'unitMsg', unitMsg)
       }
     },
     recordOrRemoveWingman () { // 记录或者删除僚机信息

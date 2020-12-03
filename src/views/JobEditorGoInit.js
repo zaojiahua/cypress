@@ -440,7 +440,7 @@ function adapter (config, context) {
       content: '格式转换'
     })
     let { data: finalResultNorBlock } = context.outerDiagram.findNodeForKey(config.finalResultKey)
-    let finalResultUnit = JSON.parse(finalResultNorBlock.unitLists).nodeDataArray.filter(node => node.category === 'Unit' && node.unitMsg.finalResult)[0]
+    let finalResultUnit = JSON.parse(finalResultNorBlock.unitLists).nodeDataArray.filter(node => node.category === 'Unit' && node.star === CONST.COLORS.RESULT)[0]
     config.finalResultKey = `${config.finalResultKey},${finalResultUnit.key}`
   }
   return config
