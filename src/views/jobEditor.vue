@@ -273,7 +273,7 @@ export default {
           data.append('job', id)
           for (let i = 0; i < resFiles.length; i++) {
             let { name, type, file } = resFiles[i]
-            if (name === 'FILES_NAME_CONFIG.json') continue // 兼容老版本
+            if (name === 'FILES_NAME_CONFIG.json') continue // 移除老版本中遗留的文件，文件内容已经写入到start节点了
             if (type === 'png') {
               data.append('file', dataURLtoFile(file, name))
             } else {

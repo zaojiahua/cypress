@@ -435,7 +435,8 @@ export function innerPaletteInit (context) {
 }
 
 function adapter (config, context) {
-  if (config.finalResultKey && typeof config.finalResultKey === 'number') { // 指定了结果norBlock
+  // 适配老版本：老版本的finalResultKey默认为0，指定的是Block的key,新版本的finalResultKey默认为 null，指定的是Block的key,unitKey
+  if (config.finalResultKey && typeof config.finalResultKey === 'number') {
     context.$Message.info({
       content: '格式转换'
     })
@@ -481,7 +482,8 @@ export function setOuterDiagramData (context,job_flow = null) { // 打开jobEdit
             }
           })
           context.outerDiagram.model = go.Model.fromJson(data)
-          let { data: start, data: { config } } = context.outerDiagram.findNodeForKey(-1)
+          // 适配老版本，老版本可能不存在该字段，新版本都存在，config需要设置默认值{}
+          let { data: start, data: { config: config = {} } } = context.outerDiagram.findNodeForKey(-1)
           // 之前的结果norBlock  finalResultKey: 'norBlockKey' Number ,现在更改成结果unit finalResultKey:norBlockKey,UnitKey String, 但要适配原来的更改
           let newConfig = adapter(config, context)
           if (!checkFinalResultKey(newConfig.finalResultKey,context)){
