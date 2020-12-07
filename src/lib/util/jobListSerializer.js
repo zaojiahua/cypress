@@ -86,6 +86,8 @@ const jobSerializer = {
   job_label: 'string',
   job_name: 'string',
   job_type: 'string',
+  case_number: 'string',
+  priority: 'string',
   phone_models: [{
     id: 'number',
     phone_model_name: 'string',

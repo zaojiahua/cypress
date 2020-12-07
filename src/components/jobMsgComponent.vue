@@ -23,6 +23,12 @@
           <Option v-for="item in basicData[basicData.customTag]" :value="item.id" :key="item.id">{{ item.custom_tag_name }}</Option>
         </Select>
       </FormItem>
+      <FormItem label="caseNo" prop="case_number">
+        <Input v-model="$store.state.job.jobInfo.case_number" clearable placeholder="请输入用例编号" />
+      </FormItem>
+      <FormItem label="priority" prop="priority">
+      <Input v-model="$store.state.job.jobInfo.priority" clearable placeholder="请输入用例级别" />
+      </FormItem>
       <FormItem label="用例说明" prop="description">
         <Input v-model="$store.state.job.jobInfo.description" clearable placeholder="请输入说明信息" />
       </FormItem>

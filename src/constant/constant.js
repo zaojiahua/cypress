@@ -139,7 +139,7 @@ export default {
     'nodeDataArray': [ { 'category': 'Start', 'text': 'Start', 'key': -1 } ],
     'linkDataArray': []
   }),
-  SIMPLE_JOB_KEY: ['job_name', 'job_type', 'job_second_type', 'job_label', 'description', 'draft', 'subsidiary_device_count'],
+  SIMPLE_JOB_KEY: ['job_name', 'job_type', 'job_second_type', 'job_label','priority','case_number', 'description', 'draft', 'subsidiary_device_count'],
   COMPLEX_JOB_KEY: ['test_area', 'android_version', 'custom_tag', 'phone_models', 'rom_version'],
   USER_INFO: ['id', 'username', 'groups', 'token'],
   SERIALIZER_KEY: ['manufacturer', 'androidVersion', 'customTag', 'testArea'],
