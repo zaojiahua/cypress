@@ -16,10 +16,18 @@
       <Button
         size="small"
         type="primary"
-        @click="handleAbsoluteCoordinates"
+        style="margin-right: 16px;"
+        @click="handleAbsoluteCoordinates(false)"
         id="btn-get-coordinate"
         v-show="isPicInput && this.curFile"
       >获取坐标</Button>
+      <Button
+        size="small"
+        type="primary"
+        @click="handleAbsoluteCoordinates(true)"
+        id="btn-get-relative-coordinate"
+        v-show="isPicInput && this.curFile"
+      >获取坐标比例</Button>
     </div>
     <!-- body -->
     <div>
@@ -119,17 +127,24 @@ export default {
       })
       this.coordinate = null
     },
-    handleAbsoluteCoordinates () {
+    handleAbsoluteCoordinates (isRelative) {
       if (!this.hasSelectAPoint()) return
-      this.$store.commit('img/setAbsoluteCoordinates', this.point)
+      console.log(isRelative)
+      console.log(this.relativePoint)
+      this.$store.commit('img/setAbsoluteCoordinates', isRelative ? this.relativePoint : this.point) // 可以是原图坐标，也可以是比例坐标
       this.point = null
+      this.relativePoint = null
     },
     outputResult (val) {
       this.coordinate = null
       this.point = null
+      this.relativePoint = null
       this.offset = null
       if (val.coordinate) this.coordinate = this._.cloneDeep(val.coordinate)
-      if (val.point) this.point = this._.cloneDeep(val.point)
+      if (val.point && val.relativePoint) {
+        this.point = this._.cloneDeep(val.point)
+        this.relativePoint = this._.cloneDeep(val.relativePoint)
+      }
       if (val.offset) this.offset = this._.cloneDeep(val.offset)
     },
     normalizeAreasInfo (val) { // 特征点区域数据整理

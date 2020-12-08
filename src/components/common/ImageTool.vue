@@ -261,6 +261,10 @@ export default {
                 point: {
                   x: (offsetX * this.sizeRatio).toFixed(2),
                   y: (offsetY * this.sizeRatio).toFixed(2)
+                },
+                relativePoint: {
+                  x: ((offsetX * this.sizeRatio).toFixed(2) / this.imageW).toFixed(4),
+                  y: ((offsetY * this.sizeRatio).toFixed(2) / this.imageH).toFixed(4)
                 }
               }
               this.$emit('outputResult', JSON.parse(JSON.stringify(this.outputInfo)))

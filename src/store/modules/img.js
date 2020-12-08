@@ -3,7 +3,7 @@ import files from './files'
 let state = {
   imgRecRate: 0.99, // 图片识别率
   coordinates: [], // 选取区域的信息保存在这里
-  absCoordinates: null // 选点的绝对位置
+  absCoordinates: null // 选点的位置(可以是相对或则比例（绝对）)
 }
 
 let mutations = {

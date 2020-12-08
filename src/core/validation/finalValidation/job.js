@@ -34,6 +34,13 @@ export function jobFlowValidation (vueObj) {
     }
   }
 
+  const onlyOneOfFinalResultValidation = () => {
+    let finalResultCount = self.outerDiagram.findNodesByExample({ 'category': 'normalBlock','star':CONST.COLORS.RESULT}).count
+    if (finalResultCount > 1){
+      myDiagramEventValidationHint.add('多个block被标记为最总结果')
+    }
+  }
+
   const switchBlockValidation = () => {
     let switchBlockAll = self.outerDiagram.findNodesByExample({ 'category': 'switchBlock' })
 
@@ -114,6 +121,7 @@ export function jobFlowValidation (vueObj) {
   if (self.outerDiagram.nodes.count === 0) {
     myDiagramEventValidationHint.add('还未对流程图进行编辑！')
   } else {
+    onlyOneOfFinalResultValidation()
     startValidation()
     endValidation()
     switchBlockValidation()

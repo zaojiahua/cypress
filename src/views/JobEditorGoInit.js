@@ -177,8 +177,24 @@ function outerDiagramInit (context) {
     mouseDrop: function (e) {
       finishDrop(e, null)
     },
-    'commandHandler.canDeleteSelection': deleteNode
+    'commandHandler.canDeleteSelection': deleteNode,
+    'commandHandler.canCopySelection': canCopySelect
   })
+
+  function canCopySelect () {
+    let flag = true
+    context.outerDiagram.selection.each(node =>{
+      let { data: { category } } = node
+      if (category === 'Start') {
+        flag = false
+      }
+    })
+    if (!flag) context.$Message.error({
+      background: true,
+      content: 'Start不可以被复制'
+    })
+    return flag
+  }
 
   const startTemplate = startNodeTemplate(CONST.COLORS.START)
   startTemplate.linkValidation = startValidation
@@ -303,9 +319,23 @@ export function innerDiagramInit (context) {
     mouseDrop: function (e) {
       finishDrop(e, null)
     },
-    'commandHandler.canDeleteSelection': deleteNode
+    'commandHandler.canDeleteSelection': deleteNode,
+    'commandHandler.canCopySelection': canCopySelect
   })
-
+  function canCopySelect () { // 删除节点时同步更新配置信息
+    let flag = true
+    context.innerDiagram.selection.each(node =>{
+      let { data: { category } } = node
+      if (category === 'Start' || category === 'End') {
+        flag = false
+      }
+    })
+    if (!flag) context.$Message.error({
+                          background: true,
+                          content: 'Start,End 不可以被复制'
+                        })
+    return flag
+  }
 
   function deleteNode () { // 删除节点时同步更新配置信息
     context.innerDiagram.selection.each(node =>{

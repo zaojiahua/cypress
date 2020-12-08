@@ -382,7 +382,11 @@ export default {
         }
         else //  保存或另存正式的job
           {
-          if (this.innerJobNum !== jobInfo.inner_job_list.length) {
+            let innerJobRule = true
+            let innerJobs = this.outerDiagram.findNodesByExample({ 'category': 'Job' })
+            innerJobs.each(node => { if (!node.data.jobLabel) { innerJobRule = false}})
+
+          if (!innerJobRule) {
             this.$Message.error({
               background: true,
               content: '不允许存在空的Job块'
