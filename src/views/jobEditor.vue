@@ -1,12 +1,12 @@
 <template>
   <div class="container" @click="closeJobController">
     <div class="header flex-row">
-      <Input v-model="$store.state.job.jobInfo.job_name" clearable class="job-name" placeholder="请输入JOB名称" size="large" />
+      <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.job_name" clearable class="job-name" placeholder="请输入JOB名称" size="large" />
       <div class="child-m-right--1 flex-row">
         <div class="child-m-right--1 flex-row">
           <Button type="primary" @click="$store.commit('handleShowDrawer')" size="large" style="margin-right: 10px;">用例详情</Button>
-          <Button type="info" ghost size="large" @click="viewResFile" style="margin-right: 10px;">查看依赖文件</Button>
-          <Button type="info" ghost size="large" :disabled="!duplicateId" @click="duplicateTipModal = true" style="margin-right: 10px;">使用副本</Button>
+          <Button v-if="editJobFlow" type="info" ghost size="large" @click="viewResFile" style="margin-right: 10px;">查看依赖文件</Button>
+          <Button v-if="editJobFlow" type="info" ghost size="large" :disabled="!duplicateId" @click="duplicateTipModal = true" style="margin-right: 10px;">使用副本</Button>
           <Modal
             title="确认使用副本替换当前的编辑内容吗？"
             v-model="duplicateTipModal"
@@ -26,9 +26,9 @@
               <Icon type="ios-menu" />
             </Button>
             <DropdownMenu slot="list">
-              <DropdownItem name="save">保存</DropdownItem>
-              <DropdownItem name="saveAs">另存为</DropdownItem>
-              <DropdownItem name="saveDraft">存草稿</DropdownItem>
+              <DropdownItem v-if="editJobFlow" name="save">保存</DropdownItem>
+              <DropdownItem v-if="editJobFlow" name="saveAs">另存为</DropdownItem>
+              <DropdownItem v-if="editJobFlow" name="saveDraft">存草稿</DropdownItem>
               <DropdownItem name="quit">退出</DropdownItem>
             </DropdownMenu>
           </Dropdown>
@@ -116,13 +116,13 @@ export default {
       wingmanCount: 0,
       wingmans: 3,
       jobController: null, // unit 右键菜单栏dom对象
-      saving: false,
+      saving: false, //是否展示加载动画
       duplicateTipModal: false
     }
   },
   computed: {
     ...mapState('job', ['jobInfo', 'outerDiagramModel', 'isValidated', 'duplicateId', 'duplicateLabel', 'normalData', 'config', 'jobLabelDuplicate']),
-    ...mapGetters('job', ['jobId', 'normalKey']),
+    ...mapGetters('job', ['jobId', 'normalKey','editJobFlow','editJobMsg']),
     ...mapState('files', ['resFiles']),
     ...mapGetters('files', ['resFilesName']),
     ...mapState('device', ['countdown', 'deviceInfo'])
@@ -176,6 +176,7 @@ export default {
   beforeDestroy () {
     window.removeEventListener('contextmenu', this.dispatchMouseEvent)
     window.removeEventListener('mousemove', this.dispatchMouseEvent)
+    window.removeEventListener('beforeunload', this.beforeunloadHandler, false);
   },
   methods: {
     closeNormalEditor () { // 关闭Normal块的编辑页面
@@ -343,6 +344,13 @@ export default {
         this.$store.commit('setCurPage', 1)
       } else // 非退出的操作
         {
+          if (!this.editJobMsg || !this.editJobFlow ){
+            this.$Message.error({
+              background: true,
+              content: '没有编辑当前用例的权限'
+            })
+            return
+          }
         let id = this.jobId
         let jobInfo = await this.prepareJobInfo()
         if (name === 'saveDraft') { // 存草稿，可跳过校验
@@ -506,7 +514,8 @@ export default {
         }
       })
       jobInfo.subsidiary_device_count = this.calcWingmanCount()
-      jobInfo.author = localStorage.id
+      // 前面已经判断：jobInfo.author === parseInt(localStorage.id || sessionStorage.id) 可以不用赋值
+      jobInfo.author = parseInt(localStorage.id || sessionStorage.id)
       // 创建新的标签
       if (shouldCreateNewTag('test_area', jobInfo)) {
         jobInfo.test_area = await createNewTag('test_area', jobInfo)
@@ -547,8 +556,8 @@ export default {
       }
       info.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
       info.subsidiary_device_count = this.calcWingmanCount()
-      info.author = localStorage.id
-      // info.job_name += '_AUTOSAVE'
+      // 前面已经判断：jobInfo.author === parseInt(localStorage.id || sessionStorage.id) 可以不用赋值
+      info.author = parseInt(localStorage.id || sessionStorage.id)
       info.draft = true
       info.job_deleted = true // 副本设置成用户不可见
       info.inner_job_list = this.prepareInnerJobList()
@@ -567,10 +576,10 @@ export default {
       if (curTime - this.lastActiveTime >= this.activeTimeInterval || !this._jobMsgRules() || !this.autoSaveToggle) return
       let info = await this.prepareAutoSaveInfo()
       if (!this.duplicateId) { // 第一次自动保存时，需要判断副本job_label是否存在，存在则更新，否则创建
-        console.log("第一次保存")
+        // console.log("第一次保存")
         try {
           let { data: { jobs } } = await getJobId(info.job_label)
-          console.log(jobs)
+          // console.log(jobs)
           if (jobs.length !== 0) {
             this.$store.commit('job/setDuplicateId', jobs[0].id)
             console.log(info)
@@ -589,7 +598,7 @@ export default {
       } else
         {
         try {
-          console.log("非第一次自动保存")
+          // console.log("非第一次自动保存")
           await this.uploadFiles(this.duplicateId, info)
         } catch (error) {
           throw new Error(error)
@@ -694,6 +703,9 @@ export default {
           break
       }
     },
+    beforeunloadHandler(e) {
+      e.returnValue = "确定要关闭窗口吗？"
+    },
     setWingman (id) { // 设置执行inner job的僚机
       let curJobBlock = this.outerDiagram.findNodeForKey(this.currentJobBlockKey)
       if (id) {
@@ -715,7 +727,7 @@ export default {
         let job = util.validate(jobSerializer, data)
         let jobInfo = {
           manufacturer: (job.phone_models.length === 0) ? null : job.phone_models[0].manufacturer.id, // todo: 写了manufacturer 没写phonemodel
-          author: parseInt(localStorage.id || sessionStorage.id),
+          author: this.jobInJob.author,
           job_id: jobId, // 将副本的内容作用到编辑的job
           job_flow: job.ui_json_file
         }
@@ -747,27 +759,27 @@ export default {
     init(this) // 创建画板与画布并绘制流程图
     if (!this.resFiles.length) this.handleResFile(this.jobId)
 
-    this.autoSaveToggle = true
+    this.autoSaveToggle = this.editJobFlow && this.editJobMsg  // 可以被编辑则可以自动保存
     this.jobController = document.getElementById('job-controller')
-    let timer = setInterval(async () => { // 设置自动保存的自动循环
-      try {
-        await this.autoSave()
-      } catch (error) {
-        this.$Message.error({
-          background: true,
-          content: error
-        })
-      }
-    }, this.autoSaveInterval)
-    this.$once('hook:beforeDestroy', () => { // 离开jobEditor时清除定时器
-      clearInterval(timer)
-      timer = null
-    })
+    if (this.autoSaveToggle){
+      let timer = setInterval(async () => { // 设置自动保存的自动循环
+        try {
+          await this.autoSave()
+        } catch (error) {
+          this.$Message.error({
+            background: true,
+            content: error
+          })
+        }
+      }, this.autoSaveInterval)
+      this.$once('hook:beforeDestroy', () => { // 离开jobEditor时清除定时器
+        clearInterval(timer)
+        timer = null
+      })
+    }
     window.addEventListener('contextmenu', this.dispatchMouseEvent) //右键菜单栏
     window.addEventListener('mousemove', this.dispatchMouseEvent) //
-    window.addEventListener('beforeunload', (event) => { // 刷新/关闭页面前弹窗警告
-      event.returnValue = "撒打算打算打算打算打算"
-    })
+    window.addEventListener('beforeunload', this.beforeunloadHandler, false);
     window.addEventListener('onunload', () => { // 刷新/关闭页面确认后删除自动保存的用例 todo:不起效果
       // if (this.duplicateId) updateJobMsg(this.duplicateId, { job_deleted: true })
       this.$store.commit('job/setDuplicateId', null)
