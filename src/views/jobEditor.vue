@@ -514,8 +514,7 @@ export default {
         }
       })
       jobInfo.subsidiary_device_count = this.calcWingmanCount()
-      // 前面已经判断：jobInfo.author === parseInt(localStorage.id || sessionStorage.id) 可以不用赋值
-      jobInfo.author = parseInt(localStorage.id || sessionStorage.id)
+      jobInfo.author = parseInt( sessionStorage.id)
       // 创建新的标签
       if (shouldCreateNewTag('test_area', jobInfo)) {
         jobInfo.test_area = await createNewTag('test_area', jobInfo)
@@ -556,8 +555,7 @@ export default {
       }
       info.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
       info.subsidiary_device_count = this.calcWingmanCount()
-      // 前面已经判断：jobInfo.author === parseInt(localStorage.id || sessionStorage.id) 可以不用赋值
-      info.author = parseInt(localStorage.id || sessionStorage.id)
+      info.author = parseInt(sessionStorage.id)
       info.draft = true
       info.job_deleted = true // 副本设置成用户不可见
       info.inner_job_list = this.prepareInnerJobList()

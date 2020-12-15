@@ -129,10 +129,10 @@ let getters = {
   },
   editJobMsg (){
     // 新建用例或则编辑自己的用例可以被允许
-    return state.jobInfo.job_id === undefined || state.jobInfo.author  === parseInt(localStorage.id || sessionStorage.id)
+    return state.jobInfo.job_id === undefined || state.jobInfo.author  === parseInt(sessionStorage.id)
   },
   editJobFlow (){
-    return state.jobInfo.job_id === undefined || state.jobInfo.author  === parseInt(localStorage.id || sessionStorage.id)
+    return state.jobInfo.job_id === undefined || state.jobInfo.author  === parseInt(sessionStorage.id)
   }
 }
 

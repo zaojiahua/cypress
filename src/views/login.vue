@@ -35,15 +35,16 @@ export default {
   methods: {
     login () {
       login(this.username, this.password).then(({ status, data }) => {
+        // 清空 用户信息 获取用户token
+        CONST.USER_INFO.forEach((val) => {
+          sessionStorage.removeItem(val)
+          localStorage.removeItem(val)
+        })
+
+        sessionStorage.setItem('token', data['token'])
         if (this.keepLogin) {
-          CONST.USER_INFO.forEach((val, idx) => {
-            localStorage.setItem(val, data[val])
-          })
-        } else {
-          CONST.USER_INFO.forEach((val, idx) => {
-            sessionStorage.setItem(val, data[val])
-          })
-        }
+            localStorage.setItem('token', sessionStorage.token)
+          }
         this.$router.push('/')
       }).catch(error => {
         let errorMsg = ''
@@ -58,12 +59,6 @@ export default {
         this.$Loading.error()
       })
     }
-  },
-  beforeRouteEnter (to, from, next) {
-    if (sessionStorage.getItem('token') || localStorage.getItem('token')) {
-      this.$router.push('/')
-    }
-    next()
   },
   mounted () {
     this.keepLogin = !!localStorage.getItem('LOGIN:KEEP_LOGIN')

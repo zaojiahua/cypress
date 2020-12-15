@@ -197,6 +197,14 @@ const deleteUnitTemplate = (id) => {
   })
 }
 
+
+const getUserInfoByToken = (token) => {
+  return axios.request({
+    method: 'get',
+    url: url.token(token)
+  })
+}
+
 export {
   login,
   getJobTestAreaList,
@@ -224,5 +232,6 @@ export {
   getJobUnitsBodyDict,
   updateJobUnitTemplate,
   createNewUnitTemplate,
-  deleteUnitTemplate
+  deleteUnitTemplate,
+  getUserInfoByToken
 }

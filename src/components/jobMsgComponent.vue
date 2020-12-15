@@ -322,7 +322,7 @@ export default {
         if (valid) { // 通过验证
           setTimeout(() => {
             let jobInfo = this._.cloneDeep(this.jobInfo)
-            jobInfo.author = parseInt(localStorage.id || sessionStorage.id)
+            jobInfo.author = parseInt(sessionStorage.id)
             updateJobMsg(this.jobId, jobInfo).then(() => { // 更新用例信息
               this.$Message.info('修改成功')
               this.$store.commit('refreshJobList')

@@ -19,7 +19,7 @@ class HttpRequest {
   interceptors (instance, url) {
     instance.interceptors.request.use(config => {
       // 在请求头中加token
-      if (localStorage.getItem('token')) {
+      if (sessionStorage.getItem('token')) {
         config.headers.Authorization = sessionStorage.getItem('token')
       }
       if (!Object.keys(this.queue).length) {
