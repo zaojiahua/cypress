@@ -37,6 +37,9 @@ router.beforeEach((to, from, next) => {
           next()
 
         } else {
+          // 错误的token进行删除
+          localStorage.removeItem('token')
+          sessionStorage.removeItem('token')
           next({ name: 'login', query: { redirect: to.fullPath } })
         }
       })
