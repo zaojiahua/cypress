@@ -13,7 +13,11 @@
 <script>
 export default {
   name: 'ImageTool',
-  props: ['imgSrc', 'areasInfo'],
+  props: {
+    imgSrc: String,
+    areasInfo: Array,
+    selectPointShow: Array,
+  },
   data () {
     return {
       imageH: 0,
@@ -55,13 +59,28 @@ export default {
           this.fillText(val.index + 1 ? val.index + 1 + '' : i + 1 + '', v.x + v.w / 2, v.y + v.h / 2 + 14, 'white', 'center', 'bottom', '24px sans-serif')
         }
       })
+    },
+    selectPointShow (val) {
+      setTimeout(()=>{  //因为图片的加载时间会更长（加载过程为异步过程），需要设置设置延迟执行
+        this.context2D.clearRect(0, 0, this.canvasW, this.canvasH)
+        for (const value of val) {
+          if (value.x <= 1 && value.y <= 1 ){
+            this.fillCircle(value.x * this.canvasW, value.y * this.canvasH, 12, 'rgba(107, 40, 200, .2)')
+            this.fillCircle(value.x * this.canvasW, value.y * this.canvasH, 3)
+          }else {
+            this.fillCircle(value.x * this.canvasW / this.imageW, value.y * this.canvasH / this.imageH, 12, 'rgba(107, 40, 200, .2)')
+            this.fillCircle(value.x * this.canvasW / this.imageW, value.y * this.canvasH / this.imageH, 3)
+          }
+        }
+      },500);
+
     }
   },
   methods: {
     drawImg (src) {
       let img = new Image()
       img.setAttribute('src', src)
-      img.onload = () => { // 图片加载完成时调整大小以适应屏幕
+      img.onload = () => { // 图片加载完成时调整大小以适应屏幕（异步）
         this.imageH = img.height
         this.imageW = img.width
         this.aspectRatio = img.height / img.width
@@ -85,7 +104,7 @@ export default {
       this.offscreenContext = this.offscreenCanvas.getContext('2d')
       this.offscreenCanvas.width = img.width
       this.offscreenCanvas.height = img.height
-      this.offscreenContext.drawImage(img, 0, 0, this.offscreenCanvas.width, this.offscreenCanvas.height)
+      this.offscreenContext.drawImage(img, 0, 0, this.offscreenCanvas.width, this.offscreenCanvas.height) // 异步操作，会导致覆盖选点
     },
     fillCircle (x, y, radius, fillStyle = '#F76132') { // 画圆
       if (this.context2D !== null) {
@@ -350,7 +369,6 @@ export default {
     this.canvas.addEventListener('mouseup', this.dispatchMouseEvent)
     this.canvas.addEventListener('mouseleave', this.dispatchMouseEvent)
     this.context2D = this.canvas.getContext('2d') // 使用canvas
-    this.drawImg(this.imgSrc)
   }
 }
 </script>

@@ -156,7 +156,6 @@ export default {
     },
     openNormalEditor (val) { // 打开normalEditor时展示unit模板
       if (val) {
-        console.log(this._.cloneDeep(this.config.finalResultKey))
         this.getSelectedUnit(this.unitTemplateType)
         this.finalResKey = this._.cloneDeep(this.config.finalResultKey)
 

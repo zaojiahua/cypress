@@ -22,7 +22,7 @@ import CONST from 'constant/constant'
 export default {
   name: 'UnitItem',
   props: {
-    itemData: Object,
+    itemData: Object, //unit items中单个item的内容
     itemIndex: Number,
     isActive: Boolean
   },
@@ -30,7 +30,7 @@ export default {
     return {
       isClicked: false,
       curItemContent: this.itemData.itemContent,
-      tmachBlanks: [],
+      tmachBlanks: [], // 可以被定制的内容，item中用户输入项集合
       itemDesc: CONST.ITEM_DESC
     }
   },
@@ -109,10 +109,8 @@ export default {
       return !this.isEditable ? '#aaaaaa' : this.isCompleted ? 'success' : 'error'
     },
     isEditable () {
-      if (this.itemType === 'jobResourceFile' && !this.curFile) {
-        return false
-      }
-      return true
+      return !(this.itemType === 'jobResourceFile' && !this.curFile);
+
     },
     disable () {
       let target = this.unitData.unitMsg.execCmdDict.execCmdList
@@ -153,6 +151,25 @@ export default {
         }
       })
     },
+    parseSelectPoint(){
+      let SelectPointList = []
+      for (const [index, value] of this.tmachBlanks.entries()) { // 选点数据格式整理并下发给imageTool展示
+        if (Number.isNaN(parseFloat(value.trim().substring(5)))) {
+          this.$store.commit('item/handleSelectPoint', {
+            action: 'clear'
+          })
+          return
+        }
+        if (index % 2 === 0) {
+          SelectPointList.push({x:0,y:0})
+          SelectPointList[SelectPointList.length - 1].x = parseFloat(value.trim().substring(5))
+        } else SelectPointList[SelectPointList.length - 1].y = parseFloat(value.trim().substring(5))
+      }
+      this.$store.commit('item/handleSelectPoint', {
+        action: 'set',
+        data: SelectPointList
+      })
+    },
     setCoordinateAndImgRecRate (name) { // 点击 类型为 jobResourceFile 的 item 时，如果存在相应文件，则将文件内的数据提取出来
       this.$store.commit('img/handleCoordinate', { action: 'clear' })
       let areasData
@@ -177,7 +194,7 @@ export default {
         }
       }
     },
-    handleItemClick () {
+    handleItemClick () { // 点击item触发的事件
       if (!this.isEditable) {
         this.$Modal.warning({
           title: '温馨提示',
@@ -185,6 +202,10 @@ export default {
         })
         return
       }
+      this.$store.commit('item/handleSelectPoint', {
+        action: 'clear'
+      })
+
       let itemData = this._.cloneDeep(this.itemData)
       itemData.itemIndex = this.itemIndex
       this.$store.commit('item/handleItemData', {
@@ -192,7 +213,7 @@ export default {
         data: itemData
       })
       let { pic, area, content } = itemData.itemContent
-      if (pic) {
+      if (pic) { // item 有图片就展示
         this.$store.commit('files/handleCurFile', {
           action: 'setCurFile',
           data: {
@@ -205,9 +226,12 @@ export default {
       // 将上一次操作的选点和图片上的操作清空
       this.$store.commit('item/handleAreasInfo', { action: 'clear' })
       this.$store.commit('img/handleCoordinate', { action: 'clear' })
-      if (area) {
+      if (area) { // item 有area 就展示选中区域
         this.setCoordinateAndImgRecRate(area)
         this.addAreas()
+      }
+      if (this.isPicInput){
+        this.parseSelectPoint()
       }
       if (content.includes('<copy2rdsDatPath>') && (this.isOutputPicture || this.isOutputFile)) {
         this.$store.commit('item/handleSaveToFinal', true)

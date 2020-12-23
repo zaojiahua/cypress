@@ -45,6 +45,7 @@
           :imgSrc="curFile? curFile.file : null"
           @outputResult="outputResult"
           :areasInfo="normalizedAreasInfo"
+          :select-point-show="selectPoint"
         ></ImageTool>
       </transition>
     </div>
@@ -72,7 +73,7 @@ export default {
   computed: {
     ...mapState(['isLoading']),
     ...mapState('files', ['resFiles', 'curFile']),
-    ...mapState('item', ['areasInfo', 'itemData']),
+    ...mapState('item', ['areasInfo', 'itemData','selectPoint']),
     ...mapGetters('item', ['isPicInput', 'isJobResourceFile', 'isJobResourcePicture', 'isJobResourceFileWithDefaultValue']),
     ...mapGetters('img', ['imgRecRate']),
     editing () {
