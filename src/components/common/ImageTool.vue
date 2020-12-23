@@ -305,8 +305,8 @@ export default {
                   this.drawTriangle(this.startX, this.startY, offsetX, offsetY)
                   this.drawRect(0, 0, this.canvasW, 20, 'white')
                   this.fillCircle(this.startX, this.startY, 4)
-                  let tempOffsetX = ((offsetX - this.startX) * this.sizeRatio).toFixed(2)
-                  let tempOffsetY = ((offsetY - this.startY) * this.sizeRatio).toFixed(2)
+                  let tempOffsetX = ((offsetX - this.startX) / this.canvasW).toFixed(2)
+                  let tempOffsetY = ((offsetY - this.startY) / this.canvasH).toFixed(2)
                   this.fillText(`offsetX: ${tempOffsetX}, offsetY: ${tempOffsetY}`, 2, 5, 'black')
                   this.outputInfo = {
                     offset: {
@@ -325,8 +325,8 @@ export default {
                   this.drawTriangle(this.startX, this.startY, offsetX, offsetY)
                   this.drawRect(0, 0, this.canvasW, 20, 'white')
                   this.fillCircle(this.startX, this.startY, 4)
-                  let tempOffsetX = ((offsetX - this.startX) * this.sizeRatio).toFixed(2)
-                  let tempOffsetY = ((offsetY - this.startY) * this.sizeRatio).toFixed(2)
+                  let tempOffsetX = ((offsetX - this.startX) / this.canvasW).toFixed(2)
+                  let tempOffsetY = ((offsetY - this.startY) / this.canvasH).toFixed(2)
                   this.fillText(`offsetX: ${tempOffsetX}, offsetY: ${tempOffsetY}`, 2, 5, 'black')
                   this.outputInfo = {
                     offset: {
@@ -345,8 +345,8 @@ export default {
                   this.drawTriangle(this.startX, this.startY, offsetX, offsetY)
                   this.drawRect(0, 0, this.canvasW, 20, 'white')
                   this.fillCircle(this.startX, this.startY, 4)
-                  let tempOffsetX = ((offsetX - this.startX) * this.sizeRatio).toFixed(2)
-                  let tempOffsetY = ((offsetY - this.startY) * this.sizeRatio).toFixed(2)
+                  let tempOffsetX = ((offsetX - this.startX) / this.canvasW).toFixed(2)
+                  let tempOffsetY = ((offsetY - this.startY) / this.canvasH).toFixed(2)
                   this.fillText(`offsetX: ${tempOffsetX}, offsetY: ${tempOffsetY}`, 2, 5, 'black')
                   this.outputInfo = {
                     offset: {
