@@ -27,6 +27,7 @@
       </div>
       <div class="pane">
         <Utils></Utils>
+        <Button v-show="hasIconTest" @click="sendIconTestRequest">测试</Button>
       </div>
     </div>
     <div slot="footer">
@@ -44,7 +45,11 @@ import Utils from './UnitEditorUtils'
 
 import { findComponentsDownward } from 'lib/tools.js'
 
-import { mapState } from 'vuex'
+import {mapGetters, mapState} from 'vuex'
+import CONST from "../../constant/constant";
+import axios from "../../api";
+import {baseURL, jobLibSvcURL} from "../../config";
+import { dataURLtoFile } from "../../lib/tools";
 
 export default {
   name: 'UnitEditor',
@@ -59,7 +64,18 @@ export default {
     }
   },
   computed: {
-    ...mapState('unit', ['unitData'])
+    ...mapState('unit', ['unitData']),
+    ...mapState('files', ['curFile', 'resFiles']),
+    ...mapState('device', ['deviceInfo']),
+    hasIconTest () {
+      let hasTestFunction = false
+      for (let functionName of CONST.ICON_TEST_UNIT_LIST) {
+        if (this.unitData.unitMsg && functionName === this.unitData.unitMsg.functionName) {
+          hasTestFunction = true
+        }
+      }
+      return (this.checkWeatherCompleted() && hasTestFunction)
+    }
   },
   watch: {
     showUnitEditor (val) {
@@ -112,6 +128,37 @@ export default {
       let { unitMsg: { execCmdDict, execCmdDict: { execCmdList } } } = this.curUnitData
       let src = execCmdList || execCmdDict
       Object.assign(src[item.itemName], item.itemContent)
+    },
+    async sendIconTestRequest () {
+      if (this.curFile === null) {
+        this.$Message.error('请先完成所有截图和选区，二次修改时需要点击一下之前截图')
+      } else if (this.deviceInfo === null) {
+        this.$Message.error('请先选取设备')
+      } else {
+        let data = new FormData()
+        let resFiles = this._.cloneDeep(this.resFiles)
+        for (let eachfile of resFiles) {
+          let type = eachfile.type
+          let file = eachfile.file
+          if (this.unitData.unitMsg.execCmdDict.configArea && eachfile.name === this.unitData.unitMsg.execCmdDict.configArea.area) {
+            data.append('configArea', new File([file], eachfile.name, { type }))
+          } else if (this.unitData.unitMsg.execCmdDict.configFile && eachfile.name === this.unitData.unitMsg.execCmdDict.configFile.area) {
+            data.append('configFile', new File([file], eachfile.name, { type }))
+          }
+        }
+        data.append('inputImgFile', dataURLtoFile(this.curFile.file, this.curFile.name))
+        let url = `http://${this.deviceInfo.cabinet.ip_address}:5000/basic/icon_test/`
+        try {
+          let response = await axios.request({
+            url,
+            method: 'post',
+            data: data
+          })
+          this.$Message.info(JSON.stringify(response.data))
+        } catch (e) {
+          this.$Message.error(e)
+        }
+      }
     }
   }
 }

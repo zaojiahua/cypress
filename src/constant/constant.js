@@ -186,5 +186,8 @@ export default {
     unitName: undefined,
     unitType: undefined,
     unitMsg: null
-  }
+  },
+  ICON_TEST_UNIT_LIST: [
+    'has_icon_area_selected', 'has_icon'
+  ]
 }
