@@ -61,6 +61,7 @@ export default {
       })
     },
     selectPointShow (val) {
+      if (val.length === 0) return
       setTimeout(()=>{  //因为图片的加载时间会更长（加载过程为异步过程），需要设置设置延迟执行
         this.context2D.clearRect(0, 0, this.canvasW, this.canvasH)
         for (const value of val) {
@@ -72,7 +73,7 @@ export default {
             this.fillCircle(value.x * this.canvasW / this.imageW, value.y * this.canvasH / this.imageH, 3)
           }
         }
-      },500);
+      },200);
 
     }
   },
