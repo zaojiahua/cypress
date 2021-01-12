@@ -116,6 +116,8 @@ const getJobList = (data) => {
 }
 
 const getJobDetail = (id) => {
+
+  // console.log(url.jobDetail(id))
   // getJobDetail 需要job id 获取单个job 因此不能加条件 （如：job_deleted=true）
   return axios.request({
     url: url.jobDetail(id)

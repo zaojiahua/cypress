@@ -214,7 +214,8 @@ export default {
         manufacturer: (job.phone_models.length === 0) ? null : job.phone_models[0].manufacturer.id, // todo: 写了manufacturer 没写phonemodel
         author: job.author.id,
         job_id: job.id,
-        job_flow: job.ui_json_file
+        job_flow: job.ui_json_file,
+        job_flows:job.job_flow
       }
       CONST.SIMPLE_JOB_KEY.forEach(val => {
         jobInfo[val] = job[val]

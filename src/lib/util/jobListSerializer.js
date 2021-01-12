@@ -108,7 +108,14 @@ const jobSerializer = {
     id: 'number',
     description: 'string'
   }],
-  ui_json_file: 'string'
+  ui_json_file: 'string',
+  job_flow: [{
+    id: 'number',
+    name: 'string',
+    ui_json_file: 'string',
+    order: 'string',
+    description:'string'
+  }],
 }
 
 export {

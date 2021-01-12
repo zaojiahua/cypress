@@ -2,7 +2,22 @@ import CONST from 'constant/constant'
 import _ from 'lodash'
 
 let state = {
-  jobInfo: {}, // 用例的基本信息保存在这里
+  jobInfo: {
+    job_flows: []
+  }, // 用例的基本信息保存在这里
+  // jobFlow: {
+  //   job_id:'number',
+  //   job_flow: [{
+  //     id: 'number',
+  //     name: 'string',
+  //     ui_json_file: 'string',
+  //     order: 'string',
+  //     description:'string'
+  //   }],
+  // },
+  // jobFlow: {
+  //   job_flow: [],
+  // },
   preJobInfo: { dirty: false }, // 编辑过程中回到jobList页面查看其他用例基本信息时, 为防止继续编辑时信息丢失, 在这里做备份
   isValidated: false, // 右侧抽屉中的表单信息是否通过验证
   outerDiagramModel: null, // jobEditor界面的逻辑流信息
@@ -35,7 +50,7 @@ let mutations = {
         state.jobInfo = _.cloneDeep(state.preJobInfo)
         delete state.jobInfo.dirty
       } else {
-        state.jobInfo = {}
+        state.jobInfo = {job_flows: []}
         state.preJobInfo = { dirty: false }
       }
     }

@@ -56,6 +56,7 @@
           <Option v-for="item in basicData[basicData.androidVersion]" :value="item.id" :key="item.id">{{ item.version }}</Option>
         </Select>
       </FormItem>
+      <job-flow-component></job-flow-component>
       <div v-show="!isJobEditor" style="float: right;">
         <Button v-if="editJobMsg" type="success" @click="saveChange" style="margin-right: 1em">保存修改</Button>
         <Button type="info" @click="enterJobEditor">开始编辑</Button>
@@ -85,13 +86,14 @@ import util from 'lib/util/validate.js'
 import { jobSerializer } from 'lib/util/jobListSerializer'
 import {controlDevice, getJobId, releaseOccupyDevice, updateJobMsg} from 'api/reef/request'
 import jobDeviceSelect from '../components/jobDeviceSelect'
+import jobFlowComponent from '../components/jobFlowComponent'
 import { shouldCreateNewTag, createNewTag } from 'lib/tools'
 
 import { mapState, mapGetters } from 'vuex'
 
 export default {
   name: 'jobMsgComponent',
-  components: { jobDeviceSelect },
+  components: { jobDeviceSelect,jobFlowComponent },
   data () {
     return {
       curManufacturer: {},
