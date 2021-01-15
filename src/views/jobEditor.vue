@@ -14,10 +14,6 @@
             class-name="vertical-center-modal">
             <p>替换内容包括运行流程图，依赖文件以及用例的详细信息，且不可逆</p>
           </Modal>
-<!--          <p>jobId: {{jobId}}</p>-->
-<!--          <p>jobLabel: {{jobInfo.job_label}}</p>-->
-<!--          <p>jobDr: {{duplicateId}}</p>-->
-<!--          <p>jobLabelDr: {{duplicateLabel}}</p>-->
         </div>
         <div class="child-m-right--1 flex-row">
           <Dropdown @on-click="handleMenu">
@@ -121,7 +117,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('job', ['jobInfo', 'outerDiagramModel', 'isValidated', 'duplicateId', 'duplicateLabel', 'normalData', 'config', 'jobLabelDuplicate']),
+    ...mapState('job', ['jobInfo', 'jobFlowInfo','outerDiagramModel', 'isValidated', 'duplicateId', 'duplicateLabel', 'normalData', 'config', 'jobLabelDuplicate']),
     ...mapGetters('job', ['jobId', 'normalKey','editJobFlow','editJobMsg']),
     ...mapState('files', ['resFiles']),
     ...mapGetters('files', ['resFilesName']),
@@ -717,64 +713,65 @@ export default {
     closeJobController () {
       this.jobController.style.display = 'none'
     },
-    async showDuplicateJob() {
-      let jobId = this._.cloneDeep(this.jobId)
-      let jobLabel = this._.cloneDeep(this.jobInfo.job_label)
-      async function setJobMsg (context, id) {
-        let { data } = await getJobDetail(id)
-        let job = util.validate(jobSerializer, data)
-        let jobInfo = {
-          manufacturer: (job.phone_models.length === 0) ? null : job.phone_models[0].manufacturer.id, // todo: 写了manufacturer 没写phonemodel
-          author: this.jobInJob.author,
-          job_id: jobId, // 将副本的内容作用到编辑的job
-          job_flow: job.ui_json_file
-        }
-        CONST.SIMPLE_JOB_KEY.forEach(val => {
-          jobInfo[val] = job[val]
-        })
-        jobInfo.job_label = jobLabel
-        CONST.COMPLEX_JOB_KEY.forEach(val => {
-          jobInfo[val] = job[val].map(item => item.id)
-        })
-        // 保证数据作用到原job 而非 副本
-        jobInfo.job_id = context.jobId
-        jobInfo.job_label = context.jobInfo.job_label
-
-        context.$store.commit('job/handleJobInfo', { action: 'setJobInfo', data: jobInfo })
-      }
-
-      await setJobMsg(this, this.duplicateId)
-
-      this.$store.commit('job/setOuterDiagramModel', null)
-      setOuterDiagramData(this, this.jobInfo.job_flow) //展示副本的流程图
-
-      this.handleResFile(this.duplicateId)
-
-      this.$store.commit('handleShowDrawer')
-    }
+    // async showDuplicateJob() { // todo：先屏蔽副本的代码，之后再做
+    //   let jobId = this._.cloneDeep(this.jobId)
+    //   let jobLabel = this._.cloneDeep(this.jobInfo.job_label)
+    //   async function setJobMsg (context, id) {
+    //     let { data } = await getJobDetail(id)
+    //     let job = util.validate(jobSerializer, data)
+    //     let jobInfo = {
+    //       manufacturer: (job.phone_models.length === 0) ? null : job.phone_models[0].manufacturer.id, // todo: 写了manufacturer 没写phonemodel
+    //       author: this.jobInJob.author,
+    //       job_id: jobId, // 将副本的内容作用到编辑的job
+    //       job_flow: job.ui_json_file
+    //     }
+    //     CONST.SIMPLE_JOB_KEY.forEach(val => {
+    //       jobInfo[val] = job[val]
+    //     })
+    //     jobInfo.job_label = jobLabel
+    //     CONST.COMPLEX_JOB_KEY.forEach(val => {
+    //       jobInfo[val] = job[val].map(item => item.id)
+    //     })
+    //     // 保证数据作用到原job 而非 副本
+    //     jobInfo.job_id = context.jobId
+    //     jobInfo.job_label = context.jobInfo.job_label
+    //
+    //     context.$store.commit('job/handleJobInfo', { action: 'setJobInfo', data: jobInfo })
+    //   }
+    //
+    //   await setJobMsg(this, this.duplicateId)
+    //
+    //   this.$store.commit('job/setOuterDiagramModel', null)
+    //   setOuterDiagramData(this, this.jobInfo.job_flow) //展示副本的流程图
+    //
+    //   this.handleResFile(this.duplicateId)
+    //
+    //   this.$store.commit('handleShowDrawer')
+    // }
   },
   mounted () {
     init(this) // 创建画板与画布并绘制流程图
     if (!this.resFiles.length) this.handleResFile(this.jobId)
 
-    this.autoSaveToggle = this.editJobFlow && this.editJobMsg  // 可以被编辑则可以自动保存
     this.jobController = document.getElementById('job-controller')
-    if (this.autoSaveToggle){
-      let timer = setInterval(async () => { // 设置自动保存的自动循环
-        try {
-          await this.autoSave()
-        } catch (error) {
-          this.$Message.error({
-            background: true,
-            content: error
-          })
-        }
-      }, this.autoSaveInterval)
-      this.$once('hook:beforeDestroy', () => { // 离开jobEditor时清除定时器
-        clearInterval(timer)
-        timer = null
-      })
-    }
+    //  todo：先屏蔽副本的代码，之后再做
+    // this.autoSaveToggle = this.editJobFlow && this.editJobMsg  // 可以被编辑则可以自动保存
+    // if (this.autoSaveToggle){
+    //   let timer = setInterval(async () => { // 设置自动保存的自动循环
+    //     try {
+    //       await this.autoSave()
+    //     } catch (error) {
+    //       this.$Message.error({
+    //         background: true,
+    //         content: error
+    //       })
+    //     }
+    //   }, this.autoSaveInterval)
+    //   this.$once('hook:beforeDestroy', () => { // 离开jobEditor时清除定时器
+    //     clearInterval(timer)
+    //     timer = null
+    //   })
+    // }
     window.addEventListener('contextmenu', this.dispatchMouseEvent) //右键菜单栏
     window.addEventListener('mousemove', this.dispatchMouseEvent) //
     window.addEventListener('beforeunload', this.beforeunloadHandler, false);

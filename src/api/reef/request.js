@@ -124,6 +124,15 @@ const getJobDetail = (id) => {
   })
 }
 
+const getJobFlowList = (id) => {
+
+  // console.log(url.jobDetail(id))
+  // getJobDetail 需要job id 获取单个job 因此不能加条件 （如：job_deleted=true）
+  return axios.request({
+    url: url.jobFlow(id)
+  })
+}
+
 const saveJobFlowAndMsg = (data) => {
   return axios.request({
     method: 'post',
@@ -192,6 +201,23 @@ const createNewUnitTemplate = (data) => {
   })
 }
 
+
+const updateFlowWithFlowId = (id,data) => {
+  return axios.request({
+    method: 'patch',
+    url: url.jobFlowWithFlowId(id),
+    data
+  })
+}
+
+const deleteFlowWithFlowId = (id) => {
+  return axios.request({
+    method: 'delete',
+    url: url.jobFlowWithFlowId(id),
+  })
+}
+
+
 const deleteUnitTemplate = (id) => {
   return axios.request({
     method: 'delete',
@@ -226,6 +252,7 @@ export {
   getJobId,
   getJobList,
   getJobDetail,
+  getJobFlowList,
   updateJobMsg,
   getBlockFlowDict4Font,
   jobResFilesSave,
@@ -235,5 +262,7 @@ export {
   updateJobUnitTemplate,
   createNewUnitTemplate,
   deleteUnitTemplate,
-  getUserInfoByToken
+  getUserInfoByToken,
+  updateFlowWithFlowId,
+  deleteFlowWithFlowId
 }

@@ -3,7 +3,7 @@ import _ from 'lodash'
 
 let state = {
   jobInfo: {
-    job_flows: []
+    // job_flows: []
   }, // 用例的基本信息保存在这里
   // jobFlow: {
   //   job_id:'number',
@@ -18,6 +18,7 @@ let state = {
   // jobFlow: {
   //   job_flow: [],
   // },
+  jobFlowInfo: {}, //当前选中的jobFlow信息
   preJobInfo: { dirty: false }, // 编辑过程中回到jobList页面查看其他用例基本信息时, 为防止继续编辑时信息丢失, 在这里做备份
   isValidated: false, // 右侧抽屉中的表单信息是否通过验证
   outerDiagramModel: null, // jobEditor界面的逻辑流信息
@@ -30,6 +31,9 @@ let state = {
 }
 
 let mutations = {
+  setJobFlowInfo(state,data){
+    state.jobFlowInfo = data
+  },
   handleJobInfo (state, { action, data }) {
     if (action === 'setJobInfo') {
       state.jobInfo = data
@@ -50,7 +54,7 @@ let mutations = {
         state.jobInfo = _.cloneDeep(state.preJobInfo)
         delete state.jobInfo.dirty
       } else {
-        state.jobInfo = {job_flows: []}
+        state.jobInfo = {}
         state.preJobInfo = { dirty: false }
       }
     }

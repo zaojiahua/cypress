@@ -56,7 +56,20 @@
           <Option v-for="item in basicData[basicData.androidVersion]" :value="item.id" :key="item.id">{{ item.version }}</Option>
         </Select>
       </FormItem>
-      <job-flow-component></job-flow-component>
+      <job-flow-component v-show="!isJobEditor" :job-id="$store.state.job.jobInfo.job_id"></job-flow-component>
+      <div v-show="isJobEditor">
+        <Divider orientation="left" class="device-info-title" style="margin-top: 60px;">
+          <b>流程图信息</b>
+        </Divider>
+        <FormItem label="名称">
+          <Input :disabled="!editJobMsg" v-model="jobFlowInfo.name" clearable placeholder="请输入名称" />
+        </FormItem>
+
+        <FormItem label="描述">
+          <Input :disabled="!editJobMsg" v-model="jobFlowInfo.description" clearable placeholder="请输入描述信息" />
+        </FormItem>
+      </div>
+
       <div v-show="!isJobEditor" style="float: right;">
         <Button v-if="editJobMsg" type="success" @click="saveChange" style="margin-right: 1em">保存修改</Button>
         <Button type="info" @click="enterJobEditor">开始编辑</Button>
@@ -161,7 +174,7 @@ export default {
   },
   computed: {
     ...mapState(['showDrawer', 'basicData']),
-    ...mapState('job', ['jobInfo', 'duplicateId', 'duplicateLabel']),
+    ...mapState('job', ['jobInfo', 'duplicateId', 'duplicateLabel','jobFlowInfo']),
     ...mapGetters('job', ['jobId','editJobMsg']),
     ...mapState('device', ['deviceInfo', 'preDeviceInfo', 'countdown']),
     isJobEditor () { // 是否在 JobEditor 页面

@@ -529,5 +529,5 @@ export function setOuterDiagramData (context,job_flow = null) { // 打开jobEdit
 export function init (context) {
   if (!context.outerDiagram) outerDiagramInit(context)
   outerPaletteInit(context)
-  setOuterDiagramData(context, context.jobInfo.job_flow)
+  setOuterDiagramData(context, context.jobFlowInfo.ui_json_file)
 }
