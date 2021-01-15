@@ -6,7 +6,7 @@
       v-show="index === curFile"
       class="file-container"
     >
-      <div v-if="file.type === 'jpg' || file.type === 'png' || file.type === 'jpeg'" class="img">
+      <div v-if="imgFormat.indexOf(file.type) !== -1" class="img">
         <img :src="file.file" :alt="file.name" :title="file.name" />
       </div>
       <div v-else-if="file.type === 'mp4'" class="video">
@@ -28,6 +28,7 @@
 
 <script>
 import { isJsonString, insertAfterCursor } from 'lib/tools'
+import {mapState} from "vuex";
 
 export default {
   props: {
@@ -39,6 +40,11 @@ export default {
       type: Number,
       default: 0
     }
+  },
+  computed: {
+    ...mapState('files', [
+      'imgFormat'
+    ]),
   },
   methods: {
     saveChange (file) {

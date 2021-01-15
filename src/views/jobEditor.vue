@@ -123,7 +123,7 @@ export default {
   computed: {
     ...mapState('job', ['jobInfo', 'outerDiagramModel', 'isValidated', 'duplicateId', 'duplicateLabel', 'normalData', 'config', 'jobLabelDuplicate']),
     ...mapGetters('job', ['jobId', 'normalKey','editJobFlow','editJobMsg']),
-    ...mapState('files', ['resFiles']),
+    ...mapState('files', ['resFiles','imgFormat']),
     ...mapGetters('files', ['resFilesName']),
     ...mapState('device', ['countdown', 'deviceInfo'])
   },
@@ -275,7 +275,7 @@ export default {
           for (let i = 0; i < resFiles.length; i++) {
             let { name, type, file } = resFiles[i]
             if (name === 'FILES_NAME_CONFIG.json') continue // 移除老版本中遗留的文件，文件内容已经写入到start节点了
-            if (type === 'png') {
+            if (this.imgFormat.indexOf(type) !== -1) {
               data.append('file', dataURLtoFile(file, name))
             } else {
               data.append('file', new File([file], name, { type }))
