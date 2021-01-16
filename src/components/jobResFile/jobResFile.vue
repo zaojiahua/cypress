@@ -44,7 +44,7 @@ export default {
   },
   data () {
     return {
-      Accept: ".png,.jpg,.jpeg,.mp4,.txt,.json",//上传文件格式限制
+      Accept: ".png,.jpg,.jpeg,.mp3,.mp4,.txt,.json",//上传文件格式限制
       filesColumn: [
         {
 
@@ -76,7 +76,7 @@ export default {
     ...mapState('files', [
       'resFiles'
     ]),
-    ...mapGetters('files', ['resFilesName']),
+    ...mapGetters('files', ['resFilesName','dataURLtoFileFormat']),
     showResFileModal: {
       get () {
         return this.$store.state.files.showResFileModal
@@ -100,15 +100,16 @@ export default {
               index: -1,
               name: file.name,
               file: reader.result,
-              type: file.type.split('/').pop()
+              type: file.name.split('.').pop()
             }
           })
           this.$Message.info("上传成功！！")
         }
-        if (file.type.split('/')[0] !== 'image') { // json 则存放 text
-          reader.readAsText(file)
-        } else { // 图片则存放 dataURL
+        if (file.type.startsWith(('image')) || file.type.startsWith('audio')) { // 图片则存放 dataURL
           reader.readAsDataURL(file)
+        } else { // json 则存放 text
+          reader.readAsText(file)
+
         }
       }
       return false

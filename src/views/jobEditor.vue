@@ -124,7 +124,7 @@ export default {
     ...mapState('job', ['jobInfo', 'outerDiagramModel', 'isValidated', 'duplicateId', 'duplicateLabel', 'normalData', 'config', 'jobLabelDuplicate']),
     ...mapGetters('job', ['jobId', 'normalKey','editJobFlow','editJobMsg']),
     ...mapState('files', ['resFiles','imgFormat']),
-    ...mapGetters('files', ['resFilesName']),
+    ...mapGetters('files', ['resFilesName','dataURLtoFileFormat']),
     ...mapState('device', ['countdown', 'deviceInfo'])
   },
   watch: {
@@ -275,7 +275,7 @@ export default {
           for (let i = 0; i < resFiles.length; i++) {
             let { name, type, file } = resFiles[i]
             if (name === 'FILES_NAME_CONFIG.json') continue // 移除老版本中遗留的文件，文件内容已经写入到start节点了
-            if (this.imgFormat.indexOf(type) !== -1) {
+            if (this.dataURLtoFileFormat.indexOf(type) !== -1) {
               data.append('file', dataURLtoFile(file, name))
             } else {
               data.append('file', new File([file], name, { type }))
@@ -623,10 +623,11 @@ export default {
           Promise.all(filesData.map(item => getJobResFile(item.file))).then(res => {
             res.forEach((file, index) => {
               let reader = new FileReader()
-              if (file.data.type.split('/')[0] !== 'image') { // json 则存放 text
-                reader.readAsText(file.data)
-              } else { // 图片则存放 dataURL
+              if (file.data.type.startsWith('image') || file.data.type.startsWith('audio')) { // 图片则存放 dataURL
                 reader.readAsDataURL(file.data)
+              } else { // json 则存放 text
+                reader.readAsText(file.data)
+
               }
               reader.onload = () => {
                 filesData[index].file = reader.result
