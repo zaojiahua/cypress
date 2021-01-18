@@ -123,7 +123,7 @@ export default {
   computed: {
     ...mapState('job', ['jobInfo', 'outerDiagramModel', 'isValidated', 'duplicateId', 'duplicateLabel', 'normalData', 'config', 'jobLabelDuplicate']),
     ...mapGetters('job', ['jobId', 'normalKey','editJobFlow','editJobMsg']),
-    ...mapState('files', ['resFiles','imgFormat']),
+    ...mapState('files', ['resFiles']),
     ...mapGetters('files', ['resFilesName','dataURLtoFileFormat']),
     ...mapState('device', ['countdown', 'deviceInfo'])
   },

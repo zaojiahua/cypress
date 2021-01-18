@@ -9,10 +9,10 @@
       <div v-if="imgFormat.indexOf(file.type) !== -1" class="img">
         <img :src="file.file" :alt="file.name" :title="file.name" />
       </div>
-      <div v-else-if="file.type === 'mp4'" class="video">
+      <div v-else-if="videoFormat.indexOf(file.type) !== -1" class="video">
         <video :src="file.file" controls></video>
       </div>
-      <div v-else-if="file.type === 'mp3'" class="video">
+      <div v-else-if="audioFormat.indexOf(file.type) !== -1" class="video">
         <audio :src="file.file" controls></audio>
       </div>
       <div v-else @keydown="keydownHandler" class="text">
@@ -46,7 +46,7 @@ export default {
   },
   computed: {
     ...mapState('files', [
-      'imgFormat'
+      'imgFormat', 'videoFormat', 'audioFormat'
     ]),
   },
   methods: {
