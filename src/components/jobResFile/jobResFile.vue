@@ -14,12 +14,13 @@
       </TabPane>
       <TabPane label="上传文件" name="upload" icon="ios-cloud-upload-outline" class="upload-wrapper">
         <Upload
-          multiple
           type="drag"
-          action="//jsonplaceholder.typicode.com/posts/">
+          action="#"
+          :accept="Accept"
+          :before-upload="beforeUpload">
           <div class="upload-area">
             <Icon type="ios-cloud-upload" size="300" style="color: #3399ff"></Icon>
-            <p style="font-size: 18px;">Click or drag files here to upload</p>
+            <p style="font-size: 18px;">单击或拖动此处上载文件</p>
           </div>
         </Upload>
       </TabPane>
@@ -31,7 +32,7 @@
 import jobResFileShow from './jobResFileShow'
 import jobResFileTable from './jobResFileTable'
 
-import { mapState } from 'vuex'
+import {mapGetters, mapState} from 'vuex'
 
 export default {
   components: { jobResFileShow, jobResFileTable },
@@ -43,6 +44,7 @@ export default {
   },
   data () {
     return {
+      Accept: ".png,.jpg,.jpeg,.mp3,.mp4,.txt,.json",//上传文件格式限制
       filesColumn: [
         {
 
@@ -74,6 +76,7 @@ export default {
     ...mapState('files', [
       'resFiles'
     ]),
+    ...mapGetters('files', ['resFilesName','dataURLtoFileFormat']),
     showResFileModal: {
       get () {
         return this.$store.state.files.showResFileModal
@@ -84,6 +87,36 @@ export default {
     }
   },
   methods: {
+    beforeUpload(file) {
+      let reader = new FileReader()
+      if (this.resFilesName.indexOf(file.name) !== -1){
+        this.$Message.warning("上传文件重新请进行修改后重新上传")
+      }else {
+        reader.onload = () => {
+          this.$store.commit('files/handleResFiles', { //尾端添加
+            action: 'addResFile',
+            data: {
+              dirty: true,
+              index: -1,
+              name: file.name,
+              file: reader.result,
+              type: file.name.split('.').pop()
+            }
+          })
+          this.$Message.info("上传成功！！")
+        }
+        if (file.type.startsWith(('image')) || file.type.startsWith('audio')) { // 图片则存放 dataURL
+          reader.readAsDataURL(file)
+        } else { // json 则存放 text
+          reader.readAsText(file)
+
+        }
+      }
+      return false
+
+
+
+    },
     closeResFileModal () {
       this.$store.commit('files/setShowResFileModal')
     },

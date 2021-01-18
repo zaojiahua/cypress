@@ -1,8 +1,11 @@
 let state = {
-  resFiles: [],
+  resFiles: [],  //目前文件的类型是使用文件名称后缀
   curFile: null,
   duplicatedFile: null,
-  showResFileModal: false
+  showResFileModal: false,
+  imgFormat:['jpg','png','jpeg'],
+  videoFormat:['mp4'],
+  audioFormat:['mp3'],
 }
 
 let mutations = {
@@ -11,13 +14,14 @@ let mutations = {
       state.resFiles = data
     }
     if (action === 'addResFile') {
-      if (data.index !== -1) {
+      if (data.index !== -1) {  // 原地修改内容
         state.resFiles.splice(data.index, 1, data)
-      } else {
+      } else { // 尾端添加内容
+        data.index = state.resFiles.length
         state.resFiles.push(data)
       }
     }
-    if (action === 'removeResFile') {
+    if (action === 'removeResFile') {  // 删除传入的data是int
       state.resFiles.splice(data, 1)
       for (let i = data; i < state.resFiles.length; i++) {
         state.resFiles[i].index--
@@ -61,8 +65,11 @@ let mutations = {
 }
 
 let getters = {
-  resFilesName (state) {
+  resFilesName (state) { // 返回resFiles 的name集合，通过获取集合长度可知resFiles长度
     return state.resFiles.map(item => item.name)
+  },
+  dataURLtoFileFormat (state) { // 返回resFiles 的name集合，通过获取集合长度可知resFiles长度
+    return state.imgFormat.concat(state.videoFormat).concat(state.audioFormat)
   }
 }
 

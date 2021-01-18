@@ -212,7 +212,7 @@ export default {
         // 查看是否存在同名文件, 有则覆盖
         let index = -1
         for (let i = 0; i < this.resFilesName.length; i++) {
-          if (this.resFilesName[i].startsWith(nameInfo.content)) {
+          if (this.resFilesName[i] ===`${nameInfo.content}${nameInfo.suffix}`) {
             index = i
             break
           }
@@ -220,8 +220,8 @@ export default {
         this.$store.commit('files/handleResFiles', { // 将选区信息依赖文件保存下来
           action: 'addResFile',
           data: {
-            dirty: true, // 标识是否是新获得的图片
-            index: index === -1 ? this.resFilesName.length : index,
+            dirty: true, // 标识是否是新获得的图片,可以用于告知文件是否有被更动或新增
+            index: index,
             name: `${nameInfo.content}${nameInfo.suffix}`,
             file: JSON.stringify(coordinateDataList, null, 4),
             type: 'json'

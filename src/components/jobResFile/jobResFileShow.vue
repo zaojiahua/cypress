@@ -6,11 +6,14 @@
       v-show="index === curFile"
       class="file-container"
     >
-      <div v-if="file.type === 'jpg' || file.type === 'png' || file.type === 'jpeg'" class="img">
+      <div v-if="imgFormat.indexOf(file.type) !== -1" class="img">
         <img :src="file.file" :alt="file.name" :title="file.name" />
       </div>
-      <div v-else-if="file.type === 'mp4'" class="video">
+      <div v-else-if="videoFormat.indexOf(file.type) !== -1" class="video">
         <video :src="file.file" controls></video>
+      </div>
+      <div v-else-if="audioFormat.indexOf(file.type) !== -1" class="video">
+        <audio :src="file.file" controls></audio>
       </div>
       <div v-else @keydown="keydownHandler" class="text">
         <Input type="textarea" :autosize="{minRows: 30, maxRows: 30}" v-model="file.file" />
@@ -28,6 +31,7 @@
 
 <script>
 import { isJsonString, insertAfterCursor } from 'lib/tools'
+import {mapState} from "vuex";
 
 export default {
   props: {
@@ -39,6 +43,11 @@ export default {
       type: Number,
       default: 0
     }
+  },
+  computed: {
+    ...mapState('files', [
+      'imgFormat', 'videoFormat', 'audioFormat'
+    ]),
   },
   methods: {
     saveChange (file) {
