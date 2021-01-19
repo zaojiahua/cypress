@@ -7,57 +7,57 @@
       label-position="left"
       :rules="validateRules">
        <FormItem label="用例名称" prop="job_name">
-        <Input v-model="$store.state.job.jobInfo.job_name" clearable placeholder="请输入用例名称"/>
+        <Input  :disabled="!editJobMsg"  v-model="$store.state.job.jobInfo.job_name" clearable placeholder="请输入用例名称"/>
       </FormItem>
       <FormItem label="测试用途" prop="test_area">
-        <Select v-model="$store.state.job.jobInfo.test_area" multiple placeholder="请选择" filterable allow-create>
+        <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.test_area" multiple placeholder="请选择" filterable allow-create>
           <Option v-for="item in basicData[basicData.testArea]" :value="item.id" :key="item.id">{{ item.description }}</Option>
         </Select>
       </FormItem>
       <FormItem label="用例类型" prop="job_type" class="type">
-        <Cascader :data="jobTypes" v-model="curJobType"></Cascader>
+        <Cascader :disabled="!editJobMsg" :data="jobTypes" v-model="curJobType"></Cascader>
         <Input v-model="jobTypeString" style="display: none;" disabled />
       </FormItem>
       <FormItem label="自定义标签" prop="custom_tag">
-        <Select v-model="$store.state.job.jobInfo.custom_tag" multiple placeholder="请选择" filterable allow-create>
+        <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.custom_tag" multiple placeholder="请选择" filterable allow-create>
           <Option v-for="item in basicData[basicData.customTag]" :value="item.id" :key="item.id">{{ item.custom_tag_name }}</Option>
         </Select>
       </FormItem>
       <FormItem label="caseNo" prop="case_number">
-        <Input v-model="$store.state.job.jobInfo.case_number" clearable placeholder="请输入用例编号" />
+        <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.case_number" clearable placeholder="请输入用例编号" />
       </FormItem>
       <FormItem label="priority" prop="priority">
-      <Input v-model="$store.state.job.jobInfo.priority" clearable placeholder="请输入用例级别" />
+      <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.priority" clearable placeholder="请输入用例级别" />
       </FormItem>
       <FormItem label="用例说明" prop="description">
-        <Input v-model="$store.state.job.jobInfo.description" clearable placeholder="请输入说明信息" />
+        <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.description" clearable placeholder="请输入说明信息" />
       </FormItem>
       <Divider orientation="left" class="device-info-title" style="margin-top: 60px;">
         <b>设备信息</b>
-        <Button type="info" @click="$store.commit('device/setSelectDevice')">选取设备</Button>
+        <Button v-if="editJobMsg" type="info" @click="$store.commit('device/setSelectDevice')">选取设备</Button>
       </Divider>
       <FormItem label="厂商信息" prop="manufacturer">
-        <Select v-model="$store.state.job.jobInfo.manufacturer" placeholder="请选择" @on-change="clear" filterable>
+        <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.manufacturer" placeholder="请选择" @on-change="clear" filterable>
           <Option v-for="item in basicData[basicData.manufacturer]" :value="item.id" :key="item.id">{{ item.manufacturer_name }}</Option>
         </Select>
       </FormItem>
       <FormItem label="适配机型" prop="phone_models">
-        <Select v-model="$store.state.job.jobInfo.phone_models" multiple :disabled="disabled" placeholder="请选择" filterable>
+        <Select :disabled="!editJobMsg || disabled" v-model="$store.state.job.jobInfo.phone_models" multiple  placeholder="请选择" filterable>
           <Option v-for="item in curManufacturer.phonemodel" :value="item.id" :key="item.id">{{ item.phone_model_name }}</Option>
         </Select>
       </FormItem>
       <FormItem label="ROM版本" prop="rom_version">
-        <Select v-model="$store.state.job.jobInfo.rom_version" multiple :disabled="disabled" placeholder="请选择" filterable>
+        <Select :disabled="!editJobMsg || disabled" v-model="$store.state.job.jobInfo.rom_version" multiple placeholder="请选择" filterable>
           <Option v-for="item in curManufacturer.romversion" :value="item.id" :key="item.id">{{ item.version }}</Option>
         </Select>
       </FormItem>
       <FormItem label="适配系统" prop="android_version">
-        <Select v-model="$store.state.job.jobInfo.android_version" multiple placeholder="请选择">
+        <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.android_version" multiple placeholder="请选择">
           <Option v-for="item in basicData[basicData.androidVersion]" :value="item.id" :key="item.id">{{ item.version }}</Option>
         </Select>
       </FormItem>
       <div v-show="!isJobEditor" style="float: right;">
-        <Button type="success" @click="saveChange" style="margin-right: 1em">保存修改</Button>
+        <Button v-if="editJobMsg" type="success" @click="saveChange" style="margin-right: 1em">保存修改</Button>
         <Button type="info" @click="enterJobEditor">开始编辑</Button>
       </div>
     </Form>
@@ -160,7 +160,7 @@ export default {
   computed: {
     ...mapState(['showDrawer', 'basicData']),
     ...mapState('job', ['jobInfo', 'duplicateId', 'duplicateLabel']),
-    ...mapGetters('job', ['jobId']),
+    ...mapGetters('job', ['jobId','editJobMsg']),
     ...mapState('device', ['deviceInfo', 'preDeviceInfo', 'countdown']),
     isJobEditor () { // 是否在 JobEditor 页面
       return this.$route.name === 'jobEditor'
@@ -297,6 +297,13 @@ export default {
       }
     },
     saveChange () { // 保存对当前 Job 的修改
+      if (!this.editJobMsg){
+        this.$Message.error({
+          background: true,
+          content: '没有编辑当前用例的权限'
+        })
+        return
+      }
       this.$refs.form.validate(async (valid) => { // 表单验证
         if (shouldCreateNewTag('test_area', this.jobInfo)) { // 检测是否应该创建新的测试用途标签
           let data = await createNewTag('test_area', this.jobInfo) // 创建新的标签
@@ -314,7 +321,9 @@ export default {
         }
         if (valid) { // 通过验证
           setTimeout(() => {
-            updateJobMsg(this.jobId, this.jobInfo).then(() => { // 更新用例信息
+            let jobInfo = this._.cloneDeep(this.jobInfo)
+            jobInfo.author = parseInt(sessionStorage.id)
+            updateJobMsg(this.jobId, jobInfo).then(() => { // 更新用例信息
               this.$Message.info('修改成功')
               this.$store.commit('refreshJobList')
             }).catch(error => {

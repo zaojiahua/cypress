@@ -9,7 +9,8 @@ let state = {
   areasInfo: { // 用于在界面上标识选取的区域
     data: [],
     idx: undefined
-  }
+  },
+  selectPoint: [] // 用于在界面上标识选点
 }
 
 let mutations = {
@@ -38,6 +39,14 @@ let mutations = {
         data: [],
         idx: undefined
       }
+    }
+  },
+  handleSelectPoint (state, { action, data = [] }) {
+    if (action === 'set') {
+      state.selectPoint = data
+    }
+    if (action === 'clear') {
+      state.selectPoint = []
     }
   }
 }

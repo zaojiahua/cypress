@@ -72,7 +72,7 @@ export default {
   data () {
     return {
       isCollapsed: true,
-      username: sessionStorage.username || localStorage.username,
+      username: sessionStorage.username,
       totalTime: 30,
       remindTime: 5
     }

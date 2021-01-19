@@ -102,9 +102,10 @@ export default {
             }
           ],
           filterMultiple: false,
-          filteredValue: [ this.jobState ],
+          filteredValue: this.jobState ? [ this.jobState ] : [],
           filterRemote (value) {
             this.jobState = value[0] || ''
+            localStorage.setItem('joblist-management:DEFAULT_FILTER_CONFIG', this.jobState)
             this.jobPageChange(1)
           }
         },
@@ -128,9 +129,10 @@ export default {
             }
           ],
           filterMultiple: false,
-          filteredValue: [ this.jobType ],
+          filteredValue: this.jobType ? [ this.jobType ] : [],
           filterRemote (value) {
             this.jobType = value[0] || ''
+            localStorage.setItem('COMPJOBLIST:FILTER_JOB_TYPE', this.jobType)
             this.jobPageChange(1)
           }
         }
@@ -141,8 +143,8 @@ export default {
       uploadData: { // 上传时附带的额外参数
         requestName: 'importJob'
       },
-      jobState: '',
-      jobType: '',
+      jobState: localStorage.getItem('joblist-management:DEFAULT_FILTER_CONFIG') || '',
+      jobType: localStorage.getItem('COMPJOBLIST:FILTER_JOB_TYPE') || '',
       filterUrlParam: '',
       tableHeight: 519
     }
@@ -210,7 +212,7 @@ export default {
       let job = util.validate(jobSerializer, data)
       let jobInfo = {
         manufacturer: (job.phone_models.length === 0) ? null : job.phone_models[0].manufacturer.id, // todo: 写了manufacturer 没写phonemodel
-        author: parseInt(localStorage.id || sessionStorage.id),
+        author: job.author.id,
         job_id: job.id,
         job_flow: job.ui_json_file
       }
@@ -362,9 +364,10 @@ export default {
   },
   beforeCreate () {
     this.$store.dispatch('setBasicData')
+    this.jobState = localStorage.getItem('joblist-management:DEFAULT_FILTER_CONFIG')
+    this.jobType = localStorage.getItem('COMPJOBLIST:FILTER_JOB_TYPE')
   },
   mounted () {
-    this.jobState = localStorage.getItem('joblist-management:DEFAULT_FILTER_CONFIG')
     // this.setTableHeight()
     // window.addEventListener('resize', this.setTableHeight)
   },

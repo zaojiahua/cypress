@@ -393,24 +393,6 @@ export function innerDiagramInit (context) {
 
   unitTemplate.contextClick = function (e, { data }) { // 右键点击Unit
     if (e.diagram instanceof go.Palette) { // 右键点击左侧unit模板
-      let keepLogin = localStorage.getItem('LOGIN:KEEP_LOGIN')
-      if (keepLogin) {
-        if (!localStorage.groups) {
-          context.$Notice.warning({
-            title: '温馨提醒',
-            desc: '用户权限信息丢失,请重新登录。'
-          })
-          return
-        }
-        if (!localStorage.groups.includes('Admin')) {
-          context.$Notice.warning({
-            title: '温馨提醒',
-            desc: '该功能仅限管理员使用，请切换您的账号或重新登录。'
-          })
-          return
-        }
-      }
-      if (!keepLogin) {
         if (!sessionStorage.groups) {
           context.$Notice.warning({
             title: '温馨提醒',
@@ -424,7 +406,6 @@ export function innerDiagramInit (context) {
             desc: '该功能仅限管理员使用，请切换您的账号或重新登录。'
           })
           return
-        }
       }
       context.isDiagram = false
       context.unitTemplateName = data.text
