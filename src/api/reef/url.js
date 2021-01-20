@@ -40,16 +40,18 @@ export default {
   releaseDevice: () => `${coralPrefix}release_occupy_device/`,
   job: (data) => `${reefPrefix}job/?fields=${joinFilter(jobFilter)}&job_deleted=False&limit=${data.pageSize}&offset=${data.offset}&ordering=-updated_time${data.filterUrlParam}`,
   jobSingleId: (job_label) => `${reefPrefix}job/?fields=id&job_label=${job_label}`,
+  jobFlowByJobLabel: (job_label) => `${reefPrefix}job/?fields=${joinFilter(jobFlowFilter)}&job_label=${job_label}`,
   jobDetail: (id) => `${reefPrefix}job/${id}/?fields=${joinFilter(jobDetailFilter)}`,
   jobFlow: (id) => `${reefPrefix}job/${id}/?fields=${joinFilter(jobFlowFilter)}`,
   jobFlowWithFlowId: (id) => `${reefPrefix}job_flow/${id}/`,
+  createFlow: () => `${reefPrefix}job_flow/`,
 
 
   saveJobFlowAndMsg: () => `${reefPrefix}job/`,
   updateJobMsg: (id) => `${reefPrefix}job/${id}/`,
   deleteTag: (id, type) => `${reefPrefix}${type}/${id}`,
   saveResFile: () => `${reefPrefix}job_upload_multi_res_file/`,
-  getResFile: (id) => `${reefPrefix}job/${id}/?fields=${joinFilter(resFileFilter)}`,
+  getResFile: (id) => `${reefPrefix}job_flow/${id}/?fields=${joinFilter(resFileFilter)}`,
   unit: () => `${reefPrefix}unit/`,
   handleUnit: (id) => `${reefPrefix}unit/${id}/`,
   token: (token) => `${reefPrefix}token/?fields=${joinFilter(tokenUserFilter)}&key=${token}`

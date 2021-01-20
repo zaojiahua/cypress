@@ -223,6 +223,7 @@ export default {
       CONST.COMPLEX_JOB_KEY.forEach(val => {
         jobInfo[val] = job[val].map(item => item.id)
       })
+      this.$store.commit('job/setSelectJobType', job.job_type)
       this.$store.commit('job/handleJobInfo', { action: 'setJobInfo', data: jobInfo })
     },
     async onRowClick (curData, index) { // 单击表格某一行

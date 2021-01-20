@@ -209,7 +209,19 @@ const updateFlowWithFlowId = (id,data) => {
     data
   })
 }
-
+const createFlow = (data) => {
+  return axios.request({
+    method: 'post',
+    url: url.createFlow(),
+    data
+  })
+}
+const jobFlowByJobLabel = (jobLabel) => {
+  return axios.request({
+    method: 'get',
+    url: url.jobFlowByJobLabel(jobLabel)
+  })
+}
 const deleteFlowWithFlowId = (id) => {
   return axios.request({
     method: 'delete',
@@ -264,5 +276,7 @@ export {
   deleteUnitTemplate,
   getUserInfoByToken,
   updateFlowWithFlowId,
-  deleteFlowWithFlowId
+  deleteFlowWithFlowId,
+  createFlow,
+  jobFlowByJobLabel
 }

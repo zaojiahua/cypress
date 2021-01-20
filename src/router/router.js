@@ -24,6 +24,11 @@ export default [
         name: 'jobList',
         path: 'jobList',
         component: () => import('../views/jobList.vue')
+      },
+      {
+        name: 'createJob',
+        path: 'createJob',
+        component: () => import('../views/CreateJob.vue')
       }
     ]
   },

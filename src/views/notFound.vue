@@ -8,7 +8,6 @@ export default {
   name: 'notFound',
   components: { NotFoundComponent },
   mounted () {
-    console.log('guozijun pig')
   }
 }
 </script>

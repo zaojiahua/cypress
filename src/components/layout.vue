@@ -21,10 +21,6 @@
           <MenuItem name="1">
             {{ username }}
           </MenuItem>
-<!--          <MenuItem name="2" to="about">-->
-<!--            关于TMach-->
-<!--            <Icon type="ios-help-circle-outline" size="24"/>-->
-<!--          </MenuItem>-->
           <MenuItem name="3" @click.native="logout">
             登出
             <Icon type="ios-exit-outline" size="24">
@@ -41,7 +37,7 @@
             <Icon type="logo-buffer"></Icon>
             <span>用例管理</span>
           </MenuItem>
-          <MenuItem name="jobEditor" @click.native="enterJobEditor" title="用例编辑">
+          <MenuItem name="jobEditor" @click.native="viewJobCreate" title="用例编辑">
             <Icon type="ios-create"></Icon>
             <span>用例编辑</span>
           </MenuItem>
@@ -78,48 +74,40 @@ export default {
     }
   },
   computed: {
-    ...mapState('job', ['jobInfo', 'preJobInfo', 'isValidated']),
     ...mapState('device', ['countdown', 'deviceInfo'])
   },
   methods: {
     logout () {
-      this.$Modal.confirm({
-        title: '您确定要登出?',
-        onOk: () => {
-          this.$Loading.start()
-          // 登出后不能通过后退键回到TMach操作页面中
-          CONST.USER_INFO.forEach((val) => {
-            sessionStorage.removeItem(val)
-            localStorage.removeItem(val)
-          })
-          this.$router.push({ name: 'login' })
-          this.$Message.success('登出成功!')
-          this.$Loading.finish()
-        }
-      })
+      if (this.isTrigger()) {
+        this.$Modal.confirm({
+          title: '您确定要登出?',
+          onOk: () => {
+            this.$Loading.start()
+            // 登出后不能通过后退键回到TMach操作页面中
+            CONST.USER_INFO.forEach((val) => {
+              sessionStorage.removeItem(val)
+              localStorage.removeItem(val)
+            })
+            this.$router.push({ name: 'login' })
+            this.$Message.success('登出成功!')
+            this.$Loading.finish()
+          }
+        })
+    }
     },
     viewJobList () {
-      if (this.$route.name === 'jobEditor') { //如果是从jobEditor跳转的则保存起来，用于下一次进入jobEditor是展示
-        this.$store.commit('job/handleJobInfo', { action: 'setPreJobInfo', data: true })
-      }
-      this.$router.push({ path: '/jobList' })
+      if (this.isTrigger()) this.$router.push({ name: 'jobList' })
+
     },
-    enterJobEditor () { // 路由跳转到jobEditor页面
-      let routeOptions = { name: 'jobEditor' }
-      if (JSON.stringify(this.jobInfo) !== '{}') { // 如果当前用例信息不为空
-        routeOptions.query = { jobId: this.jobInfo.job_id }
-      } else if (this.preJobInfo) { // 当前用例为空 且 前一个用例信息不为空
-        routeOptions.query = { jobId: this.preJobInfo.job_id }
-        this.$store.commit('job/handleJobInfo', { action: 'recoverJobInfo' })
-      } else { // 设置用例信息
-        this.$store.commit('job/handleJobInfo', { action: 'setJobInfo', data: {} })
+    viewJobCreate () { // 路由跳转到jobEditor页面
+      if (this.isTrigger()) this.$router.push({name:'createJob'})
+    },
+    isTrigger() { // 当处于jobEditor时，页面跳转给予警告
+      if (this.$route.name === 'jobEditor') {
+        return  window.confirm('确定要离开该页面吗？会导致编辑的内容丢失。')
+      } else {
+        return true
       }
-      setTimeout(() => {
-        if (!this.isValidated) {
-          this.$store.commit('handleShowDrawer')
-        }
-      }, 600)
-      this.$router.push(routeOptions)
     },
     async releaseDevice (auto = true) {
       try {

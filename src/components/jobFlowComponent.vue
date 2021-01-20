@@ -22,13 +22,13 @@
     </a>
 
     <SlickList :lockToContainerEdges="true" :useDragHandle="true" class="list" lockAxis="y" v-model="jobFlowList">
-      <SlickItem class="list-item" v-for="(item, index) in jobFlowList"  :index="index" :key="index">
+      <SlickItem class="list-item" v-for="(item, index) in jobFlowList" @click.native="showFlowMsg(item)" :index="index" :key="index">
         <div v-show="edit" style="width: 20%">
           <Icon v-handle type="ios-menu" :size="iconSize"/>
           <Icon type="ios-trash" :size="iconSize" @click="deleteJobFlow(index)"/>
           <Icon v-show="index!==0" type="md-arrow-up" :size="iconSize" @click="zIndexBottom(index)"/>
         </div>
-        <p @click="showFlowMsg(item)">{{item.name}}</p>
+        <div class="flow-class">{{item.name}}</div>
         <Modal
           v-model="flowModal"
           :mask-closable="false"
@@ -58,6 +58,7 @@
 <script>
 import { HandleDirective,SlickList, SlickItem } from 'vue-slicksort'
 import {getJobFlowList, updateFlowWithFlowId, deleteFlowWithFlowId} from "api/reef/request";
+import CONST from "constant/constant";
 export default {
   props: {
     title: {
@@ -109,7 +110,28 @@ export default {
       }
     },
     newFlow() {
+      this.$Modal.confirm({
+        title: '您确认编辑新的流程图吗?',
+        onOk: () => {
+          setTimeout(() => { // 延时关闭右侧抽屉
+            this.$store.commit('handleShowDrawer')
+          }, 800)
 
+          this.$store.commit('job/setJobFlowInfo', {
+            order:this.jobFlowList.length,
+            job:this.jobId
+          })
+
+          this.$store.commit('job/setOuterDiagramModel', null)
+          this.$store.commit('files/handleResFiles', { action: 'clearResFiles' })
+          this.$router.push({ // 跳转到 JobEditor
+            name: 'jobEditor',
+            query: {
+              jobId: this.jobId
+            }
+          })
+        }
+      })
     },
     enterFlow() { // 路由到jobEditor页面
       setTimeout(() => { // 延时关闭右侧抽屉
@@ -126,36 +148,6 @@ export default {
         }
       })
     },
-    // enterFlow() {{ // 路由到jobEditor页面
-    //     setTimeout(() => { // 延时关闭右侧抽屉
-    //       this.$store.commit('handleShowDrawer')
-    //     }, 800)
-    //
-    //     this.$store.commit('job/setDuplicateLabel',this.jobInfo.job_label)
-    //     let { data: { jobs } } = await getJobId(this.duplicateLabel)
-    //     if (jobs.length !== 0) { //表明存在
-    //       this.$store.commit('job/setDuplicateId', jobs[0].id)
-    //     }else{
-    //       this.$store.commit('job/setDuplicateId', null)
-    //     }
-    //
-    //     // 清空失效的数据
-    //     this.$store.commit('job/setOuterDiagramModel', null)
-    //     this.$store.commit('job/handleJobInfo', { action: 'setPreJobInfo', data: false })
-    //     this.$store.commit('files/handleResFiles', { action: 'clearResFiles' })
-    //
-    //     if (this.countdown) { // 选取设备的时候, 检测和当前用例信息是否有冲突
-    //       this.checkConflict(true, false)
-    //     }
-    //
-    //     this.$router.push({ // 跳转到 JobEditor
-    //       name: 'jobEditor',
-    //       query: {
-    //         jobId: this.jobId
-    //       }
-    //     })
-    //   },
-    // },
     toEdit() {
       this.edit = true
     },
@@ -236,6 +228,9 @@ h3,h4{
   user-select: none;
   color: #333;
   font-weight: 400;
+}
+.flow-class {
+  text-align:center
 }
 .add-icon {
   position: relative;

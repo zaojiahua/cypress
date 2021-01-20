@@ -15,7 +15,7 @@
         </Select>
       </FormItem>
       <FormItem label="用例类型" prop="job_type" class="type">
-        <Cascader :disabled="!editJobMsg" :data="jobTypes" v-model="curJobType"></Cascader>
+        <Cascader :disabled="!editJobMsg" :data="jobTypes[selectJobType]" v-model="curJobType"></Cascader>
         <Input v-model="jobTypeString" style="display: none;" disabled />
       </FormItem>
       <FormItem label="自定义标签" prop="custom_tag">
@@ -56,7 +56,7 @@
           <Option v-for="item in basicData[basicData.androidVersion]" :value="item.id" :key="item.id">{{ item.version }}</Option>
         </Select>
       </FormItem>
-      <job-flow-component v-show="!isJobEditor" :job-id="$store.state.job.jobInfo.job_id"></job-flow-component>
+      <job-flow-component v-show="!isJobEditor && selectJobType === 'norMalJob'" :job-id="$store.state.job.jobInfo.job_id"></job-flow-component>
       <div v-show="isJobEditor">
         <Divider orientation="left" class="device-info-title" style="margin-top: 60px;">
           <b>流程图信息</b>
@@ -72,7 +72,7 @@
 
       <div v-show="!isJobEditor" style="float: right;">
         <Button v-if="editJobMsg" type="success" @click="saveChange" style="margin-right: 1em">保存修改</Button>
-        <Button type="info" @click="enterJobEditor">开始编辑</Button>
+        <Button v-if="selectJobType === 'InnerJob'" type="info" @click="enterJobEditor">开始编辑</Button>
       </div>
     </Form>
     <job-device-select></job-device-select>
@@ -146,35 +146,39 @@ export default {
       },
       job: util.validate(jobSerializer, {}),
       isConflicted: false,
-      jobTypes: [ // 用例类型, 用于级联选择器
-        {
-          value: 'Joblib',
-          label: '功能测试',
-          children: []
-        },
-        {
-          value: 'InnerJob',
-          label: '内嵌用例',
-          children: []
-        },
-        {
-          value: 'PerfJob',
-          label: '性能测试',
-          children: [
-            {
-              value: 'TimeJob',
-              label: '启动时间'
-            }
-          ]
-        }
-      ],
+      jobTypes: { // 用例类型, 用于级联选择器
+        InnerJob: [
+          {
+            value: 'InnerJob',
+            label: '内嵌用例',
+            children: []
+          }
+        ],
+        norMalJob: [
+          {
+            value: 'Joblib',
+            label: '功能测试',
+            children: []
+          },
+          {
+            value: 'PerfJob',
+            label: '性能测试',
+            children: [
+              {
+                value: 'TimeJob',
+                label: '启动时间'
+              }
+            ]
+          }
+        ]
+      },
       curJobType: [],
       canAppend: true
     }
   },
   computed: {
     ...mapState(['showDrawer', 'basicData']),
-    ...mapState('job', ['jobInfo', 'duplicateId', 'duplicateLabel','jobFlowInfo']),
+    ...mapState('job', ['jobInfo', 'duplicateId', 'duplicateLabel','jobFlowInfo','selectJobType']),
     ...mapGetters('job', ['jobId','editJobMsg']),
     ...mapState('device', ['deviceInfo', 'preDeviceInfo', 'countdown']),
     isJobEditor () { // 是否在 JobEditor 页面
@@ -206,7 +210,7 @@ export default {
       }
     },
     showDrawer (val) { // 在jobEditor页面之外的页面关闭右侧抽屉时清除当前选中的用例信息
-      if (val === false && !this.isJobEditor) this.$store.commit('job/handleJobInfo', { action: 'recoverJobInfo' })
+      if (val === false && !this.isJobEditor) this.$store.commit('job/handleJobInfo', { action: 'clearJobInfo' })
     },
     deviceInfo (newVal, oldVal) { // 设备信息变化时检测是否和已填信息发生冲突并进行处理
       this.$store.commit('device/setPreDeviceInfo', oldVal)
@@ -215,7 +219,7 @@ export default {
     'jobInfo.manufacturer' (val) { // 当厂商发生变动时刷新列表
       this.resetManufacturter()
     },
-    curJobType (val) {
+    curJobType (val) { // 没有就是undefined
       this.$set(this.jobInfo, 'job_type', val[0])
       this.$set(this.jobInfo, 'job_second_type', val[1])
     }
@@ -235,17 +239,17 @@ export default {
       //   }
       // }
 
-      this.$store.commit('job/setDuplicateLabel',this.jobInfo.job_label)
-      let { data: { jobs } } = await getJobId(this.duplicateLabel)
-      if (jobs.length !== 0) { //表明存在
-        this.$store.commit('job/setDuplicateId', jobs[0].id)
-      }else{
-        this.$store.commit('job/setDuplicateId', null)
-      }
+      // this.$store.commit('job/setDuplicateLabel',this.jobInfo.job_label) // todo：先屏蔽副本的代码，之后再做
+      // let { data: { jobs } } = await getJobId(this.duplicateLabel)
+      // if (jobs.length !== 0) { //表明存在
+      //   this.$store.commit('job/setDuplicateId', jobs[0].id)
+      // }else{
+      //   this.$store.commit('job/setDuplicateId', null)
+      // }
 
       // 清空失效的数据
       this.$store.commit('job/setOuterDiagramModel', null)
-      this.$store.commit('job/handleJobInfo', { action: 'setPreJobInfo', data: false })
+      // this.$store.commit('job/handleJobInfo', { action: 'setPreJobInfo', data: false })
       this.$store.commit('files/handleResFiles', { action: 'clearResFiles' })
 
       if (this.countdown) { // 选取设备的时候, 检测和当前用例信息是否有冲突

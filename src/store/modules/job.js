@@ -5,21 +5,8 @@ let state = {
   jobInfo: {
     // job_flows: []
   }, // 用例的基本信息保存在这里
-  // jobFlow: {
-  //   job_id:'number',
-  //   job_flow: [{
-  //     id: 'number',
-  //     name: 'string',
-  //     ui_json_file: 'string',
-  //     order: 'string',
-  //     description:'string'
-  //   }],
-  // },
-  // jobFlow: {
-  //   job_flow: [],
-  // },
   jobFlowInfo: {}, //当前选中的jobFlow信息
-  preJobInfo: { dirty: false }, // 编辑过程中回到jobList页面查看其他用例基本信息时, 为防止继续编辑时信息丢失, 在这里做备份
+  selectJobType:"norMalJob", // "InnerJob" "norMalJob"
   isValidated: false, // 右侧抽屉中的表单信息是否通过验证
   outerDiagramModel: null, // jobEditor界面的逻辑流信息
   duplicateId: null, // 自动保存的副本用例的id及jobLabel, 更改自动保存的逻辑之后可能会用不到了
@@ -37,26 +24,9 @@ let mutations = {
   handleJobInfo (state, { action, data }) {
     if (action === 'setJobInfo') {
       state.jobInfo = data
-      if (!state.preJobInfo.dirty) {
-        state.preJobInfo = _.cloneDeep(data)
-        state.preJobInfo.dirty = false
-      }
     }
-    if (action === 'setPreJobInfo') {
-      if (!data) state.preJobInfo = { dirty: false }
-      else {
-        state.preJobInfo = _.cloneDeep(state.jobInfo)
-        state.preJobInfo.dirty = false
-      }
-    }
-    if (action === 'recoverJobInfo') {
-      if (state.preJobInfo.dirty) {
-        state.jobInfo = _.cloneDeep(state.preJobInfo)
-        delete state.jobInfo.dirty
-      } else {
-        state.jobInfo = {}
-        state.preJobInfo = { dirty: false }
-      }
+    if (action === 'clearJobInfo') {
+      state.jobInfo = {}
     }
   },
   handleNormalData (state, { action, data }) {
@@ -82,7 +52,10 @@ let mutations = {
   // setJobId (state, jobId) {
   //   state.jobInfo.job_id = jobId
   // },
-
+  setSelectJobType (state, type) {
+    if (type !== "InnerJob") type = "norMalJob"
+    state.selectJobType = type
+  },
   setJobLabel (state, label) {
     state.jobInfo.job_label = label
   },
