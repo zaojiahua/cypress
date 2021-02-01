@@ -1,24 +1,23 @@
 <template>
   <Modal v-model="modalOpen" fullscreen title="测试结果"    @on-ok="close"  @on-cancel="close">
-<!--    <p>用时：{{responseDate.data.speed_time}}</p>-->
-    <Row type="flex" justify="center" align="middle">
+    <Row type="flex" justify="center" align="top">
       <Col span="11"  >
-        <Divider>识别的图片</Divider>
         <div class="img">
-          <img :src="responseDate.data.img_detected" alt="">
+          <slot name="left" ></slot>
         </div>
       </Col>
       <Col span="2">
-      <Divider type="vertical" />
+        <div style="{min-height: 100%;height: 120vh;position: relative;}">
+          <div class="divider">
+          </div>
+        </div>
       </Col>
       <Col span="11">
-        <List border size="small">
-          <Divider>识别的文字</Divider>
-          <ListItem v-for="(words,index) in responseDate.result">{{index+1}}: {{words.text}}</ListItem>
-        </List>
+        <div class="img">
+          <slot name="right"></slot>
+        </div>
       </Col>
     </Row>
-<!--    <h1>{{ responseDate }}</h1>-->
   </Modal>
 </template>
 
@@ -38,8 +37,7 @@ export default {
   props: {
     openTestResultModal: {
       type: Boolean
-    },
-    responseDate: Object
+    }
   },
   methods:{
     close (){
@@ -53,11 +51,17 @@ export default {
 <style scoped>
   .img{
     text-align: center;
-  }
-  img {
     max-height: 600px;
-    text-align: center;
-    /*max-width: 100%;*/
+    max-width: 100%;
+  }
+  .divider{
+    position: absolute;
+    left: 50%;
+    top: 0;
+    min-height: 100%;
+    height: auto;
+    width: 1px;
+    border-left: 1px solid grey;
   }
 
 </style>

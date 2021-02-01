@@ -14,7 +14,35 @@
       </div>
     </div>
     <div class="body">
-      <TestResult :openTestResultModal="openTestResultModal" :responseDate="testResponseData" @closeTestModal="closeTestModal"></TestResult>
+      <TestResult :openTestResultModal="openTestResultModal" @closeTestModal="closeTestModal">
+        <template #left>
+          <div v-if="Object.keys(testOcrResponseData).length !== 0">
+            <Divider>识别的图片</Divider>
+            <img :src="testOcrResponseData.data.img_detected" alt="" style="max-width: 100%">
+            <p> Tip：请确认识别的图片与你所选区相同，如果不同，请检查是否有保存选区</p>
+          </div>
+          <div v-else-if="Object.keys(testIconResponseData).length !== 0">
+            <Divider>识别的图标</Divider>
+            <img :src="testIconResponseData.icon" alt="" style="max-width: 100%;border: 1px">
+            <p> Tip：请确认识别的图片与你所选区相同，如果不同，请检查是否有保存选区</p>
+          </div>
+        </template>
+        <template #right>
+          <div  v-if="Object.keys(testOcrResponseData).length !== 0">
+            <List border size="small">
+              <Divider>识别的文字</Divider>
+              <ListItem v-for="(words,index) in testOcrResponseData.result">{{index+1}}: {{words.text}}</ListItem>
+            </List>
+          </div>
+          <div v-else-if="Object.keys(testIconResponseData).length !== 0">
+            <Divider>识别的图片</Divider>
+            <img :src="testIconResponseData.img_detected" alt="" style="max-width: 100% ;max-height:500px">
+            <p> Tip：请确认识别的图片与你所选区相同，如果不同，请检查是否有保存选区</p>
+          </div>
+
+        </template>
+
+      </TestResult>
       <div class="pane">
         <ItemList
           @updateUnitItem="updateUnitItem" ref="list"
@@ -29,6 +57,7 @@
       <div class="pane">
         <Utils></Utils>
         <Button type="primary" v-show="hasIconTest" @click="sendIconTestRequest">测试图标</Button>
+        <Button type="primary" v-show="hasIconPositionTest" @click="sendIconPositionTestRequest">测试图标位置</Button>
         <Button type="primary" v-show="hasOcrTest" @click="sendOcrTestRequest">测试文字</Button>
       </div>
     </div>
@@ -65,7 +94,8 @@ export default {
       curShowUnitEditor: this.showUnitEditor,
       unitItems: [],
       openTestResultModal:false,
-      testResponseData:{}
+      testOcrResponseData:{},
+      testIconResponseData:{}
     }
   },
   computed: {
@@ -79,13 +109,23 @@ export default {
           hasTestFunction = true
         }
       }
-      return (this.checkWeatherCompleted() && hasTestFunction)
+      return (this.checkWeatherCompleted && hasTestFunction)
     },
     hasOcrTest() {
       if (this.unitData.unitMsg === null) return
       return ('ocrChoice' in this.unitData.unitMsg && 'referImgFile' in this.unitData.unitMsg.execCmdDict)
+    },
+    hasIconPositionTest (){
+      let hasTestFunction = false
+      for (let functionName of CONST.ICON_POSITION_TEST_UNIT_LIST) {
+        if (this.unitData.unitMsg && functionName === this.unitData.unitMsg.functionName) {
+          hasTestFunction = true
+        }
+      }
+      return (this.checkWeatherCompleted() && hasTestFunction)
     }
   },
+
   watch: {
     showUnitEditor(val) {
       this.curShowUnitEditor = val
@@ -153,20 +193,24 @@ export default {
         })
       } else return 1
     },
+    prepareData: function () {
+      let data = new FormData()
+      let resFiles = this._.cloneDeep(this.resFiles)
+      for (let eachfile of resFiles) {
+        let type = eachfile.type
+        let file = eachfile.file
+        if (this.unitData.unitMsg.execCmdDict.configArea && eachfile.name === this.unitData.unitMsg.execCmdDict.configArea.area) {
+          data.append('configArea', new File([file], eachfile.name, {type}))
+        } else if (this.unitData.unitMsg.execCmdDict.configFile && eachfile.name === this.unitData.unitMsg.execCmdDict.configFile.area) {
+          data.append('configFile', new File([file], eachfile.name, {type}))
+        }
+      }
+      data.append('inputImgFile', dataURLtoFile(this.curFile.file, this.curFile.name))
+      return data;
+    },
     async sendIconTestRequest() {
       if (this.validateRequireMessage()) {
-        let data = new FormData()
-        let resFiles = this._.cloneDeep(this.resFiles)
-        for (let eachfile of resFiles) {
-          let type = eachfile.type
-          let file = eachfile.file
-          if (this.unitData.unitMsg.execCmdDict.configArea && eachfile.name === this.unitData.unitMsg.execCmdDict.configArea.area) {
-            data.append('configArea', new File([file], eachfile.name, {type}))
-          } else if (this.unitData.unitMsg.execCmdDict.configFile && eachfile.name === this.unitData.unitMsg.execCmdDict.configFile.area) {
-            data.append('configFile', new File([file], eachfile.name, {type}))
-          }
-        }
-        data.append('inputImgFile', dataURLtoFile(this.curFile.file, this.curFile.name))
+        let data = this.prepareData();
         let url = `http://${this.deviceInfo.cabinet.ip_address}:5000/basic/icon_test/`
         try {
           let response = await axios.request({
@@ -174,9 +218,34 @@ export default {
             method: 'post',
             data: data
           })
-          this.$Message.info(JSON.stringify(response.data))
+          this.$Message.info({
+            content: `需要特征点数量${response.data.required},现有特征点数量${response.data.sample},匹配结果${response.data.message}`,
+            duration: 10,
+            closable: true
+          })
         } catch (e) {
-          this.$Message.error(e)
+          this.$Message.error("请检查是否缺少选区文件")
+        }
+      }
+    },
+    async sendIconPositionTestRequest() {
+      if (this.validateRequireMessage()) {
+        let data = this.prepareData();
+        let url = `http://${this.deviceInfo.cabinet.ip_address}:5000/basic/icon_test_position/`
+        try {
+          let response = await axios.request({
+            url,
+            method: 'post',
+            data: data
+          })
+          if (response.data.hasOwnProperty('error')){
+            this.$Message.error(response.data.error)
+          }
+          else{
+            this.testIconResponseData = response.data
+            this.openTestResultModal = true}
+        } catch (e) {
+          this.$Message.error("请检查是否缺少选区文件")
         }
       }
     },
@@ -201,7 +270,7 @@ export default {
             data: data
           })
           this.openTestResultModal = true
-          this.testResponseData = response.data
+          this.testOcrResponseData = response.data
         } catch (e) {
           this.$Message.error(e)
         }
@@ -209,6 +278,8 @@ export default {
     },
     closeTestModal (){
       this.openTestResultModal = false
+      this.testOcrResponseData = {}
+      this.testIconResponseData = {}
     }
   }
 }
