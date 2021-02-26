@@ -97,7 +97,7 @@
 <script>
 import util from 'lib/util/validate.js'
 import { jobSerializer } from 'lib/util/jobListSerializer'
-import {controlDevice, getJobId, releaseOccupyDevice, updateJobMsg} from 'api/reef/request'
+import {controlDevice, getJobFlowList, getJobId, releaseOccupyDevice, updateJobMsg} from 'api/reef/request'
 import jobDeviceSelect from '../components/jobDeviceSelect'
 import jobFlowComponent from '../components/jobFlowComponent'
 import { shouldCreateNewTag, createNewTag } from 'lib/tools'
@@ -246,6 +246,11 @@ export default {
       // }else{
       //   this.$store.commit('job/setDuplicateId', null)
       // }
+      //inner job 才有开始编辑的按钮
+      let { data:{job_flow} } = await getJobFlowList(this.jobId)
+      if (job_flow.length === 1){
+        this.$store.commit('job/setJobFlowInfo', job_flow[0])
+      }
 
       // 清空失效的数据
       this.$store.commit('job/setOuterDiagramModel', null)

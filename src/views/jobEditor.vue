@@ -23,7 +23,7 @@
             </Button>
             <DropdownMenu slot="list">
               <DropdownItem v-if="editJobFlow" name="save">保存</DropdownItem>
-<!--              <DropdownItem v-if="editJobFlow" name="saveAs">另存为</DropdownItem>-->
+              <DropdownItem v-if="editJobFlow && selectJobType === 'InnerJob'" name="saveAs">另存为</DropdownItem>
               <DropdownItem v-if="editJobFlow" name="saveDraft">存草稿</DropdownItem>
               <DropdownItem name="quit">退出</DropdownItem>
             </DropdownMenu>
@@ -87,7 +87,7 @@ import {
   getJobDetail,
   updateFlowWithFlowId,
   createFlow,
-  jobFlowByJobLabel
+  jobFlowByJobLabel, getJobFlowList
 } from '../api/reef/request'
 import util from "lib/util/validate";
 import {jobSerializer} from "lib/util/jobListSerializer";
@@ -120,7 +120,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('job', ['jobInfo', 'jobFlowInfo','outerDiagramModel', 'isValidated', 'duplicateId', 'duplicateLabel', 'normalData', 'config', 'jobLabelDuplicate']),
+    ...mapState('job', ['jobInfo', 'jobFlowInfo','outerDiagramModel', 'isValidated', 'duplicateId', 'duplicateLabel', 'normalData', 'config', 'jobLabelDuplicate', 'selectJobType']),
     ...mapGetters('job', ['jobId', 'normalKey','editJobFlow','editJobMsg']),
     ...mapState('files', ['resFiles']),
     ...mapGetters('files', ['resFilesName','dataURLtoFileFormat']),
@@ -265,7 +265,10 @@ export default {
     },
     async createOrUpdateJobFlow(jobId,jobFlowInfo) {
       let jobFlowId = jobFlowInfo["id"]
-      if (jobFlowId === undefined){
+      if (jobFlowId === undefined){ // create
+        // 获取order
+        let { data:{job_flow} } = await getJobFlowList(jobId)
+        jobFlowInfo["order"] = job_flow.length
         jobFlowInfo["job"] = jobId
         let {data} = await createFlow(jobFlowInfo)
         return data.id
@@ -341,7 +344,7 @@ export default {
         }
           // 创建新的Job
         try {
-          let { status, data } = await saveJobFlowAndMsg(jobInfo)
+          let { status, data } = await saveJobFlowAndMsg(jobInfo)  // 保存 job 的信息
           if (status === 201) await context.uploadFiles(data.id, jobInfo, jobFlowInfo)
         } catch (err) {
           console.log(err)
@@ -364,7 +367,6 @@ export default {
         let id = this.jobId
         let jobInfo = await this.prepareJobInfo()
         let jobFlowInfo = await this.prepareJobFlowInfo(jobInfo)
-        console.log(jobInfo,jobFlowInfo)
         if (name === 'saveDraft') { // 存草稿，可跳过校验
           if (!this._jobMsgRules()) return
           jobInfo.draft = true
@@ -444,6 +446,14 @@ export default {
               }
           }
           else if (name === 'saveAs') { // 另存为
+            delete jobFlowInfo.id
+            if (this.selectJobType !== 'InnerJob') {
+              this.$Message.error({
+                background: true,
+                content: 'Inner Job 才具备另存为功能'
+              })
+              return
+            }
             this.$Modal.confirm({
               render: (h) => {
                 return h('Input', {
@@ -533,16 +543,14 @@ export default {
         jobInfo.custom_tag = await createNewTag('custom_tag', jobInfo)
         this.$store.dispatch('setBasicCustomTag')
       }
-      // 记录涉及到的InnerJob
-      jobInfo.inner_job_list = this.prepareInnerJobList()
-      this.innerJobNum = jobInfo.inner_job_list.length
       return jobInfo
     },
     async prepareJobFlowInfo(jobInfo) {
       let jobFlowInfo = this._.cloneDeep(this.jobFlowInfo)
       jobFlowInfo["ui_json_file"] = jobInfo.ui_json_file
       jobFlowInfo["flow_type"] = jobInfo.job_type === "InnerJob" ? "InnerFlow" : "NormalFlow"
-      jobFlowInfo["inner_flow"] = await this.prepareInnerFlowIdList(jobInfo.inner_job_list)
+      const inner_job_list = this.prepareInnerJobList()
+      if (this.selectJobType === 'norMalJob') jobFlowInfo["inner_flow"] = await this.prepareInnerFlowIdList(inner_job_list)
       return jobFlowInfo
     },
     prepareInnerJobList () { // 保存用到的innerjob的joblabel

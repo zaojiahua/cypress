@@ -57,8 +57,7 @@
 
 <script>
 import { HandleDirective,SlickList, SlickItem } from 'vue-slicksort'
-import {getJobFlowList, updateFlowWithFlowId, deleteFlowWithFlowId} from "api/reef/request";
-import CONST from "constant/constant";
+import {getJobFlowList, updateFlowWithFlowId, deleteFlowWithFlowId, updateFlowOrder} from "api/reef/request";
 export default {
   props: {
     title: {
@@ -118,7 +117,6 @@ export default {
           }, 800)
 
           this.$store.commit('job/setJobFlowInfo', {
-            order:this.jobFlowList.length,
             job:this.jobId
           })
 
@@ -157,13 +155,16 @@ export default {
     },
     async toSave() {
       this.edit = false
-      for (let item of this.jobFlowList){
-        let index = this.jobFlowList.indexOf(item)
-        if (item.order !== index) {
-          await updateFlowWithFlowId(item.id,{order:index})
-        }
-      }
+      let orderList = this.jobFlowList.map(item => item.id)
+      await updateFlowOrder(this.jobId,orderList)
 
+      // for (let item of this.jobFlowList){
+      //   let index = this.jobFlowList.indexOf(item)
+      //   if (item.order !== index) {
+      //     await updateFlowWithFlowId(item.id,{order:index})
+      //   }
+      // }
+      //
       for (let item of this.removeFlowList){
         await deleteFlowWithFlowId(item.id)
       }

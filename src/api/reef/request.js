@@ -209,6 +209,18 @@ const updateFlowWithFlowId = (id,data) => {
     data
   })
 }
+
+const updateFlowOrder = (jobId,flowList) => {
+  let data = {
+    job:jobId,
+    flows:flowList
+  }
+  return axios.request({
+    method: 'post',
+    url: url.updateFlowOrder(),
+    data
+  })
+}
 const createFlow = (data) => {
   return axios.request({
     method: 'post',
@@ -278,5 +290,6 @@ export {
   updateFlowWithFlowId,
   deleteFlowWithFlowId,
   createFlow,
-  jobFlowByJobLabel
+  jobFlowByJobLabel,
+  updateFlowOrder
 }

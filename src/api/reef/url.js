@@ -44,6 +44,7 @@ export default {
   jobDetail: (id) => `${reefPrefix}job/${id}/?fields=${joinFilter(jobDetailFilter)}`,
   jobFlow: (id) => `${reefPrefix}job/${id}/?fields=${joinFilter(jobFlowFilter)}`,
   jobFlowWithFlowId: (id) => `${reefPrefix}job_flow/${id}/`,
+  updateFlowOrder: () => `${reefPrefix}job_flow_order_update/`,
   createFlow: () => `${reefPrefix}job_flow/`,
 
 
