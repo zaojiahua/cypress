@@ -155,9 +155,6 @@ export default {
     },
     async toSave() {
       this.edit = false
-      let orderList = this.jobFlowList.map(item => item.id)
-      await updateFlowOrder(this.jobId,orderList)
-
       // for (let item of this.jobFlowList){
       //   let index = this.jobFlowList.indexOf(item)
       //   if (item.order !== index) {
@@ -168,6 +165,9 @@ export default {
       for (let item of this.removeFlowList){
         await deleteFlowWithFlowId(item.id)
       }
+
+      let orderList = this.jobFlowList.map(item => item.id)
+      await updateFlowOrder(this.jobId,orderList)
 
       await this.refresh(this.jobId)
     },
