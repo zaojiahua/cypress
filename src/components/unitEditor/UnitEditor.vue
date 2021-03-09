@@ -112,7 +112,7 @@ export default {
       return (this.checkWeatherCompleted && hasTestFunction)
     },
     hasOcrTest() {
-      if (this.unitData.unitMsg === null) return
+      if (!this.unitData.unitMsg) return
       return ('ocrChoice' in this.unitData.unitMsg && 'referImgFile' in this.unitData.unitMsg.execCmdDict)
     },
     hasIconPositionTest (){
