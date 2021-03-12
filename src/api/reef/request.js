@@ -241,6 +241,13 @@ const deleteFlowWithFlowId = (id) => {
   })
 }
 
+const getFlow = (data={}) => {
+  return axios.request({
+    method: 'get',
+    url: url.createFlow(),
+    params:data
+  })
+}
 
 const deleteUnitTemplate = (id) => {
   return axios.request({
@@ -291,5 +298,6 @@ export {
   deleteFlowWithFlowId,
   createFlow,
   jobFlowByJobLabel,
-  updateFlowOrder
+  updateFlowOrder,
+  getFlow
 }

@@ -61,7 +61,7 @@
         <Divider orientation="left" class="device-info-title" style="margin-top: 60px;">
           <b>流程图信息</b>
         </Divider>
-        <FormItem label="名称">
+        <FormItem label="名称" prop="flow_name">
           <Input :disabled="!editJobMsg" v-model="jobFlowInfo.name" clearable placeholder="请输入名称" />
         </FormItem>
 
@@ -97,7 +97,7 @@
 <script>
 import util from 'lib/util/validate.js'
 import { jobSerializer } from 'lib/util/jobListSerializer'
-import {controlDevice, getJobFlowList, getJobId, releaseOccupyDevice, updateJobMsg} from 'api/reef/request'
+import {controlDevice, getJobFlowList, getJobId, releaseOccupyDevice, updateJobMsg, getFlow} from 'api/reef/request'
 import jobDeviceSelect from '../components/jobDeviceSelect'
 import jobFlowComponent from '../components/jobFlowComponent'
 import { shouldCreateNewTag, createNewTag } from 'lib/tools'
@@ -108,6 +108,24 @@ export default {
   name: 'jobMsgComponent',
   components: { jobDeviceSelect,jobFlowComponent },
   data () {
+    const validatePass = async (rule, value, callback) => {
+      // 获取不到value的值，不知为何
+      console.log(this.jobFlowInfo)
+      // 可能jobFlowInfo没有name字段
+      let flow_name = this.jobFlowInfo.name ? this.jobFlowInfo.name.trim() : null
+      if (!flow_name) {
+        callback(new Error('请输入流程图名称'));
+      } else if (this.jobId)  { // 在已经存在的用例中操作
+        let {data:{job_flows}} = await getFlow({job_id: this.jobId,name: flow_name})
+        if (job_flows.length === 1 && job_flows[0].pk !== this.jobFlowInfo.id){
+          callback(new Error('用例下的流程图名称重复'));
+        } else {
+          callback()
+        }
+      } else {
+        callback()
+      }
+    }
     return {
       curManufacturer: {},
       /*
@@ -142,7 +160,10 @@ export default {
         // }],
         android_version: [{
           required: true, type: 'array', min: 1, message: '适配系统不能为空', trigger: 'change'
-        }]
+        }],
+        flow_name: [
+          { validator: validatePass, trigger: 'blur' }
+        ],
       },
       job: util.validate(jobSerializer, {}),
       isConflicted: false,
