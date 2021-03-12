@@ -1,4 +1,5 @@
 <template>
+  <div style="overflow-x: auto; overflow-y: auto; height: 90%;">
     <table>
         <th v-for="column in columns" :key="column.title">{{ column.title}}</th>
         <tr v-for="(row, trIndex) in data" :key="trIndex" @click="showFile(trIndex)" :class="{ active: trIndex === currentRow }">
@@ -13,6 +14,7 @@
           <td colspan="4">没有更多数据了</td>
         </tr>
     </table>
+  </div>
 </template>
 
 <script>

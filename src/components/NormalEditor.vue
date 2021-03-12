@@ -316,12 +316,15 @@ export default {
     setWingman (wingmanId) { // 记录僚机使用情况
       this.innerDiagram.selection.each(({ data }) => {
         if (data.category !== 'Unit') return
+        let newUnitMsg = this._.cloneDeep(data.unitMsg)
         if (wingmanId) { // 设置为僚机
+          newUnitMsg.assistDevice = wingmanId
           this.innerDiagram.model.setDataProperty(data, 'assistDevice', wingmanId)
-          this.innerDiagram.model.setDataProperty(data.unitMsg, 'assistDevice', wingmanId)
+          this.innerDiagram.model.setDataProperty(data, 'unitMsg', newUnitMsg)
         } else { // 设置为主机
+          delete newUnitMsg.assistDevice
           this.innerDiagram.model.setDataProperty(data, 'assistDevice', null)
-          this.innerDiagram.model.setDataProperty(data.unitMsg, 'assistDevice', null)
+          this.innerDiagram.model.setDataProperty(data, 'unitMsg', newUnitMsg)
           delete data.assistDevice
           delete data.unitMsg.assistDevice
         }
