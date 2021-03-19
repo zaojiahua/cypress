@@ -1,80 +1,86 @@
 <template>
-  <Drawer title="用例详情" :closable="false" v-model="$store.state.showDrawer" width="30" @on-close="closeDrawer">
-    <Form ref="form"
-      v-if="basicData"
-      :model="$store.state.job.jobInfo"
-      width="30" :label-width="90"
-      label-position="left"
-      :rules="validateRules">
-       <FormItem label="用例名称" prop="job_name">
-        <Input  :disabled="!editJobMsg"  v-model="$store.state.job.jobInfo.job_name" clearable placeholder="请输入用例名称"/>
-      </FormItem>
-      <FormItem label="测试用途" prop="test_area">
-        <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.test_area" multiple placeholder="请选择" filterable allow-create>
-          <Option v-for="item in basicData[basicData.testArea]" :value="item.id" :key="item.id">{{ item.description }}</Option>
-        </Select>
-      </FormItem>
-      <FormItem label="用例类型" prop="job_type" class="type">
-        <Cascader :disabled="!editJobMsg" :data="jobTypes[selectJobType]" v-model="curJobType"></Cascader>
-        <Input v-model="jobTypeString" style="display: none;" disabled />
-      </FormItem>
-      <FormItem label="自定义标签" prop="custom_tag">
-        <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.custom_tag" multiple placeholder="请选择" filterable allow-create>
-          <Option v-for="item in basicData[basicData.customTag]" :value="item.id" :key="item.id">{{ item.custom_tag_name }}</Option>
-        </Select>
-      </FormItem>
-      <FormItem label="caseNo" prop="case_number">
-        <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.case_number" clearable placeholder="请输入用例编号" />
-      </FormItem>
-      <FormItem label="priority" prop="priority">
-      <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.priority" clearable placeholder="请输入用例级别" />
-      </FormItem>
-      <FormItem label="用例说明" prop="description">
-        <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.description" clearable placeholder="请输入说明信息" />
-      </FormItem>
-      <Divider orientation="left" class="device-info-title" style="margin-top: 60px;">
-        <b>设备信息</b>
-        <Button v-if="editJobMsg" type="info" @click="$store.commit('device/setSelectDevice')">选取设备</Button>
-      </Divider>
-      <FormItem label="厂商信息" prop="manufacturer">
-        <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.manufacturer" placeholder="请选择" @on-change="clear" filterable>
-          <Option v-for="item in basicData[basicData.manufacturer]" :value="item.id" :key="item.id">{{ item.manufacturer_name }}</Option>
-        </Select>
-      </FormItem>
-      <FormItem label="适配机型" prop="phone_models">
-        <Select :disabled="!editJobMsg || disabled" v-model="$store.state.job.jobInfo.phone_models" multiple  placeholder="请选择" filterable>
-          <Option v-for="item in curManufacturer.phonemodel" :value="item.id" :key="item.id">{{ item.phone_model_name }}</Option>
-        </Select>
-      </FormItem>
-      <FormItem label="ROM版本" prop="rom_version">
-        <Select :disabled="!editJobMsg || disabled" v-model="$store.state.job.jobInfo.rom_version" multiple placeholder="请选择" filterable>
-          <Option v-for="item in curManufacturer.romversion" :value="item.id" :key="item.id">{{ item.version }}</Option>
-        </Select>
-      </FormItem>
-      <FormItem label="适配系统" prop="android_version">
-        <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.android_version" multiple placeholder="请选择">
-          <Option v-for="item in basicData[basicData.androidVersion]" :value="item.id" :key="item.id">{{ item.version }}</Option>
-        </Select>
-      </FormItem>
-      <job-flow-component v-show="!isJobEditor && selectJobType === 'norMalJob'" :job-id="$store.state.job.jobInfo.job_id"></job-flow-component>
-      <div v-show="isJobEditor">
-        <Divider orientation="left" class="device-info-title" style="margin-top: 60px;">
-          <b>流程图信息</b>
-        </Divider>
-        <FormItem label="名称" prop="flow_name">
-          <Input :disabled="!editJobMsg" v-model="jobFlowInfo.name" clearable placeholder="请输入名称" />
-        </FormItem>
+  <Drawer :closable="false" v-model="$store.state.showDrawer" width="40" @on-close="closeDrawer">
+    <Tabs v-model="currTab" type="card">
+      <TabPane name="jobAttr" label="用例属性信息">
+        <Form ref="form"
+              v-if="basicData"
+              :model="$store.state.job.jobInfo"
+              width="30" :label-width="90"
+              label-position="left"
+              :rules="validateRules">
+          <FormItem label="用例名称" prop="job_name">
+            <Input  :disabled="!editJobMsg"  v-model="$store.state.job.jobInfo.job_name" clearable placeholder="请输入用例名称"/>
+          </FormItem>
+          <FormItem label="测试用途" prop="test_area">
+            <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.test_area" multiple placeholder="请选择" filterable allow-create>
+              <Option v-for="item in basicData[basicData.testArea]" :value="item.id" :key="item.id">{{ item.description }}</Option>
+            </Select>
+          </FormItem>
+          <FormItem label="用例类型" prop="job_type" class="type">
+            <Cascader :disabled="!editJobMsg" :data="jobTypes[selectJobType]" v-model="curJobType"></Cascader>
+            <Input v-model="jobTypeString" style="display: none;" disabled />
+          </FormItem>
+          <FormItem label="自定义标签" prop="custom_tag">
+            <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.custom_tag" multiple placeholder="请选择" filterable allow-create>
+              <Option v-for="item in basicData[basicData.customTag]" :value="item.id" :key="item.id">{{ item.custom_tag_name }}</Option>
+            </Select>
+          </FormItem>
+          <FormItem label="caseNo" prop="case_number">
+            <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.case_number" clearable placeholder="请输入用例编号" />
+          </FormItem>
+          <FormItem label="priority" prop="priority">
+            <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.priority" clearable placeholder="请输入用例级别" />
+          </FormItem>
+          <FormItem label="用例说明" prop="description">
+            <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.description" clearable placeholder="请输入说明信息" />
+          </FormItem>
+          <Divider orientation="left" class="device-info-title" style="margin-top: 60px;">
+            <b>设备信息</b>
+            <Button v-if="editJobMsg" type="info" @click="$store.commit('device/setSelectDevice')">选取设备</Button>
+          </Divider>
+          <FormItem label="厂商信息" prop="manufacturer">
+            <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.manufacturer" placeholder="请选择" @on-change="clear" filterable>
+              <Option v-for="item in basicData[basicData.manufacturer]" :value="item.id" :key="item.id">{{ item.manufacturer_name }}</Option>
+            </Select>
+          </FormItem>
+          <FormItem label="适配机型" prop="phone_models">
+            <Select :disabled="!editJobMsg || disabled" v-model="$store.state.job.jobInfo.phone_models" multiple  placeholder="请选择" filterable>
+              <Option v-for="item in curManufacturer.phonemodel" :value="item.id" :key="item.id">{{ item.phone_model_name }}</Option>
+            </Select>
+          </FormItem>
+          <FormItem label="ROM版本" prop="rom_version">
+            <Select :disabled="!editJobMsg || disabled" v-model="$store.state.job.jobInfo.rom_version" multiple placeholder="请选择" filterable>
+              <Option v-for="item in curManufacturer.romversion" :value="item.id" :key="item.id">{{ item.version }}</Option>
+            </Select>
+          </FormItem>
+          <FormItem label="适配系统" prop="android_version">
+            <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.android_version" multiple placeholder="请选择">
+              <Option v-for="item in basicData[basicData.androidVersion]" :value="item.id" :key="item.id">{{ item.version }}</Option>
+            </Select>
+          </FormItem>
+          <div v-show="isJobEditor">
+            <Divider orientation="left" class="device-info-title" style="margin-top: 60px;">
+              <b>流程图信息</b>
+            </Divider>
+            <FormItem label="名称" prop="flow_name">
+              <Input :disabled="!editJobMsg" v-model="jobFlowInfo.name" clearable placeholder="请输入名称" />
+            </FormItem>
 
-        <FormItem label="描述">
-          <Input :disabled="!editJobMsg" v-model="jobFlowInfo.description" clearable placeholder="请输入描述信息" />
-        </FormItem>
-      </div>
+            <FormItem label="描述">
+              <Input :disabled="!editJobMsg" v-model="jobFlowInfo.description" clearable placeholder="请输入描述信息" />
+            </FormItem>
+          </div>
 
-      <div v-show="!isJobEditor" style="float: right;">
-        <Button v-if="editJobMsg" type="success" @click="saveChange" style="margin-right: 1em">保存修改</Button>
-        <Button v-if="selectJobType === 'InnerJob'" type="info" @click="enterJobEditor">开始编辑</Button>
-      </div>
-    </Form>
+          <div v-show="!isJobEditor" style="float: right;">
+            <Button v-if="editJobMsg" type="success" @click="saveChange" style="margin-right: 1em">保存修改</Button>
+            <Button v-if="selectJobType === 'InnerJob'" type="info" @click="enterJobEditor">开始编辑</Button>
+          </div>
+        </Form>
+      </TabPane>
+      <TabPane v-if="!isJobEditor && selectJobType === 'norMalJob'" name="jobFlow" label="用例流程图信息">
+        <job-flow-component v-show="!isJobEditor && selectJobType === 'norMalJob'" :job-id="$store.state.job.jobInfo.job_id"></job-flow-component>
+      </TabPane>
+    </Tabs>
     <job-device-select></job-device-select>
     <Modal v-model="isConflicted" :closable="false" :styles="{top: '42%'}" width="390">
       <div slot="header" style="color:#f60;text-align:center">
@@ -109,6 +115,10 @@ export default {
   components: { jobDeviceSelect,jobFlowComponent },
   data () {
     const validatePass = async (rule, value, callback) => {
+      if (!this.isJobEditor) {// 非jobEditor的校验不需要考虑jobFlow校验
+        callback()
+        return
+      }
       // 获取不到value的值，不知为何
       console.log(this.jobFlowInfo)
       // 可能jobFlowInfo没有name字段
@@ -127,6 +137,7 @@ export default {
       }
     }
     return {
+      currTab: 'jobAttr',
       curManufacturer: {},
       /*
         curManufacturer, 存放当前选中机型的厂商信息, 以及该厂商名下的设备的机型/ROM版本信息
@@ -231,6 +242,7 @@ export default {
       }
     },
     showDrawer (val) { // 在jobEditor页面之外的页面关闭右侧抽屉时清除当前选中的用例信息
+      this.currTab = "jobAttr"
       if (val === false && !this.isJobEditor) this.$store.commit('job/handleJobInfo', { action: 'clearJobInfo' })
     },
     deviceInfo (newVal, oldVal) { // 设备信息变化时检测是否和已填信息发生冲突并进行处理

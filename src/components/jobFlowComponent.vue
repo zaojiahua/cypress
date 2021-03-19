@@ -4,6 +4,10 @@
       <Icon type="ios-film-outline"></Icon>
       {{ title }}
     </p>
+    <a v-show="!edit" :disabled="!copyFlowObj" href="#" slot="extra" @click.prevent="pasteJobFlow">
+      <Icon type="ios-loop-strong"></Icon>
+      粘贴
+    </a>
     <a v-show="!edit" href="#" slot="extra" @click.prevent="newFlow">
       <Icon type="ios-loop-strong"></Icon>
       新增
@@ -22,13 +26,20 @@
     </a>
 
     <SlickList :lockToContainerEdges="true" :useDragHandle="true" class="list" lockAxis="y" v-model="jobFlowList">
-      <SlickItem class="list-item" v-for="(item, index) in jobFlowList" @click.native="showFlowMsg(item)" :index="index" :key="index">
-        <div v-show="edit" style="width: 20%">
-          <Icon v-handle type="ios-menu" :size="iconSize"/>
-          <Icon type="ios-trash" :size="iconSize" @click="deleteJobFlow(index)"/>
-          <Icon v-show="index!==0" type="md-arrow-up" :size="iconSize" @click="zIndexBottom(index)"/>
-        </div>
+      <SlickItem class="list-item" v-for="(item, index) in jobFlowList" :index="index" :key="index">
         <div class="flow-class">{{item.name}}</div>
+        <div v-show="edit" style="width: 20%; text-align: right">
+          <Icon v-show="index!==0" type="md-arrow-up" :size="iconSize" @click="zIndexBottom(index)"/>
+          <Icon v-show="jobFlowList.length !== 1" type="ios-trash" :size="iconSize" @click="deleteJobFlow(index)"/>
+          <Icon v-handle type="ios-menu" :size="iconSize"/>
+        </div>
+        <Dropdown v-show="!edit" trigger="click" @on-click="flowHandleMenu" style=" width: 20%; text-align: right">
+          <Icon :size="iconSize" type="md-more" @click="handleOpen(item)"/>
+          <DropdownMenu slot="list">
+            <DropdownItem name="edit">编辑</DropdownItem>
+            <DropdownItem name="copy">复制</DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
         <Modal
           v-model="flowModal"
           :mask-closable="false"
@@ -57,7 +68,7 @@
 
 <script>
 import { HandleDirective,SlickList, SlickItem } from 'vue-slicksort'
-import {getJobFlowList, updateFlowWithFlowId, deleteFlowWithFlowId, updateFlowOrder} from "api/reef/request";
+import {getJobFlowList, copyFlowWithFlowId, deleteFlowWithFlowId, updateFlowOrder} from "api/reef/request";
 export default {
   props: {
     title: {
@@ -75,6 +86,8 @@ export default {
   },
   data () {
     return {
+      copyFlowObj:null,
+      selectFlowObj:null,
       enter:"查看",
       flag: true,
       edit: false,
@@ -107,6 +120,7 @@ export default {
       }else {
         this.jobFlowList = []
       }
+      console.log(this.jobFlowList)
     },
     newFlow() {
       this.$Modal.confirm({
@@ -130,6 +144,21 @@ export default {
           })
         }
       })
+    },
+    flowHandleMenu(name) {
+      switch (name) {
+        case "edit":
+          this.showFlowMsg(this.selectFlowObj)
+          break;
+        case "copy":
+          this.copyFlowObj = this.selectFlowObj
+          console.log(this.copyFlowObj)
+          break;
+      }
+    },
+    handleOpen(item){
+      this.selectFlowObj = this._.cloneDeep(item)
+      console.log(this.selectFlowObj)
     },
     enterFlow() { // 路由到jobEditor页面
       setTimeout(() => { // 延时关闭右侧抽屉
@@ -176,6 +205,23 @@ export default {
         this.flowModal = true
         this.currentFlow = flowItem
       }
+    },
+    copyFlow(index) {
+      this.copyFlowObj = this.jobFlowList[index]
+    },
+    async pasteJobFlow(){
+      console.log(this.copyFlowObj.id)
+      // copy操作
+      let { status } = await copyFlowWithFlowId({copy_job:this.jobId,flow:this.copyFlowObj.id})
+      console.log(status)
+      if (status === 200) {
+        this.$Message.info("粘贴成功")
+      }else {
+        this.$Message.error("粘贴失败")
+      }
+      await this.refresh(this.jobId)
+      this.copyFlowObj = null
+
     },
     deleteJobFlow(index) {
       this.removeFlowList.push(...this.jobFlowList.splice(index,1))
@@ -231,7 +277,7 @@ h3,h4{
   font-weight: 400;
 }
 .flow-class {
-  text-align:center
+  width: 80%;
 }
 .add-icon {
   position: relative;

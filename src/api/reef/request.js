@@ -249,6 +249,15 @@ const getFlow = (data={}) => {
   })
 }
 
+const copyFlowWithFlowId = (data={}) => {
+  return axios.request({
+    method: 'post',
+    url: url.copyFlow(),
+    data
+  })
+}
+
+
 const deleteUnitTemplate = (id) => {
   return axios.request({
     method: 'delete',
@@ -299,5 +308,6 @@ export {
   createFlow,
   jobFlowByJobLabel,
   updateFlowOrder,
-  getFlow
+  getFlow,
+  copyFlowWithFlowId
 }

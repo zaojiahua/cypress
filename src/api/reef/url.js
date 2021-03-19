@@ -46,7 +46,7 @@ export default {
   jobFlowWithFlowId: (id) => `${reefPrefix}job_flow/${id}/`,
   updateFlowOrder: () => `${reefPrefix}job_flow_order_update/`,
   createFlow: () => `${reefPrefix}job_flow/`,
-
+  copyFlow:() => `${reefPrefix}job_flow_copy/`,
 
   saveJobFlowAndMsg: () => `${reefPrefix}job/`,
   updateJobMsg: (id) => `${reefPrefix}job/${id}/`,
