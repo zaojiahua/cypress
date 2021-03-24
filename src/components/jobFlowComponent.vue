@@ -33,13 +33,17 @@
           <Icon v-show="jobFlowList.length !== 1" type="ios-trash" :size="iconSize" @click="deleteJobFlow(index)"/>
           <Icon v-handle type="ios-menu" :size="iconSize"/>
         </div>
-        <Dropdown v-show="!edit" trigger="click" @on-click="flowHandleMenu" style=" width: 20%; text-align: right">
-          <Icon :size="iconSize" type="md-more" @click="handleOpen(item)"/>
-          <DropdownMenu slot="list">
-            <DropdownItem name="edit">编辑</DropdownItem>
-            <DropdownItem name="copy">复制</DropdownItem>
-          </DropdownMenu>
-        </Dropdown>
+        <div v-show="!edit" style="width: 20%; text-align: right">
+          <Icon type="ios-copy" :size="iconSize" @click="copyFlow(item)"/>
+          <Icon type="ios-create" :size="iconSize" @click="showFlowMsg(item)"/>
+        </div>
+<!--        <Dropdown v-show="!edit" triggexr="click" @on-click="flowHandleMenu" style=" width: 20%; text-align: right">-->
+<!--          <Icon :size="iconSize" type="md-more" @click="handleOpen(item)"/>-->
+<!--          <DropdownMenu slot="list">-->
+<!--            <DropdownItem name="edit">编辑</DropdownItem>-->
+<!--            <DropdownItem name="copy">复制</DropdownItem>-->
+<!--          </DropdownMenu>-->
+<!--        </Dropdown>-->
         <Modal
           v-model="flowModal"
           :mask-closable="false"
@@ -160,6 +164,9 @@ export default {
       this.selectFlowObj = this._.cloneDeep(item)
       console.log(this.selectFlowObj)
     },
+    copyFlow(item) {
+      this.copyFlowObj = item
+    },
     enterFlow() { // 路由到jobEditor页面
       setTimeout(() => { // 延时关闭右侧抽屉
         this.$store.commit('handleShowDrawer')
@@ -206,9 +213,9 @@ export default {
         this.currentFlow = flowItem
       }
     },
-    copyFlow(index) {
-      this.copyFlowObj = this.jobFlowList[index]
-    },
+    // copyFlow(index) {
+    //   this.copyFlowObj = this.jobFlowList[index]
+    // },
     async pasteJobFlow(){
       console.log(this.copyFlowObj.id)
       // copy操作
