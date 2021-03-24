@@ -4,26 +4,28 @@
       <Icon type="ios-film-outline"></Icon>
       {{ title }}
     </p>
-    <a v-show="!edit" :disabled="!copyFlowObj" href="#" slot="extra" @click.prevent="pasteJobFlow">
-      <Icon type="ios-loop-strong"></Icon>
-      粘贴
-    </a>
-    <a v-show="!edit" href="#" slot="extra" @click.prevent="newFlow">
-      <Icon type="ios-loop-strong"></Icon>
-      新增
-    </a>
-    <a v-show="!edit" href="#" slot="extra" @click.prevent="toEdit">
-      <Icon type="ios-loop-strong"></Icon>
-      编辑
-    </a>
-    <a v-show="edit" href="#" slot="extra" @click.prevent="toCancel">
-      <Icon type="ios-loop-strong"></Icon>
-      取消
-    </a>
-    <a v-show="edit" href="#" slot="extra" @click.prevent="toSave">
-      <Icon type="ios-loop-strong"></Icon>
-      确认
-    </a>
+    <p slot="extra" v-show="!isAdmin">
+      <a v-show="!edit" :disabled="!copyFlowObj || !editJobFlow" href="#"  @click.prevent="pasteJobFlow">
+        <Icon type="ios-loop-strong"></Icon>
+        粘贴
+      </a>
+      <a v-show="!edit" :disabled="!editJobFlow" href="#"  @click.prevent="newFlow">
+        <Icon type="ios-loop-strong"></Icon>
+        新增
+      </a>
+      <a v-show="!edit" :disabled="!editJobFlow" href="#"  @click.prevent="toEdit">
+        <Icon type="ios-loop-strong"></Icon>
+        编辑
+      </a>
+      <a v-show="edit" href="#"  @click.prevent="toCancel">
+        <Icon type="ios-loop-strong"></Icon>
+        取消
+      </a>
+      <a v-show="edit" href="#"  @click.prevent="toSave">
+        <Icon type="ios-loop-strong"></Icon>
+        确认
+      </a>
+    </p>
 
     <SlickList :lockToContainerEdges="true" :useDragHandle="true" class="list" lockAxis="y" v-model="jobFlowList">
       <SlickItem class="list-item" v-for="(item, index) in jobFlowList" :index="index" :key="index">
@@ -34,7 +36,7 @@
           <Icon v-handle type="ios-menu" :size="iconSize"/>
         </div>
         <div v-show="!edit" style="width: 20%; text-align: right">
-          <Icon type="ios-copy" :size="iconSize" @click="copyFlow(item)"/>
+          <Icon v-show="!isAdmin" type="ios-copy" :size="iconSize" @click="copyFlow(item)"/>
           <Icon type="ios-create" :size="iconSize" @click="showFlowMsg(item)"/>
         </div>
 <!--        <Dropdown v-show="!edit" triggexr="click" @on-click="flowHandleMenu" style=" width: 20%; text-align: right">-->
@@ -73,6 +75,7 @@
 <script>
 import { HandleDirective,SlickList, SlickItem } from 'vue-slicksort'
 import {getJobFlowList, copyFlowWithFlowId, deleteFlowWithFlowId, updateFlowOrder} from "api/reef/request";
+import {mapGetters} from "vuex";
 export default {
   props: {
     title: {
@@ -105,9 +108,12 @@ export default {
   directives: {
     handle: HandleDirective
   },
+  computed: {
+    ...mapGetters('job', ['editJobFlow','editJobMsg','isAdmin']),
+  },
   components: {
     SlickItem,
-    SlickList,
+    SlickList
   },
 
   methods: {
@@ -162,10 +168,11 @@ export default {
     },
     handleOpen(item){
       this.selectFlowObj = this._.cloneDeep(item)
-      console.log(this.selectFlowObj)
     },
     copyFlow(item) {
       this.copyFlowObj = item
+      this.$Message.info("复制完成")
+
     },
     enterFlow() { // 路由到jobEditor页面
       setTimeout(() => { // 延时关闭右侧抽屉

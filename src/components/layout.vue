@@ -37,7 +37,7 @@
             <Icon type="logo-buffer"></Icon>
             <span>用例管理</span>
           </MenuItem>
-          <MenuItem name="jobEditor" @click.native="viewJobCreate" title="用例编辑">
+          <MenuItem v-show="isNotAdmin()" name="jobEditor" @click.native="viewJobCreate" title="用例编辑">
             <Icon type="ios-create"></Icon>
             <span>用例编辑</span>
           </MenuItem>
@@ -77,6 +77,9 @@ export default {
     ...mapState('device', ['countdown', 'deviceInfo'])
   },
   methods: {
+    isNotAdmin() {
+      return !sessionStorage.groups.includes('Admin')
+    },
     logout () {
       if (this.isTrigger()) {
         this.$Modal.confirm({

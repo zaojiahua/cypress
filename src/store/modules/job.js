@@ -120,11 +120,14 @@ let getters = {
     return state.config.byProductsName
   },
   editJobMsg (){
-    // 新建用例或则编辑自己的用例或则admin权限可以被允许
-    return state.jobInfo.job_id === undefined || (sessionStorage.groups && sessionStorage.groups.includes('Admin')) ||state.jobInfo.author  === parseInt(sessionStorage.id)
+    // 新建用例或则编辑自己的用例 admin权限不被允许编辑
+    return !(sessionStorage.groups && sessionStorage.groups.includes('Admin')) && (state.jobInfo.job_id === undefined ||state.jobInfo.author  === parseInt(sessionStorage.id))
   },
   editJobFlow (){
-    return state.jobInfo.job_id === undefined || (sessionStorage.groups && sessionStorage.groups.includes('Admin')) ||state.jobInfo.author  === parseInt(sessionStorage.id)
+    return !(sessionStorage.groups && sessionStorage.groups.includes('Admin')) && (state.jobInfo.job_id === undefined ||state.jobInfo.author  === parseInt(sessionStorage.id))
+  },
+  isAdmin (){
+    return sessionStorage.groups && sessionStorage.groups.includes('Admin')
   }
 }
 
