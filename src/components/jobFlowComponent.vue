@@ -87,9 +87,9 @@ export default {
     }
   },
   watch: {
-    async jobId (val) {
-      await this.refresh(val)
-    }
+    // async jobId (val) {
+    //   await this.refresh(val)
+    // }
   },
   data () {
     return {
@@ -122,7 +122,6 @@ export default {
       this.removeFlowList = []
       if (jobId !== -1){
         let { data:{job_flow} } = await getJobFlowList(jobId)
-        // console.log(jobId,job_flow)
         job_flow.sort(function (a, b) {
           return a.order-b.order
         })
@@ -130,7 +129,6 @@ export default {
       }else {
         this.jobFlowList = []
       }
-      console.log(this.jobFlowList)
     },
     newFlow() {
       this.$Modal.confirm({
@@ -216,8 +214,9 @@ export default {
     },
     showFlowMsg(flowItem) {
       if (!this.edit){
-        this.flowModal = true
+        // this.flowModal = true
         this.currentFlow = flowItem
+        this.enterFlow()
       }
     },
     // copyFlow(index) {

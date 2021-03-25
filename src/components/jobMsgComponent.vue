@@ -1,6 +1,6 @@
 <template>
   <Drawer :closable="false" v-model="$store.state.showDrawer" width="40" @on-close="closeDrawer">
-    <Tabs v-model="currTab" type="card">
+    <Tabs v-model="currTab" @on-click="showJobFlow" type="card">
       <TabPane name="jobAttr" label="用例属性信息">
         <Form ref="form"
               v-if="basicData"
@@ -78,7 +78,7 @@
         </Form>
       </TabPane>
       <TabPane v-if="!isJobEditor && selectJobType === 'norMalJob'" name="jobFlow" label="用例流程图信息">
-        <job-flow-component v-show="!isJobEditor && selectJobType === 'norMalJob'" :job-id="$store.state.job.jobInfo.job_id"></job-flow-component>
+        <job-flow-component  ref="jobFlowCmp" v-show="!isJobEditor && selectJobType === 'norMalJob'" :job-id="jobInfo.job_id"></job-flow-component>
       </TabPane>
     </Tabs>
     <job-device-select></job-device-select>
@@ -230,6 +230,7 @@ export default {
   },
   watch: {
     jobInfo (val) { // jobInfo(用例信息)变化是, 记录job的类型与二级类型
+      console.log(this.jobInfo.job_id)
       if (val.job_type) {
         this.curJobType.splice(0, 1, val.job_type)
       } else {
@@ -258,6 +259,13 @@ export default {
     }
   },
   methods: {
+    showJobFlow (name) {
+      switch (name) {
+        case 'jobFlow':
+          this.$refs.jobFlowCmp.refresh(this.jobId)
+          break
+      }
+    },
     async enterJobEditor () { // 路由到jobEditor页面
       setTimeout(() => { // 延时关闭右侧抽屉
         this.$store.commit('handleShowDrawer')
