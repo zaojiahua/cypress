@@ -268,7 +268,12 @@ export default {
       if (jobFlowId === undefined){ // create
         // 获取order
         let { data:{job_flow} } = await getJobFlowList(jobId)
-        jobFlowInfo["order"] = job_flow.length
+        if (job_flow.length !== 0) {
+          jobFlowInfo["order"] = job_flow.reduce(function (a, b) { return Math.max(a.order, b.order); }) + 1
+          console.log(jobFlowInfo["order"])
+        }else {
+          jobFlowInfo["order"] = 0
+        }
         jobFlowInfo["job"] = jobId
         let {data} = await createFlow(jobFlowInfo)
         return data.id
