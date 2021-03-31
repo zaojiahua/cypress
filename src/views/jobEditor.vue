@@ -269,7 +269,7 @@ export default {
         // 获取order
         let { data:{job_flow} } = await getJobFlowList(jobId)
         if (job_flow.length !== 0) {
-          jobFlowInfo["order"] = job_flow.reduce(function (a, b) { return Math.max(a.order, b.order); }) + 1
+          jobFlowInfo["order"] = Math.max(...job_flow.map(x => x.order)) + 1
           console.log(jobFlowInfo["order"])
         }else {
           jobFlowInfo["order"] = 0
