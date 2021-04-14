@@ -224,7 +224,7 @@ export default {
             closable: true
           })
         } catch (e) {
-          this.$Message.error("请检查是否缺少选区文件")
+          this.$Message.error(`请检查是否缺少选区文件 ${e}`)
         }
       }
     },
@@ -245,7 +245,8 @@ export default {
             this.testIconResponseData = response.data
             this.openTestResultModal = true}
         } catch (e) {
-          this.$Message.error("请检查是否缺少选区文件")
+
+          this.$Message.error(`请检查是否缺少选区文件 ${e}`)
         }
       }
     },
