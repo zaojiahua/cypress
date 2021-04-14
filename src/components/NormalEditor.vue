@@ -209,6 +209,7 @@ export default {
       }
     },
     saveNormalData (toggle) { // 保存NormalBlock的信息 只有保存的时候才可以吸入unit信息，其他时候也不要将unit写到store,因为用户可以选择取消
+      this.closeContextMenu()
       let resultUnitCount = this.innerDiagram.findNodesByExample({ 'category': 'Unit','star':CONST.COLORS.RESULT}).count
       if (resultUnitCount > 1 ) {
         this.$Message.error({
