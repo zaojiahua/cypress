@@ -75,7 +75,7 @@
 <script>
 import { HandleDirective,SlickList, SlickItem } from 'vue-slicksort'
 import {getJobFlowList, copyFlowWithFlowId, deleteFlowWithFlowId, updateFlowOrder} from "api/reef/request";
-import {mapGetters} from "vuex";
+import {mapGetters, mapState} from "vuex";
 export default {
   props: {
     title: {
@@ -109,7 +109,16 @@ export default {
     handle: HandleDirective
   },
   computed: {
-    ...mapGetters('job', ['editJobFlow','editJobMsg','isAdmin']),
+    ...mapState('job', ['jobInfo']),
+    editJobMsg() {
+      return !(sessionStorage.groups && sessionStorage.groups.includes('Admin')) && (this.jobInfo.job_id === undefined ||this.jobInfo.author  === parseInt(sessionStorage.id))
+    },
+    editJobFlow (){
+      return !(sessionStorage.groups && sessionStorage.groups.includes('Admin')) && (this.jobInfo.job_id === undefined ||this.jobInfo.author  === parseInt(sessionStorage.id))
+    },
+    isAdmin (){
+      return sessionStorage.groups && sessionStorage.groups.includes('Admin')
+    }
   },
   components: {
     SlickItem,

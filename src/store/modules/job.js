@@ -118,17 +118,19 @@ let getters = {
   },
   byProductsName () {
     return state.config.byProductsName
-  },
-  editJobMsg (){
-    // 新建用例或则编辑自己的用例 admin权限不被允许编辑
-    return !(sessionStorage.groups && sessionStorage.groups.includes('Admin')) && (state.jobInfo.job_id === undefined ||state.jobInfo.author  === parseInt(sessionStorage.id))
-  },
-  editJobFlow (){
-    return !(sessionStorage.groups && sessionStorage.groups.includes('Admin')) && (state.jobInfo.job_id === undefined ||state.jobInfo.author  === parseInt(sessionStorage.id))
-  },
-  isAdmin (){
-    return sessionStorage.groups && sessionStorage.groups.includes('Admin')
   }
+  // editJobMsg (state){
+  //   // 新建用例或则编辑自己的用例 admin权限不被允许编辑
+  //   console.log(11111)
+  //   debugger
+  //   return !(sessionStorage.groups && sessionStorage.groups.includes('Admin')) && (state.jobInfo.job_id === undefined ||state.jobInfo.author  === parseInt(sessionStorage.id))
+  // },
+  // editJobFlow (state){
+  //   return !(sessionStorage.groups && sessionStorage.groups.includes('Admin')) && (state.jobInfo.job_id === undefined ||state.jobInfo.author  === parseInt(sessionStorage.id))
+  // },
+  // isAdmin (state){
+  //   return sessionStorage.groups && sessionStorage.groups.includes('Admin')
+  // }
 }
 
 export default {

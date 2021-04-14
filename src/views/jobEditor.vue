@@ -121,10 +121,19 @@ export default {
   },
   computed: {
     ...mapState('job', ['jobInfo', 'jobFlowInfo','outerDiagramModel', 'isValidated', 'duplicateId', 'duplicateLabel', 'normalData', 'config', 'jobLabelDuplicate', 'selectJobType']),
-    ...mapGetters('job', ['jobId', 'normalKey','editJobFlow','editJobMsg']),
+    ...mapGetters('job', ['jobId', 'normalKey']),
     ...mapState('files', ['resFiles']),
     ...mapGetters('files', ['resFilesName','dataURLtoFileFormat']),
-    ...mapState('device', ['countdown', 'deviceInfo'])
+    ...mapState('device', ['countdown', 'deviceInfo']),
+    editJobMsg() {
+      return !(sessionStorage.groups && sessionStorage.groups.includes('Admin')) && (this.jobInfo.job_id === undefined ||this.jobInfo.author  === parseInt(sessionStorage.id))
+    },
+    editJobFlow (){
+      return !(sessionStorage.groups && sessionStorage.groups.includes('Admin')) && (this.jobInfo.job_id === undefined ||this.jobInfo.author  === parseInt(sessionStorage.id))
+    },
+    isAdmin (){
+      return sessionStorage.groups && sessionStorage.groups.includes('Admin')
+    }
   },
   watch: {
     jobInfo: {

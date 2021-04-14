@@ -213,10 +213,19 @@ export default {
   computed: {
     ...mapState(['showDrawer', 'basicData']),
     ...mapState('job', ['jobInfo', 'duplicateId', 'duplicateLabel','jobFlowInfo','selectJobType']),
-    ...mapGetters('job', ['jobId','editJobMsg']),
+    ...mapGetters('job', ['jobId']),
     ...mapState('device', ['deviceInfo', 'preDeviceInfo', 'countdown']),
     isJobEditor () { // 是否在 JobEditor 页面
       return this.$route.name === 'jobEditor'
+    },
+    editJobMsg() {
+      return !(sessionStorage.groups && sessionStorage.groups.includes('Admin')) && (this.jobInfo.job_id === undefined ||this.jobInfo.author  === parseInt(sessionStorage.id))
+    },
+    editJobFlow (){
+      return !(sessionStorage.groups && sessionStorage.groups.includes('Admin')) && (this.jobInfo.job_id === undefined ||this.jobInfo.author  === parseInt(sessionStorage.id))
+    },
+    isAdmin (){
+      return sessionStorage.groups && sessionStorage.groups.includes('Admin')
     },
     manufacturer () {
       return this.basicData[this.basicData.manufacturer]
