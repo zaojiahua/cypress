@@ -152,7 +152,9 @@ export default {
       validateRules: { // 表单验证规则
         job_name: [{
           required: true, message: '用例名称不能为空', trigger: 'blur,change'
-        }],
+        }, {
+          type: 'string', max: 50, message: '用例名称不能超过50个字符', trigger: 'blur'
+      }],
         test_area: [{
           required: true, type: 'array', min: 1, message: '测试用途不能为空', trigger: 'change'
         }],
