@@ -50,7 +50,8 @@ import { getSelectedJobs } from 'api/coral/jobLibSvc'
 import { jobLibSvcURL } from '../config/index'
 import { serializer, jobSerializer } from 'lib/util/jobListSerializer'
 import jobListFilter from '../components/jobListFilter'
-import { getJobDetail, getJobList, updateJobMsg } from 'api/reef/request'
+import { getJobDetail, getJobList, updateJobMsg,copyJob } from 'api/reef/request'
+import { createJobLabel } from '../lib/tools'
 import { mapState } from 'vuex'
 
 export default {
@@ -60,6 +61,7 @@ export default {
   },
   data () {
     return {
+      copyJobName:'',
       pageSize: 10, // 每页条数
       dataCount: 0,
       lastPage: 0,
@@ -135,6 +137,28 @@ export default {
             localStorage.setItem('COMPJOBLIST:FILTER_JOB_TYPE', this.jobType)
             this.jobPageChange(1)
           }
+        },
+        {
+          title: '操作',
+          key: 'operation',
+          width: 150,
+          align: 'center',
+          render: (h, params) => {
+            return h('div', [
+              h('Icon', {
+                props: {
+                  type: 'ios-copy',
+                  size: '18'
+                },
+                on: {
+                  click: () => {
+                    event.stopPropagation();
+                    this.show(params.index)
+                  }
+                }
+              }),
+            ]);
+          }
         }
       ],
       jobData: util.validate(serializer.jobSerializer, []),
@@ -175,6 +199,40 @@ export default {
     }
   },
   methods: {
+    show (index) {
+      let self = this
+      this.$Modal.confirm({
+        render: (h) => {
+          return h('Input', {
+            props: {
+              value: self.jobData[index].job_name,
+              autofocus: true,
+              placeholder: '请输入新的用例名称'
+            },
+            on: {
+              input: (val) => {
+                self.copyJobName = val
+                console.log(self.copyJobName)
+              }
+            }
+          })
+        },
+        async onOk(){
+          let data = {
+            "job_id": self.jobData[index].id,
+            "job_name": self.copyJobName,
+            "job_label": createJobLabel(self),
+            "author_id": parseInt(sessionStorage.id)
+          }
+          try{
+            await copyJob(data)
+          } catch (e) {
+            self.$Message.error("复制失败")
+          }
+        }
+      }
+      )
+    },
     getFilteredJobs () {
       let filterUrlParam = `${this.jobState ? `&draft=${this.jobState === 'draft' ? 'True' : 'False'}` : ''}${this.jobType ? `&job_type=${this.jobType}` : ''}${this.filterUrlParam}`
       getJobList({
