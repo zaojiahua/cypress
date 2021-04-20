@@ -213,7 +213,6 @@ export default {
             on: {
               input: (val) => {
                 self.copyJobName = val
-                console.log(self.copyJobName)
               }
             }
           })
@@ -230,6 +229,7 @@ export default {
           } catch (e) {
             self.$Message.error("复制失败")
           }
+          self.getFilteredJobs()
         }
       }
       )
