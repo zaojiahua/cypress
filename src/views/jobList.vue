@@ -175,6 +175,7 @@ export default {
   },
   computed: {
     ...mapState(['refresh']),
+    ...mapState('job', ['editingJobId']),
     curPage: {
       get: function () {
         return this.$store.state.curPage
@@ -431,8 +432,14 @@ export default {
     // this.setTableHeight()
     // window.addEventListener('resize', this.setTableHeight)
   },
-  activated () {
+  async activated () {
     this.jobPageChange()
+
+    if (this.editingJobId !== null) {
+      await this.getJobInfo(this.editingJobId)
+      this.$store.commit('handleShowDrawer')
+    }
+    this.$store.commit('job/setEditingJobId', null)
   },
   beforeRouteLeave (to, from, next) {
     localStorage.setItem('joblist-management:DEFAULT_FILTER_CONFIG', this.jobState)

@@ -151,6 +151,7 @@ export default {
       if (!val && !this.autoSaveToggle) { // 保存动作结束时，且自动保存没有开启则跳转到jobList页面
         this.$router.push({ path: '/jobList' })
         this.$store.commit('setCurPage', 1)
+        this.$store.commit('job/setEditingJobId', this.jobId)
       }
     }
   },
@@ -497,7 +498,6 @@ export default {
                             })
                             return
                           }
-                          console.log("enter")
                           await this.clearData()
                           this.$Modal.remove()
                           break

@@ -14,10 +14,14 @@ let state = {
   normalData: null, // 双击normalBlock后获取到该数据, normalEditor界面会用到
   config: _.cloneDeep(CONST.JOB_DEFAULT_CONFIG),
   jobLabelDuplicate: 'duplicate',
+  editingJobId: null,//正在编辑的job ID
 
 }
 
 let mutations = {
+  setEditingJobId(state,data) {
+    state.editingJobId = data
+  },
   setJobFlowInfo(state,data){
     state.jobFlowInfo = data
   },
