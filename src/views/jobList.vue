@@ -222,13 +222,16 @@ export default {
   methods: {
     show (index) {
       let self = this
+      self.copyJobName = `${self.jobData[index].job_name}_copy`
       this.$Modal.confirm({
         render: (h) => {
           return h('Input', {
             props: {
-              value: self.jobData[index].job_name,
+              ref:'newJobName',
+              value: self.copyJobName,
               autofocus: true,
-              placeholder: '请输入新的用例名称'
+              placeholder: '请输入新的用例名称',
+              password: true
             },
             on: {
               input: (val) => {
@@ -244,10 +247,12 @@ export default {
             "job_label": createJobLabel(self),
             "author_id": parseInt(sessionStorage.id)
           }
+          console.log(data)
           try{
             await copyJob(data)
+            self.$Message.info("另存成功")
           } catch (e) {
-            self.$Message.error("复制失败")
+            self.$Message.error("另存失败")
           }
           self.getFilteredJobs()
         }
