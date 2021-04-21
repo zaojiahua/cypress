@@ -3,7 +3,7 @@ let state = {
   curFile: null,
   duplicatedFile: null,
   showResFileModal: false,
-  imgFormat:['jpg','png','jpeg'],
+  imgFormat:['jpg','png','jpeg','apk'],
   videoFormat:['mp4'],
   audioFormat:['mp3'],
 }
