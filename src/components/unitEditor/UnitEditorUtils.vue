@@ -13,14 +13,14 @@
         id='btn-confirm-area'
         v-show="(isJobResourceFile || isJobResourceFileWithDefaultValue) && this.curFile"
       >确定</Button>
-      <Button
-        size="small"
-        type="primary"
-        style="margin-right: 16px;"
-        @click="handleAbsoluteCoordinates(false)"
-        id="btn-get-coordinate"
-        v-show="isPicInput && this.curFile"
-      >获取坐标</Button>
+<!--      <Button-->
+<!--        size="small"-->
+<!--        type="primary"-->
+<!--        style="margin-right: 16px;"-->
+<!--        @click="handleAbsoluteCoordinates(false)"-->
+<!--        id="btn-get-coordinate"-->
+<!--        v-show="isPicInput && this.curFile"-->
+<!--      >获取坐标</Button>-->
       <Button
         size="small"
         type="primary"
