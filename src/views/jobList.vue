@@ -144,20 +144,37 @@ export default {
           width: 150,
           align: 'center',
           render: (h, params) => {
-            return h('div', [
-              h('Icon', {
-                props: {
-                  type: 'ios-copy',
-                  size: '18'
-                },
-                on: {
-                  click: () => {
-                    event.stopPropagation();
-                    this.show(params.index)
+            if (!this.isAdmin) {
+              return h('div', [
+                h('Icon', {
+                  props: {
+                    type: 'ios-copy',
+                    size: '18'
+                  },
+                  on: {
+                    click: () => {
+                      event.stopPropagation();
+                      this.show(params.index)
+                    }
                   }
-                }
-              }),
-            ]);
+                }),
+              ]);
+            }else {
+              return h('div', [
+                h('Icon', {
+                  props: {
+                    type: 'ios-copy-outline',
+                    size: '18'
+                  },
+                  on: {
+                    click: () => {
+                      event.stopPropagation();
+                    }
+                  }
+                }),
+              ]);
+            }
+
           }
         }
       ],
@@ -176,6 +193,9 @@ export default {
   computed: {
     ...mapState(['refresh']),
     ...mapState('job', ['editingJobId']),
+    isAdmin (){
+      return sessionStorage.groups && sessionStorage.groups.includes('Admin')
+    },
     curPage: {
       get: function () {
         return this.$store.state.curPage
