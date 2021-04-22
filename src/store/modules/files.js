@@ -3,9 +3,10 @@ let state = {
   curFile: null,
   duplicatedFile: null,
   showResFileModal: false,
-  imgFormat:['jpg','png','jpeg','apk'],
+  imgFormat:['jpg','png','jpeg'],
   videoFormat:['mp4'],
   audioFormat:['mp3'],
+  fileFormat:['apk'],
 }
 
 let mutations = {
