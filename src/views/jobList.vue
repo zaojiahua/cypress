@@ -231,7 +231,6 @@ export default {
               value: self.copyJobName,
               autofocus: true,
               placeholder: '请输入新的用例名称',
-              password: true
             },
             on: {
               input: (val) => {
@@ -247,7 +246,10 @@ export default {
             "job_label": createJobLabel(self),
             "author_id": parseInt(sessionStorage.id)
           }
-          console.log(data)
+          if (self.copyJobName.length >=50){
+            self.$Message.error("文件名过长")
+            return
+          }
           try{
             await copyJob(data)
             self.$Message.info("另存成功")
