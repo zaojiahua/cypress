@@ -327,9 +327,14 @@ export default {
     saveItemData () {
       if (!this.handleUnitData()) return
       if (!this.handleByProductsName()) return
-      if (this.willTouchFile && this.coordinates.length === 0 ){
+      if (this.isJobResourceFile){
+        if (this.willTouchFile && this.coordinates.length !== 0) {
+          this.saveFeaturePoint()
+        }
+        else{
           this.$Message.warning("请选取区域")
           return
+        }
       }else{
         this.saveFeaturePoint()
       }
