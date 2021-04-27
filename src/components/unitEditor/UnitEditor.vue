@@ -28,10 +28,10 @@
           </div>
         </template>
         <template #right>
-          <div  v-if="Object.keys(testOcrResponseData).length !== 0">
+          <div v-if="Object.keys(testOcrResponseData).length !== 0">
             <List border size="small">
               <Divider>识别的文字</Divider>
-              <ListItem v-for="(words,index) in testOcrResponseData.result">{{index+1}}: {{words.text}}</ListItem>
+              <ListItem v-for="(words,index) in testOcrResponseData.result">{{ index + 1 }}: {{ words.text }}</ListItem>
             </List>
           </div>
           <div v-else-if="Object.keys(testIconResponseData).length !== 0">
@@ -62,6 +62,7 @@
       </div>
     </div>
     <div slot="footer">
+      <Button @click="singleStepDebug">执行</Button>
       <Button @click="closeUnitEditor(false)">取消</Button>
       <Button @click="closeUnitEditor(true)" type="primary">保存</Button>
     </div>
@@ -85,23 +86,24 @@ import TestResult from "_c/unitEditor/TestResult";
 
 export default {
   name: 'UnitEditor',
-  components: {ItemList, RawUnit, ItemEditor, Utils,TestResult},
+  components: {ItemList, RawUnit, ItemEditor, Utils, TestResult},
   props: {
     showUnitEditor: Boolean
   },
-  data () {
+  data() {
     return {
       curShowUnitEditor: this.showUnitEditor,
       unitItems: [],
-      openTestResultModal:false,
-      testOcrResponseData:{},
-      testIconResponseData:{}
+      openTestResultModal: false,
+      testOcrResponseData: {},
+      testIconResponseData: {}
     }
   },
   computed: {
     ...mapState('unit', ['unitData']),
     ...mapState('files', ['curFile', 'resFiles']),
     ...mapState('device', ['deviceInfo']),
+    ...mapGetters('files', ['dataURLtoFileFormat']),
     hasIconTest() {
       let hasTestFunction = false
       for (let functionName of CONST.ICON_TEST_UNIT_LIST) {
@@ -115,7 +117,7 @@ export default {
       if (!this.unitData.unitMsg) return
       return ('ocrChoice' in this.unitData.unitMsg && 'referImgFile' in this.unitData.unitMsg.execCmdDict)
     },
-    hasIconPositionTest (){
+    hasIconPositionTest() {
       let hasTestFunction = false
       for (let functionName of CONST.ICON_POSITION_TEST_UNIT_LIST) {
         if (this.unitData.unitMsg && functionName === this.unitData.unitMsg.functionName) {
@@ -147,6 +149,42 @@ export default {
     }
   },
   methods: {
+    async singleStepDebug() {
+      if (!this.deviceInfo) {
+        this.$Message.error("未选取设备")
+        return
+      }
+      let unitData = this._.cloneDeep(this.unitData.unitMsg)
+      unitData.key = this.unitData.unitKey
+      unitData.jobUnitName = this.unitData.unitName
+      unitData.device_label = this.deviceInfo.device_label
+      let url = `http://${this.deviceInfo.cabinet.ip_address}:5000/eblock/unit/`
+      let data = new FormData()
+      data.append('data',JSON.stringify(unitData))
+      let resFiles = this._.cloneDeep(this.resFiles)
+      for (let i = 0; i < resFiles.length; i++) {
+        let { name, type, file } = resFiles[i]
+        if (name === 'FILES_NAME_CONFIG.json') continue // 移除老版本中遗留的文件，文件内容已经写入到start节点了
+        if (this.dataURLtoFileFormat.indexOf(type) !== -1) {
+          data.append('file', dataURLtoFile(file, name))
+        } else {
+          data.append('file', new File([file], name, { type }))
+        }
+      }
+
+      try {
+        let response = await axios.request({
+          url,
+          method: 'post',
+          data: data
+        })
+
+       console.log(response.data)
+        this.$Message.info("执行成功")
+      } catch (e) {
+        this.$Message.info("执行失败")
+      }
+    },
     closeUnitEditor(save) {
       this.unitItems = [...findComponentsDownward(this, 'UnitItem')]
       if (save) {
@@ -238,19 +276,19 @@ export default {
             method: 'post',
             data: data
           })
-          if (response.data.hasOwnProperty('error')){
+          if (response.data.hasOwnProperty('error')) {
             this.$Message.error(response.data.error)
-          }
-          else{
+          } else {
             this.testIconResponseData = response.data
-            this.openTestResultModal = true}
+            this.openTestResultModal = true
+          }
         } catch (e) {
 
           this.$Message.error(`请检查是否缺少选区文件 ${e}`)
         }
       }
     },
-    async sendOcrTestRequest () {
+    async sendOcrTestRequest() {
       if (this.validateRequireMessage()) {
         let data = new FormData()
         let resFiles = this._.cloneDeep(this.resFiles)
@@ -277,7 +315,7 @@ export default {
         }
       }
     },
-    closeTestModal (){
+    closeTestModal() {
       this.openTestResultModal = false
       this.testOcrResponseData = {}
       this.testIconResponseData = {}
