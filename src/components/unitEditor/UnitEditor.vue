@@ -281,6 +281,7 @@ export default {
           } else {
             this.testIconResponseData = response.data
             this.openTestResultModal = true
+            this.$Message.info(`首选识别点位权重: ${response.data.key_point_one} 备选识别点位权重: ${response.data.key_point_two}`)
           }
         } catch (e) {
 
