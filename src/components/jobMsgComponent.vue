@@ -78,7 +78,7 @@
         </Form>
       </TabPane>
       <TabPane v-if="!isJobEditor && selectJobType === 'norMalJob'" name="jobFlow" label="用例流程图信息">
-        <job-flow-component  ref="jobFlowCmp" v-show="!isJobEditor && selectJobType === 'norMalJob'" :job-id="jobInfo.job_id"></job-flow-component>
+        <job-flow-component  ref="jobFlowCmp" v-show="!isJobEditor && selectJobType === 'norMalJob'" :job-id="jobInfo.job_id" @validate="validateForm"></job-flow-component>
       </TabPane>
     </Tabs>
     <job-device-select></job-device-select>
@@ -278,6 +278,9 @@ export default {
       }
     },
     async enterJobEditor () { // 路由到jobEditor页面
+      // this.$refs.form.validate((valid) => {
+      // this.$store.commit('job/setIsValidated', valid)
+      // })
       setTimeout(() => { // 延时关闭右侧抽屉
         this.$store.commit('handleShowDrawer')
         this.closeDrawer()
@@ -439,6 +442,7 @@ export default {
     closeDrawer () { // 关闭右侧抽屉时检测当前 Job 是否通过验证，并更新 JobInfo
       if (this.isJobEditor) {
         this.$refs.form.validate((valid) => {
+          console.log(valid)
           this.$store.commit('job/setIsValidated', valid)
           if (!valid) {
             this.$Message.warning({
@@ -448,6 +452,11 @@ export default {
           }
         })
       }
+    },
+    validateForm() {
+      this.$refs.form.validate((valid) => {
+        this.$store.commit('job/setIsValidated', valid)
+      })
     },
     async checkConflict (formToggle, deviceToggle) { // 检测选中的设备和用例信息是否有冲突
       if (!this.jobInfo || !this.deviceInfo) return

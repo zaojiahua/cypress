@@ -182,6 +182,7 @@ export default {
 
     },
     enterFlow() { // 路由到jobEditor页面
+      this.$emit('validate')
       setTimeout(() => { // 延时关闭右侧抽屉
         this.$store.commit('handleShowDrawer')
       }, 800)

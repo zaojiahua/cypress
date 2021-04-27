@@ -314,7 +314,7 @@ export default {
     },
     async onRowClick (curData, index) { // 单击表格某一行
       await this.getJobInfo(curData.id)
-      this.$store.commit('handleShowDrawer')
+      this.$store.commit('handleShowDrawer',true)
     },
     selectedJobsChange (selection) {
       selection.forEach((value) => {
@@ -464,7 +464,7 @@ export default {
 
     if (this.editingJobId !== null) {
       await this.getJobInfo(this.editingJobId)
-      this.$store.commit('handleShowDrawer')
+      this.$store.commit('handleShowDrawer',true)
     }
     this.$store.commit('job/setEditingJobId', null)
   },

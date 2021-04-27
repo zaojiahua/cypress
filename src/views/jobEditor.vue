@@ -4,7 +4,7 @@
       <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.job_name" clearable class="job-name" placeholder="请输入JOB名称" size="large" />
       <div class="child-m-right--1 flex-row">
         <div class="child-m-right--1 flex-row">
-          <Button type="primary" @click="$store.commit('handleShowDrawer')" size="large" style="margin-right: 10px;">用例详情</Button>
+          <Button type="primary" @click="$store.commit('handleShowDrawer',true)" size="large" style="margin-right: 10px;">用例详情</Button>
           <Button v-if="editJobFlow" type="info" ghost size="large" @click="viewResFile" style="margin-right: 10px;">查看依赖文件</Button>
 <!--          <Button v-if="editJobFlow" type="info" ghost size="large" :disabled="!duplicateId" @click="duplicateTipModal = true" style="margin-right: 10px;">使用副本</Button>-->
           <Modal
@@ -245,10 +245,11 @@ export default {
     },
     _jobMsgRules () { // 右侧抽屉中的表单信息是否通过校验
       let flag = false
+      // console.log(this.$store.state.job.isValidated)
       if (this.$store.state.job.isValidated) {
         flag = true
       } else { // 否，弹出右侧抽屉
-        this.$store.commit('handleShowDrawer')
+        this.$store.commit('handleShowDrawer',true)
       }
       return flag
     },

@@ -37,7 +37,7 @@
 
               setTimeout(() => {
                 if (!this.isValidated) {
-                  this.$store.commit('handleShowDrawer')
+                  this.$store.commit('handleShowDrawer',true)
                 }
               }, 600)
 
