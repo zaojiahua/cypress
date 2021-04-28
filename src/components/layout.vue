@@ -179,6 +179,10 @@ export default {
     }
   },
   mounted () {
+    if (localStorage.getItem('device-management:DEFAULT_PAGE_SIZE') === undefined ||
+      isNaN(parseInt(localStorage.getItem('device-management:DEFAULT_PAGE_SIZE'))) ){
+        localStorage.setItem('device-management:DEFAULT_PAGE_SIZE', 20)
+    }
     this.$Message.config({
       duration: 3
     })
