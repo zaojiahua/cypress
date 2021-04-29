@@ -62,7 +62,7 @@
       </div>
     </div>
     <div slot="footer">
-      <Button @click="singleStepDebug">执行</Button>
+      <Button :disabled="unitData.unitType === 'IMGTOOL'" @click="singleStepDebug">执行</Button>
       <Button @click="closeUnitEditor(false)">取消</Button>
       <Button @click="closeUnitEditor(true)" type="primary">保存</Button>
     </div>
@@ -186,6 +186,7 @@ export default {
       }
     },
     closeUnitEditor(save) {
+      console.log(this.unitData.unitType)
       this.unitItems = [...findComponentsDownward(this, 'UnitItem')]
       if (save) {
         this.$emit('handleUnitColor', this.checkWeatherCompleted()) // 检查当前unit是否编辑完成, 以决定unit块的颜色
