@@ -160,15 +160,15 @@ export default {
       unitData.device_label = this.deviceInfo.device_label
       let url = `http://${this.deviceInfo.cabinet.ip_address}:5000/eblock/unit/`
       let data = new FormData()
-      data.append('data',JSON.stringify(unitData))
+      data.append('data', JSON.stringify(unitData))
       let resFiles = this._.cloneDeep(this.resFiles)
       for (let i = 0; i < resFiles.length; i++) {
-        let { name, type, file } = resFiles[i]
+        let {name, type, file} = resFiles[i]
         if (name === 'FILES_NAME_CONFIG.json') continue // 移除老版本中遗留的文件，文件内容已经写入到start节点了
         if (this.dataURLtoFileFormat.indexOf(type) !== -1) {
           data.append('file', dataURLtoFile(file, name))
         } else {
-          data.append('file', new File([file], name, { type }))
+          data.append('file', new File([file], name, {type}))
         }
       }
 
@@ -179,7 +179,7 @@ export default {
           data: data
         })
 
-       console.log(response.data)
+        console.log(response.data)
         this.$Message.info("执行成功")
       } catch (e) {
         this.$Message.info("执行失败")
@@ -282,7 +282,10 @@ export default {
           } else {
             this.testIconResponseData = response.data
             this.openTestResultModal = true
-            this.$Message.info(`首选识别点位权重: ${response.data.key_point_one} 备选识别点位权重: ${response.data.key_point_two}`)
+            this.$Message.info({
+              content: `首选识别点位权重: ${response.data.key_point_one} 备选识别点位权重: ${response.data.key_point_two}`,
+              duration: 5
+            })
           }
         } catch (e) {
 
