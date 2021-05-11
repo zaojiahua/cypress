@@ -229,6 +229,9 @@ export default {
       if (area) { // item 有area 就展示选中区域
         this.setCoordinateAndImgRecRate(area)
         this.addAreas()
+      }else {
+        // 新选取默认初始化识别率
+        this.$store.commit('img/setImgRecRate', 0.99)
       }
       if (this.isPicInput){
         this.parseSelectPoint()
