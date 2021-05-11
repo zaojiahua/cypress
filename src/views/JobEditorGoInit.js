@@ -371,6 +371,7 @@ export function innerDiagramInit (context) {
   const unitTemplate = unitNodeTemplate(CONST.COLORS.UNIT)
   unitTemplate.doubleClick = function (e, node) {
     if (e.diagram instanceof go.Palette) return
+    context.$store.commit('item/handleShowItemEditor', false) // 关闭itemEditor
     context.showUnitEditor = true
     let { key, text, unitMsg, unitMsg: { execModName } } = context._.cloneDeep(node.data)
     let { execCmdDict: { execCmdList: target } } = unitMsg
