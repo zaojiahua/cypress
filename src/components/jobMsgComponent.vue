@@ -266,7 +266,11 @@ export default {
     },
     curJobType (val) { // 没有就是undefined
       this.$set(this.jobInfo, 'job_type', val[0])
-      this.$set(this.jobInfo, 'job_second_type', val[1])
+      if (val[1] === undefined) {
+        this.$set(this.jobInfo, 'job_second_type', null)
+      } else {
+        this.$set(this.jobInfo, 'job_second_type', val[1])
+      }
     }
   },
   methods: {
