@@ -192,5 +192,7 @@ export default {
   ],
   ICON_POSITION_TEST_UNIT_LIST:[
     'smart_icon_point_crop','smart_icon_point','smart_icon_long_press','end_point_with_icon','start_point_with_point'
-  ]
+  ],
+  ICON_POSITION_FIX_TEST_UNIT_LIST:[
+    'smart_icon_point_crop_template',"start_point_with_point_template"]
 }

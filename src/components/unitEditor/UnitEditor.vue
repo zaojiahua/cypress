@@ -57,8 +57,9 @@
       <div class="pane">
         <Utils></Utils>
         <Button type="primary" v-show="hasIconTest" @click="sendIconTestRequest">测试图标</Button>
-        <Button type="primary" v-show="hasIconPositionTest" @click="sendIconPositionTestRequest">测试图标位置</Button>
+        <Button type="primary" v-show="hasIconPositionTest" @click="sendIconPositionTestRequest('icon_test_position')">测试图标位置</Button>
         <Button type="primary" v-show="hasOcrTest" @click="sendOcrTestRequest">测试文字</Button>
+        <Button type="primary" v-show="hasIconPositionFixTest" @click="sendIconPositionTestRequest('icon_test_position_fixed')">测试图标位置</Button>
       </div>
     </div>
     <div slot="footer">
@@ -120,6 +121,15 @@ export default {
     hasIconPositionTest() {
       let hasTestFunction = false
       for (let functionName of CONST.ICON_POSITION_TEST_UNIT_LIST) {
+        if (this.unitData.unitMsg && functionName === this.unitData.unitMsg.functionName) {
+          hasTestFunction = true
+        }
+      }
+      return (this.checkWeatherCompleted() && hasTestFunction)
+    },
+    hasIconPositionFixTest() {
+      let hasTestFunction = false
+      for (let functionName of CONST.ICON_POSITION_FIX_TEST_UNIT_LIST) {
         if (this.unitData.unitMsg && functionName === this.unitData.unitMsg.functionName) {
           hasTestFunction = true
         }
@@ -267,10 +277,10 @@ export default {
         }
       }
     },
-    async sendIconPositionTestRequest() {
+    async sendIconPositionTestRequest(functionName) {
       if (this.validateRequireMessage()) {
         let data = this.prepareData();
-        let url = `http://${this.deviceInfo.cabinet.ip_address}:5000/basic/icon_test_position/`
+        let url = `http://${this.deviceInfo.cabinet.ip_address}:5000/basic/${functionName}/`
         try {
           let response = await axios.request({
             url,
@@ -282,10 +292,13 @@ export default {
           } else {
             this.testIconResponseData = response.data
             this.openTestResultModal = true
-            this.$Message.info({
-              content: `首选识别点位权重: ${response.data.key_point_one} 备选识别点位权重: ${response.data.key_point_two}`,
-              duration: 5
-            })
+            if (functionName === "icon_test_position"){
+              let content = `首选识别点位权重: ${response.data.key_point_one} 备选识别点位权重: ${response.data.key_point_two}`
+              this.$Message.info({
+                content,
+                duration: 5
+              })
+            }
           }
         } catch (e) {
 
