@@ -200,7 +200,11 @@ export default {
             children: [
               {
                 value: 'TimeJob',
-                label: '启动时间'
+                label: '响应时间'
+              },
+              {
+                value: 'SmoothJob',
+                label: '流畅度'
               }
             ]
           }
