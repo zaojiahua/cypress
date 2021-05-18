@@ -188,11 +188,14 @@ export default {
     unitMsg: null
   },
   ICON_TEST_UNIT_LIST: [
-    'has_icon_area_selected', 'has_icon'
+    'has_icon_area_selected', 'has_icon',
   ],
   ICON_POSITION_TEST_UNIT_LIST:[
     'smart_icon_point_crop','smart_icon_point','smart_icon_long_press','end_point_with_icon','start_point_with_point'
   ],
   ICON_POSITION_FIX_TEST_UNIT_LIST:[
-    'smart_icon_point_crop_template',"start_point_with_point_template"]
+    'smart_icon_point_crop_template',"start_point_with_point_template"],
+  ICON_TEST_UNIT_LIST_FIXED: [
+    "end_point_with_icon_template_match","has_icon_template_match"
+  ],
 }

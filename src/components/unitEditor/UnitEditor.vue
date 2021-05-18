@@ -56,10 +56,11 @@
       </div>
       <div class="pane">
         <Utils></Utils>
-        <Button type="primary" v-show="hasIconTest" @click="sendIconTestRequest">测试图标</Button>
+        <Button type="primary" v-show="hasIconTest" @click="sendIconTestRequest('icon_test')">测试图标</Button>
         <Button type="primary" v-show="hasIconPositionTest" @click="sendIconPositionTestRequest('icon_test_position')">测试图标位置</Button>
         <Button type="primary" v-show="hasOcrTest" @click="sendOcrTestRequest">测试文字</Button>
         <Button type="primary" v-show="hasIconPositionFixTest" @click="sendIconPositionTestRequest('icon_test_position_fixed')">测试图标位置</Button>
+        <Button type="primary" v-show="hasIconTestFixTest" @click="sendIconTestRequest('icon_test_fixed')">测试图标</Button>
       </div>
     </div>
     <div slot="footer">
@@ -108,6 +109,15 @@ export default {
     hasIconTest() {
       let hasTestFunction = false
       for (let functionName of CONST.ICON_TEST_UNIT_LIST) {
+        if (this.unitData.unitMsg && functionName === this.unitData.unitMsg.functionName) {
+          hasTestFunction = true
+        }
+      }
+      return (this.checkWeatherCompleted && hasTestFunction)
+    },
+    hasIconTestFixTest(){
+      let hasTestFunction = false
+      for (let functionName of CONST.ICON_TEST_UNIT_LIST_FIXED) {
         if (this.unitData.unitMsg && functionName === this.unitData.unitMsg.functionName) {
           hasTestFunction = true
         }
@@ -257,10 +267,10 @@ export default {
       data.append('inputImgFile', dataURLtoFile(this.curFile.file, this.curFile.name))
       return data;
     },
-    async sendIconTestRequest() {
+    async sendIconTestRequest(functionName) {
       if (this.validateRequireMessage()) {
         let data = this.prepareData();
-        let url = `http://${this.deviceInfo.cabinet.ip_address}:5000/basic/icon_test/`
+        let url = `http://${this.deviceInfo.cabinet.ip_address}:5000/basic/${functionName}/`
         try {
           let response = await axios.request({
             url,
