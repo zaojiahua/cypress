@@ -1,6 +1,6 @@
 import axios from '../index'
 import url from './url'
-import { baseURL } from '../../config'
+import {baseURL} from '../../config'
 
 // login
 const login = (username, password) => {
@@ -107,7 +107,6 @@ const getJobId = (jobLabel) => {
 }
 
 
-
 const getJobList = (data) => {
   // console.log(url.job(data))
   return axios.request({
@@ -202,7 +201,7 @@ const createNewUnitTemplate = (data) => {
 }
 
 
-const updateFlowWithFlowId = (id,data) => {
+const updateFlowWithFlowId = (id, data) => {
   return axios.request({
     method: 'patch',
     url: url.jobFlowWithFlowId(id),
@@ -210,10 +209,10 @@ const updateFlowWithFlowId = (id,data) => {
   })
 }
 
-const updateFlowOrder = (jobId,flowList) => {
+const updateFlowOrder = (jobId, flowList) => {
   let data = {
-    job:jobId,
-    flows:flowList
+    job: jobId,
+    flows: flowList
   }
   return axios.request({
     method: 'post',
@@ -241,22 +240,22 @@ const deleteFlowWithFlowId = (id) => {
   })
 }
 
-const getFlow = (data={}) => {
+const getFlow = (data = {}) => {
   return axios.request({
     method: 'get',
     url: url.createFlow(),
-    params:data
+    params: data
   })
 }
 
-const copyFlowWithFlowId = (data={}) => {
+const copyFlowWithFlowId = (data = {}) => {
   return axios.request({
     method: 'post',
     url: url.copyFlow(),
     data
   })
 }
-const copyJob = (data={}) => {
+const copyJob = (data = {}) => {
   return axios.request({
     method: 'post',
     url: url.copyJob(),

@@ -15,8 +15,8 @@ export default {
     UNFINISHED: '#F76132',
     UNIT: '#338FF0',
     GROUP: '#50A5F4',
-    RESULT: '#3AFFF3',
-    STAR: '#ffff00'
+    RESULT: '#3AFFF3', // 作为最终结果的unit
+    STAR: '#ffff00' // 会产生结果对的unit
   },
   WILL_TOUCH_FILE: new Set([
     'jobResourceFile',

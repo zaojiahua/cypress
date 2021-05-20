@@ -200,9 +200,16 @@ export default {
         })
 
         console.log(response.data)
-        this.$Message.info("执行成功")
+        result
+        if (response.data.status.result === 0) {
+          this.$Message.info("执行成功")
+        } else if (response.data.status.result === 1) {
+          this.$Message.info("执行失败")
+        }else {
+          this.$Message.info("执行异常")
+        }
       } catch (e) {
-        this.$Message.info("执行失败")
+        this.$Message.info("执行异常")
       }
     },
     closeUnitEditor(save) {
