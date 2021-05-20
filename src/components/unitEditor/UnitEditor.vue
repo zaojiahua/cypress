@@ -198,10 +198,9 @@ export default {
           method: 'post',
           data: data
         })
-
-        if (response.data.status.result === 0) {
+        if (response.data.result === 0) {
           this.$Message.info("执行成功")
-        } else if (response.data.status.result === 1) {
+        } else if (response.data.result === 1) {
           this.$Message.info("执行失败")
         }else {
           this.$Message.info("执行异常")
