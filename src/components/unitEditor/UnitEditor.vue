@@ -199,8 +199,6 @@ export default {
           data: data
         })
 
-        console.log(response.data)
-        result
         if (response.data.status.result === 0) {
           this.$Message.info("执行成功")
         } else if (response.data.status.result === 1) {
