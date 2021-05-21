@@ -203,10 +203,12 @@ export default {
         } else if (response.data.result === 1) {
           this.$Message.info("执行失败")
         }else {
-          this.$Message.info("执行异常")
+         this.$Message.info("执行异常")
         }
       } catch (e) {
-        this.$Message.info("执行异常")
+        if (e.response.data.error_code){
+          this.$Message.warning(`执行异常 code:${e.response.data.error_code} detail:${e.response.data.description}`)
+        }else this.$Message.info("执行异常")
       }
     },
     closeUnitEditor(save) {
