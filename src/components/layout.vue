@@ -3,7 +3,7 @@
     <Header class="header">
       <Menu mode="horizontal" theme="dark" class="flex-row">
         <div class="logo flex-row">
-          <b>ANGELREEF</b><span>®</span>
+          <b>TMach</b><span>®</span>
         </div>
         <div class="flex-row">
           <div class="countdown" v-if="countdown">
@@ -201,7 +201,7 @@ export default {
     .logo {
       position: relative;
       font-size: 1rem;
-      width: 12.5em;
+      width: 7em;
       height: 4em;
       padding: 0 0.8em;
       color: @logoColor;
