@@ -28,45 +28,47 @@
     </p>
 
     <SlickList :lockToContainerEdges="true" :useDragHandle="true" class="list" lockAxis="y" v-model="jobFlowList">
-      <SlickItem class="list-item" v-for="(item, index) in jobFlowList" :index="index" :key="index">
-        <div class="flow-class">{{item.name}}</div>
-        <div v-show="edit" style="width: 20%; text-align: right">
-          <Icon v-show="index!==0" type="md-arrow-up" :size="iconSize" @click="zIndexBottom(index)"/>
-          <Icon v-show="jobFlowList.length !== 1" type="ios-trash" :size="iconSize" @click="deleteJobFlow(index)"/>
-          <Icon v-handle type="ios-menu" :size="iconSize"/>
+      <SlickItem  v-for="(item, index) in jobFlowList" :index="index" :key="index">
+        <div :class="['list-item',{'highLight':show&&highlightIndex===index},{'normal':!show}]" @mouseenter="showHighLight(index)" @mouseleave="cancelHighLight">
+          <div class="flow-class">{{item.name}}</div>
+          <div v-show="edit" style="width: 20%; text-align: right">
+            <Icon v-show="index!==0" type="md-arrow-up" :size="iconSize" @click="zIndexBottom(index)"/>
+            <Icon v-show="jobFlowList.length !== 1" type="ios-trash" :size="iconSize" @click="deleteJobFlow(index)"/>
+            <Icon v-handle type="ios-menu" :size="iconSize"/>
+          </div>
+          <div v-show="!edit" style="width: 20%; text-align: right">
+            <Icon v-show="!isAdmin" type="ios-copy" :size="iconSize" @click="copyFlow(item)"/>
+            <Icon type="ios-create" :size="iconSize" @click="showFlowMsg(item)"/>
+          </div>
+  <!--        <Dropdown v-show="!edit" triggexr="click" @on-click="flowHandleMenu" style=" width: 20%; text-align: right">-->
+  <!--          <Icon :size="iconSize" type="md-more" @click="handleOpen(item)"/>-->
+  <!--          <DropdownMenu slot="list">-->
+  <!--            <DropdownItem name="edit">编辑</DropdownItem>-->
+  <!--            <DropdownItem name="copy">复制</DropdownItem>-->
+  <!--          </DropdownMenu>-->
+  <!--        </Dropdown>-->
+          <Modal
+            v-model="flowModal"
+            :mask-closable="false"
+            :closable="false"
+            title="流程图信息"
+            ok-text="查看"
+            @on-ok="enterFlow">
+            <Form ref="form"
+              :model="currentFlow"
+              width="30"
+              :label-width="90">
+              <FormItem>
+                <b slot="label">名称:</b>
+                <Input v-model="currentFlow.name" disabled class="disabled-input" :autosize="{minRows: 1,maxRows: 4}"></Input>
+              </FormItem>
+              <FormItem>
+                <b slot="label">描述:</b>
+                <Input v-model="currentFlow.description" disabled class="disabled-input" :autosize="{minRows: 1,maxRows: 4}"></Input>
+              </FormItem>
+            </Form>
+          </Modal>
         </div>
-        <div v-show="!edit" style="width: 20%; text-align: right">
-          <Icon v-show="!isAdmin" type="ios-copy" :size="iconSize" @click="copyFlow(item)"/>
-          <Icon type="ios-create" :size="iconSize" @click="showFlowMsg(item)"/>
-        </div>
-<!--        <Dropdown v-show="!edit" triggexr="click" @on-click="flowHandleMenu" style=" width: 20%; text-align: right">-->
-<!--          <Icon :size="iconSize" type="md-more" @click="handleOpen(item)"/>-->
-<!--          <DropdownMenu slot="list">-->
-<!--            <DropdownItem name="edit">编辑</DropdownItem>-->
-<!--            <DropdownItem name="copy">复制</DropdownItem>-->
-<!--          </DropdownMenu>-->
-<!--        </Dropdown>-->
-        <Modal
-          v-model="flowModal"
-          :mask-closable="false"
-          :closable="false"
-          title="流程图信息"
-          ok-text="查看"
-          @on-ok="enterFlow">
-          <Form ref="form"
-            :model="currentFlow"
-            width="30"
-            :label-width="90">
-            <FormItem>
-              <b slot="label">名称:</b>
-              <Input v-model="currentFlow.name" disabled class="disabled-input" :autosize="{minRows: 1,maxRows: 4}"></Input>
-            </FormItem>
-            <FormItem>
-              <b slot="label">描述:</b>
-              <Input v-model="currentFlow.description" disabled class="disabled-input" :autosize="{minRows: 1,maxRows: 4}"></Input>
-            </FormItem>
-          </Form>
-        </Modal>
       </SlickItem>
     </SlickList>
   </Card>
@@ -102,7 +104,9 @@ export default {
       flowModal:false,
       jobFlowList:[],
       currentFlow:{}, //选中的flow
-      removeFlowList: []
+      removeFlowList: [],
+      show:false,
+      highlightIndex:null,
     }
   },
   directives: {
@@ -138,6 +142,14 @@ export default {
       }else {
         this.jobFlowList = []
       }
+    },
+    showHighLight(index) {
+      this.show = true
+      this.highlightIndex = index
+    },
+    cancelHighLight() {
+      this.show = false
+      this.highlightIndex = null
     },
     newFlow() {
       this.$Modal.confirm({
@@ -298,6 +310,12 @@ h3,h4{
   user-select: none;
   color: #333;
   font-weight: 400;
+}
+.highLight{
+  background-color: #f1f3f5;
+}
+.normal{
+  background-color: #fff;
 }
 .flow-class {
   width: 80%;

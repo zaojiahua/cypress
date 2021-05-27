@@ -202,7 +202,7 @@ export default {
           this.$Message.info("执行成功")
         } else if (response.data.result === 1) {
           this.$Message.info("执行失败")
-        }else {
+        } else {
           this.$Message.info("执行异常")
         }
       } catch (e) {
