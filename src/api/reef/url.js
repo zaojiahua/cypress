@@ -40,6 +40,7 @@ export default {
   releaseDevice: () => `${coralPrefix}release_occupy_device/`,
   job: (data) => `${reefPrefix}job/?fields=${joinFilter(jobFilter)}&job_deleted=False&limit=${data.pageSize}&offset=${data.offset}&ordering=-updated_time${data.filterUrlParam}`,
   jobSingleId: (job_label) => `${reefPrefix}job/?fields=id&job_label=${job_label}`,
+  jobMsgByParams: () => `${reefPrefix}job/`,
   jobFlowByJobLabel: (job_label) => `${reefPrefix}job/?fields=${joinFilter(jobFlowFilter)}&job_label=${job_label}`,
   jobDetail: (id) => `${reefPrefix}job/${id}/?fields=${joinFilter(jobDetailFilter)}`,
   jobFlow: (id) => `${reefPrefix}job/${id}/?fields=${joinFilter(jobFlowFilter)}`,

@@ -4,7 +4,7 @@ import { startValidation } from '../core/validation/operationValidation/job'
 import { commonValidation } from '../core/validation/common'
 import { unitListValidation } from '../core/validation/operationValidation/block'
 
-import { getBlockFlowDict4Font } from '../api/reef/request'
+import {getBlockFlowDict4Font, getJobMsgByParams} from '../api/reef/request'
 
 import {
   MAKE,
@@ -495,6 +495,19 @@ export function setOuterDiagramData (context,job_flow = null) { // 打开jobEdit
           })
           context.outerDiagram.model = go.Model.fromJson(data)
           // 适配老版本，老版本可能不存在该字段，新版本都存在，config需要设置默认值{}
+          let innerJobs = context.outerDiagram.findNodesByExample({ 'category': 'Job' })
+          innerJobs.each(node => {
+            getJobMsgByParams({
+              job_label: node.data.jobLabel,
+              fields: 'job_name'
+            }).then(({ status, data: { jobs } }) => {
+              if (jobs.length !== 0) {
+                console.log(jobs[0].job_name)
+                context.outerDiagram.model.setDataProperty(node.data, 'text', "1")
+              }
+            })
+          })
+
           let { data: start, data: { config: config = {} } } = context.outerDiagram.findNodeForKey(-1)
           // 之前的结果norBlock  finalResultKey: 'norBlockKey' Number ,现在更改成结果unit finalResultKey:norBlockKey,UnitKey String, 但要适配原来的更改
           let newConfig = adapter(config, context)

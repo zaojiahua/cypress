@@ -106,6 +106,14 @@ const getJobId = (jobLabel) => {
   })
 }
 
+// 根据指定条件job获取指定字段
+const getJobMsgByParams = (_params) => {
+  return axios.request({
+    params: _params,
+    url: url.jobMsgByParams()
+  })
+}
+
 
 const getJobList = (data) => {
   // console.log(url.job(data))
@@ -316,5 +324,6 @@ export {
   updateFlowOrder,
   getFlow,
   copyFlowWithFlowId,
-  copyJob
+  copyJob,
+  getJobMsgByParams
 }
