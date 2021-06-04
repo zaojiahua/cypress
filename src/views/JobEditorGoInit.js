@@ -502,8 +502,7 @@ export function setOuterDiagramData (context,job_flow = null) { // 打开jobEdit
               fields: 'job_name'
             }).then(({ status, data: { jobs } }) => {
               if (jobs.length !== 0) {
-                console.log(jobs[0].job_name)
-                context.outerDiagram.model.setDataProperty(node.data, 'text', "1")
+                context.outerDiagram.model.setDataProperty(node.data, 'text', jobs[0].job_name)
               }
             })
           })
