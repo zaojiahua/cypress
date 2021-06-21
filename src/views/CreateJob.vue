@@ -32,6 +32,7 @@
               this.$router.push({ name: 'jobEditor' })
               this.$store.commit('job/setJobFlowInfo', {order:0})
               // 清空失效的数据
+              this.$store.commit('job/handleJobInfo', { action: 'clearJobInfo' })
               this.$store.commit('job/setOuterDiagramModel', null)
               this.$store.commit('files/handleResFiles', { action: 'clearResFiles' })
 

@@ -670,7 +670,7 @@ export default {
           Promise.all(filesData.map(item => getJobResFile(item.file))).then(res => {
             res.forEach((file, index) => {
               let reader = new FileReader()
-              if (file.data.type.startsWith('image') || file.data.type.startsWith('audio')) { // 图片则存放 dataURL
+              if (file.data.type.startsWith('image') || file.data.type.startsWith('audio') || file.data.type.startsWith('video')) { // 图片则存放 dataURL
                 reader.readAsDataURL(file.data)
               } else { // json 则存放 text
                 reader.readAsText(file.data)
@@ -806,7 +806,7 @@ export default {
     if (!this.resFiles.length) this.handleResFile(this.jobFlowInfo.id)
 
     this.jobController = document.getElementById('job-controller')
-    //  todo：先屏蔽副本的代码，之后再做
+    //  todo：先屏蔽副本的代码（自动保存），之后再做
     this.autoSaveToggle = this.editJobFlow && this.editJobMsg && false // 可以被编辑则可以自动保存
     if (this.autoSaveToggle){
       let timer = setInterval(async () => { // 设置自动保存的自动循环

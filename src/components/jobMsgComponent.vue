@@ -195,11 +195,11 @@ export default {
             children: []
           },
           {
-            value: 'PerfJob',
+            value: 'PerfJob', // job_type
             label: '性能测试',
             children: [
               {
-                value: 'TimeJob',
+                value: 'TimeJob', // job_second_type
                 label: '响应时间'
               },
               {

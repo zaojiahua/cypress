@@ -48,6 +48,10 @@ const serializer = {
     test_area: [{
       id: 'number',
       description: 'string'
+    }],
+    phone_model: [{
+      id: 'number',
+      phone_model_name: 'string'
     }]
   }],
   manufacturerSerializer: {

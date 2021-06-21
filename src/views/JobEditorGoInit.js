@@ -1,8 +1,8 @@
 import go from 'gojs'
 import CONST from 'constant/constant'
-import { startValidation } from '../core/validation/operationValidation/job'
-import { commonValidation } from '../core/validation/common'
-import { unitListValidation } from '../core/validation/operationValidation/block'
+import {startValidation} from '../core/validation/operationValidation/job'
+import {commonValidation} from '../core/validation/common'
+import {unitListValidation} from '../core/validation/operationValidation/block'
 
 import {getBlockFlowDict4Font, getJobMsgByParams} from '../api/reef/request'
 
@@ -159,7 +159,8 @@ import {
 //   })
 // }
 
-function outerDiagramInit (context) {
+function outerDiagramInit(context) {
+  // 初始化 Diagram(画布)， 项目中 jobEditor下第一层流程图展示区域画布
   context.outerDiagram = MAKE(go.Diagram, 'outer-diagram', {
     initialContentAlignment: go.Spot.Center,
     allowDrop: true,
@@ -181,10 +182,10 @@ function outerDiagramInit (context) {
     'commandHandler.canCopySelection': canCopySelect
   })
 
-  function canCopySelect () {
+  function canCopySelect() {
     let flag = true
-    context.outerDiagram.selection.each(node =>{
-      let { data: { category } } = node
+    context.outerDiagram.selection.each(node => {
+      let {data: {category}} = node
       if (category === 'Start') {
         flag = false
       }
@@ -196,6 +197,7 @@ function outerDiagramInit (context) {
     return flag
   }
 
+  // 定义（声明）一个node Template 模版
   const startTemplate = startNodeTemplate(CONST.COLORS.START)
   startTemplate.linkValidation = startValidation
 
@@ -251,19 +253,19 @@ function outerDiagramInit (context) {
 
   normalBlockTemplate.doubleClick = function (e, node) {
     if (e.diagram instanceof go.Palette) return
-    let { data } = context._.cloneDeep(node)
-    context.$store.commit('job/handleNormalData', { action: 'set', data })
+    let {data} = context._.cloneDeep(node)
+    context.$store.commit('job/handleNormalData', {action: 'set', data})
     context.outerDiagram.div.firstElementChild.blur()  // 失去焦点，防止粘贴错误
     context.openNormalEditor = true
   }
 
-  function deleteNode () { // 删除节点时同步更新配置信息
-    return context.outerDiagram.selection.all(function ({ data }) {
+  function deleteNode() { // 删除节点时同步更新配置信息
+    return context.outerDiagram.selection.all(function ({data}) {
       if (data.category === 'normalBlock') {
         if (data.star === CONST.COLORS.RESULT) {
           context.$store.commit('job/handleConfig', {
             action: 'setConfig',
-            data: { finalResultKey: null }
+            data: {finalResultKey: null}
           })
         }
       }
@@ -286,7 +288,7 @@ function outerDiagramInit (context) {
     context.jobController.style.left = `${e.event.x}px`
     context.jobController.style.display = 'block'
   }
-
+  // Diagram下可以展示的node 节点的 Template 模版 （向 Diagram 注册 node Template）
   context.outerDiagram.nodeTemplateMap.add('normalBlock', normalBlockTemplate)
   context.outerDiagram.nodeTemplateMap.add('switchBlock', switchBlockTemplate)
   context.outerDiagram.nodeTemplateMap.add('Start', startTemplate)
@@ -294,58 +296,58 @@ function outerDiagramInit (context) {
   context.outerDiagram.nodeTemplateMap.add('Job', jobBlockTemplate)
 }
 
-function outerPaletteInit (context) {
+function outerPaletteInit(context) {
   context.outerPalette = MAKE(
     go.Palette, 'outer-palette', {
       scrollsPageOnFocus: false,
       nodeTemplateMap: context.outerDiagram.nodeTemplateMap,
-      layout: MAKE(go.GridLayout, { wrappingColumn: 1, alignment: go.GridLayout.Location })
+      layout: MAKE(go.GridLayout, {wrappingColumn: 1, alignment: go.GridLayout.Location})
     }
   )
   context.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL)
 }
 
-export function innerDiagramInit (context) {
+export function innerDiagramInit(context) {
   context.innerDiagram = MAKE(go.Diagram, 'inner-diagram', {
     initialContentAlignment: go.Spot.Center,
     allowDrop: true,
     linkTemplate: linkTemplateStyle(),
-    layout: MAKE(go.LayeredDigraphLayout, { direction: 0, layerSpacing: 40, columnSpacing: 30, setsPortSpots: false }),
+    layout: MAKE(go.LayeredDigraphLayout, {direction: 0, layerSpacing: 40, columnSpacing: 30, setsPortSpots: false}),
     'linkingTool.linkValidation': commonValidation,
     'relinkingTool.linkValidation': commonValidation,
     'toolManager.mouseWheelBehavior': go.ToolManager.WheelZoom,
     'undoManager.isEnabled': true,
-    'commandHandler.archetypeGroupData': { category: 'UnitList', text: 'UnitList', isGroup: true },
+    'commandHandler.archetypeGroupData': {category: 'UnitList', text: 'UnitList', isGroup: true},
     mouseDrop: function (e) {
       finishDrop(e, null)
     },
     'commandHandler.canDeleteSelection': deleteNode,
     'commandHandler.canCopySelection': canCopySelect
   })
-  function canCopySelect () { // 删除节点时同步更新配置信息
+
+  function canCopySelect() { // 删除节点时同步更新配置信息
     let flag = true
-    context.innerDiagram.selection.each(node =>{
-      let { data: { category } } = node
+    context.innerDiagram.selection.each(node => {
+      let {data: {category}} = node
       if (category === 'Start' || category === 'End') {
         flag = false
       }
     })
     if (!flag) context.$Message.error({
-                          background: true,
-                          content: 'Start,End 不可以被复制'
-                        })
+      background: true,
+      content: 'Start,End 不可以被复制'
+    })
     return flag
   }
 
-  function deleteNode () { // 删除节点时同步更新配置信息
-    context.innerDiagram.selection.each(node =>{
-      let {data: { category, star } } = node
+  function deleteNode() { // 删除节点时同步更新配置信息
+    context.innerDiagram.selection.each(node => {
+      let {data: {category, star}} = node
       if (category === 'Unit') {
         if (star === CONST.COLORS.RESULT) {
           context.finalResKey = null
         }
-      }
-      else if (category === 'UnitList'){
+      } else if (category === 'UnitList') {
         node.memberParts.iterator.each(part => {
           if (part.data.star === CONST.COLORS.RESULT) {
             context.finalResKey = null
@@ -373,8 +375,8 @@ export function innerDiagramInit (context) {
     if (e.diagram instanceof go.Palette) return
     context.$store.commit('item/handleShowItemEditor', false) // 关闭itemEditor
     context.showUnitEditor = true
-    let { key, text, unitMsg, unitMsg: { execModName } } = context._.cloneDeep(node.data)
-    let { execCmdDict: { execCmdList: target } } = unitMsg
+    let {key, text, unitMsg, unitMsg: {execModName}} = context._.cloneDeep(node.data)
+    let {execCmdDict: {execCmdList: target}} = unitMsg
     if (target) {
       target.forEach((val, idx, arr) => {
         arr[idx].itemId = Math.random().toString(36).substr(2, 6)
@@ -392,21 +394,21 @@ export function innerDiagramInit (context) {
     })
   }
 
-  unitTemplate.contextClick = function (e, { data }) { // 右键点击Unit
+  unitTemplate.contextClick = function (e, {data}) { // 右键点击Unit
     if (e.diagram instanceof go.Palette) { // 右键点击左侧unit模板
-        if (!sessionStorage.groups) {
-          context.$Notice.warning({
-            title: '温馨提醒',
-            desc: '用户权限信息丢失,请重新登录。'
-          })
-          return
-        }
-        if (!sessionStorage.groups.includes('Admin')) {
-          context.$Notice.warning({
-            title: '温馨提醒',
-            desc: '该功能仅限管理员使用，请切换您的账号或重新登录。'
-          })
-          return
+      if (!sessionStorage.groups) {
+        context.$Notice.warning({
+          title: '温馨提醒',
+          desc: '用户权限信息丢失,请重新登录。'
+        })
+        return
+      }
+      if (!sessionStorage.groups.includes('Admin')) {
+        context.$Notice.warning({
+          title: '温馨提醒',
+          desc: '该功能仅限管理员使用，请切换您的账号或重新登录。'
+        })
+        return
       }
       context.isDiagram = false
       context.unitTemplateName = data.text
@@ -423,7 +425,7 @@ export function innerDiagramInit (context) {
   }
 
   const unitListGroupTemplate = baseGroupTemplate(context)
-  unitListGroupTemplate.memberValidation = function groupValidation (group, node) {
+  unitListGroupTemplate.memberValidation = function groupValidation(group, node) {
     return node.data.category === 'Unit'// 当节点的category值为Unit时
   }
 
@@ -435,112 +437,118 @@ export function innerDiagramInit (context) {
   context.innerDiagram.groupTemplateMap.add('UnitList', unitListGroupTemplate)
 }
 
-export function innerPaletteInit (context) {
+export function innerPaletteInit(context) {
   context.innerPalette =
     MAKE(go.Palette, 'inner-palette',
       {
         nodeTemplateMap: context.innerDiagram.nodeTemplateMap,
         groupTemplateMap: context.innerDiagram.groupTemplateMap,
-        layout: MAKE(go.GridLayout, { wrappingColumn: 1, alignment: go.GridLayout.Center })
+        layout: MAKE(go.GridLayout, {wrappingColumn: 1, alignment: go.GridLayout.Center})
       })
   context.getSelectedUnit('基础操作')
 }
 
-function adapter (config, context) {
+function adapter(config, context) {
   // 适配老版本：老版本的finalResultKey默认为0，指定的是Block的key,新版本的finalResultKey默认为 null，指定的是Block的key,unitKey
   if (config.finalResultKey && typeof config.finalResultKey === 'number') {
     context.$Message.info({
       content: '格式转换'
     })
-    let { data: finalResultNorBlock } = context.outerDiagram.findNodeForKey(config.finalResultKey)
+    let {data: finalResultNorBlock} = context.outerDiagram.findNodeForKey(config.finalResultKey)
     let finalResultUnit = JSON.parse(finalResultNorBlock.unitLists).nodeDataArray.filter(node => node.category === 'Unit' && node.star === CONST.COLORS.RESULT)[0]
     config.finalResultKey = `${config.finalResultKey},${finalResultUnit.key}`
   }
   return config
 }
 
-function checkFinalResultKey(finalResultKey,context){ // norBlockKey,unitKey
-  if(!finalResultKey) return true
+function checkFinalResultKey(finalResultKey, context) { // norBlockKey,unitKey
+  if (!finalResultKey) return true
 
-  let [norBlockKey,unitKey]  = finalResultKey.split(",").map(item => Number.parseInt(item))
-  let { data: { star, unitLists } } = context.outerDiagram.findNodeForKey(norBlockKey)
-  if (star === CONST.COLORS.RESULT){
-    let finalResultUnit = JSON.parse(unitLists).nodeDataArray.filter(node=> node.category === 'Unit' && node.star === CONST.COLORS.RESULT)[0]
+  let [norBlockKey, unitKey] = finalResultKey.split(",").map(item => Number.parseInt(item))
+  let {data: {star, unitLists}} = context.outerDiagram.findNodeForKey(norBlockKey)
+  if (star === CONST.COLORS.RESULT) {
+    let finalResultUnit = JSON.parse(unitLists).nodeDataArray.filter(node => node.category === 'Unit' && node.star === CONST.COLORS.RESULT)[0]
     if (!finalResultUnit || finalResultUnit.key === unitKey) return true
   }
   return false
 }
 
-export function setOuterDiagramData (context,job_flow = null) { // 打开jobEditor页面时设置数据
-  if (context.outerDiagramModel !== null && JSON.parse(context.outerDiagramModel).nodeDataArray.length > 1) { // 如果逻辑流存在且节点数量多于1个
-    context.outerDiagram.model = go.Model.fromJson(context.outerDiagramModel) // 恢复之前保存的逻辑流
-  } else { // 如果逻辑流不存在
-    if (job_flow) { // 如果jobInfo里有job_flow字段, 则获取逻辑流并展示
-      getBlockFlowDict4Font(job_flow).then(({ status, data }) => {
-        if (typeof data === 'string') {
-          data = JSON.parse(data)
-        }
-        if (status === 200) {
-          if (JSON.stringify(data) === '{}') {
-            context.$Message.err({
-              background: true,
-              content: '这个 job 不存在'
-            })
-            return context.$router.push({ path: '/' })
-          }
-          data.nodeDataArray.forEach((val, idx, arr) => {
-            if ('unitLists' in val && typeof val.unitLists === 'object') {
-              arr[idx].unitLists = JSON.stringify(val.unitLists)
-            }
+export function setOuterDiagramData(context, job_flow = null) { // 打开jobEditor页面时设置数据
+  // if (context.outerDiagramModel !== null && JSON.parse(context.outerDiagramModel).nodeDataArray.length > 1) { // 如果逻辑流存在且节点数量多于1个
+  //   context.outerDiagram.model = go.Model.fromJson(context.outerDiagramModel) // 恢复之前保存的逻辑流
+  // } else { // 如果逻辑流不存在
+  //
+  //   }
+  if (job_flow) { // 如果jobInfo里有job_flow字段, 则获取逻辑流并展示
+    getBlockFlowDict4Font(job_flow).then(({status, data}) => {
+      if (typeof data === 'string') {
+        data = JSON.parse(data)
+      }
+      if (status === 200) {
+        if (JSON.stringify(data) === '{}') {
+          context.$Message.err({
+            background: true,
+            content: '这个 job 不存在'
           })
-          context.outerDiagram.model = go.Model.fromJson(data)
-          // 适配老版本，老版本可能不存在该字段，新版本都存在，config需要设置默认值{}
-          let innerJobs = context.outerDiagram.findNodesByExample({ 'category': 'Job' })
-          innerJobs.each(node => {
+          return context.$router.push({path: '/'})
+        }
+        // 对 category 为 normalBlock 的node 节点 的 unitLists 值进行格式转化 obj --> str(json)
+        data.nodeDataArray.forEach((val, idx, arr) => {
+          if ('unitLists' in val && typeof val.unitLists === 'object') {
+            arr[idx].unitLists = JSON.stringify(val.unitLists)
+          }
+        })
+        // 展示流程图
+        context.outerDiagram.model = go.Model.fromJson(data)
+        // inner job 的名称不一致重新获取
+        let innerJobs = context.outerDiagram.findNodesByExample({'category': 'Job'})
+        innerJobs.each(node => {
+          if (node.data.jobLabel !== undefined){
             getJobMsgByParams({
-              job_label: node.data.jobLabel,
+              job_label: node.data.jobLabel, // job_label 全剧唯一，id在导入到出是会更动
               fields: 'job_name'
-            }).then(({ status, data: { jobs } }) => {
+            }).then(({status, data: {jobs}}) => {
               if (jobs.length !== 0) {
                 context.outerDiagram.model.setDataProperty(node.data, 'text', jobs[0].job_name)
               }
             })
-          })
-
-          let { data: start, data: { config: config = {} } } = context.outerDiagram.findNodeForKey(-1)
-          // 之前的结果norBlock  finalResultKey: 'norBlockKey' Number ,现在更改成结果unit finalResultKey:norBlockKey,UnitKey String, 但要适配原来的更改
-          let newConfig = adapter(config, context)
-          if (!checkFinalResultKey(newConfig.finalResultKey,context)){
-            newConfig.finalResultKey = null
-            context.$Message.error({
-              background: true,
-              content: '结果unit设置有误,请重新设置'
-            })
           }
-          context.$store.commit('job/handleConfig', {
-            action: 'setConfig',
-            data: newConfig || {}
-          })
-          context.outerDiagram.model.setDataProperty(start,'config', newConfig)
-        } else {
-          throw new Error('获取 Job 信息失败')
-        }
-      }).catch(err => {
-        console.log(err)
-        context.$Message.error({
-          background: true,
-          content: '获取 Job 信息失败'
         })
-        return context.$router.push({ path: '/' })
+        // 适配老版本，老版本可能不存在该字段，新版本都存在，config需要设置默认值{}
+        let {data: start, data: {config: config = {}}} = context.outerDiagram.findNodeForKey(-1)
+        // 之前的结果norBlock  finalResultKey: 'norBlockKey' Number ,现在更改成结果unit finalResultKey: norBlockKey,UnitKey     String类型, 但要适配原来的更改
+        let newConfig = adapter(config, context)
+        if (!checkFinalResultKey(newConfig.finalResultKey, context)) {
+          newConfig.finalResultKey = null
+          context.$Message.error({
+            background: true,
+            content: '结果unit设置有误,请重新设置'
+          })
+        }
+        context.$store.commit('job/handleConfig', {
+          action: 'setConfig',
+          data: newConfig || {}
+        })
+        context.outerDiagram.model.setDataProperty(start, 'config', newConfig)
+      } else {
+        throw new Error('获取 Job 信息失败')
+      }
+    }).catch(err => {
+      console.log(err)
+      context.$Message.error({
+        background: true,
+        content: '获取 Job 信息失败'
       })
-    } else { // job_flow字段不存在, 显示默认节点(包含一个start节点)
-      context.outerDiagram.model = go.Model.fromJson(CONST.BASIC_OUTER_DIAGRAM_MODEL)
-    }
+      return context.$router.push({path: '/'})
+    })
+  } else { // job_flow字段不存在, 显示默认节点(包含一个start节点)
+    context.outerDiagram.model = go.Model.fromJson(CONST.BASIC_OUTER_DIAGRAM_MODEL)
   }
 }
 
-export function init (context) {
-  if (!context.outerDiagram) outerDiagramInit(context)
+export function init(context) { // context 为 vue 对象
+  // if (!context.outerDiagram)
+  outerDiagramInit(context)
   outerPaletteInit(context)
   setOuterDiagramData(context, context.jobFlowInfo.ui_json_file)
 }

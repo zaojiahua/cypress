@@ -263,7 +263,7 @@ export default {
           if (!a.unitMsg.weight) return 1
           if (!b.unitMsg.weight) return -1
         })
-        this.innerPalette.model = new go.GraphLinksModel(nodeDataArray) // 渲染排序后的nit模板
+        this.innerPalette.model = new go.GraphLinksModel(nodeDataArray) // 渲染排序后的unit模板
       }
     },
     updateUnitLists (unitTemplateType = undefined) { // 更新unit模板信息

@@ -103,7 +103,7 @@ export default {
       iconSize: 18,
       flowModal:false,
       jobFlowList:[],
-      currentFlow:{}, //选中的flow
+      currentFlow:{}, // 选中的flow
       removeFlowList: [],
       show:false,
       highlightIndex:null,
@@ -194,7 +194,7 @@ export default {
 
     },
     enterFlow() { // 路由到jobEditor页面
-      this.$emit('validate')
+      this.$emit('validate') // 子组件向上传递
       setTimeout(() => { // 延时关闭右侧抽屉
         this.$store.commit('handleShowDrawer')
       }, 800)

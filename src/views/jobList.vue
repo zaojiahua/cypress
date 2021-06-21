@@ -273,6 +273,9 @@ export default {
         this.lastPage = Math.ceil(this.dataCount / this.pageSize)
         this.jobData = res.data.jobs
         this.jobData.forEach(job => {
+          if (job.job_type === "InnerJob") job._disabled = true
+          //todo: 自己只能删除自己的用例
+          // if (job.job_type === "InnerJob" || parseInt(sessionStorage.getItem("id")) !== job.author.id) job._disabled = true
           job.test_area = job.test_area.map(item => item.description).join(',')
           job.custom_tag = job.custom_tag.map(item => item.custom_tag_name).join(',')
           job.job_state = job.draft ? '草稿' : '正式'
@@ -462,7 +465,7 @@ export default {
   async activated () {
     this.jobPageChange()
 
-    if (this.editingJobId !== null) {
+    if (this.editingJobId !== null && !isNaN(this.editingJobId)) {
       await this.getJobInfo(this.editingJobId)
       this.$store.commit('handleShowDrawer',true)
     }

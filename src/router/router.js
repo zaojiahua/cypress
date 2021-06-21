@@ -15,11 +15,11 @@ export default [
         path: 'jobEditor',
         component: () => import('../views/jobEditor.vue')
       },
-      {
-        name: 'jobMsg',
-        path: 'jobMsg/:id',
-        component: () => import('../views/jobMsg.vue')
-      },
+      // {
+      //   name: 'jobMsg',
+      //   path: 'jobMsg/:id',
+      //   component: () => import('../views/jobMsg.vue')
+      // },
       {
         name: 'jobList',
         path: 'jobList',
