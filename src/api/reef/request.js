@@ -287,6 +287,15 @@ const getUserInfoByToken = (token) => {
   })
 }
 
+//cabinetList
+const getCabinetList = (data = {}) => {
+  return axios.request({
+    method: 'get',
+    url: url.cabinetList(),
+    params: data
+  })
+}
+
 export {
   login,
   getJobTestAreaList,
@@ -325,5 +334,6 @@ export {
   getFlow,
   copyFlowWithFlowId,
   copyJob,
-  getJobMsgByParams
+  getJobMsgByParams,
+  getCabinetList,
 }

@@ -15,7 +15,7 @@ let state = {
   config: _.cloneDeep(CONST.JOB_DEFAULT_CONFIG),
   jobLabelDuplicate: 'duplicate',
   editingJobId: null,//正在编辑的job ID
-
+  cabinetList:[], //可选择的测试柜类型列表
 }
 
 let mutations = {
@@ -24,6 +24,9 @@ let mutations = {
   },
   setJobFlowInfo(state,data){
     state.jobFlowInfo = data
+  },
+  setCabinetList(state,data){
+    state.cabinetList = data
   },
   handleJobInfo (state, { action, data }) {
     if (action === 'setJobInfo') {

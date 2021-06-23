@@ -304,7 +304,8 @@ export default {
         author: job.author.id,
         job_id: job.id,
         job_flow: job.ui_json_file,
-        job_flows:job.job_flow
+        job_flows:job.job_flow,
+        cabinet_type:job.cabinet_type
       }
       CONST.SIMPLE_JOB_KEY.forEach(val => {
         jobInfo[val] = job[val]

@@ -775,7 +775,8 @@ export default {
           manufacturer: (job.phone_models.length === 0) ? null : job.phone_models[0].manufacturer.id, // todo: 写了manufacturer 没写phonemodel
           author: this.jobInJob.author,
           job_id: jobId, // 将副本的内容作用到编辑的job
-          job_flow: job.ui_json_file
+          job_flow: job.ui_json_file,
+          cabinet_type:job.cabinet_type
         }
         CONST.SIMPLE_JOB_KEY.forEach(val => {
           jobInfo[val] = job[val]

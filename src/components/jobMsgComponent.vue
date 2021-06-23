@@ -5,7 +5,7 @@
         <Form ref="form"
               v-if="basicData"
               :model="$store.state.job.jobInfo"
-              width="30" :label-width="90"
+              width="30" :label-width="100"
               label-position="left"
               :rules="validateRules">
           <FormItem label="用例名称" prop="job_name">
@@ -58,6 +58,18 @@
               <Option v-for="item in basicData[basicData.androidVersion]" :value="item.id" :key="item.id">{{ item.version }}</Option>
             </Select>
           </FormItem>
+          <div v-show="selectJobType !== 'InnerJob'">
+            <Divider orientation="left" class="device-info-title" style="margin-top: 60px;">
+              <b>资源信息</b>
+            </Divider>
+            <FormItem label="测试柜类型" prop="cabinet_type">
+              <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.cabinet_type" :transfer="true">
+                <!--<OptionGroup v-for="item in cabinetList" :label="item.type">-->
+                  <Option v-for="(item,index) in $store.state.job.cabinetList" :value="item" :key="index">{{ item }}</Option>
+                <!--</OptionGroup>-->
+              </Select>
+            </FormItem>
+          </div>
           <div v-show="isJobEditor">
             <Divider orientation="left" class="device-info-title" style="margin-top: 60px;">
               <b>流程图信息</b>
@@ -103,7 +115,7 @@
 <script>
 import util from 'lib/util/validate.js'
 import { jobSerializer } from 'lib/util/jobListSerializer'
-import {controlDevice, getJobFlowList, getJobId, releaseOccupyDevice, updateJobMsg, getFlow} from 'api/reef/request'
+import {controlDevice, getJobFlowList, getJobId, releaseOccupyDevice, updateJobMsg, getFlow, getCabinetList} from 'api/reef/request'
 import jobDeviceSelect from '../components/jobDeviceSelect'
 import jobFlowComponent from '../components/jobFlowComponent'
 import { shouldCreateNewTag, createNewTag } from 'lib/tools'
@@ -161,6 +173,9 @@ export default {
         job_type: [{
           required: true, type: 'string', message: '用例类型不能为空', trigger: 'change'
         }],
+        cabinet_type:[{
+          required: true, type: 'string', message: '测试柜类型不能为空', trigger: 'change'
+        }],
         manufacturer: [{
           required: true, type: 'number', message: '厂商信息不能为空', trigger: 'change'
         }],
@@ -211,12 +226,13 @@ export default {
         ]
       },
       curJobType: [],
-      canAppend: true
+      canAppend: true,
+      // cabinetList:[],
     }
   },
   computed: {
     ...mapState(['showDrawer', 'basicData']),
-    ...mapState('job', ['jobInfo', 'duplicateId', 'duplicateLabel','jobFlowInfo','selectJobType']),
+    ...mapState('job', ['jobInfo', 'duplicateId', 'duplicateLabel','jobFlowInfo','selectJobType','cabinetList']),
     ...mapGetters('job', ['jobId']),
     ...mapState('device', ['deviceInfo', 'preDeviceInfo', 'countdown']),
     isJobEditor () { // 是否在 JobEditor 页面
@@ -259,6 +275,9 @@ export default {
     },
     showDrawer (val) { // 在jobEditor页面之外的页面关闭右侧抽屉时清除当前选中的用例信息
       this.currTab = "jobAttr"
+      if(val){
+        this.getcabinetList()
+      }
       if (val === false && !this.isJobEditor) this.$store.commit('job/handleJobInfo', { action: 'clearJobInfo' })
     },
     deviceInfo (newVal, oldVal) { // 设备信息变化时检测是否和已填信息发生冲突并进行处理
@@ -283,6 +302,15 @@ export default {
         case 'jobFlow':
           this.$refs.jobFlowCmp.refresh(this.jobId)
           break
+      }
+    },
+    async getcabinetList(){
+      try {
+        let { data } = await getCabinetList()
+        // console.log(cabinetList)
+        this.$store.commit('job/setCabinetList',data)
+      } catch (error) {
+        console.log(error)
       }
     },
     async enterJobEditor () { // 路由到jobEditor页面
