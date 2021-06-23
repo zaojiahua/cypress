@@ -488,4 +488,7 @@ export default {
     margin-top: 1em;
   }
 }
+/deep/.ivu-page-simple .ivu-page-simple-pager input{
+  width: 45px;
+}
 </style>

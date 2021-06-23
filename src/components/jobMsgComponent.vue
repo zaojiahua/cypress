@@ -39,22 +39,22 @@
             <Button v-if="editJobMsg" type="info" @click="$store.commit('device/setSelectDevice')">选取设备</Button>
           </Divider>
           <FormItem label="厂商信息" prop="manufacturer">
-            <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.manufacturer" placeholder="请选择" @on-change="clear" filterable>
+            <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.manufacturer" placeholder="请选择" @on-change="clear" filterable :transfer="true">
               <Option v-for="item in basicData[basicData.manufacturer]" :value="item.id" :key="item.id">{{ item.manufacturer_name }}</Option>
             </Select>
           </FormItem>
           <FormItem label="适配机型" prop="phone_models">
-            <Select :disabled="!editJobMsg || disabled" v-model="$store.state.job.jobInfo.phone_models" multiple  placeholder="请选择" filterable>
+            <Select :disabled="!editJobMsg || disabled" v-model="$store.state.job.jobInfo.phone_models" multiple  placeholder="请选择" filterable :transfer="true">
               <Option v-for="item in curManufacturer.phonemodel" :value="item.id" :key="item.id">{{ item.phone_model_name }}</Option>
             </Select>
           </FormItem>
           <FormItem label="ROM版本" prop="rom_version">
-            <Select :disabled="!editJobMsg || disabled" v-model="$store.state.job.jobInfo.rom_version" multiple placeholder="请选择" filterable>
+            <Select :disabled="!editJobMsg || disabled" v-model="$store.state.job.jobInfo.rom_version" multiple placeholder="请选择" filterable :transfer="true">
               <Option v-for="item in curManufacturer.romversion" :value="item.id" :key="item.id">{{ item.version }}</Option>
             </Select>
           </FormItem>
           <FormItem label="适配系统" prop="android_version">
-            <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.android_version" multiple placeholder="请选择">
+            <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.android_version" multiple placeholder="请选择" :transfer="true">
               <Option v-for="item in basicData[basicData.androidVersion]" :value="item.id" :key="item.id">{{ item.version }}</Option>
             </Select>
           </FormItem>
