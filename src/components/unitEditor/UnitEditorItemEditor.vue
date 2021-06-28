@@ -231,6 +231,9 @@ export default {
       }
     },
     handleUnitData () { // 保存更新后的unitData
+      this.tmachBlanks.forEach(item=>{
+        item.content = item.content.replace(/ /g,"")
+      })
       let flag = true
       if (this.curFile && this.isJobResourcePicture) { // 如果当前显示的图片不为空且itemType为jobResourcePicture
         this.tmachBlanks[0].content = suffixRemove(this.curFile.name) // 将当前图片的名字去掉后缀后保存
