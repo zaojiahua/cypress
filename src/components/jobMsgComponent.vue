@@ -147,7 +147,18 @@ export default {
       } else {
         callback()
       }
-    }
+    };
+    const validateCabinet = (rule, value, callback) => {
+      if(this.selectJobType === 'InnerJob'){
+        callback()
+        return
+      }
+      if (!value || value === '') {
+        callback(new Error('测试柜类型不能为空'));
+      } else {
+        callback();
+      }
+    };
     return {
       currTab: 'jobAttr',
       curManufacturer: {},
@@ -174,7 +185,7 @@ export default {
           required: true, type: 'string', message: '用例类型不能为空', trigger: 'change'
         }],
         cabinet_type:[{
-          required: true, type: 'string', message: '测试柜类型不能为空', trigger: 'change'
+          required: true, validator:validateCabinet, trigger: 'change'
         }],
         manufacturer: [{
           required: true, type: 'number', message: '厂商信息不能为空', trigger: 'change'
