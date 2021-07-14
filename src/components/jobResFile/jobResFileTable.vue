@@ -80,11 +80,11 @@ table td, table th {
     text-align: center;
 }
 tr:hover {
-  background-color: #82b3db;
-  color: white;
+  background-color: #dcdcdc;
+  /*color: #515a6e;*/
 }
 .active {
-    background-color: #82b3db;
-    color: #fff;
+    background-color: #82b3db!important;
+    color: #fff!important;
 }
 </style>
