@@ -268,6 +268,10 @@ function outerDiagramInit(context) {
             data: {finalResultKey: null}
           })
         }
+        context.$store.commit('files/handleResFiles', {
+          action: 'deleteNormalResFiles',
+          data: data.key
+        })
       }
       return true
     })
@@ -339,19 +343,29 @@ export function innerDiagramInit(context) {
     })
     return flag
   }
-
   function deleteNode() { // 删除节点时同步更新配置信息
     context.innerDiagram.selection.each(node => {
+      let normalKey = context.$store.state.job.normalData.key
       let {data: {category, star}} = node
       if (category === 'Unit') {
         if (star === CONST.COLORS.RESULT) {
           context.finalResKey = null
         }
+        context.$store.commit('files/handleResFiles', {
+          action: 'deleteUnitResFiles',
+          data: { unitKey:node.data.key, normalKey:normalKey }
+        })
       } else if (category === 'UnitList') {
+        let keys = []
         node.memberParts.iterator.each(part => {
+          keys.push(part.data.key)
           if (part.data.star === CONST.COLORS.RESULT) {
             context.finalResKey = null
           }
+        })
+        context.$store.commit('files/handleResFiles', {
+          action: 'deleteUnitListResFiles',
+          data: { unitKey:keys, normalKey:normalKey }
         })
       }
     })

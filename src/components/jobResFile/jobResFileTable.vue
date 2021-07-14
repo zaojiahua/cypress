@@ -50,6 +50,8 @@ export default {
     removeFile (index) {
       if (this.data.length - 1 === index) {
         this.showFile(index - 1)
+      }else {
+        this.showFile(index)
       }
       this.$store.commit('files/handleResFiles', { action: 'removeResFile', data: index })
     }
