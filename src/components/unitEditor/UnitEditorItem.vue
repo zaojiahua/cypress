@@ -160,10 +160,13 @@ export default {
           })
           return
         }
-        if (index % 2 === 0) {
-          SelectPointList.push({x:0,y:0})
-          SelectPointList[SelectPointList.length - 1].x = parseFloat(value.trim().substring(5))
-        } else SelectPointList[SelectPointList.length - 1].y = parseFloat(value.trim().substring(5))
+        //  index===4指的是坐标点的第五个值，也就是速度。速度不需要加载在图上。所以去掉
+        if(index !== 4){
+          if (index % 2 === 0) {
+            SelectPointList.push({x:0,y:0})
+            SelectPointList[SelectPointList.length - 1].x = parseFloat(value.trim().substring(5))
+          } else SelectPointList[SelectPointList.length - 1].y = parseFloat(value.trim().substring(5))
+        }
       }
       this.$store.commit('item/handleSelectPoint', {
         action: 'set',
