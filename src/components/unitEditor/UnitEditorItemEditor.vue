@@ -199,7 +199,7 @@ export default {
       }
     },
     saveFeaturePoint () { // 保存选取的区域信息
-      if (this.willTouchFile && this.coordinates.length !== 0) { // 如果会产生关于选区信息的依赖文件且选区信息不为空
+      if (this.willTouchFile) { // 如果会产生关于选区信息的依赖文件且选区信息不为空
         let nameInfo = this.tmachBlanks[0]
         let coordinateNum = 1
         let coordinateDataList = {} // 存放选区信息
@@ -335,7 +335,8 @@ export default {
           this.saveFeaturePoint()
         }
         else{
-          this.$Message.warning("请选取区域")
+          this.saveFeaturePoint()
+          this.$Message.info("注意是否需要选择区域！")
           return
         }
       }else{
