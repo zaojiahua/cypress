@@ -305,7 +305,8 @@ export default {
         job_id: job.id,
         job_flow: job.ui_json_file,
         job_flows:job.job_flow,
-        cabinet_type:job.cabinet_type
+        cabinet_type:job.cabinet_type,
+        resource_data:job.matching_rule ? job.matching_rule.resource_data : []
       }
       CONST.SIMPLE_JOB_KEY.forEach(val => {
         jobInfo[val] = job[val]

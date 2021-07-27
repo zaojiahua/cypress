@@ -1,11 +1,11 @@
 <template>
-  <Drawer :closable="false" v-model="$store.state.showDrawer" width="40" @on-close="closeDrawer">
+  <Drawer :closable="false" v-model="$store.state.showDrawer" width="45" @on-close="closeDrawer">
     <Tabs v-model="currTab" @on-click="showJobFlow" type="card">
       <TabPane name="jobAttr" label="用例属性信息">
         <Form ref="form"
               v-if="basicData"
               :model="$store.state.job.jobInfo"
-              width="30" :label-width="100"
+              width="30" :label-width="95"
               label-position="left"
               :rules="validateRules">
           <FormItem label="用例名称" prop="job_name">
@@ -64,10 +64,14 @@
             </Divider>
             <FormItem label="测试柜类型" prop="cabinet_type">
               <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.cabinet_type" :transfer="true">
-                <!--<OptionGroup v-for="item in cabinetList" :label="item.type">-->
                   <Option v-for="(item,index) in $store.state.job.cabinetList" :value="item" :key="index">{{ item }}</Option>
-                <!--</OptionGroup>-->
               </Select>
+            </FormItem>
+            <FormItem label="附加资源" prop="resource_list">
+              <Cascader :disabled="!editJobMsg" v-model="resourceList[i-1]" :data="cascaderData" filterable v-for="i in cascaderIndex" :key="i" :transfer="true" style="margin-bottom: 16px"></Cascader>
+              <Button v-show="editJobMsg" type="primary" long @click="addResourceClick">
+                <Icon type="ios-add-circle-outline" size="20" />
+              </Button>
             </FormItem>
           </div>
           <div v-show="isJobEditor">
@@ -115,12 +119,117 @@
 <script>
 import util from 'lib/util/validate.js'
 import { jobSerializer } from 'lib/util/jobListSerializer'
-import {controlDevice, getJobFlowList, getJobId, releaseOccupyDevice, updateJobMsg, getFlow, getCabinetList} from 'api/reef/request'
+import {controlDevice, getJobFlowList, getJobId, releaseOccupyDevice, updateJobMsg, getFlow, getCabinetList, getAppNameList, jobBindResource} from 'api/reef/request'
 import jobDeviceSelect from '../components/jobDeviceSelect'
 import jobFlowComponent from '../components/jobFlowComponent'
 import { shouldCreateNewTag, createNewTag } from 'lib/tools'
 
 import { mapState, mapGetters } from 'vuex'
+
+const simChildren = [
+  {
+    value: '中国移动',
+    label: '中国移动',
+    children: [
+      {
+        value: 'volte_true',
+        label: 'Volte',
+      },
+      {
+        value: 'volte_false',
+        label: '非Volte',
+      }
+    ]
+  },
+  {
+    value: '中国联通',
+    label: '中国联通',
+    children: [
+      {
+        value: 'volte_true',
+        label: 'Volte',
+      },
+      {
+        value: 'volte_false',
+        label: '非Volte',
+      }
+    ]
+  },
+  {
+    value: '中国电信',
+    label: '中国电信',
+    children: [
+      {
+        value: 'volte_true',
+        label: 'Volte',
+      },
+      {
+        value: 'volte_false',
+        label: '非Volte',
+      }
+    ]
+  },
+  {
+    value: 'anything',
+    label: '移动/联通/电信',
+    children: [
+      {
+        value: 'volte_true',
+        label: 'Volte',
+      },
+      {
+        value: 'volte_false',
+        label: '非Volte',
+      }
+    ]
+  },
+  {
+    value: 'not_中国移动',
+    label: '非中国移动',
+    children: [
+      {
+        value: 'volte_true',
+        label: 'Volte',
+      },
+      {
+        value: 'volte_false',
+        label: '非Volte',
+      }
+    ]
+  },
+  {
+    value: 'not_中国联通',
+    label: '非中国联通',
+    children: [
+      {
+        value: 'volte_true',
+        label: 'Volte',
+      },
+      {
+        value: 'volte_false',
+        label: '非Volte',
+      }
+    ]
+  },
+  {
+    value: 'not_中国电信',
+    label: '非中国电信',
+    children: [
+      {
+        value: 'volte_true',
+        label: 'Volte',
+      },
+      {
+        value: 'volte_false',
+        label: '非Volte',
+      }
+    ]
+  },
+  {
+    value: 'nothing',
+    label: '无'
+  },
+]
 
 export default {
   name: 'jobMsgComponent',
@@ -239,6 +348,97 @@ export default {
       curJobType: [],
       canAppend: true,
       // cabinetList:[],
+      resourceList:[],
+      cascaderData:[
+        {
+          value: 'device',
+          label: '主机',
+          children: [
+            {
+              value: 'simcard_1',
+              label: 'SIM卡1',
+              children: simChildren,
+            },
+            {
+              value: 'simcard_2',
+              label: 'SIM卡2',
+              children: simChildren,
+            },
+            {
+              value: 'account_resource',
+              label: '账号资源',
+              children:[]
+            }
+          ]
+        },
+        //=========================================
+        {
+          value: 'subsidiary_device_1',
+          label: '僚机1',
+          children: [
+            {
+              value: 'simcard_1',
+              label: 'SIM卡1',
+              children: simChildren,
+            },
+            {
+              value: 'simcard_2',
+              label: 'SIM卡2',
+              children: simChildren,
+            },
+            {
+              value: 'account_resource',
+              label: '账号资源',
+              children:[]
+            }
+          ]
+        },
+        //============================
+        {
+          value: 'subsidiary_device_2',
+          label: '僚机2',
+          children: [
+            {
+              value: 'simcard_1',
+              label: 'SIM卡1',
+              children: simChildren,
+            },
+            {
+              value: 'simcard_2',
+              label: 'SIM卡2',
+              children: simChildren,
+            },
+            {
+              value: 'account_resource',
+              label: '账号资源',
+              children:[]
+            }
+          ]
+        },
+        //=======================
+        {
+          value: 'subsidiary_device_3',
+          label: '僚机3',
+          children: [
+            {
+              value: 'simcard_1',
+              label: 'SIM卡1',
+              children: simChildren,
+            },
+            {
+              value: 'simcard_2',
+              label: 'SIM卡2',
+              children: simChildren,
+            },
+            {
+              value: 'account_resource',
+              label: '账号资源',
+              children:[]
+            }
+          ]
+        }
+      ],
+      cascaderIndex:1,
     }
   },
   computed: {
@@ -288,6 +488,12 @@ export default {
       this.currTab = "jobAttr"
       if(val){
         this.getcabinetList()
+        this.resourceList = this.jobInfo.resource_data
+        if(this.jobInfo.resource_data.length>0){
+          this.cascaderIndex = this.jobInfo.resource_data.length
+        }else {
+          this.cascaderIndex = 1
+        }
       }
       if (val === false && !this.isJobEditor) this.$store.commit('job/handleJobInfo', { action: 'clearJobInfo' })
     },
@@ -430,6 +636,44 @@ export default {
         })
         return
       }
+      // 资源验证：先去除空值，看实际选择的资源value是否为空
+      for (let i = this.resourceList.length-1; i >= 0; i--) {
+        if(!this.resourceList[i] || this.resourceList[i].length===0)
+          this.resourceList.splice(i,1)
+      }
+      //资源验证：每个设备(主僚机)下的sim1和sim2只能选择一次
+      let sim_1_list = []
+      let sim_2_list = []
+      this.resourceList.forEach(item=>{
+        if(item[1]==="simcard_1"){
+          sim_1_list.push(item)
+        }else if(item[1]==="simcard_2"){
+          sim_2_list.push(item)
+        }
+      })
+      let sim_1_name = []
+      let sim_2_name = []
+      sim_1_list.forEach(item=>{
+        sim_1_name.push(item[0])
+      })
+      sim_2_list.forEach(item=>{
+        sim_2_name.push(item[0])
+      })
+      let resourceList = _.cloneDeep(this.resourceList)
+      if(this.isRepeat(sim_1_name)){
+        this.$Message.warning({
+          background: true,
+          content: '每台设备仅能选择一张SIM1手机卡，请重新选择！'
+        })
+        return
+      }
+      if(this.isRepeat(sim_2_name)){
+        this.$Message.warning({
+          background: true,
+          content: '每台设备仅能选择一张SIM2手机卡，请重新选择！'
+        })
+        return
+      }
       this.$refs.form.validate(async (valid) => { // 表单验证
         if (shouldCreateNewTag('test_area', this.jobInfo)) { // 检测是否应该创建新的测试用途标签
           let data = await createNewTag('test_area', this.jobInfo) // 创建新的标签
@@ -454,6 +698,13 @@ export default {
               this.$store.commit('refreshJobList')
             }).catch(error => {
               console.log(error)
+              this.$Message.error('修改失败')
+            })
+            jobBindResource( {"job_label":this.jobInfo.job_label,"resource_data":resourceList}).then(() => { // 更新用例信息
+              this.$Message.success('用例资源绑定成功')
+            }).catch(error => {
+              console.log(error)
+              this.$Message.error('用例资源绑定失败')
             })
           }, 400)
         } else { // 验证失败
@@ -561,10 +812,38 @@ export default {
           this.$store.commit('device/setCountdown') // 取消计时
         }
       }
+    },
+    addResourceClick(){
+      this.cascaderIndex++
+    },
+    isRepeat(arr){
+      let hash = {};
+      for(let i in arr) {
+        if(hash[arr[i]])
+          return true;
+        hash[arr[i]] = true;
+      }
+      return false;
     }
   },
   mounted () {
     if (!this.basicData) this.$store.dispatch('setBasicData') // 挂载时如果没有基本信息, 则获取
+    let appChildren = []
+    let subsidiaryAppChildren = []
+    getAppNameList().then(response=>{
+      response.data.result.forEach(app=>{
+        appChildren.push({value:app.name,label:app.name})
+        subsidiaryAppChildren.push({value:app.name,label:app.name,children:[{value:"account_alike_true",label:"与主机相同"},{value:"unrestrained",label:"无特殊要求"}]})
+      })
+      this.cascaderData.forEach(item=> {
+        if(item.label === "主机")
+          item.children[2].children = appChildren
+        else
+          item.children[2].children = subsidiaryAppChildren
+      })
+    }).catch(error=>{
+      this.$Message.error({content:"获取app列表失败"+ error.response.data.message,duration:3})
+    })
   }
 }
 </script>
@@ -581,6 +860,10 @@ export default {
       z-index: 2;
     }
   }
+.ivu-divider-horizontal.ivu-divider-with-text-left:after,
+.ivu-divider-horizontal.ivu-divider-with-text-left:before{
+  transform: none;
+}
   // .type {
   //   /deep/ & > .ivu-form-item-content {
   //     display: flex;

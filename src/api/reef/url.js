@@ -15,7 +15,7 @@ const jobDetailFilter = ['id', 'job_label', 'description', 'job_name', 'job_type
   'android_version', 'android_version.version', 'android_version.id', 'custom_tag', 'custom_tag.custom_tag_name', 'custom_tag.id',
   'phone_models', 'phone_models.phone_model_name', 'phone_models.id', 'phone_models.manufacturer', 'phone_models.manufacturer.manufacturer_name', 'phone_models.manufacturer.id',
   'test_area', 'test_area.description', 'test_area.id', 'author', 'author.username', 'author.id', 'ui_json_file',
-  'job_flow', 'job_flow.id', 'job_flow.name', 'job_flow.ui_json_file', 'job_flow.order', 'job_flow.description']
+  'job_flow', 'job_flow.id', 'job_flow.name', 'job_flow.ui_json_file', 'job_flow.order', 'job_flow.description','matching_rule']
 const jobFlowFilter = ['job_flow', 'job_flow.id', 'job_flow.name', 'job_flow.ui_json_file', 'job_flow.order', 'job_flow.description']
 const resFileFilter = ['job_res_file', 'job_res_file.name', 'job_res_file.file', 'job_res_file.type']
 const tokenUserFilter = ['user', 'user.id', 'user.username', 'user.groups','user.groups.name']
@@ -51,6 +51,8 @@ export default {
   copyJob:() => `${reefPrefix}job_copy/`,
 
   cabinetList:() => `${reefPrefix}get_cabinet_type_info/`,
+  appNameList:() => `${reefPrefix}get_order_app_name`,
+  jobBindResource:() => `${reefPrefix}job_bind_resource/`,
 
   saveJobFlowAndMsg: () => `${reefPrefix}job/`,
   updateJobMsg: (id) => `${reefPrefix}job/${id}/`,

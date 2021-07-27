@@ -296,6 +296,21 @@ const getCabinetList = (data = {}) => {
   })
 }
 
+const getAppNameList = (data = {}) => {
+  return axios.request({
+    method: 'get',
+    url: url.appNameList(),
+    params: data
+  })
+}
+const jobBindResource= (data = {}) => {
+  return axios.request({
+    method: 'post',
+    url: url.jobBindResource(),
+    data
+  })
+}
+
 export {
   login,
   getJobTestAreaList,
@@ -336,4 +351,6 @@ export {
   copyJob,
   getJobMsgByParams,
   getCabinetList,
+  getAppNameList,
+  jobBindResource,
 }

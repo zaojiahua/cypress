@@ -778,7 +778,8 @@ export default {
           author: this.jobInJob.author,
           job_id: jobId, // 将副本的内容作用到编辑的job
           job_flow: job.ui_json_file,
-          cabinet_type:job.cabinet_type
+          cabinet_type:job.cabinet_type,
+          resource_data:job.matching_rule ? job.matching_rule.resource_data : []
         }
         CONST.SIMPLE_JOB_KEY.forEach(val => {
           jobInfo[val] = job[val]
