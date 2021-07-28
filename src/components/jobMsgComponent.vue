@@ -488,11 +488,13 @@ export default {
       this.currTab = "jobAttr"
       if(val){
         this.getcabinetList()
-        this.resourceList = this.jobInfo.resource_data
-        if(this.jobInfo.resource_data.length>0){
-          this.cascaderIndex = this.jobInfo.resource_data.length
-        }else {
-          this.cascaderIndex = 1
+        if(this.jobInfo.resource_data){
+          this.resourceList = this.jobInfo.resource_data
+          if(this.jobInfo.resource_data.length>0){
+            this.cascaderIndex = this.jobInfo.resource_data.length
+          }else {
+            this.cascaderIndex = 1
+          }
         }
       }
       if (val === false && !this.isJobEditor) this.$store.commit('job/handleJobInfo', { action: 'clearJobInfo' })
@@ -696,15 +698,15 @@ export default {
             updateJobMsg(this.jobId, jobInfo).then(() => { // 更新用例信息
               this.$Message.info('修改成功')
               this.$store.commit('refreshJobList')
+              jobBindResource( {"job_label":this.jobInfo.job_label,"resource_data":resourceList}).then(() => { // 更新用例信息
+                this.$Message.success('用例资源绑定成功')
+              }).catch(error => {
+                console.log(error)
+                this.$Message.error('用例资源绑定失败')
+              })
             }).catch(error => {
               console.log(error)
               this.$Message.error('修改失败')
-            })
-            jobBindResource( {"job_label":this.jobInfo.job_label,"resource_data":resourceList}).then(() => { // 更新用例信息
-              this.$Message.success('用例资源绑定成功')
-            }).catch(error => {
-              console.log(error)
-              this.$Message.error('用例资源绑定失败')
             })
           }, 400)
         } else { // 验证失败
