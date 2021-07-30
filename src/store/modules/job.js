@@ -16,6 +16,7 @@ let state = {
   jobLabelDuplicate: 'duplicate',
   editingJobId: null,//正在编辑的job ID
   cabinetList:[], //可选择的测试柜类型列表
+  resourceList:[], //job的资源文件数据
 }
 
 let mutations = {
@@ -34,6 +35,14 @@ let mutations = {
     }
     if (action === 'clearJobInfo') {
       state.jobInfo = {}
+    }
+  },
+  handleResourceList (state, { action, data }) {
+    if (action === 'setResourceList') {
+      state.resourceList = data
+    }
+    if (action === 'clearResourceList') {
+      state.resourceList = []
     }
   },
   handleNormalData (state, { action, data }) {

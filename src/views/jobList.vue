@@ -316,6 +316,7 @@ export default {
       })
       this.$store.commit('job/setSelectJobType', job.job_type)
       this.$store.commit('job/handleJobInfo', { action: 'setJobInfo', data: jobInfo })
+      this.$store.commit('job/handleResourceList', { action: 'setResourceList', data: jobInfo.resource_data })
     },
     async onRowClick (curData, index) { // 单击表格某一行
       await this.getJobInfo(curData.id)

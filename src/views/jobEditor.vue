@@ -91,6 +91,7 @@ import {
 } from '../api/reef/request'
 import util from "lib/util/validate";
 import {jobSerializer} from "lib/util/jobListSerializer";
+import {jobBindResource} from 'api/reef/request'
 
 export default {
   name: 'jobEditor',
@@ -120,7 +121,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('job', ['jobInfo', 'jobFlowInfo','outerDiagramModel', 'isValidated', 'duplicateId', 'duplicateLabel', 'normalData', 'config', 'jobLabelDuplicate', 'selectJobType']),
+    ...mapState('job', ['jobInfo', 'jobFlowInfo','outerDiagramModel', 'isValidated', 'duplicateId', 'duplicateLabel', 'normalData', 'config', 'jobLabelDuplicate', 'selectJobType','resourceList']),
     ...mapGetters('job', ['jobId', 'normalKey']),
     ...mapState('files', ['resFiles']),
     ...mapGetters('files', ['resFilesName','dataURLtoFileFormat']),
@@ -335,6 +336,14 @@ export default {
         this.saving = false
       }
     },
+    async bindResource(job_label,resourceList){
+      await jobBindResource( {"job_label":job_label,"resource_data":resourceList}).then(() => { // 更新用例信息
+        this.$Message.success('用例资源绑定成功')
+      }).catch(error => {
+        console.log(error)
+        this.$Message.error('用例资源绑定失败')
+      })
+    },
     calcWingmanCount () { // 计算用到的僚机数量, 僚机信息保存在normal/job块的data中
       let wingman = new Array(4).fill(0)
       let normalBlocks = this.outerDiagram.findNodesByExample({ 'category': 'normalBlock' })
@@ -354,14 +363,17 @@ export default {
       return wingman.reduce((pre, cur) => cur > 0 ? 1 + pre : pre, 0)
     },
     async handleMenu (name) { // 点击菜单项时动作分发
-      async function createNewJob (context, jobInfo,jobFlowInfo) { // 复用自动保存的用俐/创建新用俐
+      async function createNewJob (context, jobInfo,jobFlowInfo,resourceList) { // 复用自动保存的用俐/创建新用俐
         if (!jobInfo.job_label) { // 没有自动保存
           jobInfo.job_label = createJobLabel(context)
         }
           // 创建新的Job
         try {
           let { status, data } = await saveJobFlowAndMsg(jobInfo)  // 保存 job 的信息
-          if (status === 201) await context.uploadFiles(data.id, jobInfo, jobFlowInfo)
+          if (status === 201){
+            await context.uploadFiles(data.id, jobInfo, jobFlowInfo)
+            await context.bindResource(data.job_label,resourceList)
+          }
         } catch (err) {
           console.log(err)
           throw new Error(err)
@@ -383,6 +395,31 @@ export default {
         let id = this.jobId
         let jobInfo = await this.prepareJobInfo()
         let jobFlowInfo = await this.prepareJobFlowInfo(jobInfo)
+        // 资源验证：先去除空值，看实际选择的资源value是否为空
+        for (let i = this.resourceList.length-1; i >= 0; i--) {
+          if(!this.resourceList[i] || this.resourceList[i].length===0)
+            this.resourceList.splice(i,1)
+        }
+        //资源验证：每个设备(主僚机)下的sim1和sim2只能选择一次
+        let sim_1_list = []
+        let sim_2_list = []
+        this.resourceList.forEach(item=>{
+          if(item[1]==="simcard_1"){
+            sim_1_list.push(item)
+          }else if(item[1]==="simcard_2"){
+            sim_2_list.push(item)
+          }
+        })
+        let sim_1_name = []
+        let sim_2_name = []
+        sim_1_list.forEach(item=>{
+          sim_1_name.push(item[0])
+        })
+        sim_2_list.forEach(item=>{
+          sim_2_name.push(item[0])
+        })
+        let resourceList = _.cloneDeep(this.resourceList)
+
         if (name === 'saveDraft') { // 存草稿，可跳过校验
           if (!this._jobMsgRules()) return
           jobInfo.draft = true
@@ -391,6 +428,7 @@ export default {
           {
             try {
               await this.uploadFiles(id, jobInfo, jobFlowInfo)
+              await this.bindResource(jobInfo.job_label,resourceList)
             } catch (error) {
               this.$Message.error({
                 background: true,
@@ -406,7 +444,7 @@ export default {
           {
               try {
                 // console.log("创建一个全新的草稿job")
-                await createNewJob(this, jobInfo, jobFlowInfo)
+                await createNewJob(this, jobInfo, jobFlowInfo,resourceList)
               } catch (error) {
                 this.$Message.error({
                   background: true,
@@ -436,6 +474,7 @@ export default {
             if (id) { //id 存在表明是更新正式用例
               try {
                 await this.uploadFiles(id, jobInfo,jobFlowInfo)
+                await this.bindResource(jobInfo.job_label,resourceList)
               } catch (error) {
                 this.$Message.error({
                   background: true,
@@ -451,7 +490,7 @@ export default {
               {
                 try {
                   // console.log("创建一个全新的job")
-                  await createNewJob(this, jobInfo, jobFlowInfo)
+                  await createNewJob(this, jobInfo, jobFlowInfo,resourceList)
                 } catch (error) {
                   this.$Message.error({
                     background: true,
@@ -491,7 +530,7 @@ export default {
                           // 另存为生成新的jobLabel
                           jobInfo.job_label = createJobLabel (this)
                           try {
-                            await createNewJob(this, jobInfo, jobFlowInfo)  // 监听回车（）enter 触发 的另存为
+                            await createNewJob(this, jobInfo, jobFlowInfo,resourceList)  // 监听回车（）enter 触发 的另存为
                           } catch (error) {
                             this.$Message.error({
                               background: true,
@@ -516,7 +555,7 @@ export default {
                 // 另存为生成新的jobLabel
                 jobInfo.job_label = createJobLabel (this)
                 try {
-                  await createNewJob(this, jobInfo, jobFlowInfo) // input框确认按钮的确认触发的保存
+                  await createNewJob(this, jobInfo, jobFlowInfo,resourceList) // input框确认按钮的确认触发的保存
                 } catch (error) {
                   this.$Message.error({
                     background: true,

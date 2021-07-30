@@ -68,7 +68,7 @@
               </Select>
             </FormItem>
             <FormItem label="附加资源" prop="resource_list">
-              <Cascader :disabled="!editJobMsg" v-model="resourceList[i-1]" :data="cascaderData" filterable v-for="i in cascaderIndex" :key="i" :transfer="true" style="margin-bottom: 16px"></Cascader>
+              <Cascader :disabled="!editJobMsg" v-model="$store.state.job.resourceList[i-1]" :data="cascaderData" filterable v-for="i in cascaderIndex" :key="i" :transfer="true" style="margin-bottom: 16px"></Cascader>
               <Button v-show="editJobMsg" type="primary" long @click="addResourceClick">
                 <Icon type="ios-add-circle-outline" size="20" />
               </Button>
@@ -348,7 +348,6 @@ export default {
       curJobType: [],
       canAppend: true,
       // cabinetList:[],
-      resourceList:[],
       cascaderData:[
         {
           value: 'device',
@@ -443,7 +442,7 @@ export default {
   },
   computed: {
     ...mapState(['showDrawer', 'basicData']),
-    ...mapState('job', ['jobInfo', 'duplicateId', 'duplicateLabel','jobFlowInfo','selectJobType','cabinetList']),
+    ...mapState('job', ['jobInfo', 'duplicateId', 'duplicateLabel','jobFlowInfo','selectJobType','cabinetList','resourceList']),
     ...mapGetters('job', ['jobId']),
     ...mapState('device', ['deviceInfo', 'preDeviceInfo', 'countdown']),
     isJobEditor () { // 是否在 JobEditor 页面
@@ -484,18 +483,16 @@ export default {
         this.curJobType.splice(1, 1)
       }
     },
+    resourceList(val){
+      if(val.length>0)
+        this.cascaderIndex = val.length
+      else
+        this.cascaderIndex = 1
+    },
     showDrawer (val) { // 在jobEditor页面之外的页面关闭右侧抽屉时清除当前选中的用例信息
       this.currTab = "jobAttr"
       if(val){
         this.getcabinetList()
-        if(this.jobInfo.resource_data){
-          this.resourceList = this.jobInfo.resource_data
-          if(this.jobInfo.resource_data.length>0){
-            this.cascaderIndex = this.jobInfo.resource_data.length
-          }else {
-            this.cascaderIndex = 1
-          }
-        }
       }
       if (val === false && !this.isJobEditor) this.$store.commit('job/handleJobInfo', { action: 'clearJobInfo' })
     },
