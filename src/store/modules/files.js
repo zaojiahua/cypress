@@ -6,6 +6,7 @@ let state = {
   imgFormat:['jpg','png','jpeg'],
   videoFormat:['mp4'],
   audioFormat:['mp3'],
+  fileFormat:['apk'],
 }
 
 let mutations = {
@@ -29,6 +30,46 @@ let mutations = {
     }
     if (action === 'clearResFiles') {
       state.resFiles = []
+    }
+    //删除一个block时吧对应的block里的资源文件删除（不删png）
+    if (action === 'deleteNormalResFiles') {
+      //data:index  删除normalBlock时，接受的是normal的key值
+      state.resFiles = state.resFiles.filter(file=>{
+        let key = null
+        if(file.type==="json"){
+          key = parseInt(file.name.split("_")[0])
+        }
+        return file.type!=="json" || key!==data
+      })
+      state.resFiles.forEach((item,index)=>{
+        item.index = index
+      })
+    }
+    //data:{ unitKey:key, normalKey:normalKey }  删除unit时，接受的是unit的key值和unit对应的normal的key
+    if (action === 'deleteUnitResFiles') {
+      state.resFiles = state.resFiles.filter(file=>{
+        let key = []
+        if(file.type==="json"){
+          key = file.name.split("_")
+        }
+        return data.normalKey!==parseInt(key[0]) || (data.normalKey===parseInt(key[0]) && parseInt(key[1])!==data.unitKey)  || file.type!=="json"
+      })
+      state.resFiles.forEach((item,index)=>{
+        item.index = index
+      })
+    }
+    //data:{ unitKey[key], normalKey:normalKey }  删除unitList时，接受的是unit的key值集合和unit对应的normal的key
+    if (action === 'deleteUnitListResFiles') {
+      state.resFiles = state.resFiles.filter(file=>{
+        let key = []
+        if(file.type==="json"){
+          key = file.name.split("_")
+        }
+        return data.normalKey!==parseInt(key[0]) || (data.normalKey===parseInt(key[0]) && !data.unitKey.includes(parseInt(key[1]))) || file.type!=="json"
+      })
+      state.resFiles.forEach((item,index)=>{
+        item.index = index
+      })
     }
   },
   handleCurFile (state, { action, data }) {

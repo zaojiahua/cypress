@@ -72,7 +72,7 @@ export function linkTemplateStyle () {
       new go.Binding('visible', 'visible').makeTwoWay(),
       MAKE(go.Shape, 'RoundedRectangle', // the label shape
         { fill: '#F8F8F8', strokeWidth: 0 }),
-      MAKE(go.TextBlock, 'else', // the label
+      MAKE(go.TextBlock, 'else', // link default: else
         {
           textAlign: 'center',
           font: '12pt helvetica, arial, sans-serif',

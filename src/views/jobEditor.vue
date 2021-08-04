@@ -4,9 +4,9 @@
       <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.job_name" clearable class="job-name" placeholder="请输入JOB名称" size="large" />
       <div class="child-m-right--1 flex-row">
         <div class="child-m-right--1 flex-row">
-          <Button type="primary" @click="$store.commit('handleShowDrawer')" size="large" style="margin-right: 10px;">用例详情</Button>
+          <Button type="primary" @click="$store.commit('handleShowDrawer',true)" size="large" style="margin-right: 10px;">用例详情</Button>
           <Button v-if="editJobFlow" type="info" ghost size="large" @click="viewResFile" style="margin-right: 10px;">查看依赖文件</Button>
-          <Button v-if="editJobFlow" type="info" ghost size="large" :disabled="!duplicateId" @click="duplicateTipModal = true" style="margin-right: 10px;">使用副本</Button>
+<!--          <Button v-if="editJobFlow" type="info" ghost size="large" :disabled="!duplicateId" @click="duplicateTipModal = true" style="margin-right: 10px;">使用副本</Button>-->
           <Modal
             title="确认使用副本替换当前的编辑内容吗？"
             v-model="duplicateTipModal"
@@ -14,10 +14,6 @@
             class-name="vertical-center-modal">
             <p>替换内容包括运行流程图，依赖文件以及用例的详细信息，且不可逆</p>
           </Modal>
-<!--          <p>jobId: {{jobId}}</p>-->
-<!--          <p>jobLabel: {{jobInfo.job_label}}</p>-->
-<!--          <p>jobDr: {{duplicateId}}</p>-->
-<!--          <p>jobLabelDr: {{duplicateLabel}}</p>-->
         </div>
         <div class="child-m-right--1 flex-row">
           <Dropdown @on-click="handleMenu">
@@ -27,7 +23,7 @@
             </Button>
             <DropdownMenu slot="list">
               <DropdownItem v-if="editJobFlow" name="save">保存</DropdownItem>
-              <DropdownItem v-if="editJobFlow" name="saveAs">另存为</DropdownItem>
+              <DropdownItem v-if="editJobFlow && selectJobType === 'InnerJob'" name="saveAs">另存为</DropdownItem>
               <DropdownItem v-if="editJobFlow" name="saveDraft">存草稿</DropdownItem>
               <DropdownItem name="quit">退出</DropdownItem>
             </DropdownMenu>
@@ -88,10 +84,14 @@ import {
   saveJobFlowAndMsg,
   getJobResFile,
   getJobId,
-  getJobDetail
+  getJobDetail,
+  updateFlowWithFlowId,
+  createFlow,
+  jobFlowByJobLabel, getJobFlowList
 } from '../api/reef/request'
 import util from "lib/util/validate";
 import {jobSerializer} from "lib/util/jobListSerializer";
+import {jobBindResource} from 'api/reef/request'
 
 export default {
   name: 'jobEditor',
@@ -121,11 +121,20 @@ export default {
     }
   },
   computed: {
-    ...mapState('job', ['jobInfo', 'outerDiagramModel', 'isValidated', 'duplicateId', 'duplicateLabel', 'normalData', 'config', 'jobLabelDuplicate']),
-    ...mapGetters('job', ['jobId', 'normalKey','editJobFlow','editJobMsg']),
+    ...mapState('job', ['jobInfo', 'jobFlowInfo','outerDiagramModel', 'isValidated', 'duplicateId', 'duplicateLabel', 'normalData', 'config', 'jobLabelDuplicate', 'selectJobType','resourceList']),
+    ...mapGetters('job', ['jobId', 'normalKey']),
     ...mapState('files', ['resFiles']),
     ...mapGetters('files', ['resFilesName','dataURLtoFileFormat']),
-    ...mapState('device', ['countdown', 'deviceInfo'])
+    ...mapState('device', ['countdown', 'deviceInfo']),
+    editJobMsg() {
+      return !(sessionStorage.groups && sessionStorage.groups.includes('Admin')) && (this.jobInfo.job_id === undefined ||this.jobInfo.author  === parseInt(sessionStorage.id))
+    },
+    editJobFlow (){
+      return !(sessionStorage.groups && sessionStorage.groups.includes('Admin')) && (this.jobInfo.job_id === undefined ||this.jobInfo.author  === parseInt(sessionStorage.id))
+    },
+    isAdmin (){
+      return sessionStorage.groups && sessionStorage.groups.includes('Admin')
+    }
   },
   watch: {
     jobInfo: {
@@ -143,6 +152,7 @@ export default {
       if (!val && !this.autoSaveToggle) { // 保存动作结束时，且自动保存没有开启则跳转到jobList页面
         this.$router.push({ path: '/jobList' })
         this.$store.commit('setCurPage', 1)
+        this.$store.commit('job/setEditingJobId', this.jobId)
       }
     }
   },
@@ -150,7 +160,7 @@ export default {
     // 在渲染该组件的对应路由被 confirm 前调用
     // 不！能！获取组件实例 `this`
     // 因为当守卫执行前，组件实例还没被创建
-    if (from.name !== 'jobList' && to.query.jobId) {
+    if (from.name !== 'jobList' && from.name !== 'createJob') {
       next ({ name: 'jobList'})
     }else{
       next()
@@ -158,21 +168,22 @@ export default {
 
   },
     // beforeRouteLeave (to, from, next) {
-    //   const answer = window.confirm('Do you really want to leave? you have unsaved changes!')
+    //   const answer = window.confirm('确定要离开该页面吗？会导致编辑的内容丢失。')
     //   if (answer) {
     //     next()
     //   } else {
     //     next(false)
     //   }
     // },
-  beforeRouteLeave  (to, from, next) {
-    if (to.name === 'jobList' && this.autoSaveToggle) { // 离开jobEditor页面去往jobList页面时，如果自动保存处于开启状态，则将当前用例逻辑流保存到store中
-      let start_node = this.outerDiagram.model.findNodeDataForKey(-1)
-      this.outerDiagram.model.setDataProperty(start_node, 'config', this._.cloneDeep(this.config))
-      this.$store.commit('job/setOuterDiagramModel', this.outerDiagram.model.toJson())
-    }
-    next()
-  },
+  // beforeRouteLeave  (to, from, next) {
+  //   const answer = window.confirm('Do you really want to leave? you have unsaved changes!')
+  //   if (to.name === 'jobList' && this.autoSaveToggle) { // 离开jobEditor页面去往jobList页面时，如果自动保存处于开启状态，则将当前用例逻辑流保存到store中
+  //     let start_node = this.outerDiagram.model.findNodeDataForKey(-1)
+  //     this.outerDiagram.model.setDataProperty(start_node, 'config', this._.cloneDeep(this.config))
+  //     this.$store.commit('job/setOuterDiagramModel', this.outerDiagram.model.toJson())
+  //   }
+  //   next()
+  // },
   beforeDestroy () {
     window.removeEventListener('contextmenu', this.dispatchMouseEvent)
     window.removeEventListener('mousemove', this.dispatchMouseEvent)
@@ -235,10 +246,11 @@ export default {
     },
     _jobMsgRules () { // 右侧抽屉中的表单信息是否通过校验
       let flag = false
+      // console.log(this.$store.state.job.isValidated)
       if (this.$store.state.job.isValidated) {
         flag = true
       } else { // 否，弹出右侧抽屉
-        this.$store.commit('handleShowDrawer')
+        this.$store.commit('handleShowDrawer',true)
       }
       return flag
     },
@@ -263,15 +275,36 @@ export default {
       }
       return flag
     },
-    async uploadFiles (id, info) { // 保存依赖文件，更新job Msg (job attr)失败则抛出异常
+    async createOrUpdateJobFlow(jobId,jobFlowInfo) {
+      let jobFlowId = jobFlowInfo["id"]
+      if (jobFlowId === undefined){ // create
+        // 获取order
+        let { data:{job_flow} } = await getJobFlowList(jobId)
+        if (job_flow.length !== 0) {
+          jobFlowInfo["order"] = Math.max(...job_flow.map(x => x.order)) + 1
+          console.log(jobFlowInfo["order"])
+        }else {
+          jobFlowInfo["order"] = 0
+        }
+        jobFlowInfo["job"] = jobId
+        let {data} = await createFlow(jobFlowInfo)
+        return data.id
+      } else {
+        delete jobFlowInfo["order"]
+        let {data} = await updateFlowWithFlowId(jobFlowId,jobFlowInfo)
+        return data.id
+      }
+    },
+    async uploadFiles (id, info, jobFlowInfo) { // 保存依赖文件，更新job Msg (job attr)失败则抛出异常
       this.saving = true
       info.job_id = id
       let resFiles = this._.cloneDeep(this.resFiles)
       try {
         let { status } = await updateJobMsg(id, info) // 更新jobInfo
         if (status === 200) {
+          let jobFlowId = await this.createOrUpdateJobFlow(id, jobFlowInfo)
           let data = new FormData()
-          data.append('job', id)
+          data.append('job_flow', jobFlowId)
           for (let i = 0; i < resFiles.length; i++) {
             let { name, type, file } = resFiles[i]
             if (name === 'FILES_NAME_CONFIG.json') continue // 移除老版本中遗留的文件，文件内容已经写入到start节点了
@@ -303,6 +336,14 @@ export default {
         this.saving = false
       }
     },
+    async bindResource(job_label,resourceList){
+      await jobBindResource( {"job_label":job_label,"resource_data":resourceList}).then(() => { // 更新用例信息
+        this.$Message.success('用例资源绑定成功')
+      }).catch(error => {
+        console.log(error)
+        this.$Message.error('用例资源绑定失败')
+      })
+    },
     calcWingmanCount () { // 计算用到的僚机数量, 僚机信息保存在normal/job块的data中
       let wingman = new Array(4).fill(0)
       let normalBlocks = this.outerDiagram.findNodesByExample({ 'category': 'normalBlock' })
@@ -322,14 +363,17 @@ export default {
       return wingman.reduce((pre, cur) => cur > 0 ? 1 + pre : pre, 0)
     },
     async handleMenu (name) { // 点击菜单项时动作分发
-      async function createNewJob (context, jobInfo) { // 复用自动保存的用俐/创建新用俐
+      async function createNewJob (context, jobInfo,jobFlowInfo,resourceList) { // 复用自动保存的用俐/创建新用俐
         if (!jobInfo.job_label) { // 没有自动保存
           jobInfo.job_label = createJobLabel(context)
         }
           // 创建新的Job
         try {
-          let { status, data } = await saveJobFlowAndMsg(jobInfo)
-          if (status === 201) await context.uploadFiles(data.id, jobInfo)
+          let { status, data } = await saveJobFlowAndMsg(jobInfo)  // 保存 job 的信息
+          if (status === 201){
+            await context.uploadFiles(data.id, jobInfo, jobFlowInfo)
+            await context.bindResource(data.job_label,resourceList)
+          }
         } catch (err) {
           console.log(err)
           throw new Error(err)
@@ -337,9 +381,6 @@ export default {
       }
       if (name === 'quit') { // 退出
         this.autoSaveToggle = false
-        // if (this.duplicateId) {
-        //   await updateJobMsg(this.duplicateId, { job_deleted: true })
-        // }
         this.$router.push({ path: '/jobList' })
         this.$store.commit('setCurPage', 1)
       } else // 非退出的操作
@@ -353,6 +394,32 @@ export default {
           }
         let id = this.jobId
         let jobInfo = await this.prepareJobInfo()
+        let jobFlowInfo = await this.prepareJobFlowInfo(jobInfo)
+        // 资源验证：先去除空值，看实际选择的资源value是否为空
+        for (let i = this.resourceList.length-1; i >= 0; i--) {
+          if(!this.resourceList[i] || this.resourceList[i].length===0)
+            this.resourceList.splice(i,1)
+        }
+        //资源验证：每个设备(主僚机)下的sim1和sim2只能选择一次
+        let sim_1_list = []
+        let sim_2_list = []
+        this.resourceList.forEach(item=>{
+          if(item[1]==="simcard_1"){
+            sim_1_list.push(item)
+          }else if(item[1]==="simcard_2"){
+            sim_2_list.push(item)
+          }
+        })
+        let sim_1_name = []
+        let sim_2_name = []
+        sim_1_list.forEach(item=>{
+          sim_1_name.push(item[0])
+        })
+        sim_2_list.forEach(item=>{
+          sim_2_name.push(item[0])
+        })
+        let resourceList = _.cloneDeep(this.resourceList)
+
         if (name === 'saveDraft') { // 存草稿，可跳过校验
           if (!this._jobMsgRules()) return
           jobInfo.draft = true
@@ -360,7 +427,8 @@ export default {
           if (id) //id 存在 则将已有的job更新成草稿 不存在会创建
           {
             try {
-              await this.uploadFiles(id, jobInfo)
+              await this.uploadFiles(id, jobInfo, jobFlowInfo)
+              await this.bindResource(jobInfo.job_label,resourceList)
             } catch (error) {
               this.$Message.error({
                 background: true,
@@ -371,14 +439,12 @@ export default {
             // if (this.duplicateId) { // todo:将副本删除
             //   updateJobMsg(this.duplicateId, { job_deleted: true })
             // }
-            // await this.clearData()
-            // return
           }
           else // 保存全新草稿job
           {
               try {
                 // console.log("创建一个全新的草稿job")
-                await createNewJob(this, jobInfo)
+                await createNewJob(this, jobInfo, jobFlowInfo,resourceList)
               } catch (error) {
                 this.$Message.error({
                   background: true,
@@ -407,7 +473,8 @@ export default {
             jobInfo.draft = false
             if (id) { //id 存在表明是更新正式用例
               try {
-                await this.uploadFiles(id, jobInfo)
+                await this.uploadFiles(id, jobInfo,jobFlowInfo)
+                await this.bindResource(jobInfo.job_label,resourceList)
               } catch (error) {
                 this.$Message.error({
                   background: true,
@@ -418,14 +485,12 @@ export default {
               // if (this.duplicateId) {
               //   updateJobMsg(this.duplicateId, { job_deleted: true })
               // }
-              // await this.clearData()
-              // return
             }
             else //生成正式job
               {
                 try {
                   // console.log("创建一个全新的job")
-                  await createNewJob(this, jobInfo)
+                  await createNewJob(this, jobInfo, jobFlowInfo,resourceList)
                 } catch (error) {
                   this.$Message.error({
                     background: true,
@@ -436,6 +501,14 @@ export default {
               }
           }
           else if (name === 'saveAs') { // 另存为
+            delete jobFlowInfo.id
+            if (this.selectJobType !== 'InnerJob') {
+              this.$Message.error({
+                background: true,
+                content: 'Inner Job 才具备另存为功能'
+              })
+              return
+            }
             this.$Modal.confirm({
               render: (h) => {
                 return h('Input', {
@@ -457,7 +530,7 @@ export default {
                           // 另存为生成新的jobLabel
                           jobInfo.job_label = createJobLabel (this)
                           try {
-                            await createNewJob(this, jobInfo)  // 监听回车（）enter 触发 的另存为
+                            await createNewJob(this, jobInfo, jobFlowInfo,resourceList)  // 监听回车（）enter 触发 的另存为
                           } catch (error) {
                             this.$Message.error({
                               background: true,
@@ -465,7 +538,6 @@ export default {
                             })
                             return
                           }
-                          console.log("enter")
                           await this.clearData()
                           this.$Modal.remove()
                           break
@@ -483,7 +555,7 @@ export default {
                 // 另存为生成新的jobLabel
                 jobInfo.job_label = createJobLabel (this)
                 try {
-                  await createNewJob(this, jobInfo) // input框确认按钮的确认触发的保存
+                  await createNewJob(this, jobInfo, jobFlowInfo,resourceList) // input框确认按钮的确认触发的保存
                 } catch (error) {
                   this.$Message.error({
                     background: true,
@@ -507,6 +579,7 @@ export default {
       this.outerDiagram.model.setDataProperty(start, 'config', this._.cloneDeep(this.config))
       // 保存Job信息
       let jobInfo = this._.cloneDeep(this.jobInfo)
+      jobInfo.flow_execute_mode = "SingleSplit" // todo：需要设置用户输入的入口
       jobInfo.ui_json_file = JSON.parse(this.outerDiagram.model.toJson())
       jobInfo.ui_json_file.nodeDataArray.forEach((val, idx, arr) => {
         if ('unitLists' in val && typeof val.unitLists === 'string') {
@@ -524,16 +597,29 @@ export default {
         jobInfo.custom_tag = await createNewTag('custom_tag', jobInfo)
         this.$store.dispatch('setBasicCustomTag')
       }
-      // 记录涉及到的InnerJob
-      jobInfo.inner_job_list = this.prepareInnerJobList()
-      this.innerJobNum = jobInfo.inner_job_list.length
       return jobInfo
+    },
+    async prepareJobFlowInfo(jobInfo) {
+      let jobFlowInfo = this._.cloneDeep(this.jobFlowInfo)
+      jobFlowInfo["ui_json_file"] = jobInfo.ui_json_file
+      jobFlowInfo["flow_type"] = jobInfo.job_type === "InnerJob" ? "InnerFlow" : "NormalFlow"
+      const inner_job_list = this.prepareInnerJobList()
+      if (this.selectJobType === 'norMalJob') jobFlowInfo["inner_flow"] = await this.prepareInnerFlowIdList(inner_job_list)
+      return jobFlowInfo
     },
     prepareInnerJobList () { // 保存用到的innerjob的joblabel
       let list = []
       let innerJobs = this.outerDiagram.findNodesByExample({ 'category': 'Job' })
       innerJobs.each(node => { if (node.data.jobLabel) { list.push(node.data.jobLabel) } })
       return list
+    },
+    async prepareInnerFlowIdList (innerJobList) { // 保存用到的innerjob的innerFlow 一对一关系
+      let innerFlowIdList = []
+      for (let jobLabel of innerJobList){
+        let {data:{jobs}} = await jobFlowByJobLabel(jobLabel)
+        innerFlowIdList.push(jobs[0].job_flow[0].id)
+      }
+      return innerFlowIdList
     },
     async prepareAutoSaveInfo () {
       let { data: start } = this.outerDiagram.findNodeForKey(-1)
@@ -569,7 +655,7 @@ export default {
       info.job_label = this.duplicateLabel
       return info
     },
-    async autoSave () {
+    async autoSave () { // todo：先屏蔽副本的代码，之后再做
       let curTime = Date.now()
       if (curTime - this.lastActiveTime >= this.activeTimeInterval || !this._jobMsgRules() || !this.autoSaveToggle) return
       let info = await this.prepareAutoSaveInfo()
@@ -615,21 +701,23 @@ export default {
     viewResFile () { // 打开依赖文件的展示页面
       this.$store.commit('files/setShowResFileModal')
     },
-    handleResFile (jobId) { // jobEditor挂载时获取依赖文件
-      if (!jobId) return
-      getJobResFilesList(jobId).then(({ status, data }) => {
+    handleResFile (jobFlowId) { // jobEditor挂载时获取依赖文件
+      if (!jobFlowId) return
+      getJobResFilesList(jobFlowId).then(({ status, data }) => {
         if (status === 200) {
           let filesData = data.job_res_file
           Promise.all(filesData.map(item => getJobResFile(item.file))).then(res => {
             res.forEach((file, index) => {
-              let reader = new FileReader()
-              if (file.data.type.startsWith('image') || file.data.type.startsWith('audio')) { // 图片则存放 dataURL
+              let reader = new FileReader()   //允许Web应用程序异步读取存储在用户计算机上的文件（或原始数据缓冲区）的内容
+              if (file.data.type.startsWith('image') || file.data.type.startsWith('audio') || file.data.type.startsWith('video')) { // 图片则存放 dataURL
+                //开始读取指定的Blob中的内容。一旦完成，result属性中将包含一个data: URL格式的Base64字符串以表示所读取文件的内容,img通过加载这个地址,完成图片的加载
                 reader.readAsDataURL(file.data)
               } else { // json 则存放 text
+                //开始读取指定的Blob中的内容。一旦完成，result属性中将包含一个字符串以表示所读取的文件内容。
                 reader.readAsText(file.data)
 
               }
-              reader.onload = () => {
+              reader.onload = () => {   //在读取操作完成时触发
                 filesData[index].file = reader.result
                 filesData[index].index = index
                 filesData[index].dirty = true
@@ -662,7 +750,7 @@ export default {
       this.$store.commit('job/setDuplicateLabel', null) // 清除自动保存的用例的label
       this.$store.commit('job/handleJobInfo', { action: 'setJobInfo', data: {} }) // 清空jobInfo
       this.$store.commit('job/setOuterDiagramModel', null) // 清空画布信息
-      this.$store.commit('job/handleJobInfo', { action: 'setPreJobInfo', data: false }) // 清空上一次选择的job的信息
+      // this.$store.commit('job/handleJobInfo', { action: 'setPreJobInfo', data: false }) // 清空上一次选择的job的信息
       this.$store.commit('job/handleConfig', { action: 'init' })
       this.$store.commit('job/setIsValidated', false)
       this.$store.commit('files/handleResFiles', { action: 'clearResFiles' })
@@ -718,7 +806,7 @@ export default {
     closeJobController () {
       this.jobController.style.display = 'none'
     },
-    async showDuplicateJob() {
+    async showDuplicateJob() { // todo：先屏蔽副本的代码，之后再做
       let jobId = this._.cloneDeep(this.jobId)
       let jobLabel = this._.cloneDeep(this.jobInfo.job_label)
       async function setJobMsg (context, id) {
@@ -728,7 +816,9 @@ export default {
           manufacturer: (job.phone_models.length === 0) ? null : job.phone_models[0].manufacturer.id, // todo: 写了manufacturer 没写phonemodel
           author: this.jobInJob.author,
           job_id: jobId, // 将副本的内容作用到编辑的job
-          job_flow: job.ui_json_file
+          job_flow: job.ui_json_file,
+          cabinet_type:job.cabinet_type,
+          resource_data:job.matching_rule ? job.matching_rule.resource_data : []
         }
         CONST.SIMPLE_JOB_KEY.forEach(val => {
           jobInfo[val] = job[val]
@@ -756,10 +846,11 @@ export default {
   },
   mounted () {
     init(this) // 创建画板与画布并绘制流程图
-    if (!this.resFiles.length) this.handleResFile(this.jobId)
+    if (!this.resFiles.length) this.handleResFile(this.jobFlowInfo.id)
 
-    this.autoSaveToggle = this.editJobFlow && this.editJobMsg  // 可以被编辑则可以自动保存
     this.jobController = document.getElementById('job-controller')
+    //  todo：先屏蔽副本的代码（自动保存），之后再做
+    this.autoSaveToggle = this.editJobFlow && this.editJobMsg && false // 可以被编辑则可以自动保存
     if (this.autoSaveToggle){
       let timer = setInterval(async () => { // 设置自动保存的自动循环
         try {

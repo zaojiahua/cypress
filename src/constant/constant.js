@@ -15,8 +15,8 @@ export default {
     UNFINISHED: '#F76132',
     UNIT: '#338FF0',
     GROUP: '#50A5F4',
-    RESULT: '#3AFFF3',
-    STAR: '#ffff00'
+    RESULT: '#3AFFF3', // 作为最终结果的unit
+    STAR: '#ffff00' // 会产生结果对的unit
   },
   WILL_TOUCH_FILE: new Set([
     'jobResourceFile',
@@ -139,7 +139,7 @@ export default {
     'nodeDataArray': [ { 'category': 'Start', 'text': 'Start', 'key': -1 } ],
     'linkDataArray': []
   }),
-  SIMPLE_JOB_KEY: ['job_name', 'job_type', 'job_second_type', 'job_label','priority','case_number', 'description', 'draft', 'subsidiary_device_count'],
+  SIMPLE_JOB_KEY: ['job_name', 'job_type', 'job_second_type', 'job_label','priority','case_number', 'description', 'draft'],
   COMPLEX_JOB_KEY: ['test_area', 'android_version', 'custom_tag', 'phone_models', 'rom_version'],
   USER_INFO: ['id', 'username', 'groups', 'token'],
   SERIALIZER_KEY: ['manufacturer', 'androidVersion', 'customTag', 'testArea'],
@@ -188,9 +188,14 @@ export default {
     unitMsg: null
   },
   ICON_TEST_UNIT_LIST: [
-    'has_icon_area_selected', 'has_icon'
+    'has_icon_area_selected', 'has_icon',
   ],
   ICON_POSITION_TEST_UNIT_LIST:[
-    'smart_icon_point_crop','smart_icon_point','smart_icon_long_press'
-  ]
+    'smart_icon_point_crop','smart_icon_point','smart_icon_long_press','end_point_with_icon','start_point_with_point'
+  ],
+  ICON_POSITION_FIX_TEST_UNIT_LIST:[
+    'smart_icon_point_crop_template',"start_point_with_point_template"],
+  ICON_TEST_UNIT_LIST_FIXED: [
+    "end_point_with_icon_template_match","has_icon_template_match"
+  ],
 }

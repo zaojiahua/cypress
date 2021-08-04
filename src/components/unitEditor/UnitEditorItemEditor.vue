@@ -199,7 +199,7 @@ export default {
       }
     },
     saveFeaturePoint () { // 保存选取的区域信息
-      if (this.willTouchFile && this.coordinates.length) { // 如果会产生关于选区信息的依赖文件且选区信息不为空
+      if (this.willTouchFile && this.coordinates.length !== 0) { // 如果会产生关于选区信息的依赖文件且选区信息不为空
         let nameInfo = this.tmachBlanks[0]
         let coordinateNum = 1
         let coordinateDataList = {} // 存放选区信息
@@ -231,6 +231,9 @@ export default {
       }
     },
     handleUnitData () { // 保存更新后的unitData
+      this.tmachBlanks.forEach(item=>{
+        item.content = item.content.replace(/ /g,"")
+      })
       let flag = true
       if (this.curFile && this.isJobResourcePicture) { // 如果当前显示的图片不为空且itemType为jobResourcePicture
         this.tmachBlanks[0].content = suffixRemove(this.curFile.name) // 将当前图片的名字去掉后缀后保存
@@ -327,7 +330,19 @@ export default {
     saveItemData () {
       if (!this.handleUnitData()) return
       if (!this.handleByProductsName()) return
-      this.saveFeaturePoint()
+      if (this.isJobResourceFile){
+        if (this.willTouchFile && this.coordinates.length !== 0) {
+          this.saveFeaturePoint()
+        }
+        else{
+          this.saveFeaturePoint()
+          this.$Message.info("注意是否需要选择区域！")
+          return
+        }
+      }else{
+        this.saveFeaturePoint()
+      }
+
       this.$store.commit('item/handleItemData', {
         action: 'setItemData',
         data: {

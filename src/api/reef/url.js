@@ -9,8 +9,14 @@ const romVersionFilter = ['id', 'version']
 const manufacturerFilter = ['id', 'manufacturer_name', 'phonemodel', 'phonemodel.id', 'phonemodel.phone_model_name', 'romversion', 'romversion.id', 'romversion.version']
 const usableDeviceFilter = ['id', 'device_label', 'ip_address', 'device_name', 'phone_model', 'phone_model.phone_model_name', 'android_version', 'android_version.version', 'rom_version', 'rom_version.version']
 const deviceFilter = ['id', 'device_label', 'occupy_type', 'phone_model', 'phone_model.id', 'phone_model.phone_model_name', 'phone_model.manufacturer', 'phone_model.manufacturer.id', 'phone_model.manufacturer.manufacturer_name', 'phone_model.cpu_name', 'rom_version', 'rom_version.id', 'rom_version.version', 'device_name', 'android_version', 'android_version.id', 'android_version.version', 'ip_address', 'cabinet', 'cabinet.ip_address', 'status']
-const jobFilter = ['id', 'test_area', 'test_area.description', 'custom_tag', 'custom_tag.custom_tag_name', 'ui_json_file', 'job_name', 'job_type', 'job_second_type', 'draft', 'updated_time']
-const jobDetailFilter = ['id', 'job_label', 'description', 'job_name', 'job_type', 'job_second_type', 'case_number', 'priority', 'draft', 'subsidiary_device_count', 'rom_version', 'rom_version.version', 'rom_version.id', 'rom_version.manufacturer', 'rom_version.manufacturer.manufacturer_name', 'rom_version.manufacturer.id', 'android_version', 'android_version.version', 'android_version.id', 'custom_tag', 'custom_tag.custom_tag_name', 'custom_tag.id', 'phone_models', 'phone_models.phone_model_name', 'phone_models.id', 'phone_models.manufacturer', 'phone_models.manufacturer.manufacturer_name', 'phone_models.manufacturer.id', 'test_area', 'test_area.description', 'test_area.id', 'author', 'author.username', 'author.id', 'ui_json_file']
+const jobFilter = ['id', 'test_area', 'test_area.description', 'custom_tag', 'custom_tag.custom_tag_name', 'ui_json_file', 'job_name', 'job_type', 'job_second_type', 'draft', 'updated_time', 'author', 'author.id']
+const jobDetailFilter = ['id', 'job_label', 'description', 'job_name', 'job_type', 'job_second_type', 'case_number', 'priority', 'draft','cabinet_type',
+  'rom_version', 'rom_version.version', 'rom_version.id', 'rom_version.manufacturer', 'rom_version.manufacturer.manufacturer_name', 'rom_version.manufacturer.id',
+  'android_version', 'android_version.version', 'android_version.id', 'custom_tag', 'custom_tag.custom_tag_name', 'custom_tag.id',
+  'phone_models', 'phone_models.phone_model_name', 'phone_models.id', 'phone_models.manufacturer', 'phone_models.manufacturer.manufacturer_name', 'phone_models.manufacturer.id',
+  'test_area', 'test_area.description', 'test_area.id', 'author', 'author.username', 'author.id', 'ui_json_file',
+  'job_flow', 'job_flow.id', 'job_flow.name', 'job_flow.ui_json_file', 'job_flow.order', 'job_flow.description','matching_rule']
+const jobFlowFilter = ['job_flow', 'job_flow.id', 'job_flow.name', 'job_flow.ui_json_file', 'job_flow.order', 'job_flow.description']
 const resFileFilter = ['job_res_file', 'job_res_file.name', 'job_res_file.file', 'job_res_file.type']
 const tokenUserFilter = ['user', 'user.id', 'user.username', 'user.groups','user.groups.name']
 
@@ -34,12 +40,25 @@ export default {
   releaseDevice: () => `${coralPrefix}release_occupy_device/`,
   job: (data) => `${reefPrefix}job/?fields=${joinFilter(jobFilter)}&job_deleted=False&limit=${data.pageSize}&offset=${data.offset}&ordering=-updated_time${data.filterUrlParam}`,
   jobSingleId: (job_label) => `${reefPrefix}job/?fields=id&job_label=${job_label}`,
+  jobMsgByParams: () => `${reefPrefix}job/`,
+  jobFlowByJobLabel: (job_label) => `${reefPrefix}job/?fields=${joinFilter(jobFlowFilter)}&job_label=${job_label}`,
   jobDetail: (id) => `${reefPrefix}job/${id}/?fields=${joinFilter(jobDetailFilter)}`,
+  jobFlow: (id) => `${reefPrefix}job/${id}/?fields=${joinFilter(jobFlowFilter)}`,
+  jobFlowWithFlowId: (id) => `${reefPrefix}job_flow/${id}/`,
+  updateFlowOrder: () => `${reefPrefix}job_flow_order_update/`,
+  createFlow: () => `${reefPrefix}job_flow/`,
+  copyFlow:() => `${reefPrefix}job_flow_copy/`,
+  copyJob:() => `${reefPrefix}job_copy/`,
+
+  cabinetList:() => `${reefPrefix}get_cabinet_type_info/`,
+  appNameList:() => `${reefPrefix}get_order_app_name`,
+  jobBindResource:() => `${reefPrefix}job_bind_resource/`,
+
   saveJobFlowAndMsg: () => `${reefPrefix}job/`,
   updateJobMsg: (id) => `${reefPrefix}job/${id}/`,
   deleteTag: (id, type) => `${reefPrefix}${type}/${id}`,
   saveResFile: () => `${reefPrefix}job_upload_multi_res_file/`,
-  getResFile: (id) => `${reefPrefix}job/${id}/?fields=${joinFilter(resFileFilter)}`,
+  getResFile: (id) => `${reefPrefix}job_flow/${id}/?fields=${joinFilter(resFileFilter)}`,
   unit: () => `${reefPrefix}unit/`,
   handleUnit: (id) => `${reefPrefix}unit/${id}/`,
   token: (token) => `${reefPrefix}token/?fields=${joinFilter(tokenUserFilter)}&key=${token}`

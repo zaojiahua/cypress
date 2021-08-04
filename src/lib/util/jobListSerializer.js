@@ -48,6 +48,10 @@ const serializer = {
     test_area: [{
       id: 'number',
       description: 'string'
+    }],
+    phone_model: [{
+      id: 'number',
+      phone_model_name: 'string'
     }]
   }],
   manufacturerSerializer: {
@@ -86,6 +90,7 @@ const jobSerializer = {
   job_label: 'string',
   job_name: 'string',
   job_type: 'string',
+  cabinet_type: 'string',
   case_number: 'string',
   priority: 'string',
   phone_models: [{
@@ -108,7 +113,14 @@ const jobSerializer = {
     id: 'number',
     description: 'string'
   }],
-  ui_json_file: 'string'
+  ui_json_file: 'string',
+  job_flow: [{
+    id: 'number',
+    name: 'string',
+    ui_json_file: 'string',
+    order: 'string',
+    description:'string'
+  }],
 }
 
 export {

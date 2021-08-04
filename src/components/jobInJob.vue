@@ -48,6 +48,14 @@ export default {
         {
           title: '自定义标签',
           key: 'custom_tag'
+        },
+        {
+          title: '作者',
+          key: 'author'
+        },
+        {
+          title: '适用机型',
+          key: 'phone_model'
         }
       ],
       innerJobs: [],
@@ -103,7 +111,7 @@ export default {
         'rom_version,rom_version.id,' +
         'android_version,android_version.id,' +
         'custom_tag,custom_tag.custom_tag_name,custom_tag.id,' +
-        'phone_models,phone_models.id,' +
+        'phone_models,phone_models.id,phone_models.phone_model_name,' +
         'test_area,test_area.description,test_area.id,' +
         'author,author.username,author.id,' +
         'ui_json_file' +
@@ -133,8 +141,17 @@ export default {
               jobCustomTags.push(jobCustomTag.custom_tag_name)
             })
 
+            let jobPhoneModes = []
+            job.phone_models.forEach(jobPhoneMode => {
+              jobPhoneModes.push(jobPhoneMode.phone_model_name)
+            })
+
+            job.author = job.author.username
+
             job.test_area = jobTestAreas.join(',')
             job.custom_tag = jobCustomTags.join(',')
+            job.phone_model = jobPhoneModes.join(',')
+
           })
         } else {
           this.$Message.error({

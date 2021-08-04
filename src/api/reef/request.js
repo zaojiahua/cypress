@@ -1,6 +1,6 @@
 import axios from '../index'
 import url from './url'
-import { baseURL } from '../../config'
+import {baseURL} from '../../config'
 
 // login
 const login = (username, password) => {
@@ -106,6 +106,13 @@ const getJobId = (jobLabel) => {
   })
 }
 
+// 根据指定条件job获取指定字段
+const getJobMsgByParams = (_params) => {
+  return axios.request({
+    params: _params,
+    url: url.jobMsgByParams()
+  })
+}
 
 
 const getJobList = (data) => {
@@ -116,9 +123,20 @@ const getJobList = (data) => {
 }
 
 const getJobDetail = (id) => {
+
+  // console.log(url.jobDetail(id))
   // getJobDetail 需要job id 获取单个job 因此不能加条件 （如：job_deleted=true）
   return axios.request({
     url: url.jobDetail(id)
+  })
+}
+
+const getJobFlowList = (id) => {
+
+  // console.log(url.jobDetail(id))
+  // getJobDetail 需要job id 获取单个job 因此不能加条件 （如：job_deleted=true）
+  return axios.request({
+    url: url.jobFlow(id)
   })
 }
 
@@ -190,6 +208,70 @@ const createNewUnitTemplate = (data) => {
   })
 }
 
+
+const updateFlowWithFlowId = (id, data) => {
+  return axios.request({
+    method: 'patch',
+    url: url.jobFlowWithFlowId(id),
+    data
+  })
+}
+
+const updateFlowOrder = (jobId, flowList) => {
+  let data = {
+    job: jobId,
+    flows: flowList
+  }
+  return axios.request({
+    method: 'post',
+    url: url.updateFlowOrder(),
+    data
+  })
+}
+const createFlow = (data) => {
+  return axios.request({
+    method: 'post',
+    url: url.createFlow(),
+    data
+  })
+}
+const jobFlowByJobLabel = (jobLabel) => {
+  return axios.request({
+    method: 'get',
+    url: url.jobFlowByJobLabel(jobLabel)
+  })
+}
+const deleteFlowWithFlowId = (id) => {
+  return axios.request({
+    method: 'delete',
+    url: url.jobFlowWithFlowId(id),
+  })
+}
+
+const getFlow = (data = {}) => {
+  return axios.request({
+    method: 'get',
+    url: url.createFlow(),
+    params: data
+  })
+}
+
+const copyFlowWithFlowId = (data = {}) => {
+  return axios.request({
+    method: 'post',
+    url: url.copyFlow(),
+    data
+  })
+}
+const copyJob = (data = {}) => {
+  return axios.request({
+    method: 'post',
+    url: url.copyJob(),
+    data
+  })
+}
+
+
 const deleteUnitTemplate = (id) => {
   return axios.request({
     method: 'delete',
@@ -202,6 +284,30 @@ const getUserInfoByToken = (token) => {
   return axios.request({
     method: 'get',
     url: url.token(token)
+  })
+}
+
+//cabinetList
+const getCabinetList = (data = {}) => {
+  return axios.request({
+    method: 'get',
+    url: url.cabinetList(),
+    params: data
+  })
+}
+
+const getAppNameList = (data = {}) => {
+  return axios.request({
+    method: 'get',
+    url: url.appNameList(),
+    params: data
+  })
+}
+const jobBindResource= (data = {}) => {
+  return axios.request({
+    method: 'post',
+    url: url.jobBindResource(),
+    data
   })
 }
 
@@ -224,6 +330,7 @@ export {
   getJobId,
   getJobList,
   getJobDetail,
+  getJobFlowList,
   updateJobMsg,
   getBlockFlowDict4Font,
   jobResFilesSave,
@@ -233,5 +340,17 @@ export {
   updateJobUnitTemplate,
   createNewUnitTemplate,
   deleteUnitTemplate,
-  getUserInfoByToken
+  getUserInfoByToken,
+  updateFlowWithFlowId,
+  deleteFlowWithFlowId,
+  createFlow,
+  jobFlowByJobLabel,
+  updateFlowOrder,
+  getFlow,
+  copyFlowWithFlowId,
+  copyJob,
+  getJobMsgByParams,
+  getCabinetList,
+  getAppNameList,
+  jobBindResource,
 }

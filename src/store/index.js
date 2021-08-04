@@ -32,8 +32,8 @@ export default new Vuex.Store({
     basicData: null // 基本的信息, 如job_test_area/custom_tag/phone_model等信息
   },
   mutations: {
-    handleShowDrawer (state) {
-      state.showDrawer = !state.showDrawer
+    handleShowDrawer (state,flag = false) {
+      state.showDrawer = flag
     },
     setIsLoading (state, isLoading) {
       state.isLoading = isLoading

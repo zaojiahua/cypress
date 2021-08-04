@@ -15,6 +15,9 @@
       <div v-else-if="audioFormat.indexOf(file.type) !== -1" class="video">
         <audio :src="file.file" controls></audio>
       </div>
+      <div v-else-if="fileFormat.indexOf(file.type) !== -1">
+        <Icon type="ios-folder" size="160"/>
+      </div>
       <div v-else @keydown="keydownHandler" class="text">
         <Input type="textarea" :autosize="{minRows: 30, maxRows: 30}" v-model="file.file" />
         <Button type="primary" long @click="saveChange(file.file)" style="margin-top: 20px;">保存更改</Button>
@@ -46,7 +49,7 @@ export default {
   },
   computed: {
     ...mapState('files', [
-      'imgFormat', 'videoFormat', 'audioFormat'
+      'imgFormat', 'videoFormat', 'audioFormat','fileFormat'
     ]),
   },
   methods: {

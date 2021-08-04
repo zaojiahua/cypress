@@ -50,7 +50,8 @@ import { getSelectedJobs } from 'api/coral/jobLibSvc'
 import { jobLibSvcURL } from '../config/index'
 import { serializer, jobSerializer } from 'lib/util/jobListSerializer'
 import jobListFilter from '../components/jobListFilter'
-import { getJobDetail, getJobList, updateJobMsg } from 'api/reef/request'
+import { getJobDetail, getJobList, updateJobMsg,copyJob } from 'api/reef/request'
+import { createJobLabel } from '../lib/tools'
 import { mapState } from 'vuex'
 
 export default {
@@ -60,6 +61,7 @@ export default {
   },
   data () {
     return {
+      copyJobName:'',
       pageSize: 10, // 每页条数
       dataCount: 0,
       lastPage: 0,
@@ -135,6 +137,45 @@ export default {
             localStorage.setItem('COMPJOBLIST:FILTER_JOB_TYPE', this.jobType)
             this.jobPageChange(1)
           }
+        },
+        {
+          title: '操作',
+          key: 'operation',
+          width: 150,
+          align: 'center',
+          render: (h, params) => {
+            if (!this.isAdmin) {
+              return h('div', [
+                h('Icon', {
+                  props: {
+                    type: 'ios-copy',
+                    size: '18'
+                  },
+                  on: {
+                    click: () => {
+                      event.stopPropagation();
+                      this.show(params.index)
+                    }
+                  }
+                }),
+              ]);
+            }else {
+              return h('div', [
+                h('Icon', {
+                  props: {
+                    type: 'ios-copy-outline',
+                    size: '18'
+                  },
+                  on: {
+                    click: () => {
+                      event.stopPropagation();
+                    }
+                  }
+                }),
+              ]);
+            }
+
+          }
         }
       ],
       jobData: util.validate(serializer.jobSerializer, []),
@@ -151,6 +192,10 @@ export default {
   },
   computed: {
     ...mapState(['refresh']),
+    ...mapState('job', ['editingJobId']),
+    isAdmin (){
+      return sessionStorage.groups && sessionStorage.groups.includes('Admin')
+    },
     curPage: {
       get: function () {
         return this.$store.state.curPage
@@ -175,6 +220,47 @@ export default {
     }
   },
   methods: {
+    show (index) {
+      let self = this
+      self.copyJobName = `${self.jobData[index].job_name}_copy`
+      this.$Modal.confirm({
+        render: (h) => {
+          return h('Input', {
+            props: {
+              ref:'newJobName',
+              value: self.copyJobName,
+              autofocus: true,
+              placeholder: '请输入新的用例名称',
+            },
+            on: {
+              input: (val) => {
+                self.copyJobName = val
+              }
+            }
+          })
+        },
+        async onOk(){
+          let data = {
+            "job_id": self.jobData[index].id,
+            "job_name": self.copyJobName,
+            "job_label": createJobLabel(self),
+            "author_id": parseInt(sessionStorage.id)
+          }
+          if (self.copyJobName.length >=50){
+            self.$Message.error("文件名过长")
+            return
+          }
+          try{
+            await copyJob(data)
+            self.$Message.info("另存成功")
+          } catch (e) {
+            self.$Message.error("另存失败")
+          }
+          self.getFilteredJobs()
+        }
+      }
+      )
+    },
     getFilteredJobs () {
       let filterUrlParam = `${this.jobState ? `&draft=${this.jobState === 'draft' ? 'True' : 'False'}` : ''}${this.jobType ? `&job_type=${this.jobType}` : ''}${this.filterUrlParam}`
       getJobList({
@@ -187,6 +273,9 @@ export default {
         this.lastPage = Math.ceil(this.dataCount / this.pageSize)
         this.jobData = res.data.jobs
         this.jobData.forEach(job => {
+          if (job.job_type === "InnerJob") job._disabled = true
+          //todo: 自己只能删除自己的用例
+          // if (job.job_type === "InnerJob" || parseInt(sessionStorage.getItem("id")) !== job.author.id) job._disabled = true
           job.test_area = job.test_area.map(item => item.description).join(',')
           job.custom_tag = job.custom_tag.map(item => item.custom_tag_name).join(',')
           job.job_state = job.draft ? '草稿' : '正式'
@@ -214,7 +303,10 @@ export default {
         manufacturer: (job.phone_models.length === 0) ? null : job.phone_models[0].manufacturer.id, // todo: 写了manufacturer 没写phonemodel
         author: job.author.id,
         job_id: job.id,
-        job_flow: job.ui_json_file
+        job_flow: job.ui_json_file,
+        job_flows:job.job_flow,
+        cabinet_type:job.cabinet_type,
+        resource_data:job.matching_rule ? job.matching_rule.resource_data : []
       }
       CONST.SIMPLE_JOB_KEY.forEach(val => {
         jobInfo[val] = job[val]
@@ -222,11 +314,13 @@ export default {
       CONST.COMPLEX_JOB_KEY.forEach(val => {
         jobInfo[val] = job[val].map(item => item.id)
       })
+      this.$store.commit('job/setSelectJobType', job.job_type)
       this.$store.commit('job/handleJobInfo', { action: 'setJobInfo', data: jobInfo })
+      this.$store.commit('job/handleResourceList', { action: 'setResourceList', data: jobInfo.resource_data })
     },
     async onRowClick (curData, index) { // 单击表格某一行
       await this.getJobInfo(curData.id)
-      this.$store.commit('handleShowDrawer')
+      this.$store.commit('handleShowDrawer',true)
     },
     selectedJobsChange (selection) {
       selection.forEach((value) => {
@@ -371,8 +465,14 @@ export default {
     // this.setTableHeight()
     // window.addEventListener('resize', this.setTableHeight)
   },
-  activated () {
+  async activated () {
     this.jobPageChange()
+
+    if (this.editingJobId !== null && !isNaN(this.editingJobId)) {
+      await this.getJobInfo(this.editingJobId)
+      this.$store.commit('handleShowDrawer',true)
+    }
+    this.$store.commit('job/setEditingJobId', null)
   },
   beforeRouteLeave (to, from, next) {
     localStorage.setItem('joblist-management:DEFAULT_FILTER_CONFIG', this.jobState)
@@ -389,5 +489,8 @@ export default {
     justify-content: center;
     margin-top: 1em;
   }
+}
+/deep/.ivu-page-simple .ivu-page-simple-pager input{
+  width: 45px;
 }
 </style>

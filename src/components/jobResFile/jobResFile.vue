@@ -44,7 +44,7 @@ export default {
   },
   data () {
     return {
-      Accept: ".png,.jpg,.jpeg,.mp3,.mp4,.txt,.json",//上传文件格式限制
+      Accept: ".png,.jpg,.jpeg,.mp3,.mp4,.txt,.json,.apk,.log",//上传文件格式限制
       filesColumn: [
         {
 
@@ -90,7 +90,7 @@ export default {
     beforeUpload(file) {
       let reader = new FileReader()
       if (this.resFilesName.indexOf(file.name) !== -1){
-        this.$Message.warning("上传文件重新请进行修改后重新上传")
+        this.$Message.warning("上传文件重名请进行修改后重新上传")
       }else {
         reader.onload = () => {
           this.$store.commit('files/handleResFiles', { //尾端添加
@@ -105,7 +105,7 @@ export default {
           })
           this.$Message.info("上传成功！！")
         }
-        if (file.type.startsWith(('image')) || file.type.startsWith('audio')) { // 图片则存放 dataURL
+        if (file.type.startsWith(('image')) || file.type.startsWith('audio') || file.type.startsWith('video')) { // 图片则存放 dataURL
           reader.readAsDataURL(file)
         } else { // json 则存放 text
           reader.readAsText(file)

@@ -2,8 +2,11 @@ import CONST from 'constant/constant'
 import _ from 'lodash'
 
 let state = {
-  jobInfo: {}, // 用例的基本信息保存在这里
-  preJobInfo: { dirty: false }, // 编辑过程中回到jobList页面查看其他用例基本信息时, 为防止继续编辑时信息丢失, 在这里做备份
+  jobInfo: {
+    // job_flows: []
+  }, // 用例的基本信息保存在这里
+  jobFlowInfo: {}, //当前选中的jobFlow信息
+  selectJobType:"norMalJob", // "InnerJob" "norMalJob"
   isValidated: false, // 右侧抽屉中的表单信息是否通过验证
   outerDiagramModel: null, // jobEditor界面的逻辑流信息
   duplicateId: null, // 自动保存的副本用例的id及jobLabel, 更改自动保存的逻辑之后可能会用不到了
@@ -11,33 +14,35 @@ let state = {
   normalData: null, // 双击normalBlock后获取到该数据, normalEditor界面会用到
   config: _.cloneDeep(CONST.JOB_DEFAULT_CONFIG),
   jobLabelDuplicate: 'duplicate',
-
+  editingJobId: null,//正在编辑的job ID
+  cabinetList:[], //可选择的测试柜类型列表
+  resourceList:[], //job的资源文件数据
 }
 
 let mutations = {
+  setEditingJobId(state,data) {
+    state.editingJobId = data
+  },
+  setJobFlowInfo(state,data){
+    state.jobFlowInfo = data
+  },
+  setCabinetList(state,data){
+    state.cabinetList = data
+  },
   handleJobInfo (state, { action, data }) {
     if (action === 'setJobInfo') {
       state.jobInfo = data
-      if (!state.preJobInfo.dirty) {
-        state.preJobInfo = _.cloneDeep(data)
-        state.preJobInfo.dirty = false
-      }
     }
-    if (action === 'setPreJobInfo') {
-      if (!data) state.preJobInfo = { dirty: false }
-      else {
-        state.preJobInfo = _.cloneDeep(state.jobInfo)
-        state.preJobInfo.dirty = false
-      }
+    if (action === 'clearJobInfo') {
+      state.jobInfo = {}
     }
-    if (action === 'recoverJobInfo') {
-      if (state.preJobInfo.dirty) {
-        state.jobInfo = _.cloneDeep(state.preJobInfo)
-        delete state.jobInfo.dirty
-      } else {
-        state.jobInfo = {}
-        state.preJobInfo = { dirty: false }
-      }
+  },
+  handleResourceList (state, { action, data }) {
+    if (action === 'setResourceList') {
+      state.resourceList = data
+    }
+    if (action === 'clearResourceList') {
+      state.resourceList = []
     }
   },
   handleNormalData (state, { action, data }) {
@@ -63,7 +68,10 @@ let mutations = {
   // setJobId (state, jobId) {
   //   state.jobInfo.job_id = jobId
   // },
-
+  setSelectJobType (state, type) {
+    if (type !== "InnerJob") type = "norMalJob"
+    state.selectJobType = type
+  },
   setJobLabel (state, label) {
     state.jobInfo.job_label = label
   },
@@ -126,14 +134,19 @@ let getters = {
   },
   byProductsName () {
     return state.config.byProductsName
-  },
-  editJobMsg (){
-    // 新建用例或则编辑自己的用例或则admin权限可以被允许
-    return state.jobInfo.job_id === undefined || (sessionStorage.groups && sessionStorage.groups.includes('Admin')) ||state.jobInfo.author  === parseInt(sessionStorage.id)
-  },
-  editJobFlow (){
-    return state.jobInfo.job_id === undefined || (sessionStorage.groups && sessionStorage.groups.includes('Admin')) ||state.jobInfo.author  === parseInt(sessionStorage.id)
   }
+  // editJobMsg (state){
+  //   // 新建用例或则编辑自己的用例 admin权限不被允许编辑
+  //   console.log(11111)
+  //   debugger
+  //   return !(sessionStorage.groups && sessionStorage.groups.includes('Admin')) && (state.jobInfo.job_id === undefined ||state.jobInfo.author  === parseInt(sessionStorage.id))
+  // },
+  // editJobFlow (state){
+  //   return !(sessionStorage.groups && sessionStorage.groups.includes('Admin')) && (state.jobInfo.job_id === undefined ||state.jobInfo.author  === parseInt(sessionStorage.id))
+  // },
+  // isAdmin (state){
+  //   return sessionStorage.groups && sessionStorage.groups.includes('Admin')
+  // }
 }
 
 export default {

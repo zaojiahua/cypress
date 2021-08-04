@@ -15,15 +15,20 @@ export default [
         path: 'jobEditor',
         component: () => import('../views/jobEditor.vue')
       },
-      {
-        name: 'jobMsg',
-        path: 'jobMsg/:id',
-        component: () => import('../views/jobMsg.vue')
-      },
+      // {
+      //   name: 'jobMsg',
+      //   path: 'jobMsg/:id',
+      //   component: () => import('../views/jobMsg.vue')
+      // },
       {
         name: 'jobList',
         path: 'jobList',
         component: () => import('../views/jobList.vue')
+      },
+      {
+        name: 'createJob',
+        path: 'createJob',
+        component: () => import('../views/CreateJob.vue')
       }
     ]
   },
