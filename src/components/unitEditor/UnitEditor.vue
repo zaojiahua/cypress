@@ -64,7 +64,7 @@
       </div>
     </div>
     <div slot="footer">
-      <Button :disabled="unitData.unitType === 'IMGTOOL'" @click="singleStepDebug">
+      <Button :disabled="isExecutable()" @click="singleStepDebug">
         <span v-if="!loading">执行</span>
         <span v-else>执行中...</span>
       </Button>
@@ -251,6 +251,9 @@ export default {
       let {unitMsg: {execCmdDict, execCmdDict: {execCmdList}}} = this.curUnitData
       let src = execCmdList || execCmdDict
       Object.assign(src[item.itemName], item.itemContent)
+    },
+    isExecutable(){
+      return (this.unitData.unitType === 'IMGTOOL' || CONST.UNIT_NOT_EXEC.includes(this.unitData.unitMsg.functionName ))
     },
     validateRequireMessage() {
       if (this.curFile === null) {

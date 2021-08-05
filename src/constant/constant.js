@@ -198,4 +198,7 @@ export default {
   ICON_TEST_UNIT_LIST_FIXED: [
     "end_point_with_icon_template_match","has_icon_template_match"
   ],
+  UNIT_NOT_EXEC: [
+    "end_point_with_icon_template_match","end_point_with_icon","end_point_with_changed","end_point_with_fps_lost"
+  ],
 }
