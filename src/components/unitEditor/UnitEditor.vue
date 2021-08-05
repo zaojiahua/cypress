@@ -64,7 +64,7 @@
       </div>
     </div>
     <div slot="footer">
-      <Button :disabled="unitData.unitType === 'IMGTOOL'" @click="singleStepDebug">执行</Button>
+      <Button :disabled="isExecutable()" @click="singleStepDebug">执行</Button>
       <Button @click="closeUnitEditor(false)">取消</Button>
       <Button @click="closeUnitEditor(true)" type="primary">保存</Button>
     </div>
@@ -237,6 +237,9 @@ export default {
     },
     checkWeatherCompleted() { // 如果每一个unitItem都编辑完成了, 则该unit也编辑完成了
       return this.unitItems.every(unitItem => unitItem.isCompleted === true)
+    },
+    isExecutable(){
+      return (this.unitData.unitType === 'IMGTOOL' || CONST.UNIT_NOT_EXEC.includes(this.unitData.unitMsg.functionName ))
     },
     updateUnitItem(item) { // 接受来自unitList.unitEditor的数据, 并将对应的数据更新
       let {unitMsg: {execCmdDict, execCmdDict: {execCmdList}}} = this.curUnitData
