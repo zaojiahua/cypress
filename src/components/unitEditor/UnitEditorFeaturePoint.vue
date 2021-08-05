@@ -14,7 +14,7 @@
       @on-row-click="showLabelArea"
     >
       <template slot-scope="{ row, index }" slot="action">
-        <Button type="error" size="small" @click.stop.native="remove(index)">Delete</Button>
+        <Button type="error" size="small" @click.stop.native="remove(index)" :disabled="coordinates.length === 1">Delete</Button>
       </template>
     </Table>
     <div class="file-info">
