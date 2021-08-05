@@ -285,7 +285,7 @@ export default {
         job_name: [{
           required: true, message: '用例名称不能为空', trigger: 'blur,change'
         }, {
-          type: 'string', max: 50, message: '用例名称不能超过50个字符', trigger: 'blur'
+          type: 'string', max: 70, message: '用例名称不能超过70个字符', trigger: 'blur'
       }],
         test_area: [{
           required: true, type: 'array', min: 1, message: '测试用途不能为空', trigger: 'change'
@@ -310,7 +310,7 @@ export default {
           required: true, type: 'array', min: 1, message: '适配系统不能为空', trigger: 'change'
         }],
         flow_name: [
-          { validator: validatePass, trigger: 'blur' }
+          { required: true,validator: validatePass, trigger: 'blur' }
         ],
       },
       job: util.validate(jobSerializer, {}),
