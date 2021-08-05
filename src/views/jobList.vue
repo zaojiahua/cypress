@@ -139,6 +139,10 @@ export default {
           }
         },
         {
+          title: '维护人员',
+          key: 'author'
+        },
+        {
           title: '操作',
           key: 'operation',
           width: 150,
@@ -146,32 +150,26 @@ export default {
           render: (h, params) => {
             if (!this.isAdmin) {
               return h('div', [
-                h('Icon', {
-                  props: {
-                    type: 'ios-copy',
-                    size: '18'
-                  },
+                h('span', {
+                  class: 'mouse-hover',
                   on: {
                     click: () => {
                       event.stopPropagation();
                       this.show(params.index)
                     }
                   }
-                }),
+                },'另存'),
               ]);
             }else {
               return h('div', [
-                h('Icon', {
-                  props: {
-                    type: 'ios-copy-outline',
-                    size: '18'
-                  },
+                h('span', {
+                  class: 'mouse-hover',
                   on: {
                     click: () => {
                       event.stopPropagation();
                     }
                   }
-                }),
+                },'另存'),
               ]);
             }
 
@@ -279,6 +277,7 @@ export default {
           job.test_area = job.test_area.map(item => item.description).join(',')
           job.custom_tag = job.custom_tag.map(item => item.custom_tag_name).join(',')
           job.job_state = job.draft ? '草稿' : '正式'
+          job.author = job.author.username
 
           // 勾选已选的选项
           if (this.selectedJobs[job.id] !== undefined) {
@@ -479,6 +478,12 @@ export default {
 }
 </script>
 
+<style>
+  .mouse-hover:hover{
+    color: #2d8cf0;
+    cursor: pointer;
+  }
+</style>
 <style lang="less" scoped>
 @import '../css/common.less';
 .container {

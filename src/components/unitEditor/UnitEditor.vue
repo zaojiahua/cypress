@@ -64,7 +64,10 @@
       </div>
     </div>
     <div slot="footer">
-      <Button :disabled="unitData.unitType === 'IMGTOOL'" @click="singleStepDebug">执行</Button>
+      <Button :disabled="unitData.unitType === 'IMGTOOL'" @click="singleStepDebug">
+        <span v-if="!loading">执行</span>
+        <span v-else>执行中...</span>
+      </Button>
       <Button @click="closeUnitEditor(false)">取消</Button>
       <Button @click="closeUnitEditor(true)" type="primary">保存</Button>
     </div>
@@ -98,7 +101,8 @@ export default {
       unitItems: [],
       openTestResultModal: false,
       testOcrResponseData: {},
-      testIconResponseData: {}
+      testIconResponseData: {},
+      loading:false,
     }
   },
   computed: {
@@ -191,6 +195,7 @@ export default {
           data.append('file', new File([file], name, {type}))
         }
       }
+      this.loading = true
 
       try {
         let response = await axios.request({
@@ -199,13 +204,17 @@ export default {
           data: data
         })
         if (response.data.result === 0) {
+          this.loading = false
           this.$Message.info("执行成功")
         } else if (response.data.result === 1) {
+          this.loading = false
           this.$Message.info("执行失败")
         }else {
+          this.loading = false
          this.$Message.info("执行异常")
         }
       } catch (e) {
+        this.loading = false
         if (e.response.data.error_code){
           this.$Message.warning(`执行异常 code:${e.response.data.error_code} detail:${e.response.data.description}`)
         }else this.$Message.info("执行异常")
