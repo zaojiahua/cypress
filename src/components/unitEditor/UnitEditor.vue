@@ -64,7 +64,7 @@
       </div>
     </div>
     <div slot="footer">
-      <Button :disabled="isExecutable()" @click="singleStepDebug">
+      <Button :disabled="unitData.unitType === 'IMGTOOL'" @click="singleStepDebug">
         <span v-if="!loading">执行</span>
         <span v-else>执行中...</span>
       </Button>
