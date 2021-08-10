@@ -227,7 +227,7 @@ const simChildren = [
   },
   {
     value: 'nothing',
-    label: '无'
+    label: '无卡'
   },
 ]
 
