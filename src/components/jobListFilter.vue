@@ -102,12 +102,20 @@ export default {
           custom_tag : custom_tag数组中元素的下标 : custom_tag数组中元素的描述字段(如 description/custom_tag_name 等) : 元素id
       */
       filterFactors: { // 将勾选的筛选条件分组存储下来, valuse数组中的元素格式同 filterConditions
-        'phone_model': {
-          title: '适用机型',
-          values: []
-        },
         'job_test_area': {
           title: '测试用途',
+          values: []
+        },
+        'custom_tag': {
+          title: '自定义标签',
+          values: []
+        },
+        'reefuser': {
+          title: '维护人员',
+          values: []
+        },
+        'phone_model': {
+          title: '适用机型',
           values: []
         },
         'android_version': {
@@ -116,14 +124,6 @@ export default {
         },
         'rom_version': {
           title: 'ROM版本',
-          values: []
-        },
-        'reefuser': {
-          title: '维护人员',
-          values: []
-        },
-        'custom_tag': {
-          title: '自定义标签',
           values: []
         }
       },
@@ -146,11 +146,8 @@ export default {
         for (let i = 0; i < oldVal.length; i++) {
           if (newVal[i] !== oldVal[i]) {
             let data = oldVal[i].split(':')
-            let preFactorNum = 0
-            for (let j = 0; j < this.curTab; j++) {
-              preFactorNum += this.filterFactorNum[j]
-            }
-            this.filterFactors[data[0]].values.splice(i - preFactorNum, 1)
+            let delIndex = this.filterFactors[data[0]].values.indexOf(oldVal[i])
+            this.filterFactors[data[0]].values.splice(delIndex, 1)
             this.filterFactorNum[this.curTab]--
             break
           }
