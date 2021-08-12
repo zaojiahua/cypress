@@ -18,7 +18,7 @@
       <div class="collapse__content" v-show="collapseIsOpen">
         <Row>
           <Tabs class="tabs" :value="curTab" @on-click="changeTab">
-            <TabPane v-for="(column, index) in filterColumn" :key="column.title" :label="column.title" :class="column.key" :name="index.toString()">
+            <TabPane v-for="(column, index) in filterColumn" :key="column.title" :label="column.title" :class="column.key" :name="index.toString()" style="max-height: 130px;overflow: auto">
               <CheckboxGroup v-model="filterConditions">
                 <Row type="flex">
                   <Col span="4" v-for="(item, index) in filterData[column.key]" :key="index">

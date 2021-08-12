@@ -30,7 +30,6 @@
         ref="jobList"
         :columns="columns"
         :data="jobData"
-        :height="tableHeight"
         @on-row-click="onRowClick"
         @on-selection-change="selectedJobsChange"
       ></Table>
@@ -78,7 +77,8 @@ export default {
         },
         {
           title: '用例名称',
-          key: 'job_name'
+          key: 'job_name',
+          width:300
         },
         {
           title: '测试用途',
@@ -91,6 +91,7 @@ export default {
         {
           title: '用例状态',
           key: 'job_state',
+          width:130,
           sortable: true,
           align: 'center',
           filters: [
@@ -114,6 +115,7 @@ export default {
         {
           title: '用例类型',
           key: 'job_type',
+          width:130,
           sortable: 'true',
           align: 'center',
           filters: [
@@ -140,7 +142,8 @@ export default {
         },
         {
           title: '维护人员',
-          key: 'author'
+          key: 'author',
+          width:200
         },
         {
           title: '操作',
@@ -489,7 +492,7 @@ export default {
 <style lang="less" scoped>
 @import '../css/common.less';
 .container {
-  height: 100%;
+  /*height: 100%;*/
   .page {
     justify-content: center;
     margin-top: 1em;
