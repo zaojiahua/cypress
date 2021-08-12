@@ -26,12 +26,12 @@ function joinFilter (data) {
 
 export default {
   login: () => `${reefPrefix}user_login/`,
-  testArea: () => `${reefPrefix}job_test_area/?fields=${joinFilter(testAreaFilter)}`,
-  customTag: () => `${reefPrefix}custom_tag/?fields=${joinFilter(customTagFilter)}`,
-  reefUser: () => `${reefPrefix}reefuser/?fields=${joinFilter(reefUserFilter)}`,
-  phoneModel: () => `${reefPrefix}phone_model/?fields=${joinFilter(phoneModelFilter)}`,
-  androidVersion: () => `${reefPrefix}android_version/?fields=${joinFilter(androidVersionFilter)}`,
-  romVersion: () => `${reefPrefix}rom_version/?fields=${joinFilter(romVersionFilter)}`,
+  testArea: () => `${reefPrefix}job_test_area/?fields=${joinFilter(testAreaFilter)}&ordering=description`,
+  customTag: () => `${reefPrefix}custom_tag/?fields=${joinFilter(customTagFilter)}&ordering=custom_tag_name`,
+  reefUser: () => `${reefPrefix}reefuser/?fields=${joinFilter(reefUserFilter)}&ordering=username`,
+  phoneModel: () => `${reefPrefix}phone_model/?fields=${joinFilter(phoneModelFilter)}&ordering=phone_model_name`,
+  androidVersion: () => `${reefPrefix}android_version/?fields=${joinFilter(androidVersionFilter)}&ordering=version`,
+  romVersion: () => `${reefPrefix}rom_version/?fields=${joinFilter(romVersionFilter)}&ordering=version`,
   manufacturer: () => `${reefPrefix}manufacturer/?fields=${joinFilter(manufacturerFilter)}`,
   usableDevice: () => `${reefPrefix}device/?fields=${joinFilter(usableDeviceFilter)}&status=idle&ai_occupy=False`,
   device: (data) => `${reefPrefix}device/?fields=${joinFilter(deviceFilter)}&limit=${data.pageSize}&offset=${data.pageOffset}${data.deviceStatus}&ordering=id`,

@@ -59,22 +59,14 @@ export default {
     return {
       filterColumn: [ // 将获得的数据以统一的格式存放到filterData中，以便于v-for循环
         {
-          title: '测试用途',
-          key: 'job_test_area',
-          item_key: 'description'
-        }, {
-          title: '自定义标签',
-          key: 'custom_tag',
-          item_key: 'custom_tag_name'
-        }, {
-          title: '维护人员',
-          key: 'reefuser',
-          item_key: 'username'
-        }, {
           title: '适用机型',
           key: 'phone_model',
           item_key: 'phone_model_name'
-        }, {
+        },{
+          title: '测试用途',
+          key: 'job_test_area',
+          item_key: 'description'
+        },{
           title: '安卓版本',
           key: 'android_version',
           item_key: 'version'
@@ -82,6 +74,14 @@ export default {
           title: 'ROM版本',
           key: 'rom_version',
           item_key: 'version'
+        },{
+          title: '维护人员',
+          key: 'reefuser',
+          item_key: 'username'
+        }, {
+          title: '自定义标签',
+          key: 'custom_tag',
+          item_key: 'custom_tag_name'
         }
       ],
       filterData: {}, // 提供的筛选条件
@@ -102,20 +102,12 @@ export default {
           custom_tag : custom_tag数组中元素的下标 : custom_tag数组中元素的描述字段(如 description/custom_tag_name 等) : 元素id
       */
       filterFactors: { // 将勾选的筛选条件分组存储下来, valuse数组中的元素格式同 filterConditions
-        'job_test_area': {
-          title: '测试用途',
-          values: []
-        },
-        'custom_tag': {
-          title: '自定义标签',
-          values: []
-        },
-        'reefuser': {
-          title: '维护人员',
-          values: []
-        },
         'phone_model': {
           title: '适用机型',
+          values: []
+        },
+        'job_test_area': {
+          title: '测试用途',
           values: []
         },
         'android_version': {
@@ -124,6 +116,14 @@ export default {
         },
         'rom_version': {
           title: 'ROM版本',
+          values: []
+        },
+        'reefuser': {
+          title: '维护人员',
+          values: []
+        },
+        'custom_tag': {
+          title: '自定义标签',
           values: []
         }
       },

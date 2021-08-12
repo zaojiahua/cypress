@@ -69,7 +69,7 @@ export default new Vuex.Store({
         CONST.BASIC_DATA_KEYS.forEach((val, idx) => {
           let data = util.validate(serializer[`${val.camelCase}Serializer`], res[idx].data)
           data = data[Object.keys(data)[0]]
-          data = _.orderBy(data, [val.orderCase])
+          // data = _.orderBy(data, [val.orderCase])
           basicData.push(data)
           basicData[val.camelCase] = idx
         })
@@ -80,7 +80,7 @@ export default new Vuex.Store({
       getJobTestAreaList().then(({ data }) => {
         data = util.validate(serializer.testAreaSerializer, data)
         data = data[Object.keys(data)[0]]
-        data = _.orderBy(data, ['description'])
+        // data = _.orderBy(data, ['description'])
         commit('setOneBasicData', { type: 'testArea', value: data })
       })
     },
@@ -88,7 +88,7 @@ export default new Vuex.Store({
       getCustomTagList().then(({ data }) => {
         data = util.validate(serializer.customTagSerializer, data)
         data = data[Object.keys(data)[0]]
-        data = _.orderBy(data, ['custom_tag_name'])
+        // data = _.orderBy(data, ['custom_tag_name'])
         commit('setOneBasicData', { type: 'customTag', value: data })
       })
     }
