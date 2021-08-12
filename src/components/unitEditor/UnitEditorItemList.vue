@@ -6,12 +6,21 @@
       {{ocrChoice}}
     </div>
     <!-- extra -->
-    <div slot="extra" v-show="ocrChoice">
-      <span>OCR引擎：</span>
-      <Switch false-color="#ff4949" v-model="ocrChoiceToggle" @on-change="handleOcrChoice">
-        <span slot="open">1</span>
-        <span slot="close">2</span>
-      </Switch>
+    <div slot="extra">
+      <div v-show="tGuard" style="float: left;margin-right: 10px">
+        <span>T-Guard：</span>
+        <Switch false-color="#ff4949" v-model="tGuardToggle" @on-change="handleTGuard">
+          <span slot="open">开</span>
+          <span slot="close">关</span>
+        </Switch>
+      </div>
+      <div v-show="ocrChoice" style="float: right;">
+        <span>OCR引擎：</span>
+        <Switch false-color="#ff4949" v-model="ocrChoiceToggle" @on-change="handleOcrChoice">
+          <span slot="open">1</span>
+          <span slot="close">2</span>
+        </Switch>
+      </div>
     </div>
     <!-- body -->
     <transition-group name="item" tag="div" class="item-container">
@@ -38,6 +47,7 @@ export default {
   data () {
     return {
       ocrChoiceToggle: undefined,
+      tGuardToggle:undefined,
       curUnitItem: undefined
     }
   },
@@ -69,17 +79,33 @@ export default {
     ocrChoice () { // 如果保存了文字识别引擎的编号，则返回，否则返回0
       if (!this.unitData.unitMsg) return
       return this.unitData.unitMsg.ocrChoice
+    },
+    tGuard(){
+      if (!this.unitData.unitMsg) return
+      return this.unitData.unitMsg.tGuard
     }
   },
   watch: {
     ocrChoice (val) {
       this.ocrChoiceToggle = val === 1
+    },
+    tGuard (val) {
+      console.log(val)
+      this.tGuardToggle = val === 1
     }
   },
   methods: {
     handleOcrChoice (val) { // 更改当前unit使用的ocr引擎
       let { unitMsg } = this._.cloneDeep(this.unitData)
       unitMsg.ocrChoice = val ? 1 : 2
+      this.$store.commit('unit/handleUnitData', {
+        action: 'setUnitMsg',
+        data: unitMsg
+      })
+    },
+    handleTGuard(val){
+      let { unitMsg } = this._.cloneDeep(this.unitData)
+      unitMsg.tGuard = val ? 1 : 2
       this.$store.commit('unit/handleUnitData', {
         action: 'setUnitMsg',
         data: unitMsg
