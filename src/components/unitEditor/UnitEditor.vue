@@ -178,6 +178,7 @@ export default {
         this.$Message.error("未选取设备")
         return
       }
+      if(this.loading) return
       let unitData = this._.cloneDeep(this.unitData.unitMsg)
       unitData.key = this.unitData.unitKey
       unitData.jobUnitName = this.unitData.unitName
@@ -215,9 +216,13 @@ export default {
         }
       } catch (e) {
         this.loading = false
+        if(!e.response){
+          this.$Message.warning({content:"执行异常",duration:3})
+          return
+        }
         if (e.response.data.error_code){
-          this.$Message.warning(`执行异常 code:${e.response.data.error_code} detail:${e.response.data.description}`)
-        }else this.$Message.info("执行异常")
+          this.$Message.warning({content:`执行异常 code:${e.response.data.error_code} detail:${e.response.data.description}`,duration:6})
+        }else this.$Message.warning({content:"执行异常",duration:3})
       }
     },
     closeUnitEditor(save) {
