@@ -110,6 +110,7 @@ export default {
     ...mapState('files', ['curFile', 'resFiles']),
     ...mapState('device', ['deviceInfo']),
     ...mapGetters('files', ['dataURLtoFileFormat']),
+    ...mapGetters('job', [ 'normalKey']),
     hasIconTest() {
       let hasTestFunction = false
       for (let functionName of CONST.ICON_TEST_UNIT_LIST) {
@@ -179,6 +180,10 @@ export default {
         return
       }
       if(this.loading) return
+      if(!this.checkWeatherCompleted()){
+        this.$Message.error("请将信息填写完整！")
+        return
+      }
       let unitData = this._.cloneDeep(this.unitData.unitMsg)
       unitData.key = this.unitData.unitKey
       unitData.jobUnitName = this.unitData.unitName
@@ -187,13 +192,22 @@ export default {
       let data = new FormData()
       data.append('data', JSON.stringify(unitData))
       let resFiles = this._.cloneDeep(this.resFiles)
+      let picName = ""
+      if(unitData.execCmdDict.referImgFile)
+        picName = unitData.execCmdDict.referImgFile.pic
+      //提取当前unit下的json格式的依赖文件
       for (let i = 0; i < resFiles.length; i++) {
         let {name, type, file} = resFiles[i]
+        if(name===picName)
+          data.append('file', dataURLtoFile(file, name))  //png（图片）类的file需要解析
         if (name === 'FILES_NAME_CONFIG.json') continue // 移除老版本中遗留的文件，文件内容已经写入到start节点了
-        if (this.dataURLtoFileFormat.indexOf(type) !== -1) {
-          data.append('file', dataURLtoFile(file, name))
-        } else {
-          data.append('file', new File([file], name, {type}))
+        let str = name.split("_")
+        if(type==="json" && parseInt(str[0])===this.normalKey && parseInt(str[1])===unitData.key){
+          if (this.dataURLtoFileFormat.indexOf(type) !== -1) {
+            data.append('file', dataURLtoFile(file, name))  //png（图片）类的file需要解析
+          } else {
+            data.append('file', new File([file], name, {type}))
+          }
         }
       }
       this.loading = true
