@@ -372,7 +372,8 @@ export default {
           let { status, data } = await saveJobFlowAndMsg(jobInfo)  // 保存 job 的信息
           if (status === 201){
             await context.uploadFiles(data.id, jobInfo, jobFlowInfo)
-            await context.bindResource(data.job_label,resourceList)
+            if(resourceList.length>0)
+              await context.bindResource(data.job_label,resourceList)
           }
         } catch (err) {
           console.log(err)
@@ -428,7 +429,8 @@ export default {
           {
             try {
               await this.uploadFiles(id, jobInfo, jobFlowInfo)
-              await this.bindResource(jobInfo.job_label,resourceList)
+              if(resourceList.length>0)
+                await this.bindResource(jobInfo.job_label,resourceList)
             } catch (error) {
               this.$Message.error({
                 background: true,
@@ -474,7 +476,8 @@ export default {
             if (id) { //id 存在表明是更新正式用例
               try {
                 await this.uploadFiles(id, jobInfo,jobFlowInfo)
-                await this.bindResource(jobInfo.job_label,resourceList)
+                if(resourceList.length>0)
+                  await this.bindResource(jobInfo.job_label,resourceList)
               } catch (error) {
                 this.$Message.error({
                   background: true,
