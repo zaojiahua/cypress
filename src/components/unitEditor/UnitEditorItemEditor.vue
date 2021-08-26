@@ -303,6 +303,10 @@ export default {
           user: []
         }
         let childIdx = -1
+        let textList = []
+        temp.forEach(item=>{
+          textList.push(item.text)
+        })
         for (let i = 0; i < temp.length; i++) {
           if (temp[i].loc !== byProductsInfo.loc && temp[i].text === byProductsInfo.text) {
             this.$Message.error({
@@ -311,7 +315,14 @@ export default {
             })
             return false
           }
-          if (temp[i].loc === byProductsInfo.loc) {
+          if(temp[i].loc === byProductsInfo.loc && textList.indexOf(byProductsInfo.text)!==-1){
+            this.$Message.error({
+              background: true,
+              content: '这个名字已经被占用了'
+            })
+            return false
+          }
+          if (temp[i].loc === byProductsInfo.loc&& textList.indexOf(byProductsInfo.text)===-1) {
             childIdx = i
             break
           }
@@ -328,8 +339,8 @@ export default {
       return true
     },
     saveItemData () {
-      if (!this.handleUnitData()) return
       if (!this.handleByProductsName()) return
+      if (!this.handleUnitData()) return
       if (this.isJobResourceFile){
         if (this.willTouchFile && this.coordinates.length !== 0) {
           this.saveFeaturePoint()
@@ -342,7 +353,6 @@ export default {
       }else{
         this.saveFeaturePoint()
       }
-
       this.$store.commit('item/handleItemData', {
         action: 'setItemData',
         data: {
