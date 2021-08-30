@@ -125,7 +125,7 @@ export default {
     ...mapGetters('job', ['jobId', 'normalKey']),
     ...mapState('files', ['resFiles']),
     ...mapGetters('files', ['resFilesName','dataURLtoFileFormat']),
-    ...mapState('device', ['countdown', 'deviceInfo']),
+    ...mapState('device', ['countdown', 'deviceInfo', 'releaseDeviceId']),
     editJobMsg() {
       return !(sessionStorage.groups && sessionStorage.groups.includes('Admin')) && (this.jobInfo.job_id === undefined ||this.jobInfo.author  === parseInt(sessionStorage.id))
     },
@@ -763,7 +763,7 @@ export default {
       if (this.countdown) {
         try {
           let { status } = await releaseOccupyDevice({
-            device_id_list: [this.deviceInfo.id]
+            device_id_list: [this.releaseDeviceId]
           })
           if (status === 200) {
             this.$Message.info({
@@ -773,6 +773,7 @@ export default {
             this.$store.commit('device/setCountdown')
             this.$store.commit('device/clearDeviceInfo')
             this.$store.commit('device/clearPreDeviceInfo')
+            this.$store.commit('device/setReleaseDeviceId')
           }
         } catch (err) {
           console.log(err)

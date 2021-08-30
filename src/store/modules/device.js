@@ -2,7 +2,9 @@ let state = {
   selectDevice: false, // 是否打开设备选择界面
   deviceInfo: null, // 当前选中的设备
   preDeviceInfo: null, // 之前选中的 倒计时中的设备
-  countdown: false // 是否显示倒计时组件CountDown
+  countdown: false, // 是否显示倒计时组件CountDown
+  isControlDevice:false, //是否占用设备
+  releaseDeviceId:null,
 }
 
 let mutations = {
@@ -23,6 +25,12 @@ let mutations = {
   },
   setCountdown (state, toggle = false) {
     state.countdown = toggle
+  },
+  setControlDeviceFlag(state,toggle = false){
+    state.isControlDevice = toggle
+  },
+  setReleaseDeviceId(state, id = null){
+    state.releaseDeviceId = id
   }
 }
 

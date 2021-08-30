@@ -36,7 +36,7 @@
           </FormItem>
           <Divider orientation="left" class="device-info-title" style="margin-top: 60px;">
             <b>设备信息</b>
-            <Button v-if="editJobMsg" type="info" @click="$store.commit('device/setSelectDevice')">选取设备</Button>
+            <Button v-if="editJobMsg" type="info" @click="onSelectDevice">选取设备</Button>
           </Divider>
           <FormItem label="厂商信息" prop="manufacturer">
             <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.manufacturer" placeholder="请选择" @on-change="clear" filterable :transfer="true">
@@ -444,7 +444,7 @@ export default {
     ...mapState(['showDrawer', 'basicData']),
     ...mapState('job', ['jobInfo', 'duplicateId', 'duplicateLabel','jobFlowInfo','selectJobType','cabinetList','resourceList']),
     ...mapGetters('job', ['jobId']),
-    ...mapState('device', ['deviceInfo', 'preDeviceInfo', 'countdown']),
+    ...mapState('device', ['deviceInfo', 'preDeviceInfo', 'countdown', 'isControlDevice']),
     isJobEditor () { // 是否在 JobEditor 页面
       return this.$route.name === 'jobEditor'
     },
@@ -520,6 +520,10 @@ export default {
           break
       }
     },
+    onSelectDevice(){
+      this.$store.commit('device/setSelectDevice')
+      this.$store.commit('device/setControlDeviceFlag')
+    },
     async getcabinetList(){
       try {
         let { data } = await getCabinetList()
@@ -589,6 +593,7 @@ export default {
       }
     },
     async controlDevice () { // 选取设备
+      console.log("还来？？！！！")
       if (this.preDeviceInfo) { // 如果之前选择的设备还没有到期则释放
         try {
           // eslint-disable-next-line camelcase
@@ -722,7 +727,8 @@ export default {
       if (!this.phoneModelFlag) this.jobInfo.phone_models.push(this.deviceInfo.phone_model_id)
       if (!this.romVersionFlag) this.jobInfo.rom_version.push(this.deviceInfo.rom_version_id)
       if (!this.androidVersionFlag) this.jobInfo.android_version.push(this.deviceInfo.android_version_id)
-      this.controlDevice()
+      if(this.isControlDevice)
+        this.controlDevice()
       this.handleConflict()
     },
     deviceInfoReplace (toggle = true) { // 发生冲突后用选取的设备信息替换原设备信息
@@ -734,7 +740,8 @@ export default {
       this.jobInfo.rom_version.push(this.deviceInfo.rom_version_id)
       this.$set(this.jobInfo, 'android_version', [])
       this.jobInfo.android_version.push(this.deviceInfo.android_version_id)
-      this.controlDevice()
+      if(this.isControlDevice)
+        this.controlDevice()
       if (toggle) this.handleConflict()
     },
     closeDrawer () { // 关闭右侧抽屉时检测当前 Job 是否通过验证，并更新 JobInfo
@@ -789,7 +796,7 @@ export default {
         if (!same) { // 有冲突则进行处理
           this.handleConflict()
         } else { // 无冲突则控制当前设备
-          this.controlDevice()
+          if(this.isControlDevice) this.controlDevice()
         }
       }
       if (formToggle) { // 手动更新表单信息时

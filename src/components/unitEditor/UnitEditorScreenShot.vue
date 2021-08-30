@@ -93,6 +93,7 @@ export default {
   methods: {
     showDeviceSelectPage () {
       this.$store.commit('device/setSelectDevice', true)
+      this.$store.commit('device/setControlDeviceFlag', true)
     },
     handleErrors () {
       let errors = []
