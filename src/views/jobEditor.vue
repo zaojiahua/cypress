@@ -295,7 +295,7 @@ export default {
         return data.id
       }
     },
-    async uploadFiles (id, info, jobFlowInfo) { // 保存依赖文件，更新job Msg (job attr)失败则抛出异常
+    async uploadFiles (id, info, jobFlowInfo, resourceList) { // 保存依赖文件，更新job Msg (job attr)失败则抛出异常
       this.saving = true
       info.job_id = id
       let resFiles = this._.cloneDeep(this.resFiles)
@@ -314,6 +314,8 @@ export default {
               data.append('file', new File([file], name, { type }))
             }
           }
+          if(resourceList.length>0)
+            await this.bindResource(info.job_label,resourceList)
           try {
             if (resFiles.length) {
               await jobResFilesSave(data) // 更新依赖文件
@@ -371,9 +373,9 @@ export default {
         try {
           let { status, data } = await saveJobFlowAndMsg(jobInfo)  // 保存 job 的信息
           if (status === 201){
-            await context.uploadFiles(data.id, jobInfo, jobFlowInfo)
-            if(resourceList.length>0)
-              await context.bindResource(data.job_label,resourceList)
+            await context.uploadFiles(data.id, jobInfo, jobFlowInfo, resourceList)
+            // if(resourceList.length>0)
+            //   await context.bindResource(data.job_label,resourceList)
           }
         } catch (err) {
           console.log(err)
@@ -428,9 +430,7 @@ export default {
           if (id) //id 存在 则将已有的job更新成草稿 不存在会创建
           {
             try {
-              await this.uploadFiles(id, jobInfo, jobFlowInfo)
-              if(resourceList.length>0)
-                await this.bindResource(jobInfo.job_label,resourceList)
+              await this.uploadFiles(id, jobInfo, jobFlowInfo, resourceList)
             } catch (error) {
               this.$Message.error({
                 background: true,
@@ -475,9 +475,9 @@ export default {
             jobInfo.draft = false
             if (id) { //id 存在表明是更新正式用例
               try {
-                await this.uploadFiles(id, jobInfo,jobFlowInfo)
-                if(resourceList.length>0)
-                  await this.bindResource(jobInfo.job_label,resourceList)
+                await this.uploadFiles(id, jobInfo,jobFlowInfo, resourceList)
+                // if(resourceList.length>0)
+                //   await this.bindResource(jobInfo.job_label,resourceList)
               } catch (error) {
                 this.$Message.error({
                   background: true,

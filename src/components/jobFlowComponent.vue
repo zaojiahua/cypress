@@ -5,7 +5,7 @@
       {{ title }}
     </p>
     <p slot="extra" v-show="!isAdmin">
-      <a v-show="!edit" :disabled="!copyFlowObj || !editJobFlow" href="#"  @click.prevent="pasteJobFlow">
+      <a v-show="!edit" :disabled="!copyFlowObj || !editJobFlow" href="#"  @click.prevent="openFlowCopy">
         <Icon type="ios-loop-strong"></Icon>
         粘贴
       </a>
@@ -71,6 +71,13 @@
         </div>
       </SlickItem>
     </SlickList>
+    <Modal v-model="showCopyModal" footer-hide :closable="false" :mask-closable="false" width="420">
+      <Input v-model="copyFlowName" maxlength="70" style="margin-top: 16px"></Input>
+      <Row style="text-align: right;margin-top: 20px;">
+        <Button type="text" @click="showCopyModal=false;copyFlowObj = null">取消</Button>
+        <Button type="primary" @click="pasteJobFlow">确认</Button>
+      </Row>
+    </Modal>
   </Card>
 </template>
 
@@ -107,6 +114,8 @@ export default {
       removeFlowList: [],
       show:false,
       highlightIndex:null,
+      showCopyModal:false,
+      copyFlowName:"",
     }
   },
   directives: {
@@ -244,18 +253,30 @@ export default {
     // copyFlow(index) {
     //   this.copyFlowObj = this.jobFlowList[index]
     // },
+    async openFlowCopy(){
+      let { status,data } = await copyFlowWithFlowId({copy_job:this.jobId,flow:this.copyFlowObj.id})
+      if(status===200){
+        this.copyFlowName = data.flow_name
+        this.showCopyModal = true
+      }else {
+        this.$Message.error({content:"暂时无法粘贴！",duration:3})
+      }
+    },
     async pasteJobFlow(){
       console.log(this.copyFlowObj.id)
-      // copy操作
-      let { status } = await copyFlowWithFlowId({copy_job:this.jobId,flow:this.copyFlowObj.id})
-      console.log(status)
-      if (status === 200) {
-        this.$Message.info("粘贴成功")
-      }else {
-        this.$Message.error("粘贴失败")
+      try {
+        let { status } = await copyFlowWithFlowId({copy_job:this.jobId,flow:this.copyFlowObj.id,flow_name:this.copyFlowName})
+        if (status === 200) {
+          this.showCopyModal = false
+          await this.refresh(this.jobId)
+          this.copyFlowObj = null
+          this.$Message.success("粘贴成功")
+        }else {
+          this.$Message.error({content:"粘贴失败！",duration:3})
+        }
+      }catch (error) {
+        this.$Message.error({content:"粘贴失败！",duration:3})
       }
-      await this.refresh(this.jobId)
-      this.copyFlowObj = null
 
     },
     deleteJobFlow(index) {

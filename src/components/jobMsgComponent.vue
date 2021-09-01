@@ -246,6 +246,8 @@ export default {
       let flow_name = this.jobFlowInfo.name ? this.jobFlowInfo.name.trim() : null
       if (!flow_name) {
         callback(new Error('请输入流程图名称'));
+      }else if (flow_name.length > 70) {
+        callback(new Error('流程图名称长度不能大于70个字符'));
       } else if (this.jobId)  { // 在已经存在的用例中操作
         let {data:{job_flows}} = await getFlow({job_id: this.jobId,name: flow_name})
         if (job_flows.length === 1 && job_flows[0].pk !== this.jobFlowInfo.id){

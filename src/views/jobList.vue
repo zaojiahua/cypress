@@ -247,7 +247,7 @@ export default {
             "job_label": createJobLabel(self),
             "author_id": parseInt(sessionStorage.id)
           }
-          if (self.copyJobName.length >=50){
+          if (self.copyJobName.length >=70){
             self.$Message.error("文件名过长")
             return
           }
