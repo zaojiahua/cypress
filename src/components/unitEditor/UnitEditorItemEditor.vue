@@ -315,16 +315,22 @@ export default {
             })
             return false
           }
-          if(temp[i].loc === byProductsInfo.loc && textList.indexOf(byProductsInfo.text)!==-1){
-            this.$Message.error({
-              background: true,
-              content: '这个名字已经被占用了'
-            })
-            return false
-          }
-          if (temp[i].loc === byProductsInfo.loc&& textList.indexOf(byProductsInfo.text)===-1) {
-            childIdx = i
-            break
+          if(temp[i].loc === byProductsInfo.loc ){  //说明改的是当前已有的图片名称
+            console.log(temp[i])
+            //先吧当前的名称在list中去除，留下除自身名称的其他名称列表做对比
+            // 防止不修改直接点保存会 出错
+            textList.splice(textList.indexOf(temp[i].text),1)
+            if(textList.indexOf(byProductsInfo.text)!==-1){
+              this.$Message.error({
+                background: true,
+                content: '这个名字已经被占用了'
+              })
+              return false
+            }
+            if (textList.indexOf(byProductsInfo.text)===-1) {
+              childIdx = i
+              break
+            }
           }
         }
         this.$store.commit('job/handleConfig', {
