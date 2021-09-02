@@ -254,7 +254,7 @@ export default {
     //   this.copyFlowObj = this.jobFlowList[index]
     // },
     async openFlowCopy(){
-      let { status,data } = await copyFlowWithFlowId({copy_job:this.jobId,flow:this.copyFlowObj.id})
+      let { status,data } = await copyFlowWithFlowId({job:this.jobId,flow:this.copyFlowObj.id})
       if(status===200){
         this.copyFlowName = data.flow_name
         this.showCopyModal = true
@@ -265,7 +265,7 @@ export default {
     async pasteJobFlow(){
       console.log(this.copyFlowObj.id)
       try {
-        let { status } = await copyFlowWithFlowId({copy_job:this.jobId,flow:this.copyFlowObj.id,flow_name:this.copyFlowName})
+        let { status } = await copyFlowWithFlowId({job:this.jobId,flow:this.copyFlowObj.id,name:this.copyFlowName})
         if (status === 200) {
           this.showCopyModal = false
           await this.refresh(this.jobId)
