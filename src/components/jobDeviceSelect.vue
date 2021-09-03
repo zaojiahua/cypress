@@ -256,7 +256,7 @@ export default {
   watch: {
     selectDevice (val) {
       if (val === true) {
-        this.refresh()
+        this. onPageChange(1)
       }
     },
     deviceColumnChecked (val) {
