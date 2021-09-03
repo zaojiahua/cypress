@@ -10,7 +10,7 @@
         </ul>
       </div>
       <div class="picture">
-        <img :src="curPic.file" :alt="curPic.name">
+        <img :src="curPic.file" :alt="curPic.name" style="object-fit:contain">
       </div>
     </div>
   </Modal>
@@ -225,12 +225,15 @@ export default {
     ul {
       display: flex;
       height: 100%;
+      align-items: baseline;
+      overflow-y: hidden;
       li {
         height: 100%;
         width: 100px;
         margin-right: 1em;
         img {
-          height: calc(100% - 28px);
+          max-width: 100px;
+          max-height: calc(100% - 28px);
         }
       }
       :last-child {
