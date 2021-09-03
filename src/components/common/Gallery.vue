@@ -111,7 +111,10 @@ export default {
   watch: {
     picUrl (val) {
       setTimeout(() => {
-        if (val[0]) this.curPic = JSON.parse(JSON.stringify(val[0]))
+        if (val[0]) {
+          this.curPic = JSON.parse(JSON.stringify(val[0]))
+          this.curPicIdx = 0
+        }
       }, 300)
     },
     curPic (val) {
