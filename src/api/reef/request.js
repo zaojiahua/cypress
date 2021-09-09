@@ -186,9 +186,10 @@ const getJobResFile = (fileUrl) => {
 }
 
 // unit
-const getJobUnitsBodyDict = () => {
+const getJobUnitsBodyDict = (_params) => {
   return axios.request({
-    url: url.unit()
+    url: url.unit(),
+    params: _params,
   })
 }
 

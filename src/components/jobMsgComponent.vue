@@ -63,7 +63,7 @@
               <b>资源信息</b>
             </Divider>
             <FormItem label="测试柜类型" prop="cabinet_type">
-              <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.cabinet_type" :transfer="true">
+              <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.cabinet_type" :transfer="true" @on-change="selectChange">
                   <Option v-for="(item,index) in $store.state.job.cabinetList" :value="item" :key="index">{{ item }}</Option>
               </Select>
             </FormItem>
@@ -824,6 +824,9 @@ export default {
         hash[arr[i]] = true;
       }
       return false;
+    },
+    selectChange(value){
+      this.$store.commit('job/handleJobInfo', {action: 'setJobInfo', data: this.jobInfo })
     }
   },
   mounted () {

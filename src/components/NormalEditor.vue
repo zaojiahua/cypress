@@ -146,7 +146,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('job', ['normalData','config']),
+    ...mapState('job', ['normalData', 'config', 'jobInfo']),
     ...mapState('unit', ['unitLists', 'unitData'])
   },
   watch: {
@@ -266,8 +266,12 @@ export default {
         this.innerPalette.model = new go.GraphLinksModel(nodeDataArray) // 渲染排序后的unit模板
       }
     },
-    updateUnitLists (unitTemplateType = undefined) { // 更新unit模板信息
-      getJobUnitsBodyDict().then(({ status, data: { unit } }) => {
+    updateUnitLists(unitTemplateType = undefined) { // 更新unit模板信息
+      let cb_type = this.jobInfo.cabinet_type === undefined ? 'Tcab_1' : this.jobInfo.cabinet_type
+      let group = CONST.UNIT_MAPPING_DICT[cb_type]
+      getJobUnitsBodyDict(
+        {"unit_group__in": 'ReefList[' + group.join('{%,%}') + ']'}
+      ).then(({status, data: {unit}}) => {
         if (status === 200) {
           let unitLists = {}
           unit.forEach((val, idx) => {
