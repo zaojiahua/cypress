@@ -63,7 +63,7 @@
               <b>资源信息</b>
             </Divider>
             <FormItem label="测试柜类型" prop="cabinet_type">
-              <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.cabinet_type" :transfer="true" @on-change="selectChange">
+              <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.cabinet_type" :transfer="true">
                   <Option v-for="(item,index) in $store.state.job.cabinetList" :value="item" :key="index">{{ item }}</Option>
               </Select>
             </FormItem>
@@ -825,9 +825,9 @@ export default {
       }
       return false;
     },
-    selectChange(value){
-      this.$store.commit('job/handleJobInfo', {action: 'setJobInfo', data: this.jobInfo })
-    }
+    // selectChange(value){
+    //   this.$store.commit('job/handleJobInfo', {action: 'setJobInfo', data: this.jobInfo })
+    // }
   },
   mounted () {
     if (!this.basicData) this.$store.dispatch('setBasicData') // 挂载时如果没有基本信息, 则获取

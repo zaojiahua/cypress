@@ -33,23 +33,6 @@ let mutations = {
   handleJobInfo (state, { action, data }) {
     if (action === 'setJobInfo') {
       state.jobInfo = data
-      let group = CONST.UNIT_MAPPING_DICT[data.cabinet_type]
-      getJobUnitsBodyDict({"unit_group__in": 'ReefList[' + group.join('{%,%}') + ']'}).then(
-        ({status, data: {unit}}) => {
-          if (status === 200) {
-            let unitLists = {}
-            unit.forEach((val, idx) => {
-              if (!(val.type in unitLists)) unitLists[val.type] = {}
-              unitLists[val.type][val.unit_name] = {
-                unit_id: val.id,
-                unit_content: val.unit_content
-              }
-            })
-            this.commit('unit/setUnitLists', unitLists)
-          }
-        }).catch(err => {
-        this.$Message.error({background: true, content: '获取 Unit 列表失败'})
-      })
       }
     if (action === 'clearJobInfo') {
       state.jobInfo = {}

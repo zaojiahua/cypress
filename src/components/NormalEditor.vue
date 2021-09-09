@@ -94,6 +94,7 @@ export default {
       finalResKey: null,
       unitTemplateType: '', // 左侧显示的unit模板分类
       defaultUnitTemplateType: '基础操作', // 默认显示的unit模板类, 当某个种类下的unit被全部删除完时会用到
+      defaultUnitTemplateType_bk: '常用', // 默认显示的unit模板类, 当某个种类下的unit被全部删除完时会用到
       curNormalData: {},
       /*
         curNormalData 结构:
@@ -147,7 +148,10 @@ export default {
   },
   computed: {
     ...mapState('job', ['normalData', 'config', 'jobInfo']),
-    ...mapState('unit', ['unitLists', 'unitData'])
+    ...mapState('unit', ['unitLists', 'unitData']),
+    cabinet_type () {
+      return this.$store.state.job.jobInfo.cabinet_type
+    }
   },
   watch: {
     normalData (val) { // 切换normalBlock/更新normalBlock的数据时重新渲染逻辑流
@@ -160,8 +164,11 @@ export default {
         this.finalResKey = this._.cloneDeep(this.config.finalResultKey)
 
       }
-    }
-  },
+    },
+    cabinet_type () {
+        this.updateUnitLists(this.defaultUnitTemplateType_bk)
+      }
+    },
   methods: {
     handleClick(key, func){
       if (undefined !== key) {
