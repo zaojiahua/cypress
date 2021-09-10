@@ -252,7 +252,7 @@ export default {
     getSelectedUnit (name) { // 展示选中的分类下的unit模板
       if (!this.unitLists) return
       let nodeDataArray = []
-      if (!this.unitLists[name]) name = this.defaultUnitTemplateType
+      if (!this.unitLists[name]) name = this.defaultUnitTemplateType_bk
       this.unitTemplateType = name
       if (this.unitLists[name]) { // 如果当前分类存在
         Object.entries(this.unitLists[name]).forEach((unit) => { // 将该分类下的unit模板记录下来
