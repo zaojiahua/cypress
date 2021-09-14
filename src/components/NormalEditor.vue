@@ -274,7 +274,7 @@ export default {
       }
     },
     updateUnitLists(unitTemplateType = undefined) { // 更新unit模板信息
-      let cb_type = this.jobInfo.cabinet_type === undefined ? 'Tcab_1' : this.jobInfo.cabinet_type
+      let cb_type = this.jobInfo.cabinet_type ? this.jobInfo.cabinet_type:  'Tcab_1'
       let group = CONST.UNIT_MAPPING_DICT[cb_type]
       getJobUnitsBodyDict(
         {"unit_group__in": 'ReefList[' + group.join('{%,%}') + ']'}
