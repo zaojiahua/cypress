@@ -1,5 +1,6 @@
 import CONST from 'constant/constant'
 import _ from 'lodash'
+import {getJobUnitsBodyDict} from "api/reef/request";
 
 let state = {
   jobInfo: {
@@ -32,7 +33,7 @@ let mutations = {
   handleJobInfo (state, { action, data }) {
     if (action === 'setJobInfo') {
       state.jobInfo = data
-    }
+      }
     if (action === 'clearJobInfo') {
       state.jobInfo = {}
     }
