@@ -31,9 +31,9 @@ export default {
   JOB_DEFAULT_CONFIG: {
     finalResultKey: null, // 默认没有结果unit ,格式为 "NorBlockKey,UnitKey"
     byProductsName: [
-      { 'title': '文件名称', 'key': 'outputFile', 'children': [] },
-      { 'title': '图片名称', 'key': 'outputPicture', 'children': [] },
-      { 'title': '视频名称', 'key': 'outputVideo', 'children': [] }
+      {'title': '文件名称', 'key': 'outputFile', 'children': []},
+      {'title': '图片名称', 'key': 'outputPicture', 'children': []},
+      {'title': '视频名称', 'key': 'outputVideo', 'children': []}
     ]
   },
   ITEM_DESC: {
@@ -201,4 +201,13 @@ export default {
   UNIT_NOT_EXEC: [
     "end_point_with_icon_template_match","end_point_with_icon","end_point_with_changed","end_point_with_fps_lost"
   ],
+  UNIT_MAPPING_DICT: {
+    "Tcab_1": [1, 2],
+    "Tcab_2": [1, 2],
+    "Tcab_3": [1, 2, 3],
+    "Tcab_4": [1, 2, 4],
+    "Tcab_5": [1, 4, 5],
+
+  }
 }
+

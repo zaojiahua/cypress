@@ -824,7 +824,10 @@ export default {
         hash[arr[i]] = true;
       }
       return false;
-    }
+    },
+    // selectChange(value){
+    //   this.$store.commit('job/handleJobInfo', {action: 'setJobInfo', data: this.jobInfo })
+    // }
   },
   mounted () {
     if (!this.basicData) this.$store.dispatch('setBasicData') // 挂载时如果没有基本信息, 则获取

@@ -94,6 +94,7 @@ export default {
       finalResKey: null,
       unitTemplateType: '', // 左侧显示的unit模板分类
       defaultUnitTemplateType: '基础操作', // 默认显示的unit模板类, 当某个种类下的unit被全部删除完时会用到
+      defaultUnitTemplateType_bk: '常用', // 默认显示的unit模板类, 当某个种类下的unit被全部删除完时会用到
       curNormalData: {},
       /*
         curNormalData 结构:
@@ -146,8 +147,11 @@ export default {
     }
   },
   computed: {
-    ...mapState('job', ['normalData','config']),
-    ...mapState('unit', ['unitLists', 'unitData'])
+    ...mapState('job', ['normalData', 'config', 'jobInfo']),
+    ...mapState('unit', ['unitLists', 'unitData']),
+    cabinet_type () {
+      return this.$store.state.job.jobInfo.cabinet_type
+    }
   },
   watch: {
     normalData (val) { // 切换normalBlock/更新normalBlock的数据时重新渲染逻辑流
@@ -160,8 +164,11 @@ export default {
         this.finalResKey = this._.cloneDeep(this.config.finalResultKey)
 
       }
-    }
-  },
+    },
+    cabinet_type () {
+        this.updateUnitLists(this.defaultUnitTemplateType_bk)
+      }
+    },
   methods: {
     handleClick(key, func){
       if (undefined !== key) {
@@ -245,7 +252,7 @@ export default {
     getSelectedUnit (name) { // 展示选中的分类下的unit模板
       if (!this.unitLists) return
       let nodeDataArray = []
-      if (!this.unitLists[name]) name = this.defaultUnitTemplateType
+      if (!this.unitLists[name]) name = this.defaultUnitTemplateType_bk
       this.unitTemplateType = name
       if (this.unitLists[name]) { // 如果当前分类存在
         Object.entries(this.unitLists[name]).forEach((unit) => { // 将该分类下的unit模板记录下来
@@ -266,8 +273,12 @@ export default {
         this.innerPalette.model = new go.GraphLinksModel(nodeDataArray) // 渲染排序后的unit模板
       }
     },
-    updateUnitLists (unitTemplateType = undefined) { // 更新unit模板信息
-      getJobUnitsBodyDict().then(({ status, data: { unit } }) => {
+    updateUnitLists(unitTemplateType = undefined) { // 更新unit模板信息
+      let cb_type = this.jobInfo.cabinet_type ? this.jobInfo.cabinet_type:  'Tcab_1'
+      let group = CONST.UNIT_MAPPING_DICT[cb_type]
+      getJobUnitsBodyDict(
+        {"unit_group__in": 'ReefList[' + group.join('{%,%}') + ']'}
+      ).then(({status, data: {unit}}) => {
         if (status === 200) {
           let unitLists = {}
           unit.forEach((val, idx) => {
