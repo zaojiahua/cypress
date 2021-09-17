@@ -272,6 +272,7 @@ export default {
       Object.assign(src[item.itemName], item.itemContent)
     },
     isNotExecutable(){
+      if (!this.unitData.unitMsg) return true
       return (this.unitData.unitType === 'IMGTOOL' || CONST.UNIT_NOT_EXEC.includes(this.unitData.unitMsg.functionName ))
     },
     validateRequireMessage() {
