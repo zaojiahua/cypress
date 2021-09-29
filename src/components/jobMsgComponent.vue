@@ -595,7 +595,6 @@ export default {
       }
     },
     async controlDevice () { // 选取设备
-      console.log("还来？？！！！")
       if (this.preDeviceInfo) { // 如果之前选择的设备还没有到期则释放
         try {
           // eslint-disable-next-line camelcase

@@ -123,6 +123,7 @@ export default {
             desc: '占用时间耗尽，设备已自动释放',
             duration: 0
           })
+          this.$Modal.remove()
         } else if (status === 200 && !auto) {
           this.$Message.success({
             background: true,
