@@ -223,6 +223,7 @@ export default {
         // message提示
         this.$Notice.error({
           title: '当前用例出现以下错误',
+          duration: 0,
           render: h => {
             return h('div', [
               h('div', {
@@ -573,6 +574,7 @@ export default {
             // console.log("save as end")
             return // 显示出rename的 input 框后 防止执行 clearData
           }
+          this.$Notice.destroy()
         }
       }
       await this.clearData()
@@ -881,6 +883,11 @@ export default {
   }
 }
 </script>
+<style>
+  .ivu-notice{
+    top:250px!important;
+  }
+</style>
 <style lang="less" scoped>
 @import '../css/common.less';
 .container {
