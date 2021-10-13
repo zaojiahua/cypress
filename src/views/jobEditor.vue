@@ -574,9 +574,9 @@ export default {
             // console.log("save as end")
             return // 显示出rename的 input 框后 防止执行 clearData
           }
-          this.$Notice.destroy()
         }
       }
+      this.$Notice.destroy()
       await this.clearData()
     },
     async prepareJobInfo () { // 返回保存用例时需要的信息
