@@ -880,6 +880,9 @@ export default {
       // if (this.duplicateId) updateJobMsg(this.duplicateId, { job_deleted: true })
       this.$store.commit('job/setDuplicateId', null)
     })
+  },
+  destroyed(){
+    this.$Notice.destroy()
   }
 }
 </script>
