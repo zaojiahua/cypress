@@ -386,7 +386,7 @@ export default {
       if (name === 'quit') { // 退出
         this.autoSaveToggle = false
         this.$router.push({ path: '/jobList' })
-        this.$store.commit('setCurPage', 1)
+        // this.$store.commit('setCurPage', 1)
       } else // 非退出的操作
         {
           if (!this.editJobMsg || !this.editJobFlow ){
