@@ -16,6 +16,9 @@
           </Modal>
         </div>
         <div class="child-m-right--1 flex-row">
+          <a :href="bat_url">
+            <Button size="large" @click="checkDeviceChoose" style="margin-right: 7px">打开手机监控</Button>
+          </a>
           <Dropdown @on-click="handleMenu">
             <Button size="large">
               菜单
@@ -92,6 +95,7 @@ import {
 import util from "lib/util/validate";
 import {jobSerializer} from "lib/util/jobListSerializer";
 import {jobBindResource} from 'api/reef/request'
+import {baseURL} from "config";
 
 export default {
   name: 'jobEditor',
@@ -117,7 +121,8 @@ export default {
       wingmans: 3,
       jobController: null, // unit 右键菜单栏dom对象
       saving: false, //是否展示加载动画
-      duplicateTipModal: false
+      duplicateTipModal: false,
+      isBatButtonClick:false
     }
   },
   computed: {
@@ -134,7 +139,13 @@ export default {
     },
     isAdmin (){
       return sessionStorage.groups && sessionStorage.groups.includes('Admin')
-    }
+    },
+    bat_url (){
+      if (this.isBatButtonClick) {
+        let ip = this.deviceInfo ? this.deviceInfo.ip_address:"0.0.0.0"
+        return `${baseURL}/api/v1/cedar/get_bat/?ip=${ip}`
+      }
+    },
   },
   watch: {
     jobInfo: {
@@ -192,6 +203,23 @@ export default {
   methods: {
     closeNormalEditor () { // 关闭Normal块的编辑页面
       this.openNormalEditor = false
+    },
+    checkDeviceChoose(){
+      if (!this.deviceInfo){
+        this.$Message.error({
+          content: '请先选择一个设备',
+          duration:3,
+          closable: true
+        })
+      }else if (!this.compareIPAdress()){
+        this.$Message.error({
+          content: '请先确保连接在同一个wifi',
+          duration:3,
+          closable: true
+        })
+      } else{
+        this.isBatButtonClick = true
+      }
     },
     switchBlockSave (msg) {
       let node = this.outerDiagram.model.findNodeDataForKey(this.currentSwitchBlockKey)
@@ -705,6 +733,11 @@ export default {
     },
     viewResFile () { // 打开依赖文件的展示页面
       this.$store.commit('files/setShowResFileModal')
+    },
+    compareIPAdress() {
+      // todo get local ipv4 ip here
+      return true
+      if (local_address.split(".")[2] !== this.deviceInfo.ip_address.split(".")[2]) return false
     },
     handleResFile (jobFlowId) { // jobEditor挂载时获取依赖文件
       if (!jobFlowId) return
