@@ -444,7 +444,7 @@ export default {
   },
   computed: {
     ...mapState(['showDrawer', 'basicData']),
-    ...mapState('job', ['jobInfo', 'duplicateId', 'duplicateLabel','jobFlowInfo','selectJobType','cabinetList','resourceList']),
+    ...mapState('job', ['jobInfo', 'duplicateId', 'duplicateLabel','jobFlowInfo','selectJobType','cabinetList','resourceList','isClearJobInfo']),
     ...mapGetters('job', ['jobId']),
     ...mapState('device', ['deviceInfo', 'preDeviceInfo', 'countdown', 'isControlDevice']),
     isJobEditor () { // 是否在 JobEditor 页面
@@ -474,6 +474,10 @@ export default {
   watch: {
     jobInfo (val) { // jobInfo(用例信息)变化是, 记录job的类型与二级类型
       console.log(this.jobInfo.job_id)
+      if(this.isClearJobInfo){
+        this.curJobType = []
+        this.$store.commit('job/setIsClearJobInfo', false)
+      }
       if (val.job_type) {
         this.curJobType.splice(0, 1, val.job_type)
       } else {
@@ -496,7 +500,10 @@ export default {
       if(val){
         this.getcabinetList()
       }
-      if (val === false && !this.isJobEditor) this.$store.commit('job/handleJobInfo', { action: 'clearJobInfo' })
+      if (val === false && !this.isJobEditor) {
+        this.$store.commit('job/handleJobInfo', { action: 'clearJobInfo' })
+        this.curJobType = []
+      }
     },
     deviceInfo (newVal, oldVal) { // 设备信息变化时检测是否和已填信息发生冲突并进行处理
       this.$store.commit('device/setPreDeviceInfo', oldVal)

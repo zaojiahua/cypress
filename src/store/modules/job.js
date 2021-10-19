@@ -18,6 +18,7 @@ let state = {
   editingJobId: null,//正在编辑的job ID
   cabinetList:[], //可选择的测试柜类型列表
   resourceList:[], //job的资源文件数据
+  isClearJobInfo:false,  //是否强制离开页面清除的jobInfo （jobMsg页面重置job_type会用到）
 }
 
 let mutations = {
@@ -29,6 +30,9 @@ let mutations = {
   },
   setCabinetList(state,data){
     state.cabinetList = data
+  },
+  setIsClearJobInfo(state,isClearJobInfo){
+    state.isClearJobInfo = isClearJobInfo
   },
   handleJobInfo (state, { action, data }) {
     if (action === 'setJobInfo') {
