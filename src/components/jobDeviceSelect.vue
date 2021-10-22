@@ -188,7 +188,7 @@ export default {
       this.deviceSelected = currentRow
     },
     async refresh () {
-      let deviceStatus
+      let deviceStatus = ""
       if (this.deviceStatusFilterList.length) {
         deviceStatus = '&status__in=' + 'ReefList[' + this.deviceStatusFilterList.join('{%,%}') + ']'
       }
