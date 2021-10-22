@@ -224,6 +224,7 @@ export default {
     switchBlockSave (msg) {
       let node = this.outerDiagram.model.findNodeDataForKey(this.currentSwitchBlockKey)
       this.outerDiagram.model.setDataProperty(node, 'text', msg.switchBlockName)
+      this.outerDiagram.model.setDataProperty(node, 'maxTime', msg.switchBlockTime)
       this.outerDiagram.model.setDataProperty(node, 'fileName', msg.fileName)
       this.outerDiagram.model.setDataProperty(node, 'explain', msg.explain)
     },

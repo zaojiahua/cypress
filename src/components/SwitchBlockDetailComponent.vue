@@ -4,9 +4,12 @@
     :value="switchBlockModalShow"
     :mask-closable="false"
     :closable="false">
-    <Form ref="switchBlockForm" :label-width="80" :model="switchBlockInfo" :rules="switchBlocRules" @submit.native.prevent>
+    <Form ref="switchBlockForm" :label-width="120" :model="switchBlockInfo" :rules="switchBlocRules" @submit.native.prevent>
       <FormItem label="name" prop="switchBlockName">
-        <Input v-model="switchBlockInfo.switchBlockName" placeholder="Enter something..." @on-enter="submit"/>
+        <Input v-model="switchBlockInfo.switchBlockName" placeholder="Enter something..."/>
+      </FormItem>
+      <FormItem label="最大循环次数">
+        <InputNumber v-model="switchBlockInfo.switchBlockTime" :min="1" :precision="0"></InputNumber>
       </FormItem>
     </Form>
 

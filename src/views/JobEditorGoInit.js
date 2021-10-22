@@ -221,6 +221,7 @@ function outerDiagramInit(context) {
     if (e.diagram instanceof go.Palette) return
     context.switchBlockInfo = {
       switchBlockName: node.data.text,
+      switchBlockTime: node.data.maxTime?node.data.maxTime:5,
       fileName: node.data.fileName,
       explain: node.data.explain
     }
