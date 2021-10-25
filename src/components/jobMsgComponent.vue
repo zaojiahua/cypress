@@ -499,6 +499,7 @@ export default {
       this.currTab = "jobAttr"
       if(val){
         this.getcabinetList()
+        this.$store.dispatch('setBasicData')
       }
       if (val === false && !this.isJobEditor) {
         this.$store.commit('job/handleJobInfo', { action: 'clearJobInfo' })
