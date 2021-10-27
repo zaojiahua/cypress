@@ -210,7 +210,11 @@ function outerDiagramInit(context) {
     } else if (node.data.text === 'Fail') {
       context.outerDiagram.model.setDataProperty(node.data, 'text', 'Success')
       context.outerDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.SUCCESS)
-    } else {
+    } else if (node.data.text === 'Success') {
+      context.outerDiagram.model.setDataProperty(node.data, 'text', 'Abnormal')
+      context.outerDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.ABNORMAL)
+    }
+    else {
       context.outerDiagram.model.setDataProperty(node.data, 'text', 'End')
       context.outerDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.END)
     }
