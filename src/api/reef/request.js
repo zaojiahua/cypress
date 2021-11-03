@@ -157,6 +157,14 @@ const updateJobMsg = (id, data) => {
   })
 }
 
+const deleteJob = (data) => {
+  return axios.request({
+    method: 'post',
+    url: url.deleteJob(),
+    data
+  })
+}
+
 const getBlockFlowDict4Font = (url) => {
   return axios.request({
     url: url
@@ -354,4 +362,5 @@ export {
   getCabinetList,
   getAppNameList,
   jobBindResource,
+  deleteJob,
 }

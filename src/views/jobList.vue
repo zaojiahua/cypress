@@ -49,7 +49,7 @@ import { getSelectedJobs } from 'api/coral/jobLibSvc'
 import { jobLibSvcURL } from '../config/index'
 import { serializer, jobSerializer } from 'lib/util/jobListSerializer'
 import jobListFilter from '../components/jobListFilter'
-import { getJobDetail, getJobList, updateJobMsg,copyJob } from 'api/reef/request'
+import { getJobDetail, getJobList, deleteJob,copyJob } from 'api/reef/request'
 import { createJobLabel } from '../lib/tools'
 import { mapState } from 'vuex'
 
@@ -423,22 +423,23 @@ export default {
           content: '请先选择要删除的用例！'
         })
       } else {
+        let _this = this
         this.$Modal.confirm({
           title: '提示',
           content: '您真的要删除这些用例吗？',
           onOk: () => {
-            this.jobIdList.forEach(async (id) => {
-              await updateJobMsg(id, { job_deleted: true })
+            deleteJob({ job_ids: _this.jobIdList })
+              .then(response=>{
+                if (_this.jobData.length - _this.jobIdList.length === 0 && _this.curPage > 1) {
+                  _this.jobPageChange(_this.curPage - 1)
+                } else {
+                  _this.jobPageChange(_this.curPage)
+                }
+                this.$Message.success('用例删除成功')
+                this.selectedJobs = {}
+              }).catch(error=>{
+              this.$Message.error('用例删除失败')
             })
-            setTimeout(() => {
-              if (this.jobData.length - this.jobIdList.length === 0 && this.curPage > 1) {
-                this.jobPageChange(this.curPage - 1)
-              } else {
-                this.jobPageChange(this.curPage)
-              }
-              this.$Message.success('用例删除成功')
-              this.selectedJobs = {}
-            }, 300)
           }
         })
       }
