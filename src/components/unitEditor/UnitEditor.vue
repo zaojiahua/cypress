@@ -273,7 +273,7 @@ export default {
     },
     isNotExecutable(){
       if (!this.unitData.unitMsg) return true
-      return (this.unitData.unitType === 'IMGTOOL' || CONST.UNIT_NOT_EXEC.includes(this.unitData.unitMsg.functionName ))
+      return CONST.UNIT_NOT_EXEC.includes(this.unitData.unitMsg.functionName )
     },
     validateRequireMessage() {
       if (this.curFile === null) {

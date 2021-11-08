@@ -200,7 +200,7 @@ export default {
     "end_point_with_icon_template_match","has_icon_template_match"
   ],
   UNIT_NOT_EXEC: [
-    "end_point_with_icon_template_match","end_point_with_icon","end_point_with_changed","end_point_with_fps_lost"
+    "end_point_with_icon_template_match","end_point_with_icon","end_point_with_changed","end_point_with_fps_lost","has_words","realtime_picture_compare","smart_ocr_point"
   ],
   UNIT_MAPPING_DICT: {
     "Tcab_1": [1, 2],

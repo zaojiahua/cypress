@@ -39,6 +39,13 @@
         <Button size="small" :disabled="this.curPage === this.lastPage" @click="jobPageChange(lastPage)">尾页</Button>
       </div>
     </div>
+
+    <Modal v-model="showJobConnectionModal" :fullscreen="true" :transfer="false" :closable="false" >
+      <inner-job-connection ref="innerJobConnection" :prop-inner="propInner"></inner-job-connection>
+      <div slot="footer">
+        <Button type="primary" @click="showJobConnectionModal = false">关闭</Button>
+      </div>
+    </Modal>
   </div>
 </template>
 
@@ -49,6 +56,7 @@ import { getSelectedJobs } from 'api/coral/jobLibSvc'
 import { jobLibSvcURL } from '../config/index'
 import { serializer, jobSerializer } from 'lib/util/jobListSerializer'
 import jobListFilter from '../components/jobListFilter'
+import InnerJobConnection from '../components/InnerJobConnection'
 import { getJobDetail, getJobList, deleteJob,copyJob } from 'api/reef/request'
 import { createJobLabel } from '../lib/tools'
 import { mapState } from 'vuex'
@@ -56,7 +64,8 @@ import { mapState } from 'vuex'
 export default {
   name: 'jobList',
   components: {
-    jobListFilter
+    jobListFilter,
+    InnerJobConnection
   },
   data () {
     return {
@@ -64,6 +73,7 @@ export default {
       pageSize: 10, // 每页条数
       dataCount: 0,
       lastPage: 0,
+      propInner:"",
       columns: [
         {
           type: 'index',
@@ -149,31 +159,85 @@ export default {
           title: '操作',
           key: 'operation',
           width: 150,
-          align: 'center',
           render: (h, params) => {
             if (!this.isAdmin) {
-              return h('div', [
-                h('span', {
-                  class: 'mouse-hover',
-                  on: {
-                    click: () => {
-                      event.stopPropagation();
-                      this.show(params.index)
+              if(params.row.job_type==="InnerJob"){
+                return h('div', [
+                  h('span', {
+                    class: 'mouse-hover',
+                    on: {
+                      click: () => {
+                        event.stopPropagation();
+                        this.show(params.index)
+                      }
                     }
-                  }
-                },'另存'),
-              ]);
+                  },'另存'),
+                  h('span', {
+                    class: 'mouse-hover',
+                    style:{
+                      marginLeft:'10px',
+                      color: '#2d8cf0'
+                    },
+                    on: {
+                      click: () => {
+                        event.stopPropagation();
+                        this.propInner = params.row.job_name
+                        this.viewJobConnection(params.row.job_label)
+                      }
+                    }
+                  },'参考'),
+                ]);
+              }else {
+                return h('div', [
+                  h('span', {
+                    class: 'mouse-hover',
+                    on: {
+                      click: () => {
+                        event.stopPropagation();
+                        this.show(params.index)
+                      }
+                    }
+                  },'另存'),
+                ]);
+              }
             }else {
-              return h('div', [
-                h('span', {
-                  class: 'mouse-hover',
-                  on: {
-                    click: () => {
-                      event.stopPropagation();
+              if(params.row.job_type==="InnerJob") {
+                return h('div', [
+                  h('span', {
+                    class: 'mouse-hover',
+                    on: {
+                      click: () => {
+                        event.stopPropagation();
+                      }
                     }
-                  }
-                },'另存'),
-              ]);
+                  },'另存'),
+                  h('span', {
+                    class: 'mouse-hover',
+                    style:{
+                      marginLeft:'10px',
+                      color: '#2d8cf0'
+                    },
+                    on: {
+                      click: () => {
+                        event.stopPropagation();
+                        this.propInner = params.row.job_name
+                        this.viewJobConnection(params.row.job_label)
+                      }
+                    }
+                  },'参考'),
+                ])
+              }else {
+                return h('div', [
+                  h('span', {
+                    class: 'mouse-hover',
+                    on: {
+                      click: () => {
+                        event.stopPropagation();
+                      }
+                    }
+                  },'另存'),
+                ]);
+              }
             }
 
           }
@@ -188,7 +252,8 @@ export default {
       jobState: localStorage.getItem('joblist-management:DEFAULT_FILTER_CONFIG') || '',
       jobType: localStorage.getItem('COMPJOBLIST:FILTER_JOB_TYPE') || '',
       filterUrlParam: '',
-      tableHeight: 519
+      tableHeight: 519,
+      showJobConnectionModal:false,
     }
   },
   computed: {
@@ -261,6 +326,10 @@ export default {
         }
       }
       )
+    },
+    viewJobConnection(label){
+      this.showJobConnectionModal = true
+      this.$refs.innerJobConnection.refresh(label)
     },
     getFilteredJobs () {
       let filterUrlParam = `${this.jobState ? `&draft=${this.jobState === 'draft' ? 'True' : 'False'}` : ''}${this.jobType ? `&job_type=${this.jobType}` : ''}${this.filterUrlParam}`

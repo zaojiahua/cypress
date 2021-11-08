@@ -107,6 +107,10 @@ let getters = {
   curItemMeaning (state) {
     if (!state.itemData) return
     return state.itemData.itemContent.meaning
+  },
+  isAllowNull(state){
+    if (!state.itemData) return
+    return state.itemData.itemContent.optional
   }
 }
 

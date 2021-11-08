@@ -102,7 +102,7 @@ export default {
     ...mapGetters('unit', ['unitKey']),
     ...mapState('item', ['editing', 'itemData', 'saveToFinalResult']),
     ...mapState('img', ['imgRecRate', 'coordinates', 'absCoordinates']),
-    ...mapGetters('item', ['itemType', 'itemName', 'isPicInput', 'isOutputPicture', 'isOutputFile', 'isJobResourceFile', 'curItemMeaning', 'isJobResourcePicture']),
+    ...mapGetters('item', ['itemType', 'itemName', 'isPicInput', 'isOutputPicture', 'isOutputFile', 'isJobResourceFile', 'curItemMeaning', 'isJobResourcePicture','isInputPicture','isAllowNull']),
     showInput () { // 如果CONST.SHOW_INPUT这一Set中包含该itemType(即execCmdDict/execCmdList内子元素的type字段), 则显示Input组件
       return CONST.SHOW_INPUT.has(this.itemType)
     },
@@ -243,7 +243,18 @@ export default {
         if (!this.tmachBlanks[i].content.trim()) flag = false
         break
       }
-      if (!flag) { //  存在则报错并终止
+      // if(this.isAllowNull&&this.isInputPicture) {
+      //   //inputPicture 部分允许填入空值
+      // }else {
+      //   if (!flag) { //  存在则报错并终止
+      //     this.$Message.error({
+      //       background: true,
+      //       content: '不允许填入空值'
+      //     })
+      //     return flag
+      //   }
+      // }
+      if (!flag&&(!this.isAllowNull||!this.isInputPicture)) { //  存在则报错并终止
         this.$Message.error({
           background: true,
           content: '不允许填入空值'
@@ -259,7 +270,11 @@ export default {
         curIndex = itemData.itemContent.content.indexOf(tmachBlanks[i], curIndex)
         temp = itemData.itemContent.content.split('')
         let target
-        target = `Tmach${this.tmachBlanks[i].content.trim()}${this.tmachBlanks[i].suffix} `
+        if(this.isAllowNull&&this.isInputPicture&&!this.tmachBlanks[i].content.trim()){
+          target = 'Tmach '
+        }else {
+          target = `Tmach${this.tmachBlanks[i].content.trim()}${this.tmachBlanks[i].suffix} `
+        }
         temp.splice(curIndex, tmachBlanks[i].length, target)
         curIndex += target.length
         itemData.itemContent.content = temp.join('')
@@ -278,7 +293,7 @@ export default {
         action: 'setItemData',
         data: itemData
       })
-      return flag
+      return true
     },
     handleShowItemEditor () {
       if (!this.isPicInput) {

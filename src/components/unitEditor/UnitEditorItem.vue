@@ -60,6 +60,9 @@ export default {
     isPicInput () {
       return this.itemType === 'picInput'
     },
+    isInputPicture () {
+      return this.itemType === 'inputPicture'
+    },
     isJobResourceFileWithDefaultValue () {
       return this.itemType === 'jobResourceFileWithDefaultValue'
     },
@@ -68,6 +71,8 @@ export default {
         this.setDefaultValue()
         return true
       }
+      if(this.isInputPicture && this.curItemContent.optional)
+        return true
       // 设置默认的配置文件
       if (this.isJobResourceFileWithDefaultValue && this.tmachBlanks.includes('Tmach ')) {
         this.$store.commit('files/handleResFiles', { //尾端添加

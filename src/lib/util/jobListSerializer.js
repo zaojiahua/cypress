@@ -40,6 +40,7 @@ const serializer = {
   },
   jobSerializer: [{
     id: 'number',
+    job_label:'string',
     job_name: 'string',
     custom_tag: [{
       id: 'number',
