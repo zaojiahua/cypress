@@ -221,8 +221,10 @@ export function baseGroupTemplate (context) {
         }
         for (let key in target) {
           if (target[key].type !== 'noChange' && target[key].content.includes('Tmach ')) {
-            context.innerDiagram.model.setDataProperty(n.data, 'color', CONST.COLORS.UNFINISHED)
-            n.data.completed = false
+            if(!target[key].optional){
+              context.innerDiagram.model.setDataProperty(n.data, 'color', CONST.COLORS.UNFINISHED)
+              n.data.completed = false
+            }
             return
           }
         }
