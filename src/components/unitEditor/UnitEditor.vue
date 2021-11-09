@@ -14,6 +14,7 @@
       </div>
     </div>
     <div class="body">
+<!--      这个是弹出的模态框，靠openTestResultModal属性控制打开，分左右两部分，按情况向slot插入需要的内容-->
       <TestResult :openTestResultModal="openTestResultModal" @closeTestModal="closeTestModal">
         <template #left>
           <div v-if="Object.keys(testOcrResponseData).length !== 0">
@@ -56,6 +57,7 @@
       </div>
       <div class="pane">
         <Utils></Utils>
+<!--        根据unit不同，显示不同内容的按钮，调用不同方法发给不同api-->
         <Button type="primary" v-show="hasIconTest" @click="sendIconTestRequest('icon_test')">测试图标</Button>
         <Button type="primary" v-show="hasIconPositionTest" @click="sendIconPositionTestRequest('icon_test_position')">测试图标位置</Button>
         <Button type="primary" v-show="hasOcrTest" @click="sendOcrTestRequest">测试文字</Button>

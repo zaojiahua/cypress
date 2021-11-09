@@ -1,12 +1,14 @@
 <template>
   <Modal v-model="modalOpen" fullscreen title="测试结果"    @on-ok="close"  @on-cancel="close">
     <Row type="flex" justify="center" align="top">
+      <!--    这是点击测试按钮展开的模态框，分左右两部分，根据slot插入的不同，左边可能是小图标或者裁剪后的图-->
       <Col span="11"  >
         <div class="img">
           <slot name="left" ></slot>
         </div>
       </Col>
       <Col span="2">
+<!--        右边是带十字星的图标查找图或带文字选框的文字查找图-->
         <div style="{min-height: 100%;height: 120vh;position: relative;}">
           <div class="divider">
           </div>
