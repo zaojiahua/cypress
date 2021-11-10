@@ -285,6 +285,10 @@ export default {
       if (this.showFeaturePoint) { // 如果要显示选区/选点工具, 将配置文件的名称保存在itemData的area字段中
         itemData.itemContent.area = `${this.loc}.json`
       }
+      if(itemData.itemName==="requiredWords"&&itemData.itemContent.type==="uxInput")
+        this.$emit("on-change-unit-name",this.tmachBlanks[0].content.trim())
+      if(itemData.itemName==="exceptWords"&&itemData.itemContent.type==="uxInput")
+        this.$emit("on-change-unit-name",this.tmachBlanks[0].content.trim())
       this.$store.commit('item/handleItemData', { // 设置当前的itemData
         action: 'setItemData',
         data: itemData

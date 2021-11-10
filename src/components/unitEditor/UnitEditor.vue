@@ -10,7 +10,7 @@
       <span>UNIT EDITOR</span>
       <div class="unit-name">
         <Tag class="unit-name-tag" color="green" size="large">UNIT NAME</Tag>
-        <Input class="unit-name-input" v-model="unitData.unitName" clearable></Input>
+        <Input class="unit-name-input" v-model="unitName" clearable></Input>
       </div>
     </div>
     <div class="body">
@@ -52,6 +52,7 @@
       <div class="pane">
         <ItemEditor
           @updateUnitItem="updateUnitItem"
+          @on-change-unit-name="changeUnitName"
         ></ItemEditor>
       </div>
       <div class="pane">
@@ -103,6 +104,7 @@ export default {
       testOcrResponseData: {},
       testIconResponseData: {},
       loading:false,
+      unitName:""
     }
   },
   computed: {
@@ -156,6 +158,8 @@ export default {
   watch: {
     showUnitEditor(val) {
       this.curShowUnitEditor = val
+      if(val)
+        this.unitName = this.unitData.unitName
     },
     unitData: {
       deep: true,
@@ -245,6 +249,7 @@ export default {
       if (save) {
         this.$emit('handleUnitColor', this.checkWeatherCompleted()) // 检查当前unit是否编辑完成, 以决定unit块的颜色
         let unitData = this._.cloneDeep(this.unitData)
+        unitData.unitName = this.unitName
         let {unitMsg: {execCmdDict: {execCmdList}}} = unitData
         if (execCmdList) {
           execCmdList.forEach((val) => {
@@ -385,6 +390,13 @@ export default {
       this.openTestResultModal = false
       this.testOcrResponseData = {}
       this.testIconResponseData = {}
+    },
+    //unitItem填入值以后吧对应的unitName后面加上对应的值
+    changeUnitName(name){
+      let arr = this.unitData.unitName.split("_@_")
+      if(arr.length>1)
+        arr.pop()
+      this.unitName = arr[0] + "_@_" + name
     }
   }
 }
