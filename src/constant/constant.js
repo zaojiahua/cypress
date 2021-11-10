@@ -202,6 +202,7 @@ export default {
   UNIT_NOT_EXEC: [
     "end_point_with_icon_template_match","end_point_with_icon","end_point_with_changed","end_point_with_fps_lost","has_words","realtime_picture_compare","smart_ocr_point"
   ],
+  //这部分是unit类型与适配几型柜的映射，注意数据库里的unit_group不代表适配几型号柜
   UNIT_MAPPING_DICT: {
     "Tcab_1": [1, 2],
     "Tcab_2": [1, 2],
