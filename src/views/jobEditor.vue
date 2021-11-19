@@ -607,6 +607,12 @@ export default {
       }
       this.$Notice.destroy()
       await this.clearData()
+      this.clearDevice()
+    },
+    clearDevice(){
+      this.$store.commit('device/clearDeviceInfo')
+      this.$store.commit('device/clearPreDeviceInfo')
+      this.$store.commit('device/setReleaseDeviceId')
     },
     async prepareJobInfo () { // 返回保存用例时需要的信息
       let { data: start } = this.outerDiagram.findNodeForKey(-1) // 将配置信息保存在Start节点
