@@ -42,6 +42,7 @@ const serializer = {
     id: 'number',
     job_label:'string',
     job_name: 'string',
+    cabinet_type:"string",
     custom_tag: [{
       id: 'number',
       custom_tag_name: 'string'

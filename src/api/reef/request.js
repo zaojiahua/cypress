@@ -57,6 +57,12 @@ const getManufacturerList = () => {
   })
 }
 
+const getCabinetTypeList = () => {
+  return axios.request({
+    url: url.cabinetType()
+  })
+}
+
 const deleteTag = (type, id) => {
   return axios.request({
     method: 'delete',
@@ -329,6 +335,7 @@ export {
   getAndroidVersionList,
   getRomVersionList,
   getManufacturerList,
+  getCabinetTypeList,
   deleteTag,
   getUsableDeviceList,
   getDeviceList,

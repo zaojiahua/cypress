@@ -57,7 +57,7 @@ import { jobLibSvcURL } from '../config/index'
 import { serializer, jobSerializer } from 'lib/util/jobListSerializer'
 import jobListFilter from '../components/jobListFilter'
 import InnerJobConnection from '../components/InnerJobConnection'
-import { getJobDetail, getJobList, deleteJob,copyJob } from 'api/reef/request'
+import { getJobDetail, getJobList, deleteJob,copyJob,getCabinetTypeList } from 'api/reef/request'
 import { createJobLabel } from '../lib/tools'
 import { mapState } from 'vuex'
 
@@ -101,8 +101,7 @@ export default {
         {
           title: '用例状态',
           key: 'job_state',
-          width:130,
-          sortable: true,
+          width:110,
           align: 'center',
           filters: [
             {
@@ -147,6 +146,16 @@ export default {
           filterRemote (value) {
             this.jobType = value[0] || ''
             localStorage.setItem('COMPJOBLIST:FILTER_JOB_TYPE', this.jobType)
+            this.jobPageChange(1)
+          }
+        },
+        {
+          title: '测试柜类型',
+          key: 'cabinet_type',
+          width:130,
+          filters: [],
+          filterRemote (value) {
+            this.cabinetType= value
             this.jobPageChange(1)
           }
         },
@@ -251,6 +260,7 @@ export default {
       },
       jobState: localStorage.getItem('joblist-management:DEFAULT_FILTER_CONFIG') || '',
       jobType: localStorage.getItem('COMPJOBLIST:FILTER_JOB_TYPE') || '',
+      cabinetType: [],
       filterUrlParam: '',
       tableHeight: 519,
       showJobConnectionModal:false,
@@ -332,7 +342,7 @@ export default {
       this.$refs.innerJobConnection.refresh(label)
     },
     getFilteredJobs () {
-      let filterUrlParam = `${this.jobState ? `&draft=${this.jobState === 'draft' ? 'True' : 'False'}` : ''}${this.jobType ? `&job_type=${this.jobType}` : ''}${this.filterUrlParam}`
+      let filterUrlParam = `${this.jobState ? `&draft=${this.jobState === 'draft' ? 'True' : 'False'}` : ''}${this.jobType ? `&job_type=${this.jobType}` : ''}${this.filterUrlParam}${this.cabinetType.length>0 ? `&cabinet_type__in=ReefList[${ this.cabinetType.join('{%,%}')}]`:''}`
       getJobList({
         pageSize: this.pageSize,
         offset: this.offset,
@@ -520,6 +530,20 @@ export default {
       }
       this.jobPageChange()
     },
+    getCabinetList(){
+      getCabinetTypeList()
+        .then(response=>{
+          let CabinetList = response.data
+          let  CabinetFilters = []
+          CabinetList.forEach(item=>{
+            CabinetFilters.push({label:item.type,value:item.type})
+          })
+          this.columns[7].filters = CabinetFilters;
+        })
+        .catch(error=>{
+          this.$Message.error("测试柜列表获取失败")
+        })
+    },
     setTableHeight () {
       let { innerHeight } = window
       if (innerHeight <= 768) {
@@ -544,6 +568,7 @@ export default {
     // window.addEventListener('resize', this.setTableHeight)
   },
   async activated () {
+    this.getCabinetList()
     this.jobPageChange()
 
     if (this.editingJobId !== null && !isNaN(this.editingJobId)) {

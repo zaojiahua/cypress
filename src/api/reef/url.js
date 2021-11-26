@@ -9,7 +9,7 @@ const romVersionFilter = ['id', 'version']
 const manufacturerFilter = ['id', 'manufacturer_name', 'phonemodel', 'phonemodel.id', 'phonemodel.phone_model_name', 'romversion', 'romversion.id', 'romversion.version']
 const usableDeviceFilter = ['id', 'device_label', 'ip_address', 'device_name', 'phone_model', 'phone_model.phone_model_name', 'android_version', 'android_version.version', 'rom_version', 'rom_version.version']
 const deviceFilter = ['id', 'device_label', 'occupy_type', 'phone_model', 'phone_model.id', 'phone_model.phone_model_name', 'phone_model.manufacturer', 'phone_model.manufacturer.id', 'phone_model.manufacturer.manufacturer_name', 'phone_model.cpu_name', 'rom_version', 'rom_version.id', 'rom_version.version', 'device_name', 'android_version', 'android_version.id', 'android_version.version', 'ip_address', 'cabinet', 'cabinet.ip_address', 'status']
-const jobFilter = ['id','job_label', 'test_area', 'test_area.description', 'custom_tag', 'custom_tag.custom_tag_name', 'ui_json_file', 'job_name', 'job_type', 'job_second_type', 'draft', 'updated_time', 'author', 'author.id','author.username']
+const jobFilter = ['id','job_label', 'test_area', 'test_area.description', 'custom_tag', 'custom_tag.custom_tag_name', 'ui_json_file', 'job_name', 'job_type','cabinet_type', 'job_second_type', 'draft', 'updated_time', 'author', 'author.id','author.username']
 const jobDetailFilter = ['id', 'job_label', 'description', 'job_name', 'job_type', 'job_second_type', 'case_number', 'priority', 'draft','cabinet_type',
   'rom_version', 'rom_version.version', 'rom_version.id', 'rom_version.manufacturer', 'rom_version.manufacturer.manufacturer_name', 'rom_version.manufacturer.id',
   'android_version', 'android_version.version', 'android_version.id', 'custom_tag', 'custom_tag.custom_tag_name', 'custom_tag.id',
@@ -33,6 +33,7 @@ export default {
   androidVersion: () => `${reefPrefix}android_version/?fields=${joinFilter(androidVersionFilter)}&ordering=version`,
   romVersion: () => `${reefPrefix}rom_version/?fields=${joinFilter(romVersionFilter)}&ordering=version`,
   manufacturer: () => `${reefPrefix}manufacturer/?fields=${joinFilter(manufacturerFilter)}`,
+  cabinetType: () => `${reefPrefix}get_cabinet_type_info/?data_type=cabinet_type_data`,
   usableDevice: () => `${reefPrefix}device/?fields=${joinFilter(usableDeviceFilter)}&status=idle&ai_occupy=False`,
   device: (data) => `${reefPrefix}device/?fields=${joinFilter(deviceFilter)}&limit=${data.pageSize}&offset=${data.pageOffset}${data.deviceStatus}&ordering=id`,
   deviceBattery: (data) => `${reefPrefix}get_device_power_battery_level/?device_id=${data}`,
