@@ -63,7 +63,7 @@ export function linkTemplateStyle () {
     MAKE(go.Shape,
       { isPanelMain: true, strokeWidth: 40, stroke: 'transparent' }),
     MAKE(go.Shape, // the link path shape
-      { isPanelMain: true, stroke: 'gray', strokeWidth: 2 },
+      { isPanelMain: true, stroke: 'gray', strokeWidth: 3 },
       new go.Binding('stroke', 'isSelected', function (sel) { return sel ? 'dodgerblue' : 'gray' }).ofObject()),
     MAKE(go.Shape, // the arrowhead
       { toArrow: 'standard', strokeWidth: 0, fill: 'gray' }),
@@ -313,7 +313,7 @@ function makePort (name, spot, output, input) {
     {
       fill: 'gray',
       stroke: null, // this is changed to "white" in the showPorts function
-      desiredSize: new go.Size(6, 6),
+      desiredSize: new go.Size(8, 8),
       alignment: spot,
       alignmentFocus: spot, // align the port on the main Shape
       portId: name, // declare this object to be a "port"
