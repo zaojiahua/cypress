@@ -73,6 +73,7 @@ import unitTemplateEditor from '_c/unitTemplateEditor'
 import UnitEditor from '_c/unitEditor/UnitEditor.vue'
 import { innerDiagramInit, innerPaletteInit } from '../views/JobEditorGoInit'
 import { getJobUnitsBodyDict, deleteUnitTemplate } from 'api/reef/request'
+import { blockFlowValidation } from '../core/validation/finalValidation/block'
 
 export default {
   name: 'NormalEditor',
@@ -215,18 +216,23 @@ export default {
         delete this.curNormalData.wingman
       }
     },
+    _normalRules () { // 获取逻辑流的错误并弹出显示
+      const myDiagramEventValidationHint = blockFlowValidation(this)
+      // 错误提示
+      return myDiagramEventValidationHint.size === 0;
+    },
     saveNormalData (toggle) { // 保存NormalBlock的信息 只有保存的时候才可以吸入unit信息，其他时候也不要将unit写到store,因为用户可以选择取消
       this.closeContextMenu()
-      let resultUnitCount = this.innerDiagram.findNodesByExample({ 'category': 'Unit','star':CONST.COLORS.RESULT}).count
-      if (resultUnitCount > 1 ) {
-        this.$Message.error({
-          background: true,
-          content: '只能有一个结果unit'
-        })
-        return
-      }
       this.recordOrRemoveWingman()
       if (toggle) {
+        let resultUnitCount = this.innerDiagram.findNodesByExample({ 'category': 'Unit','star':CONST.COLORS.RESULT}).count
+        if (resultUnitCount > 1 ) {
+          this.$Message.error({
+            background: true,
+            content: '只能有一个结果unit'
+          })
+          return
+        }
         this.curNormalData.unitLists = this.innerDiagram.model.toJson() // 将NormalEditor的逻辑流保存下来
         // 获取所有的unit组成的数组
         let units = JSON.parse(this.curNormalData.unitLists).nodeDataArray.filter(item => item.category === 'Unit')
@@ -244,6 +250,7 @@ export default {
         } else { // 否则
           this.curNormalData.color = CONST.COLORS.FINISH // 标识normal为已完成的绿色
         }
+        if (!this._normalRules()) this.curNormalData.color = CONST.COLORS.UNFINISHED
         this.$emit('saveNormalData', this._.cloneDeep(this.curNormalData)) // 将编辑完成后的normalData传递给jobEditor并触发保存操作
         this.$emit('saveFinalResKey', this.finalResKey)
       }
