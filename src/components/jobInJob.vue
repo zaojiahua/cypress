@@ -95,12 +95,12 @@ export default {
       this.$emit('jobModalClose', this.currentJob)
     },
     async getFilteredJobs () {
-      let romVerFilter = this.jobInfo && this.jobInfo.rom_version && this.jobInfo.rom_version.length
-        ? `&rom_version__id__in=ReefList[${this.jobInfo.rom_version.join('{%,%}')}]` : ''
-      let andVerFilter = this.jobInfo && this.jobInfo.android_version && this.jobInfo.android_version.length
-        ? `&android_version__id__in=ReefList[${this.jobInfo.android_version.join('{%,%}')}]` : ''
-      let phoModFilter = this.jobInfo && this.jobInfo.phone_models && this.jobInfo.phone_models.length
-        ? `&phone_models__id__in=ReefList[${this.jobInfo.phone_models.join('{%,%}')}]` : ''
+      // let romVerFilter = this.jobInfo && this.jobInfo.rom_version && this.jobInfo.rom_version.length
+      //   ? `&rom_version__id__in=ReefList[${this.jobInfo.rom_version.join('{%,%}')}]` : ''
+      // let andVerFilter = this.jobInfo && this.jobInfo.android_version && this.jobInfo.android_version.length
+      //   ? `&android_version__id__in=ReefList[${this.jobInfo.android_version.join('{%,%}')}]` : ''
+      // let phoModFilter = this.jobInfo && this.jobInfo.phone_models && this.jobInfo.phone_models.length
+      //   ? `&phone_models__id__in=ReefList[${this.jobInfo.phone_models.join('{%,%}')}]` : ''
       let url =
         'api/v1/cedar/job/?fields=' +
         'id,' +
@@ -118,14 +118,14 @@ export default {
         '&job_deleted=False' +
         '&draft=False' +
         '&job_type=InnerJob' +
-        romVerFilter +
-        andVerFilter +
-        phoModFilter +
+        // romVerFilter +
+        // andVerFilter +
+        // phoModFilter +
         this.filterUrlParam +
         '&limit=' + this.pageSize +
         '&offset=' + this.offset +
         '&ordering=-updated_time'
-      if (romVerFilter || andVerFilter || phoModFilter) {
+      // if (romVerFilter || andVerFilter || phoModFilter) {
         let { headers, status, data: { jobs } } = await axios.request({ url })
         if (status === 200) {
           this.jobNum = parseInt(headers['total-count'])
@@ -159,7 +159,7 @@ export default {
             content: '获取 InnerJob 列表失败'
           })
         }
-      }
+      // }
     },
     pageChange (page) {
       this.curPage = page
