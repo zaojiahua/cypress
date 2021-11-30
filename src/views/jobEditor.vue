@@ -413,9 +413,16 @@ export default {
         }
       }
       if (name === 'quit') { // 退出
-        this.autoSaveToggle = false
-        this.$router.push({ path: '/jobList' })
-        // this.$store.commit('setCurPage', 1)
+        let _this = this
+        this.$Modal.confirm({
+          title:"提示！",
+          content:"该用例尚未保存，确定要退出吗？",
+          onOk(){
+            _this.autoSaveToggle = false
+            _this.$router.push({ path: '/jobList' })
+            // this.$store.commit('setCurPage', 1)
+          }
+        })
       } else // 非退出的操作
         {
           if (!this.editJobMsg || !this.editJobFlow ){
