@@ -414,15 +414,23 @@ export default {
       }
       if (name === 'quit') { // 退出
         let _this = this
-        this.$Modal.confirm({
-          title:"提示！",
-          content:"该用例尚未保存，确定要退出吗？",
-          onOk(){
-            _this.autoSaveToggle = false
-            _this.$router.push({ path: '/jobList' })
-            // this.$store.commit('setCurPage', 1)
-          }
-        })
+        if(this.editJobFlow){
+          this.$Modal.confirm({
+            title:"提示！",
+            content:"该用例尚未保存，确定要退出吗？",
+            onOk(){
+              _this.autoSaveToggle = false
+              _this.$router.push({ path: '/jobList' })
+              // this.$store.commit('setCurPage', 1)
+              _this.$Notice.destroy()
+              _this.clearData()
+              _this.clearDevice()
+            }
+          })
+          return
+        }
+        _this.autoSaveToggle = false
+        _this.$router.push({ path: '/jobList' })
       } else // 非退出的操作
         {
           if (!this.editJobMsg || !this.editJobFlow ){
