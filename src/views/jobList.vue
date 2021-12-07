@@ -46,6 +46,18 @@
         <Button type="primary" @click="showJobConnectionModal = false">关闭</Button>
       </div>
     </Modal>
+
+    <Modal v-model="showErrorInner" :closable="false" :mask-closable="false" :footer-hide="true" width="50">
+      <Icon type="ios-help-circle" style="color: #ff9900;float: left;margin: 15px 10px 0 0;" size="24"/>
+      <p style="margin: 15px 0;font-size: 16px">提示</p>
+      <Row style="margin: 10px 0 0 30px;">
+        Inner 【{{ errorInnerList.join("】,【") }}】 存在关联用例，无法删除，继续删除选中的其他用例吗？
+      </Row>
+      <Row type="flex" justify="end" style="margin-top: 30px;">
+        <Button type="text" @click="showErrorInner=false">取消</Button>
+        <Button type="primary" :disabled="delJobIds.length===0" @click="continueDeleted">继续</Button>
+      </Row>
+    </Modal>
   </div>
 </template>
 
@@ -264,6 +276,9 @@ export default {
       filterUrlParam: '',
       tableHeight: 519,
       showJobConnectionModal:false,
+      showErrorInner:false,
+      errorInnerList:[],
+      delJobIds:[],
     }
   },
   computed: {
@@ -353,7 +368,7 @@ export default {
         this.lastPage = Math.ceil(this.dataCount / this.pageSize)
         this.jobData = res.data.jobs
         this.jobData.forEach(job => {
-          if (job.job_type === "InnerJob") job._disabled = true
+          if (job.job_type === "InnerJob" && sessionStorage.username!=='admin') job._disabled = true
           //todo: 自己只能删除自己的用例
           // if (job.job_type === "InnerJob" || parseInt(sessionStorage.getItem("id")) !== job.author.id) job._disabled = true
           job.test_area = job.test_area.map(item => item.description).join(',')
@@ -509,19 +524,61 @@ export default {
           onOk: () => {
             deleteJob({ job_ids: _this.jobIdList })
               .then(response=>{
-                if (_this.jobData.length - _this.jobIdList.length === 0 && _this.curPage > 1) {
-                  _this.jobPageChange(_this.curPage - 1)
-                } else {
-                  _this.jobPageChange(_this.curPage)
+                if(response.status===200){
+                  if (_this.jobData.length - _this.jobIdList.length === 0 && _this.curPage > 1) {
+                    _this.jobPageChange(_this.curPage - 1)
+                  } else {
+                    _this.jobPageChange(_this.curPage)
+                  }
+                  this.$Message.success('用例删除成功')
+                  _this.selectedJobs = {}
                 }
-                this.$Message.success('用例删除成功')
-                this.selectedJobs = {}
               }).catch(error=>{
-              this.$Message.error('用例删除失败')
+              if(error.response.status===500){
+                this.$Message.error('服务器错误！')
+                return
+              }
+              if(error.response.data.custom_code==="0"){
+                if(error.response.data.point_out_job.length===0){
+                  if (_this.jobData.length - _this.jobIdList.length === 0 && _this.curPage > 1) {
+                    _this.jobPageChange(_this.curPage - 1)
+                  } else {
+                    _this.jobPageChange(_this.curPage)
+                  }
+                  this.$Message.success('用例删除成功')
+                  _this.selectedJobs = {}
+                }else {
+                  _this.showErrorInner = true
+                  _this.errorInnerList = error.response.data.point_out_job
+                  _this.delJobIds = error.response.data.enable
+                }
+              }else
+                this.$Message.error({content:'用例删除失败！'+error.response.data.description,duration:10})
             })
           }
         })
       }
+    },
+    continueDeleted(){
+      deleteJob({ job_ids: this.delJobIds })
+        .then(response=>{
+          if(response.status===200){
+            this.showErrorInner = false
+            if (this.jobData.length - this.jobIdList.length === 0 && this.curPage > 1) {
+              this.jobPageChange(this.curPage - 1)
+            } else {
+              this.jobPageChange(this.curPage)
+            }
+            this.$Message.success('用例删除成功')
+            this.selectedJobs = {}
+          }
+        }).catch(error=>{
+        if(error.response.status===500){
+          this.$Message.error('服务器错误！')
+          return
+        }
+        this.$Message.error({content:'用例删除失败！'+error.response.data.description,duration:10})
+      })
     },
     getFilterParam (val) {
       this.filterUrlParam = val
