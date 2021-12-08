@@ -226,23 +226,23 @@ export default {
         })
         if (response.data.result === 0) {
           this.loading = false
-          this.$Message.info("执行成功")
+          this.$Message.info({content:"执行成功",duration:8})
         } else if (response.data.result === 1) {
           this.loading = false
-          this.$Message.info("执行失败")
+          this.$Message.info({content:"执行失败",duration:8})
         }else {
           this.loading = false
-         this.$Message.info("执行异常")
+         this.$Message.info({content:"执行异常",duration:8})
         }
       } catch (e) {
         this.loading = false
         if(!e.response){
-          this.$Message.warning({content:"执行异常",duration:3})
+          this.$Message.warning({content:"执行异常",duration:8})
           return
         }
         if (e.response.data.error_code){
           this.$Message.warning({content:`执行异常 code:${e.response.data.error_code} detail:${e.response.data.description}`,duration:6})
-        }else this.$Message.warning({content:"执行异常",duration:3})
+        }else this.$Message.warning({content:"执行异常",duration:8})
       }
     },
     closeUnitEditor(save) {
