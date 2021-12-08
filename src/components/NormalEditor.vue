@@ -148,7 +148,7 @@ export default {
     }
   },
   computed: {
-    ...mapState('job', ['normalData', 'config', 'jobInfo']),
+    ...mapState('job', ['normalData', 'config', 'jobInfo','selectJobType']),
     ...mapState('unit', ['unitLists', 'unitData']),
     cabinet_type () {
       return this.$store.state.job.jobInfo.cabinet_type
@@ -281,7 +281,11 @@ export default {
       }
     },
     updateUnitLists(unitTemplateType = undefined) { // 更新unit模板信息
-      let cb_type = this.jobInfo.cabinet_type ? this.jobInfo.cabinet_type:  'Tcab_1'
+      let cb_type
+      if(this.selectJobType === 'InnerJob'){
+        cb_type = 'Tcab_3'
+      }else
+        cb_type = this.jobInfo.cabinet_type ? this.jobInfo.cabinet_type:  'Tcab_1'
       let group = CONST.UNIT_MAPPING_DICT[cb_type]
       getJobUnitsBodyDict(
         {"unit_group__in": 'ReefList[' + group.join('{%,%}') + ']'}
