@@ -709,9 +709,9 @@ export default {
             updateJobMsg(this.jobId, jobInfo).then(() => { // 更新用例信息
               this.$Message.info('修改成功')
               this.$store.commit('refreshJobList')
-              if(resourceList.length>0)
+              // if(resourceList.length>0)
                 jobBindResource( {"job_label":this.jobInfo.job_label,"resource_data":resourceList}).then(() => { // 更新用例信息
-                  this.$Message.success('用例资源绑定成功')
+                  // this.$Message.success('用例资源绑定成功')
                 }).catch(error => {
                   console.log(error)
                   this.$Message.error('用例资源绑定失败')
