@@ -344,7 +344,7 @@ export default {
               data.append('file', new File([file], name, { type }))
             }
           }
-          if(resourceList.length>0)
+          // if(resourceList.length>0)
             await this.bindResource(info.job_label,resourceList)
           try {
             if (resFiles.length) {
@@ -370,7 +370,7 @@ export default {
     },
     async bindResource(job_label,resourceList){
       await jobBindResource( {"job_label":job_label,"resource_data":resourceList}).then(() => { // 更新用例信息
-        this.$Message.success('用例资源绑定成功')
+        // this.$Message.success('用例资源绑定成功')
       }).catch(error => {
         console.log(error)
         this.$Message.error('用例资源绑定失败')
