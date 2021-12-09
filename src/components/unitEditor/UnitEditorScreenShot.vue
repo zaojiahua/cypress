@@ -192,6 +192,12 @@ export default {
           flex: 1;
         }
       }
+      /deep/ .ivu-table > .ivu-table-overflowX {
+        overflow-x: hidden;
+      }
+      /deep/.ivu-table .ivu-table-tip {
+        overflow-x: hidden;
+      }
     }
   }
 </style>
