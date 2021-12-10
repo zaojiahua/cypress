@@ -181,6 +181,7 @@ export default {
   },
   methods: {
     async singleStepDebug() {
+      this.unitItems = [...findComponentsDownward(this, 'UnitItem')]
       if (!this.deviceInfo) {
         this.$Message.error("未选取设备")
         return
