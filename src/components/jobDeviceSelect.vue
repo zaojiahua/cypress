@@ -121,17 +121,9 @@ export default {
               value: 'idle'
             },
             {
-              label: 'busy',
-              value: 'busy'
+              label: 'occupied',
+              value: 'occupied'
             },
-            {
-              label: 'offline',
-              value: 'offline'
-            },
-            {
-              label: 'error',
-              value: 'error'
-            }
           ],
           filteredValue: [
             'idle'
@@ -188,7 +180,7 @@ export default {
       this.deviceSelected = currentRow
     },
     async refresh () {
-      let deviceStatus = ""
+      let deviceStatus = '&status__in=' + 'ReefList[idle{%,%}occupied]'
       if (this.deviceStatusFilterList.length) {
         deviceStatus = '&status__in=' + 'ReefList[' + this.deviceStatusFilterList.join('{%,%}') + ']'
       }

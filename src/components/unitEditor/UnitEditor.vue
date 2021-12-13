@@ -183,7 +183,17 @@ export default {
     async singleStepDebug() {
       this.unitItems = [...findComponentsDownward(this, 'UnitItem')]
       if (!this.deviceInfo) {
-        this.$Message.error("未选取设备")
+        let _this = this
+        this.$Modal.confirm({
+          title:'提示',
+          content:'还未选取设备，是否现在去选择？',
+          okText:'是',
+          cancelText:'否',
+          onOk(){
+            _this.$store.commit('device/setSelectDevice', true)
+            _this.$store.commit('device/setControlDeviceFlag', true)
+          }
+        })
         return
       }
       if(this.loading) return

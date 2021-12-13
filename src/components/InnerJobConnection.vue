@@ -44,6 +44,10 @@
             key: 'job_name',
           },
           {
+            title: '测试柜类型',
+            key: 'cabinet_type',
+          },
+          {
             title: '维护人员',
             key: 'author',
             // width:200
