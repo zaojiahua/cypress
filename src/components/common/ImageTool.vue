@@ -181,10 +181,21 @@ export default {
         case '选区':
           switch (type) {
             case 'mousedown':
-              this.context2D.clearRect(0, 0, this.canvasW, this.canvasH)
+              if((offsetX>=this.startX-6&&offsetX<=this.startX+6)&&(offsetY>=this.startY-6&&offsetY<=this.startY+6)){
+                //console.log('左上角')
+                this.startX = this.endX
+                this.startY = this.endY
+                this.endX = offsetX
+                this.endY = offsetY
+              }else if((offsetX>=this.endX-6&&offsetX<=this.endX+6)&&(offsetY>=this.endY-6&&offsetY<=this.endY+6)){
+                //console.log('右下角')
+              }else {
+                //console.log('其他：框内外除去两个点的其他位置')
+                this.context2D.clearRect(0, 0, this.canvasW, this.canvasH)
+                this.startX = offsetX
+                this.startY = offsetY
+              }
               this.canvasToggle = true
-              this.startX = offsetX
-              this.startY = offsetY
               break
             case 'mousemove':
               if (this.canvasToggle) {
@@ -210,6 +221,8 @@ export default {
               break
             case 'mouseup':
               if (this.canvasToggle) {
+                this.endX = offsetX
+                this.endY = offsetY
                 this.canvasToggle = false
                 let absoluteCoordinate = {
                   topLeft: {
