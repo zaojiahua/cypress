@@ -189,16 +189,14 @@ export default {
     unitMsg: null
   },
   ICON_TEST_UNIT_LIST: [
-    'has_icon_area_selected', 'has_icon',
+    'has_icon',
   ],
-  ICON_POSITION_TEST_UNIT_LIST:[
-    'smart_icon_point_crop','smart_icon_point','smart_icon_long_press','end_point_with_icon','start_point_with_point'
+  ICON_POSITION_TEST_UNIT_LIST:[   //  2
+    'smart_icon_point_crop','smart_icon_point','smart_icon_long_press','end_point_with_icon','start_point_with_point','has_icon_area_selected'
   ],
-  ICON_POSITION_FIX_TEST_UNIT_LIST:[
-    'smart_icon_point_crop_template',"start_point_with_point_template"],
-  ICON_TEST_UNIT_LIST_FIXED: [
-    "end_point_with_icon_template_match","has_icon_template_match"
-  ],
+  ICON_POSITION_FIX_TEST_UNIT_LIST:[   //1
+    'smart_icon_point_crop_template',"start_point_with_point_template",'has_icon_template_match','end_point_with_icon_template_match'],
+  ICON_TEST_UNIT_LIST_FIXED: [],
   UNIT_NOT_EXEC: [
     "end_point_with_icon_template_match","end_point_with_icon","end_point_with_changed","end_point_with_fps_lost","has_words","realtime_picture_compare","smart_ocr_point"
   ],
@@ -213,3 +211,15 @@ export default {
   }
 }
 
+/*
+* has_icon_area_selected 确认图标存在-2
+* smart_icon_point_crop 点击图标-2,
+* smart_icon_long_press：长按图标,
+* end_point_with_icon：性能测试终点（图标出现-2）
+* start_point_with_point：性能测试起点（点击瞬间-2）
+* smart_icon_point_crop_template：点击图标-1,
+* start_point_with_point_template：性能测试起点（点击瞬间-1）
+* end_point_with_icon_template_match：性能测试终点（图标出现-1）
+* has_icon_template_match 确认图标存在-1
+* end_point_with_changed：性能测试终点（屏幕变化）
+*/
