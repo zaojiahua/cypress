@@ -74,6 +74,10 @@
           this.data = res.data
         }).catch(err => {
           console.log(err)
+          this.dataCount = 0
+          this.lastPage = 0
+          this.data = []
+          this.curPage = 1
           this.$Message.error("inner关联信息获取失败")
         })
       },
