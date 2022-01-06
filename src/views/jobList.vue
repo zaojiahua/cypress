@@ -354,7 +354,8 @@ export default {
     },
     viewJobConnection(label){
       this.showJobConnectionModal = true
-      this.$refs.innerJobConnection.refresh(label)
+      this.$refs.innerJobConnection.setInnerLabel(label)
+      this.$refs.innerJobConnection.onPageChange(1)
     },
     getFilteredJobs () {
       let filterUrlParam = `${this.jobState ? `&draft=${this.jobState === 'draft' ? 'True' : 'False'}` : ''}${this.jobType ? `&job_type=${this.jobType}` : ''}${this.filterUrlParam}${this.cabinetType.length>0 ? `&cabinet_type__in=ReefList[${ this.cabinetType.join('{%,%}')}]`:''}`
