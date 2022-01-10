@@ -21,6 +21,13 @@
           <span slot="close">2</span>
         </Switch>
       </div>
+      <div v-show="directionSwitch" style="float: right;">
+        <span>屏幕切换：</span>
+        <Switch false-color="#ff4949" v-model="directionToggle" @on-change="handleDirection">
+          <span slot="open">竖</span>
+          <span slot="close">横</span>
+        </Switch>
+      </div>
     </div>
     <!-- body -->
     <transition-group name="item" tag="div" class="item-container">
@@ -48,6 +55,7 @@ export default {
     return {
       ocrChoiceToggle: undefined,
       tGuardToggle:undefined,
+      directionToggle:undefined,
       curUnitItem: undefined
     }
   },
@@ -83,6 +91,10 @@ export default {
     tGuard(){
       if (!this.unitData.unitMsg) return
       return this.unitData.unitMsg.tGuard
+    },
+    directionSwitch(){
+      if (!this.unitData.unitMsg) return
+      return this.unitData.unitMsg.portrait
     }
   },
   watch: {
@@ -90,8 +102,10 @@ export default {
       this.ocrChoiceToggle = val === 1
     },
     tGuard (val) {
-      console.log(val)
       this.tGuardToggle = val === 1
+    },
+    directionSwitch (val) {
+      this.directionToggle = val === 1
     }
   },
   methods: {
@@ -106,6 +120,14 @@ export default {
     handleTGuard(val){
       let { unitMsg } = this._.cloneDeep(this.unitData)
       unitMsg.tGuard = val ? 1 : 2
+      this.$store.commit('unit/handleUnitData', {
+        action: 'setUnitMsg',
+        data: unitMsg
+      })
+    },
+    handleDirection(val){
+      let { unitMsg } = this._.cloneDeep(this.unitData)
+      unitMsg.portrait = val ? 1 : 2
       this.$store.commit('unit/handleUnitData', {
         action: 'setUnitMsg',
         data: unitMsg
