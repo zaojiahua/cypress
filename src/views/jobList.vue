@@ -141,15 +141,15 @@ export default {
           align: 'center',
           filters: [
             {
-              label: '功能用例',
+              label: '功能',
               value: 'Joblib'
             },
             {
-              label: '性能用例',
+              label: '性能',
               value: 'PerfJob'
             },
             {
-              label: '内嵌用例',
+              label: '内嵌',
               value: 'InnerJob'
             }
           ],
@@ -165,6 +165,7 @@ export default {
           title: '测试柜类型',
           key: 'cabinet_type',
           width:130,
+          align: 'center',
           filters: [],
           filterRemote (value) {
             this.cabinetType= value
@@ -376,12 +377,12 @@ export default {
           job.custom_tag = job.custom_tag.map(item => item.custom_tag_name).join(',')
           job.job_state = job.draft ? '草稿' : '正式'
           job.author = job.author.username
-          // if( job.job_type === "Joblib" )
-          //   job.job_type = '功能'
-          // else if( job.job_type === "InnerJob" )
-          //   job.job_type = '内嵌'
-          // else if( job.job_type === "PerfJob" )
-          //   job.job_type = '性能'
+          if( job.job_type === "Joblib" )
+            job.job_type = '功能'
+          else if( job.job_type === "InnerJob" )
+            job.job_type = '内嵌'
+          else if( job.job_type === "PerfJob" )
+            job.job_type = '性能'
 
           // 勾选已选的选项
           if (this.selectedJobs[job.id] !== undefined) {
