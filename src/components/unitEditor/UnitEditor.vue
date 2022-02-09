@@ -395,7 +395,8 @@ export default {
           this.openTestResultModal = true
           this.testOcrResponseData = response.data
         } catch (e) {
-          this.$Message.error(e)
+          console.log(e)
+          this.$Message.error("测试文字异常")
         }
       }
     },
