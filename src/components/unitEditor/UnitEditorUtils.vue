@@ -119,6 +119,10 @@ export default {
       if (!this.hasSelectArea()) return
       let startPoint = this.coordinate.relativeCoordinate.topLeft
       let endPoint = this.coordinate.relativeCoordinate.bottomRight
+      if((startPoint.y===endPoint.y) || (startPoint.x===endPoint.x)){
+        this.$Message.info("选区无效，请重新选择！")
+        return
+      }
       this.$store.commit('img/handleCoordinate', {
         action: 'add',
         data: {
