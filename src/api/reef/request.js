@@ -69,6 +69,14 @@ const deleteTag = (type, id) => {
     url: url.deleteTag(id, type)
   })
 }
+//删除冗余的自定义标签、测试用途
+const deleteTags = (data) => {
+  return axios.request({
+    method: 'delete',
+    url: url.deleteTags(),
+    data
+  })
+}
 
 // device
 const getUsableDeviceList = () => {
@@ -370,4 +378,5 @@ export {
   getAppNameList,
   jobBindResource,
   deleteJob,
+  deleteTags,
 }

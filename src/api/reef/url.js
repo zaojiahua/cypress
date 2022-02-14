@@ -59,6 +59,7 @@ export default {
   updateJobMsg: (id) => `${reefPrefix}job/${id}/`,
   deleteJob:() => `${reefPrefix}job_deleted/`,
   deleteTag: (id, type) => `${reefPrefix}${type}/${id}`,
+  deleteTags: () => `${reefPrefix}delete_tag/`,
   saveResFile: () => `${reefPrefix}job_upload_multi_res_file/`,
   getResFile: (id) => `${reefPrefix}job_flow/${id}/?fields=${joinFilter(resFileFilter)}`,
   unit: () => `${reefPrefix}unit/`,

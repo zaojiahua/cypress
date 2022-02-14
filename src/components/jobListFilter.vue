@@ -12,13 +12,14 @@
       <Icon type="ios-arrow-up" class="collapse__header-arrow-up" v-show="collapseIsOpen" @click="handleCollapse"/>
       <Icon type="ios-arrow-down" class="collapse__header-arrow-down" v-show="!collapseIsOpen" @click="handleCollapse"/>
       <!-- <Button type="error" icon="ios-trash" @click="deleteFilterFactor" v-show="filterConditions.length !== 0">删除</Button> -->
-      <Button icon="ios-close" class="filter__clear" @click="clearFilterFactor" v-show="filterConditions.length !== 0">清除</Button>
+      <!--<Button icon="ios-close" class="filter__clear" @click="clearFilterFactor" v-show="filterConditions.length !== 0">清除</Button>-->
     </div>
     <transition name="slide-fade">
       <div class="collapse__content" v-show="collapseIsOpen">
         <Row>
           <Tabs class="tabs" :value="curTab" @on-click="changeTab">
             <TabPane v-for="(column, index) in filterColumn" :key="column.title" :label="column.title" :class="column.key" :name="index.toString()" style="max-height: 130px;overflow: auto">
+              <Button v-if="(column.key==='job_test_area'||column.key==='custom_tag')&&isAdmin" type="error" size="small" style="float: right;" @click="onFilterDelete(column.key)">删除</Button>
               <CheckboxGroup v-model="filterConditions">
                 <Row type="flex">
                   <Col span="4" v-for="(item, index) in filterData[column.key]" :key="index">
@@ -35,7 +36,8 @@
           <Row class="filter__container">
             <!-- <span class="filter__title">筛选条件</span> -->
             <div class="filter__content" v-show="filterConditions.length !== 0">
-              <div v-for="(val, key, idx) in filterFactors" :key="val.title" v-show="val.values.length !== 0" class="filter-factor">
+              <Button style="position: absolute;right: 0" @click="clearFilterFactor" v-show="filterConditions.length !== 0">清除</Button>
+              <div v-for="(val, key, idx) in filterFactors" :key="val.title" v-show="val.values.length !== 0" class="filter-factor" style="margin-right: 65px">
                 <span class="filter-factor__title" @click="changeTab(idx + '')">{{val.title}}</span>
                 <div class="filter-factor__content">
                   <Tag v-for="(factor, index) in val.values" :key="factor" closable @on-close="close(key, index)">{{ factor.split(':')[2] }}</Tag>
@@ -46,13 +48,21 @@
         </div>
       </div>
     </transition>
+    <Modal v-model="isdeleteError" :closable="false" :mask-closable="false" :footer-hide="true" width="500">
+      <Icon type="ios-help-circle" style="color: #ff9900;float: left;margin: 15px 10px 0 0;" size="24"/>
+      <p style="margin: 15px 0;font-size: 16px">部分删除失败</p>
+      <p style="margin-left: 15px">{{ errorList.join(",")  }} 仍在被使用，无法删除</p>
+      <Row type="flex" justify="end" style="margin-top: 30px;">
+        <Button type="primary" @click="onModalClick">确定</Button>
+      </Row>
+    </Modal>
   </div>
 </template>
 
 <script>
 import { mapState } from 'vuex'
 import CONST from '../constant/constant'
-import { deleteTag } from '../api/reef/request'
+import { deleteTag,deleteTags } from '../api/reef/request'
 
 export default {
   data () {
@@ -130,11 +140,16 @@ export default {
       curTab: '0', // 当前标签页
       filterFactorNum: new Array(6).fill(0), // 将各个标签页中选中项的数量保存下来
       keyword: '', // 搜索的关键字
-      collapseIsOpen: true // 是否展开搜索框下方的标签页
+      collapseIsOpen: true, // 是否展开搜索框下方的标签页
+      isdeleteError:false,
+      errorList:[], //删除失败的标签列表
     }
   },
   computed: {
-    ...mapState(['basicData'])
+    ...mapState(['basicData']),
+    isAdmin (){
+      return sessionStorage.username==='admin'
+    },
   },
   watch: {
     filterConditions (newVal, oldVal) {
@@ -227,6 +242,87 @@ export default {
         this.$store.dispatch('setBasicData') // 重新获取基础数据
         this.clearFilterFactor()
       })
+    },
+    // 删除标签时触发(自定义标签、测试用途)
+    onFilterDelete(type){
+      console.log(this.filterFactors)
+      let _this = this
+      let ids = []
+      if(type==='job_test_area'){
+        if(this.filterFactors.job_test_area.values.length===0){
+          this.$Message.info("请选择要删除的数据！")
+          return
+        }
+        this.filterFactors.job_test_area.values.map(val => {
+          let data = val.split(':')
+          ids.push(data[3])
+        })
+        this.$Modal.confirm({
+          title:"确认要删除标签吗？",
+          content:"若标签已在系统中被使用，则不能完成删除操作",
+          onOk(){
+            deleteTags({
+              module:"JobTestArea",
+              id_list: ids
+            }).then(response=>{
+              this.$Message.success("删除成功")
+              setTimeout(function (){
+                location.reload()
+              },1000)
+            }).catch(error=>{
+              if(error.response.status>=500){
+                this.$Message.error("服务器错误")
+              }else{
+                if(error.response.data.data_info.length!==ids.length){
+                  _this.isdeleteError = true
+                  _this.errorList = error.response.data.data_info
+                }else {
+                  this.$Message.error({content:"标签正在被使用，删除失败",duration:5})
+                }
+              }
+            })
+          }
+        })
+      } else if(type==='custom_tag'){
+        if(this.filterFactors.custom_tag.values.length===0){
+          this.$Message.info("请选择要删除的数据！")
+          return
+        }
+        this.filterFactors.custom_tag.values.map(val => {
+          let data = val.split(':')
+          ids.push(data[3])
+        })
+        this.$Modal.confirm({
+          title:"确认要删除标签吗？",
+          content:"若标签已在系统中被使用，则不能完成删除操作",
+          onOk(){
+            deleteTags({
+              module:"CustomTag",
+              id_list: ids
+            }).then(response=>{
+              this.$Message.success("删除成功")
+              setTimeout(function (){
+                location.reload()
+              },1000)
+            }).catch(error=>{
+              if(error.response.status>=500){
+                this.$Message.error("服务器错误")
+              }else{
+                if(error.response.data.data_info.length!==ids.length){
+                  _this.isdeleteError = true
+                  _this.errorList = error.response.data.data_info
+                }else {
+                  this.$Message.error({content:"标签正在被使用，删除失败",duration:5})
+                }
+              }
+            })
+          }
+        })
+      }
+    },
+    onModalClick(){
+      this.isdeleteError = false
+      location.reload()
     },
     handleCollapse () { // 折叠/展开搜索框下方的标签页与筛选条件总览
       this.collapseIsOpen = !this.collapseIsOpen
