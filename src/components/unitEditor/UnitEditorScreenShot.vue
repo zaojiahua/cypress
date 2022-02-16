@@ -86,6 +86,7 @@ export default {
     ...mapGetters('files', ['resFilesName']),
     ...mapGetters('item', ['itemType', 'isPicInput', 'isJobResourcePicture', 'itemName']),
     ...mapGetters('device', ['deviceInfo']),
+    ...mapState('unit', ['unitData']),
     imgName () {
       return `${[this.normalKey, this.unitKey, this.itemName].join('_')}.png`
     }
@@ -121,12 +122,31 @@ export default {
           device_ip: this.deviceInfo[0].ip_address,
           picture_name: this.imgName
         }
+        let deviceCondition = ''
+        if(this.unitData.unitMsg && this.unitData.unitMsg.assistDevice)
+          deviceCondition = '&assist_device=' + this.unitData.unitMsg.assistDevice
         let screenshot = cypressGet({
-          url: `http://${screenShotParams.cabinet_ip}:5000/pane/snap_shot/?device_label=${screenShotParams.device_label}&device_ip=${screenShotParams.device_ip}&picture_name=${screenShotParams.picture_name}`,
+          url: `http://${screenShotParams.cabinet_ip}:5000/pane/snap_shot/?device_label=${screenShotParams.device_label}&device_ip=${screenShotParams.device_ip}&picture_name=${screenShotParams.picture_name}${deviceCondition}`,
           responseType: 'blob'
         })
         Promise.race([screenshot, cypressTimeout(20)]).then(({ status, response }) => {
           if (status === 200) {
+            if(response.type==="application/json"){
+              let data = response
+              let reader = new FileReader()
+              reader.readAsText(data,'utf-8')
+              reader.addEventListener("loadend", function (){
+                data = JSON.parse(reader.result )
+              })
+              if(data.error_code!==0){
+                this.$Notice.error({
+                  title: '截图失败',
+                  desc: '请检查您的设备',
+                  duration: 4
+                })
+              }
+              return
+            }
             this.$emit('handleImgName', this.imgName)
             // 找到同样前缀文件的位置
             let index = -1
