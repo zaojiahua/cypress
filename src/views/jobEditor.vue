@@ -440,6 +440,7 @@ export default {
             })
             return
           }
+        if (!this._jobMsgRules()) return
         let id = this.jobId
         let jobInfo = await this.prepareJobInfo()
         let jobFlowInfo = await this.prepareJobFlowInfo(jobInfo)
