@@ -11,9 +11,14 @@
       <CheckboxGroup v-model="deviceColumnChecked" style="float: right;">
         <Checkbox v-for="item in deviceColumnDictionary" :label="item.key" :key="item.key">{{ item.title }}</Checkbox>
       </CheckboxGroup>
-      <div>
-        <span style="margin-right: 16px;">每页展示设备数</span>
-        <InputNumber :max="100" :min="10" v-model="pageSize" :active-change="false"></InputNumber>
+      <div style="width:300px;" v-click-outside="onClickOutSide">
+        <Input v-model="deviceKeyword" clearable search enter-button="Search" placeholder="输入设备自定义名称" class="search-input"
+               @on-focus="isShowHistory=true" @on-search="onDeviceSearch" @on-clear="deviceKeyword='';onPageChange(1)"/>
+        <Card v-show="isShowHistory" style="position:absolute;width: 300px;z-index: 100;margin-top: 5px;">
+          <Row>历史搜索<Icon style="float: right;" type="ios-trash-outline" size="18" @click="emptyHistory" /></Row>
+          <div class="history-box" v-for="(item,index) in historyList" :key="index" @click="onSearchHistory(item)">{{ item }}</div>
+          <Row v-show="historyList.length===0" style="margin-top: 10px;color: #cccccc;cursor: default;">暂无历史搜索记录</Row>
+        </Card>
       </div>
     </Row>
     <Table
@@ -26,20 +31,28 @@
       size="small"
       @on-current-change="select"
     ></Table>
-    <Page
-      :total="deviceTotalNum"
-      :current="currentPage"
-      :page-size="pageSize"
-      @on-change="onPageChange"
-      simple
-      style="margin-top: 20px; text-align: center;"
-    />
+
+    <Row style="margin-top:20px;text-align: center ">
+      <Page
+        :total="deviceTotalNum"
+        :current="currentPage"
+        :page-size="pageSize"
+        @on-change="onPageChange"
+        simple
+        style="display: inline-flex;"
+      />
+      <div style="display: inline-block;margin-left: 30px">
+        <span style="margin-right: 16px;">每页展示设备数</span>
+        <InputNumber :max="100" :min="10" v-model="pageSize" :active-change="false" size="small"></InputNumber>
+      </div>
+    </Row>
   </Modal>
 </template>
 
 <script>
 import { getDeviceList, getDeviceBatteryLevel } from '../api/reef/request'
 import util from '../lib/util/validate'
+import clickOutside from '../../node_modules/view-design/src/directives/clickoutside';
 
 import { mapState } from 'vuex'
 
@@ -71,6 +84,7 @@ const getDeviceListSerializer = [
 
 export default {
   name: 'DeviceSelectPage',
+  directives: { clickOutside },
   data () {
     let _this = this
     return {
@@ -156,7 +170,10 @@ export default {
       pageSize: (parseInt(localStorage.getItem('device-management:DEFAULT_PAGE_SIZE')) === 0 || !parseInt(localStorage.getItem('device-management:DEFAULT_PAGE_SIZE'))) ? 20 : parseInt(localStorage.getItem('device-management:DEFAULT_PAGE_SIZE')),
       pageOffset: 0,
       deviceStatusFilterList: ['idle'],
-      deviceSelected: null
+      deviceSelected: null,
+      deviceKeyword:"",
+      isShowHistory:false,  //历史记录板块
+      historyList:[],  //历史记录数据（最多显示10条）
     }
   },
   methods: {
@@ -184,9 +201,14 @@ export default {
       if (this.deviceStatusFilterList.length) {
         deviceStatus = '&status__in=' + 'ReefList[' + this.deviceStatusFilterList.join('{%,%}') + ']'
       }
+      let deviceKeywordCondition = ""
+      if(this.deviceKeyword.trim()!==""){
+        deviceKeywordCondition = '&device_name__icontains=' +  this.deviceKeyword.trim()
+      }
       let { headers, status, data } = await getDeviceList({
         pageSize: this.pageSize,
         pageOffset: this.pageOffset,
+        deviceKeywordCondition,
         deviceStatus
       })
       if (status === 200) {
@@ -237,6 +259,38 @@ export default {
       this.pageOffset = this.pageSize * (page - 1)
       this.currentPage = page
       this.refresh()
+    },
+    onDeviceSearch(){
+      if(this.deviceKeyword.trim()===""){
+        this.onPageChange(1)
+        return
+      }
+      if(!this.historyList.includes(this.deviceKeyword.trim())){
+        this.historyList.unshift(this.deviceKeyword.trim())
+        if(this.historyList.length>15)
+          this.historyList.pop()
+        localStorage.setItem('cypress:historyList',JSON.stringify(this.historyList))
+      }else {
+        let i = this.historyList.indexOf(this.deviceKeyword.trim())
+        this.historyList.splice(i,1)
+        this.historyList.unshift(this.deviceKeyword.trim())
+        localStorage.setItem('cypress:historyList',JSON.stringify(this.historyList))
+      }
+      this.onPageChange(1)
+    },
+    //按自定义名称搜索部分  并且加上历史记录功能
+    onClickOutSide(e){
+      this.isShowHistory = false
+    },
+    //点击历史记录，直接搜索
+    onSearchHistory(item){
+      this.deviceKeyword = item
+      this.onPageChange(1)
+    },
+    //清空历史记录
+    emptyHistory(){
+      localStorage.removeItem('cypress:historyList');
+      this.historyList = []
     }
   },
   computed: {
@@ -262,6 +316,9 @@ export default {
     if (!localStorage['device-management:DEFAULT_DEVICE_COLUMN']) {
       localStorage.setItem('device-management:DEFAULT_DEVICE_COLUMN', this.deviceColumnChecked.join(','))
     }
+    if(JSON.parse(localStorage.getItem('cypress:historyList'))){
+      this.historyList = JSON.parse(localStorage.getItem('cypress:historyList'))
+    }
     this.deviceColumnChecked = localStorage.getItem('device-management:DEFAULT_DEVICE_COLUMN').split(',')
     this.pageSize = parseInt(localStorage.getItem('device-management:DEFAULT_PAGE_SIZE')) === 0 || !parseInt(localStorage.getItem('device-management:DEFAULT_PAGE_SIZE')) ? 20 : parseInt(localStorage.getItem('device-management:DEFAULT_PAGE_SIZE'))
   }
@@ -271,5 +328,16 @@ export default {
 <style lang="less" scoped>
 body {
   position: relative;
+}
+/deep/.search-input .ivu-input-icon-clear{
+  margin-right: 76px!important;
+}
+.history-box{
+  display: inline-block;
+  border-radius: 20px;
+  background: #f2f2f2;
+  padding:3px 10px;
+  margin: 10px 10px 0 0;
+  cursor: pointer;
 }
 </style>

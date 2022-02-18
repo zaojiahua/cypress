@@ -35,7 +35,7 @@ export default {
   manufacturer: () => `${reefPrefix}manufacturer/?fields=${joinFilter(manufacturerFilter)}`,
   cabinetType: () => `${reefPrefix}get_cabinet_type_info/?data_type=cabinet_type_data`,
   usableDevice: () => `${reefPrefix}device/?fields=${joinFilter(usableDeviceFilter)}&status=idle&ai_occupy=False`,
-  device: (data) => `${reefPrefix}device/?fields=${joinFilter(deviceFilter)}&limit=${data.pageSize}&offset=${data.pageOffset}${data.deviceStatus}&ordering=id`,
+  device: (data) => `${reefPrefix}device/?fields=${joinFilter(deviceFilter)}&limit=${data.pageSize}&offset=${data.pageOffset}${data.deviceStatus}${data.deviceKeywordCondition}&ordering=id`,
   deviceBattery: (data) => `${reefPrefix}get_device_power_battery_level/?device_id=${data}`,
   controlDevice: () => `${coralPrefix}control_device/`,
   releaseDevice: () => `${coralPrefix}release_occupy_device/`,
