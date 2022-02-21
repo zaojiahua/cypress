@@ -37,7 +37,11 @@
             <Icon type="logo-buffer"></Icon>
             <span>用例管理</span>
           </MenuItem>
-          <MenuItem v-show="isNotAdmin()" name="jobEditor" @click.native="viewJobCreate" title="用例编辑">
+          <MenuItem v-show="isNotAdmin()&&($route.name!=='jobEditor')" name="createJob" @click.native="viewJobCreate" title="用例编辑">
+            <Icon type="ios-create"></Icon>
+            <span>用例编辑</span>
+          </MenuItem>
+          <MenuItem v-show="isNotAdmin()&&($route.name==='jobEditor')" name="jobEditor" @click.native="viewJobCreate" title="用例编辑">
             <Icon type="ios-create"></Icon>
             <span>用例编辑</span>
           </MenuItem>
