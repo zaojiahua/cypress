@@ -46,6 +46,7 @@ export default {
             localStorage.setItem('token', sessionStorage.token)
           }
         this.$router.push('/')
+        this.$Message.success('登录成功!');
       }).catch(error => {
         let errorMsg = ''
         if (error.response.status >= 401) {
