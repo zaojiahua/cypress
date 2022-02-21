@@ -646,12 +646,30 @@ export default {
       jobInfo.author = parseInt( sessionStorage.id)
       // 创建新的标签
       if (shouldCreateNewTag('test_area', jobInfo)) {
-        jobInfo.test_area = await createNewTag('test_area', jobInfo)
-        this.$store.dispatch('setBasicTestArea')
+        try {
+          jobInfo.test_area = await createNewTag('test_area', jobInfo)
+          this.$store.dispatch('setBasicTestArea')
+        }
+        catch (e) {
+          if(e.response.status>=500){
+            this.$Message.error("服务器错误！")
+          }else {
+            this.$Message.error({content:e.response.data.description.join(","),duration:10})
+          }
+        }
       }
       if (shouldCreateNewTag('custom_tag', jobInfo)) {
-        jobInfo.custom_tag = await createNewTag('custom_tag', jobInfo)
-        this.$store.dispatch('setBasicCustomTag')
+        try{
+          jobInfo.custom_tag = await createNewTag('custom_tag', jobInfo)
+          this.$store.dispatch('setBasicCustomTag')
+        }
+        catch (e) {
+          if(e.response.status>=500){
+            this.$Message.error("服务器错误！")
+          }else {
+            this.$Message.error({content:e.response.data.custom_tag_name.join(","),duration:10})
+          }
+        }
       }
       return jobInfo
     },
