@@ -627,6 +627,8 @@ export default {
     // window.addEventListener('resize', this.setTableHeight)
   },
   async activated () {
+    this.columns[5].filteredValue = [].concat(this.jobState)
+    this.columns[6].filteredValue = [].concat(this.jobType)
     this.getCabinetList()
     this.jobPageChange()
 
