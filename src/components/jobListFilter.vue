@@ -51,7 +51,7 @@
     <Modal v-model="isdeleteError" :closable="false" :mask-closable="false" :footer-hide="true" width="500">
       <Icon type="ios-help-circle" style="color: #ff9900;float: left;margin: 15px 10px 0 0;" size="24"/>
       <p style="margin: 15px 0;font-size: 16px">部分删除失败</p>
-      <p style="margin-left: 15px">{{ errorList.join(",")  }} 仍在被使用，无法删除</p>
+      <div style="margin-left: 15px;word-break: break-all;word-wrap: break-word;">{{ errorList.join(",")  }} 仍在被使用，无法删除</div>
       <Row type="flex" justify="end" style="margin-top: 30px;">
         <Button type="primary" @click="onModalClick">确定</Button>
       </Row>
