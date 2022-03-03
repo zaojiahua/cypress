@@ -21,7 +21,7 @@ export default {
   },
   WILL_TOUCH_FILE: new Set([
     'jobResourceFile',
-    'jobResourcePicture',
+    // 'jobResourcePicture',
     'jobResourceFileWithDefaultValue'
   ]),
   WILL_TOUCH_NAME: {

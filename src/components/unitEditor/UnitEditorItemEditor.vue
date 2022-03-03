@@ -192,10 +192,11 @@ export default {
         let options
         if (this.curFile.dirty) { // 如果该图片之前已经存在
           options = { action: 'clearCurFile' } // 将当前文件置空
+          this.$store.commit('files/handleCurFile', options)
         } else { // 该图片是新截取的
-          options = { action: 'addCurFile' } // 将该图片添加到依赖文件列表中
+          // options = { action: 'addCurFile' } // 将该图片添加到依赖文件列表中
         }
-        this.$store.commit('files/handleCurFile', options)
+        // this.$store.commit('files/handleCurFile', options)
       }
     },
     saveFeaturePoint () { // 保存选取的区域信息
@@ -228,6 +229,27 @@ export default {
           }
         })
         this.$store.commit('img/handleCoordinate', { action: 'clear' }) // 清除选区信息
+      }else if (this.willTouchFile && this.coordinates.length === 0) {
+        let nameInfo = this.tmachBlanks[0]
+        let index = -1
+        for (let i = 0; i < this.resFilesName.length; i++) {
+          if (this.resFilesName[i] ===`${nameInfo.content}${nameInfo.suffix}`) {
+            index = i
+            break
+          }
+        }
+        if(index!==-1){
+          this.$store.commit('files/handleResFiles', { // 将选区信息依赖文件保存下来
+            action: 'addResFile',
+            data: {
+              dirty: true, // 标识是否是新获得的图片,可以用于告知文件是否有被更动或新增
+              index: index,
+              name: `${nameInfo.content}${nameInfo.suffix}`,
+              file: JSON.stringify({}, null, 4),
+              type: 'json'
+            }
+          })
+        }
       }
     },
     handleUnitData () { // 保存更新后的unitData
