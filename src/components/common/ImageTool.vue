@@ -5,12 +5,16 @@
     </div>
     <div class="image-tool-content">
       <div>
+        <ul class="right-menu" id="right-menu">
+          <li @click="savePic">保存图片到本地</li>
+        </ul>
         <canvas id="image-tool-canvas" :height="canvasH" :width="canvasW"></canvas>
       </div>
     </div>
   </div>
 </template>
 <script>
+import { dataURLtoBlob } from '../../lib/tools'
 export default {
   name: 'ImageTool',
   props: {
@@ -374,11 +378,34 @@ export default {
           }
           break
       }
+    },
+    savePic(){
+      let menu = document.getElementById("right-menu")
+      menu.style.display = "none"
+      // blob 文件流下载
+      let blob = dataURLtoBlob(this.imgSrc)
+      // let blob = new Blob([imgBlob]);
+      let url = window.URL.createObjectURL(blob);
+      let a = document.createElement("a");
+      a.href = url;
+      a.download = "picture";
+      a.click();
+      window.URL.revokeObjectURL(url);
     }
   },
   mounted () {
     this.canvas = document.querySelector('#image-tool-canvas')
-    this.canvas.addEventListener('mousedown', this.dispatchMouseEvent)
+    let menu = document.getElementById("right-menu")
+    this.canvas.addEventListener('mousedown', (e)=>{
+      menu.style.display = "none"
+      if(e.button===0){
+        this.dispatchMouseEvent(e)
+      } else if(e.button===2){
+        menu.style.display = "block"
+        menu.style.left = e.offsetX + 'px'
+        menu.style.top = e.offsetY + 'px'
+      }
+    })
     this.canvas.addEventListener('mousemove', this.dispatchMouseEvent)
     this.canvas.addEventListener('mouseup', this.dispatchMouseEvent)
     this.canvas.addEventListener('mouseleave', this.dispatchMouseEvent)
@@ -387,6 +414,25 @@ export default {
 }
 </script>
 <style lang="less" scoped>
+  .right-menu{
+    width: 110px;
+    position: absolute;
+    padding: 2px 0;
+    text-align: center;
+    border: 1px solid #ccc;
+    display: none;
+    z-index: 100;
+    background: #f2f2f2;
+  }
+  .right-menu li{
+    color: #333;
+    font-size: 12px;
+    list-style: none;
+    line-height: 20px;
+  }
+  .right-menu li:hover{
+    cursor: pointer;
+  }
 .image-tool-container {
   display: flex;
   flex-direction: column;
