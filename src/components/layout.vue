@@ -65,6 +65,7 @@ import { mapState } from 'vuex'
 import CONST from 'constant/constant'
 import jobMsgComponent from '_c/jobMsgComponent'
 import Countdown from '_c/common/Countdown'
+import axios from '../api'
 import { controlDevice, releaseOccupyDevice } from 'api/reef/request'
 
 export default {
@@ -148,22 +149,40 @@ export default {
     async extendTime () { // 设备占用延时
       // eslint-disable-next-line camelcase
       let { id, device_name } = this.deviceInfo
-      try {
-        let { status } = await controlDevice({
-          device_id_list: [id],
-          occupy_type: 'job_editor'
-        })
-        if (status === 200) {
-          this.$refs.countdown.restart()
-          this.$Message.success({
-            background: true,
-            // eslint-disable-next-line camelcase
-            content: `延期占用设备 ${device_name}`
+      let url = "api/v1/cedar/device/"+id+"/?fields=id,status"
+      await axios.request({ url }).then(response=>{
+        if(response.data.status === "occupied"){
+          controlDevice({
+            device_id_list: [id],
+            occupy_type: 'job_editor'
+          }).then(res=>{
+            if(res.status===200){
+              this.$refs.countdown.restart()
+              this.$Message.success({
+                background: true,
+                // eslint-disable-next-line camelcase
+                content: `延期占用设备 ${device_name}`
+              })
+            }
+          }).catch(err=>{
+            if(err.response.status>=500)
+              this.$Message.error("服务器错误")
+            else
+              this.$Message.error("延期占用失败")
           })
+        }else{
+          this.$Message.error({content:"设备为"+ response.data.status +"状态，无法延期",duration:6})
+          this.$store.commit('device/setCountdown')
+          this.$store.commit('device/clearDeviceInfo')
+          this.$store.commit('device/clearPreDeviceInfo')
         }
-      } catch (error) {
-        console.log(error)
-      }
+
+      }).catch(error=>{
+        if(error.response.status>=500)
+          this.$Message.error("服务器错误")
+        else
+          this.$Message.error({content:error.response.data.description,duration:6})
+      })
     },
     remind () {
       let _this = this
