@@ -209,7 +209,7 @@ export default {
     "Tcab_4": [1, 2, 4],
     "Tcab_5": [1, 4, 5, 6],
     "Tcab_5L": [1, 4, 6],
-    "Tcab_5SE": [1, 4],
+    "Tcab_5se": [1, 4],
 
   }
 }
