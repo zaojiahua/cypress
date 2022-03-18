@@ -515,6 +515,23 @@ export default {
             })
             return
           }
+            // normalBlock 未 编 辑 完 成 时 不 允 许 保 存 并 且 提 示
+            let normalBlockRule = false
+            let normalBlock = this.outerDiagram.findNodesByExample({ 'category': 'normalBlock' })
+            normalBlock.each(node => {
+              if(node.data.color===undefined||node.data.color==="#F76132"){
+                normalBlockRule = true
+              }
+            })
+            if (normalBlockRule) {
+              this.$Message.error({
+                background: true,
+                content: '存在未完成的Normal',
+                duration:5,
+              })
+              return
+            }
+
           if (!this._jobMsgRules() || !this._jobFlowRules() || this.isInvalidInnerJob()) return
           if (this._jobFlowRules()) this.autoSaveToggle = false
           if (name === 'save') { // 保存，如果已经存在则更新并返回，如果不存在则创建
