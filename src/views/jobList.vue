@@ -183,7 +183,7 @@ export default {
           width: 150,
           render: (h, params) => {
             if (!this.isAdmin) {
-              if(params.row.job_type==="InnerJob"){
+              if(params.row.job_type==="内嵌"){
                 return h('div', [
                   h('span', {
                     class: 'mouse-hover',
@@ -223,7 +223,7 @@ export default {
                 ]);
               }
             }else {
-              if(params.row.job_type==="InnerJob") {
+              if(params.row.job_type==="内嵌") {
                 return h('div', [
                   h('span', {
                     class: 'mouse-hover',
