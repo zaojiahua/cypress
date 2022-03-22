@@ -5,7 +5,8 @@
       <p v-show="currentJobName !== 'Job'">当前选中的InnerJob为：<strong>{{ currentJobName }}</strong></p>
     </div>
     <job-list-filter @getFilterParam="getFilterParam"></job-list-filter>
-    <Table ref="jobTable" highlight-row border height="520" :columns="columns" :data="innerJobs" @on-row-click="selectJob"></Table>
+    <p style="font-size: 12px;color: #999">提示：双击查看用例流程图</p>
+    <Table ref="jobTable" highlight-row border height="520" :columns="columns" :data="innerJobs" @on-row-click="selectJob" @on-row-dblclick="jumpToInner"></Table>
     <Page simple :page-size="pageSize" :total="jobNum" :current="curPage" @on-change="pageChange" style="text-align :center; margin-top: 20px;"></Page>
     <div slot="footer">
       <Button type="text" size="large" @click="cancel">取消</Button>
@@ -19,6 +20,7 @@ import jobListFilter from '../components/jobListFilter'
 import axios from '../api'
 import util from '../lib/util/validate.js'
 import { serializer } from '../lib/util/jobListSerializer'
+import { getJobFlowList } from 'api/reef/request'
 
 import { mapState } from 'vuex'
 
@@ -173,6 +175,15 @@ export default {
         job_name: data.job_name,
         job_label: data.job_label
       }
+    },
+    //双击跳转到job详情流程图页面
+    async jumpToInner(row){
+      let route  = this.$router.resolve({
+        name: '/jobList',
+        query: {
+              jobId: row.id
+        } })
+      window.open(route.href, "_blank")
     },
     getFilterParam (val) {
       this.filterUrlParam = val.endsWith('&') ? val.substring(0, val.length - 1) : val

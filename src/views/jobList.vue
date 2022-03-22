@@ -623,6 +623,11 @@ export default {
     this.jobType = localStorage.getItem('COMPJOBLIST:FILTER_JOB_TYPE')
   },
   mounted () {
+    if(this.$route.query.hasOwnProperty("jobId")) {
+      let jobId = _.parseInt(this.$route.query.jobId)
+      this.$store.commit('setCurPage', 1)
+      this.$store.commit('job/setEditingJobId', jobId)
+    }
     // this.setTableHeight()
     // window.addEventListener('resize', this.setTableHeight)
   },
