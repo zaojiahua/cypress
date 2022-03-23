@@ -227,14 +227,6 @@ export default {
                 return h('div', [
                   h('span', {
                     class: 'mouse-hover',
-                    on: {
-                      click: () => {
-                        event.stopPropagation();
-                      }
-                    }
-                  },'另存'),
-                  h('span', {
-                    class: 'mouse-hover',
                     style:{
                       marginLeft:'10px',
                       color: '#2d8cf0'
@@ -249,16 +241,7 @@ export default {
                   },'参考'),
                 ])
               }else {
-                return h('div', [
-                  h('span', {
-                    class: 'mouse-hover',
-                    on: {
-                      click: () => {
-                        event.stopPropagation();
-                      }
-                    }
-                  },'另存'),
-                ]);
+
               }
             }
 
