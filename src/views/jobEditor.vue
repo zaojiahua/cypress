@@ -984,6 +984,9 @@ export default {
 </style>
 <style lang="less" scoped>
 @import '../css/common.less';
+/deep/#outer-palette canvas{
+  padding-top: 15px;
+}
 .container {
   display: flex;
   flex-direction: column;

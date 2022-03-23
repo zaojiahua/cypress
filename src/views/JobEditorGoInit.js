@@ -13,6 +13,9 @@ import {
   linkTemplateStyle,
   startNodeTemplate,
   endNodeTemplate,
+  failNodeTemplate,
+  successNodeTemplate,
+  abnormalNodeTemplate,
   unitNodeTemplate,
   baseNodeTemplateForPort,
   baseGroupTemplate
@@ -202,23 +205,28 @@ function outerDiagramInit(context) {
   startTemplate.linkValidation = startValidation
 
   const endTemplate = endNodeTemplate(CONST.COLORS.END)
-  endTemplate.doubleClick = (e, node) => {
-    if (e.diagram instanceof go.Palette) return
-    if (node.data.text === 'End') {
-      context.outerDiagram.model.setDataProperty(node.data, 'text', 'Fail')
-      context.outerDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.FAIL)
-    } else if (node.data.text === 'Fail') {
-      context.outerDiagram.model.setDataProperty(node.data, 'text', 'Success')
-      context.outerDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.SUCCESS)
-    } else if (node.data.text === 'Success') {
-      context.outerDiagram.model.setDataProperty(node.data, 'text', 'Abnormal')
-      context.outerDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.ABNORMAL)
-    }
-    else {
-      context.outerDiagram.model.setDataProperty(node.data, 'text', 'End')
-      context.outerDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.END)
-    }
-  }
+  const failTemplate = failNodeTemplate(CONST.COLORS.FAIL)
+  const successTemplate = successNodeTemplate(CONST.COLORS.SUCCESS)
+  const abnormalTemplate = abnormalNodeTemplate(CONST.COLORS.ABNORMAL)
+
+
+  // endTemplate.doubleClick = (e, node) => {
+  //   if (e.diagram instanceof go.Palette) return
+  //   if (node.data.text === 'End') {
+  //     context.outerDiagram.model.setDataProperty(node.data, 'text', 'Fail')
+  //     context.outerDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.FAIL)
+  //   } else if (node.data.text === 'Fail') {
+  //     context.outerDiagram.model.setDataProperty(node.data, 'text', 'Success')
+  //     context.outerDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.SUCCESS)
+  //   } else if (node.data.text === 'Success') {
+  //     context.outerDiagram.model.setDataProperty(node.data, 'text', 'Abnormal')
+  //     context.outerDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.ABNORMAL)
+  //   }
+  //   else {
+  //     context.outerDiagram.model.setDataProperty(node.data, 'text', 'End')
+  //     context.outerDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.END)
+  //   }
+  // }
 
   const switchBlockTemplate = baseNodeTemplateForPort(CONST.COLORS.SWITCH, 'Diamond')
   switchBlockTemplate.doubleClick = function (e, node) {
@@ -302,6 +310,9 @@ function outerDiagramInit(context) {
   context.outerDiagram.nodeTemplateMap.add('switchBlock', switchBlockTemplate)
   context.outerDiagram.nodeTemplateMap.add('Start', startTemplate)
   context.outerDiagram.nodeTemplateMap.add('End', endTemplate)
+  context.outerDiagram.nodeTemplateMap.add('Fail', failTemplate)
+  context.outerDiagram.nodeTemplateMap.add('Success', successTemplate)
+  context.outerDiagram.nodeTemplateMap.add('Abnormal', abnormalTemplate)
   context.outerDiagram.nodeTemplateMap.add('Job', jobBlockTemplate)
 }
 

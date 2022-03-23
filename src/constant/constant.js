@@ -95,7 +95,6 @@ export default {
     'COMPLEX'
   ]),
   OUTER_PALETTE_MODEL: [
-    { category: 'switchBlock', text: 'Switch' },
     {
       category: 'normalBlock',
       text: 'Normal',
@@ -131,6 +130,10 @@ export default {
       }
     },
     { category: 'Job', text: 'Job' },
+    { category: 'switchBlock', text: 'Switch' },
+    { category: 'Abnormal', text: 'Abnormal' },
+    { category: 'Success', text: 'Success' },
+    { category: 'Fail', text: 'Fail' },
     { category: 'End', text: 'End' }
   ],
   BASIC_OUTER_DIAGRAM_MODEL: JSON.stringify({

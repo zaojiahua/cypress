@@ -102,6 +102,30 @@ export function endNodeTemplate (color, isUnit = false, shape = 'RoundedRectangl
   if (isUnit) endNodeTemplate.deletable = false
   return endNodeTemplate
 }
+export function failNodeTemplate (color, isUnit = false, shape = 'RoundedRectangle') {
+  const failNodeTemplate = baseNodeTemplate(color, shape)
+  failNodeTemplate.add(makePort('T', go.Spot.Top, false, true))
+  failNodeTemplate.add(makePort('L', go.Spot.Left, false, true))
+  failNodeTemplate.add(makePort('R', go.Spot.Right, false, true))
+  if (isUnit) failNodeTemplate.deletable = false
+  return failNodeTemplate
+}
+export function successNodeTemplate (color, isUnit = false, shape = 'RoundedRectangle') {
+  const successNodeTemplate = baseNodeTemplate(color, shape)
+  successNodeTemplate.add(makePort('T', go.Spot.Top, false, true))
+  successNodeTemplate.add(makePort('L', go.Spot.Left, false, true))
+  successNodeTemplate.add(makePort('R', go.Spot.Right, false, true))
+  if (isUnit) successNodeTemplate.deletable = false
+  return successNodeTemplate
+}
+export function abnormalNodeTemplate (color, isUnit = false, shape = 'RoundedRectangle') {
+  const abnormalNodeTemplate = baseNodeTemplate(color, shape)
+  abnormalNodeTemplate.add(makePort('T', go.Spot.Top, false, true))
+  abnormalNodeTemplate.add(makePort('L', go.Spot.Left, false, true))
+  abnormalNodeTemplate.add(makePort('R', go.Spot.Right, false, true))
+  if (isUnit) abnormalNodeTemplate.deletable = false
+  return abnormalNodeTemplate
+}
 
 export function baseNodeTemplateForPort (color, shape) {
   const baseNodeTemplateForPort = baseNodeTemplate(color, shape)
