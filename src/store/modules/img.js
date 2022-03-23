@@ -9,6 +9,7 @@ let state = {
 let mutations = {
   handleCoordinate (state, { action, data }) {
     if (action === 'add') {
+      state.coordinates = []
       state.coordinates.push(data)
     }
     if (action === 'remove') {
