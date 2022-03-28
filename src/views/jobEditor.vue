@@ -442,8 +442,8 @@ export default {
           }
         if (!this._jobMsgRules()) return
         let id = this.jobId
-        let jobInfo = await this.prepareJobInfo()
-        let jobFlowInfo = await this.prepareJobFlowInfo(jobInfo)
+        // let jobInfo = await this.prepareJobInfo()
+        // let jobFlowInfo = await this.prepareJobFlowInfo(jobInfo)
         // 资源验证：先去除空值，看实际选择的资源value是否为空
         for (let i = this.resourceList.length-1; i >= 0; i--) {
           if(!this.resourceList[i] || this.resourceList[i].length===0)
@@ -471,6 +471,8 @@ export default {
 
         if (name === 'saveDraft') { // 存草稿，可跳过校验
           if (!this._jobMsgRules()) return
+          let jobInfo = await this.prepareJobInfo()
+          let jobFlowInfo = await this.prepareJobFlowInfo(jobInfo)
           jobInfo.draft = true
           this.autoSaveToggle = false
           if (id) //id 存在 则将已有的job更新成草稿 不存在会创建
@@ -533,6 +535,8 @@ export default {
             }
 
           if (!this._jobMsgRules() || !this._jobFlowRules() || this.isInvalidInnerJob()) return
+          let jobInfo = await this.prepareJobInfo()
+          let jobFlowInfo = await this.prepareJobFlowInfo(jobInfo)
           if (this._jobFlowRules()) this.autoSaveToggle = false
           if (name === 'save') { // 保存，如果已经存在则更新并返回，如果不存在则创建
             jobInfo.draft = false
