@@ -21,16 +21,45 @@ export function jobFlowValidation (vueObj) {
 
   const endValidation = () => {
     let endAll = self.outerDiagram.findNodesByExample({ 'category': 'End' })
+    let failResult = self.outerDiagram.findNodesByExample({ 'category': 'Fail' })
+    let successResult = self.outerDiagram.findNodesByExample({ 'category': 'Success' })
+    let abnormalResult = self.outerDiagram.findNodesByExample({ 'category': 'Abnormal' })
 
-    if (endAll.count <= 0) {
-      myDiagramEventValidationHint.add('缺少End')
+    if (endAll.count <= 0 && failResult.count <= 0 && successResult.count <= 0 && abnormalResult.count <= 0) {
+      myDiagramEventValidationHint.add('缺少结尾的工作块（success/abnormal/fail/end）')
     } else {
-      endAll.iterator.each(node => { // 遍历所有的end节点
-        let endLinksInto = node.findLinksInto()
-        if (endLinksInto.count <= 0) {
-          myDiagramEventValidationHint.add('End至少有一条被指向链接')
-        }
-      })
+      if(endAll.count > 0){
+        endAll.iterator.each(node => { // 遍历所有的end节点
+          let endLinksInto = node.findLinksInto()
+          if (endLinksInto.count <= 0) {
+            myDiagramEventValidationHint.add('End至少有一条被指向链接')
+          }
+        })
+      }
+      if(failResult.count > 0){
+        failResult.iterator.each(node => { // 遍历所有的 fail 节点
+          let failLinksInto = node.findLinksInto()
+          if (failLinksInto.count <= 0) {
+            myDiagramEventValidationHint.add('Fail至少有一条被指向链接')
+          }
+        })
+      }
+      if(successResult.count > 0){
+        successResult.iterator.each(node => { // 遍历所有的 success节点
+          let successLinksInto = node.findLinksInto()
+          if (successLinksInto.count <= 0) {
+            myDiagramEventValidationHint.add('Success至少有一条被指向链接')
+          }
+        })
+      }
+      if(abnormalResult.count > 0){
+        abnormalResult.iterator.each(node => { // 遍历所有的 abnormal 节点
+          let abnormalLinksInto = node.findLinksInto()
+          if (abnormalLinksInto.count <= 0) {
+            myDiagramEventValidationHint.add('Abnormal至少有一条被指向链接')
+          }
+        })
+      }
     }
   }
 
