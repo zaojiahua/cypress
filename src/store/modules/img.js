@@ -3,7 +3,8 @@ import files from './files'
 let state = {
   imgRecRate: 0.99, // 图片识别率
   coordinates: [], // 选取区域的信息保存在这里
-  absCoordinates: null // 选点的位置(可以是相对或则比例（绝对）)
+  absCoordinates: null, // 选点的位置(可以是相对或则比例（绝对）)
+  offsetCoordinates: null // x,y偏移点的位置
 }
 
 let mutations = {
@@ -21,6 +22,10 @@ let mutations = {
   },
   setAbsoluteCoordinates (state, absCoordinates) {
     state.absCoordinates = absCoordinates
+  },
+  setOffsetCoordinates (state, offsetCoordinates) {
+    console.log("aouaouauoauaouaooa")
+    state.offsetCoordinates = offsetCoordinates
   },
   setImgRecRate (state, imgRecRate) {
     state.imgRecRate = imgRecRate

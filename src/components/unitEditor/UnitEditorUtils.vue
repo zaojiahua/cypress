@@ -24,6 +24,13 @@
       <Button
         size="small"
         type="primary"
+        @click="handleOffsetCoordinates"
+        id="btn-point-offside"
+        v-show="isOffset"
+      >确定</Button>
+      <Button
+        size="small"
+        type="primary"
         @click="handleAbsoluteCoordinates(true)"
         id="btn-get-relative-coordinate"
         v-show="isPicInput && this.curFile"
@@ -74,7 +81,7 @@ export default {
     ...mapState(['isLoading']),
     ...mapState('files', ['resFiles', 'curFile']),
     ...mapState('item', ['areasInfo', 'itemData','selectPoint']),
-    ...mapGetters('item', ['isPicInput', 'isJobResourceFile', 'isJobResourcePicture', 'isJobResourceFileWithDefaultValue']),
+    ...mapGetters('item', ['isPicInput', 'isJobResourceFile', 'isJobResourcePicture', 'isJobResourceFileWithDefaultValue', 'isOffset']),
     ...mapGetters('img', ['imgRecRate']),
     editing () {
       return !!(this.curFile || this.isLoading)
@@ -115,6 +122,16 @@ export default {
       }
       return true
     },
+    hasSelectOffset () {
+      if (!this.offset) {
+        this.$Message.warning({
+          background: true,
+          content: '请选择测距点'
+        })
+        return false
+      }
+      return true
+    },
     handleCoordinate () {
       if (!this.hasSelectArea()) return
       let startPoint = this.coordinate.relativeCoordinate.topLeft
@@ -139,6 +156,11 @@ export default {
       this.$store.commit('img/setAbsoluteCoordinates', isRelative ? this.relativePoint : this.point) // 可以是原图坐标，也可以是比例坐标
       this.point = null
       this.relativePoint = null
+    },
+    handleOffsetCoordinates(){
+      if (!this.hasSelectOffset()) return
+      this.$store.commit('img/setOffsetCoordinates', this.offset)
+      this.offset = null
     },
     outputResult (val) {
       this.coordinate = null

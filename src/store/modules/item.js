@@ -60,6 +60,10 @@ let getters = {
     if (!state.itemData) return
     return state.itemData.itemName
   },
+  isOffset(){
+    if (!state.itemData) return
+    return state.itemData.itemContent.type === 'uxInput' && (state.itemData.itemName==="xyShift")
+  },
   isUxInput (state) {
     if (!state.itemData) return
     return state.itemData.itemContent.type === 'uxInput'

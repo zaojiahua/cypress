@@ -101,8 +101,8 @@ export default {
     ...mapState('unit', ['unitData']),
     ...mapGetters('unit', ['unitKey']),
     ...mapState('item', ['editing', 'itemData', 'saveToFinalResult']),
-    ...mapState('img', ['imgRecRate', 'coordinates', 'absCoordinates']),
-    ...mapGetters('item', ['itemType', 'itemName', 'isPicInput', 'isOutputPicture', 'isOutputFile', 'isJobResourceFile', 'curItemMeaning', 'isJobResourcePicture','isInputPicture','isAllowNull']),
+    ...mapState('img', ['imgRecRate', 'coordinates', 'absCoordinates', 'offsetCoordinates']),
+    ...mapGetters('item', ['itemType', 'itemName', 'isPicInput', 'isUxInput', 'isOutputPicture', 'isOutputFile', 'isJobResourceFile', 'curItemMeaning', 'isJobResourcePicture','isInputPicture','isAllowNull']),
     showInput () { // 如果CONST.SHOW_INPUT这一Set中包含该itemType(即execCmdDict/execCmdList内子元素的type字段), 则显示Input组件
       return CONST.SHOW_INPUT.has(this.itemType)
     },
@@ -156,6 +156,17 @@ export default {
         }
         this.tmachBlanks[this.tmachIndex].content = val.x
         this.tmachBlanks[this.tmachIndex + 1].content = val.y
+        this.tmachIndex += 2
+      }
+    },
+    offsetCoordinates(val){  //偏 移 点 位 置
+      let { length } = this.tmachBlanks
+      if (this.isUxInput) {
+        if (this.tmachIndex + 2 > length) {
+          this.tmachIndex = 0
+        }
+        this.tmachBlanks[this.tmachIndex].content = val.offsetX
+        this.tmachBlanks[this.tmachIndex + 1].content = val.offsetY
         this.tmachIndex += 2
       }
     },
