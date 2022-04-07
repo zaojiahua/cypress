@@ -203,11 +203,11 @@ export default {
         let options
         if (this.curFile.dirty) { // 如果该图片之前已经存在
           options = { action: 'clearCurFile' } // 将当前文件置空
-          this.$store.commit('files/handleCurFile', options)
+          // this.$store.commit('files/handleCurFile', options)
         } else { // 该图片是新截取的
-          // options = { action: 'addCurFile' } // 将该图片添加到依赖文件列表中
+          options = { action: 'addCurFile' } // 将该图片添加到依赖文件列表中
         }
-        // this.$store.commit('files/handleCurFile', options)
+        this.$store.commit('files/handleCurFile', options)
       }
     },
     saveFeaturePoint () { // 保存选取的区域信息
