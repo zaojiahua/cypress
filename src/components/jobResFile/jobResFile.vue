@@ -145,7 +145,7 @@ export default {
       this.$store.commit('files/setShowResFileModal')
     },
     saveChange (file) { // 保存对依赖文件的修改
-      this.resFiles[this.curFile].file = file
+      this.resFilesCopy[this.curFile].file = file
       this.$Message.success({
         background: true,
         content: '修改成功'
