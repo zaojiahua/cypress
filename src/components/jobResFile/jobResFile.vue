@@ -1,11 +1,11 @@
 <template>
-  <Modal v-model="showResFileModal" :closable="false" :mask-closable="false" width="90">
+  <Modal v-model="showResFileModal" :closable="false" :mask-closable="false" width="90" @on-ok="saveResFileChange">
     <Tabs>
       <TabPane :label="label" name="files">
         <div class="res-file">
-          <job-res-file-table style="width: 45%;" :columns="filesColumn" :data="resFiles" :curFile="curFile" @showFile="showFile"></job-res-file-table>
+          <job-res-file-table style="width: 45%;" :columns="filesColumn" :data="resFilesCopy" :curFile="curFile" @showFile="showFile" @remove-resFile-copy="removeResFileCopy"></job-res-file-table>
           <div class="res-file-show">
-              <job-res-file-show style="width: 96%;" :filesData="resFiles" :curFile="curFile" @saveChange="saveChange"></job-res-file-show>
+              <job-res-file-show style="width: 96%;" :filesData="resFilesCopy" :curFile="curFile" @saveChange="saveChange"></job-res-file-show>
           </div>
         </div>
         <div slot="footer">
@@ -60,12 +60,14 @@ export default {
         }
       ],
       curFile: 0,
+      resFilesCopy:[],
+      resFilesCopyName:[],
       label: (h) => {
         return h('div', [
           h('span', '依赖文件'),
           h('Badge', {
             props: {
-              count: this.resFiles.length
+              count: this.resFilesCopy.length
             }
           })
         ])
@@ -86,22 +88,38 @@ export default {
       }
     }
   },
+  watch:{
+    showResFileModal(val){
+      if(val)
+        this.resFilesCopy = _.cloneDeep(this.resFiles)
+    },
+    resFilesCopy(val){
+      this.resFilesCopyName = val.map(item => item.name)
+    }
+  },
   methods: {
     beforeUpload(file) {
       let reader = new FileReader()
-      if (this.resFilesName.indexOf(file.name) !== -1){
+      if (this.resFilesCopyName.indexOf(file.name) !== -1){
         this.$Message.warning("上传文件重名请进行修改后重新上传")
       }else {
         reader.onload = () => {
-          this.$store.commit('files/handleResFiles', { //尾端添加
-            action: 'addResFile',
-            data: {
-              dirty: true,
-              index: -1,
-              name: file.name,
-              file: reader.result,
-              type: file.name.split('.').pop()
-            }
+          // this.$store.commit('files/handleResFiles', { //尾端添加
+          //   action: 'addResFile',
+          //   data: {
+          //     dirty: true,
+          //     index: -1,
+          //     name: file.name,
+          //     file: reader.result,
+          //     type: file.name.split('.').pop()
+          //   }
+          // })
+          this.resFilesCopy.push({
+            dirty: true,
+            index: -1,
+            name: file.name,
+            file: reader.result,
+            type: file.name.split('.').pop()
           })
           this.$Message.info("上传成功！！")
         }
@@ -116,6 +134,12 @@ export default {
 
 
 
+    },
+    removeResFileCopy(index){
+      this.resFilesCopy.splice(index, 1)
+    },
+    saveResFileChange(){
+      this.$store.commit('files/handleResFiles', { action: 'setResFiles', data: this.resFilesCopy })
     },
     closeResFileModal () {
       this.$store.commit('files/setShowResFileModal')

@@ -1,5 +1,5 @@
 <template>
-  <Modal v-model="modalOpen" fullscreen title="测试结果"    @on-ok="close"  @on-cancel="close">
+  <Modal v-model="modalOpen" fullscreen title="测试结果">
     <Row type="flex" justify="center" align="top">
       <!--    这是点击测试按钮展开的模态框，分左右两部分，根据slot插入的不同，左边可能是小图标或者裁剪后的图-->
       <Col span="11"  >
@@ -20,6 +20,9 @@
         </div>
       </Col>
     </Row>
+    <div slot="footer">
+      <Button type="primary" @click="close">确定</Button>
+    </div>
   </Modal>
 </template>
 

@@ -53,7 +53,8 @@ export default {
       }else {
         this.showFile(index)
       }
-      this.$store.commit('files/handleResFiles', { action: 'removeResFile', data: index })
+      this.$emit("remove-resFile-copy",index)
+      // this.$store.commit('files/handleResFiles', { action: 'removeResFile', data: index })
     }
   }
 }
