@@ -167,7 +167,7 @@ function outerDiagramInit(context) {
   context.outerDiagram = MAKE(go.Diagram, 'outer-diagram', {
     initialContentAlignment: go.Spot.Center,
     allowDrop: true,
-    // layout: MAKE(go.LayeredDigraphLayout, { direction: 90, layerSpacing: 40, columnSpacing: 30, setsPortSpots: true }),
+    // layout: MAKE(go.LayeredDigraphLayout, { direction: 90, layerSpacing: 40, columnSpacing: 30, setsPortSpots: true }), //放开后流程图会炸
     linkTemplate: linkTemplateStyle(),
     'draggingTool.isGridSnapEnabled': true,
     'linkingTool.portGravity': 60,
@@ -355,7 +355,7 @@ export function innerDiagramInit(context) {
     })
     if (!flag) context.$Message.error({
       background: true,
-      content: 'Start,End 不可以被复制'
+      content: 'Entry,Exit 不可以被复制'
     })
     return flag
   }
