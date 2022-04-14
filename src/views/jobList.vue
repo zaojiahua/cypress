@@ -169,6 +169,7 @@ export default {
           filters: [],
           filterRemote (value) {
             this.cabinetType= value
+            this.$store.commit('setCabinetType', value)
             this.jobPageChange(1)
           }
         },
@@ -266,7 +267,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(['refresh']),
+    ...mapState(['refresh', 'curCabinetType']),
     ...mapState('job', ['editingJobId']),
     isAdmin (){
       return sessionStorage.groups && sessionStorage.groups.includes('Admin')
@@ -619,6 +620,8 @@ export default {
     this.columns[6].filteredValue = [].concat(this.jobType)
     this.getCabinetList()
     this.jobPageChange()
+    if(this.curCabinetType.length>0)
+      this.columns[7].filteredValue = this.curCabinetType
 
     if (this.editingJobId !== null && !isNaN(this.editingJobId)) {
       await this.getJobInfo(this.editingJobId)

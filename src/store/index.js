@@ -28,6 +28,7 @@ export default new Vuex.Store({
     showDrawer: false, // 是否显示右侧抽屉
     isLoading: false,
     curPage: 1, // 当前jobList页
+    curCabinetType:[], //当前jobList筛选的测试柜类型
     refresh: false, // 控制是否刷新jobList页面
     basicData: null // 基本的信息, 如job_test_area/custom_tag/phone_model等信息
   },
@@ -40,6 +41,9 @@ export default new Vuex.Store({
     },
     setCurPage (state, page) {
       state.curPage = page
+    },
+    setCabinetType(state, cabinetType){
+      state.curCabinetType = cabinetType
     },
     refreshJobList (state) {
       state.refresh = true
