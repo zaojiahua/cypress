@@ -78,7 +78,8 @@ let mutations = {
         if (data.index !== -1) {
           state.curFile = state.resFiles[data.index]
           state.curFile.name = data.name
-        }
+        }else
+          state.curFile = data
       } else {
         state.curFile = data
       }

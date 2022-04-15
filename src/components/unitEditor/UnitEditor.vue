@@ -271,13 +271,13 @@ export default {
         }
         unitData.completed = this.checkWeatherCompleted()
         this.$emit('saveUnit', unitData)
-        if (this.curFile) { // 如果当前展示的图片不为空
-          let options
-          if (!this.curFile.dirty) { // 该图片是新截取的
-            options = { action: 'addCurFile' } // 将该图片添加到依赖文件列表中
-            this.$store.commit('files/handleCurFile', options)
-          }
-        }
+        // if (this.curFile) { // 如果当前展示的图片不为空
+        //   let options
+        //   if (!this.curFile.dirty) { // 该图片是新截取的
+        //     options = { action: 'addCurFile' } // 将该图片添加到依赖文件列表中
+        //     this.$store.commit('files/handleCurFile', options)
+        //   }
+        // }
       }
       this.unitItems.forEach(item => { // 使每一个unitItem处于非点击状态
         item.isClicked = false

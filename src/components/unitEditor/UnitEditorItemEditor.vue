@@ -122,7 +122,7 @@ export default {
       return this.isOutputPicture
     },
     picUrl () { // 返回png文件组成的数组
-      return this.resFiles.filter((val) => { return val.type === 'png' })
+      return this.resFiles.filter((val) => { return val.type === 'png' || (val.type === 'jpeg') || (val.type === 'jpg') })
     },
     loc () { // 当前编辑中的unitItem的位置, eg: -2_-4_inputImgFile / -3_-5_4
       return [this.normalKey, this.unitKey, this.itemName].join('_')
