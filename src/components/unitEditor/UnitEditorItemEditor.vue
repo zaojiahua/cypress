@@ -126,7 +126,11 @@ export default {
     },
     isShowBtn () {  //双指Unit从图片选取坐标点，（只有picInput类型）不显示选取设备的框
       let target = this.unitData.unitMsg.execCmdDict.execCmdList
-      return Boolean(target) && !Boolean(this.unitData.unitMsg.unitShowBtn && (this.itemType==="picInput"))
+     // 当前Unit 是 execCmdDict.execCmdList（双指）格式的话，则要区分是否显示选取设备框，否则普通模式不需要分类区分
+      if(target === undefined)
+        return true
+      else
+        return !Boolean(this.unitData.unitMsg.unitShowBtn && (this.itemType==="picInput"))
     },
     loc () { // 当前编辑中的unitItem的位置, eg: -2_-4_inputImgFile / -3_-5_4
       return [this.normalKey, this.unitKey, this.itemName].join('_')
