@@ -48,7 +48,7 @@
           </AutoComplete>
         </div>
         <ScreenShot
-          v-if="showScreenShot"
+          v-if="showScreenShot&&isShowBtn"
           ref="screenShot"
           @handleImgName="setName"
         ></ScreenShot>
@@ -123,6 +123,10 @@ export default {
     },
     picUrl () { // 返回png文件组成的数组
       return this.resFiles.filter((val) => { return val.type === 'png' || (val.type === 'jpeg') || (val.type === 'jpg') })
+    },
+    isShowBtn () {
+      let target = this.unitData.unitMsg.execCmdDict.execCmdList
+      return Boolean(target) && !Boolean(this.unitData.unitMsg.unitShowBtn)
     },
     loc () { // 当前编辑中的unitItem的位置, eg: -2_-4_inputImgFile / -3_-5_4
       return [this.normalKey, this.unitKey, this.itemName].join('_')

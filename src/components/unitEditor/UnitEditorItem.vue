@@ -8,7 +8,7 @@
         {{ itemDesc[this.itemType] }}
       </span>
     </p>
-    <div class="btn-list" v-if="isPicInput">
+    <div class="btn-list" v-if="isPicInput&&isShowBtn">
       <span class="add-new-item" @click.stop="handleItem(true)"> + </span>
       <span class="remove-item" :class="disable ? '' : 'disable'" @click.stop="handleItem(false)"> - </span>
     </div>
@@ -65,6 +65,10 @@ export default {
     },
     isJobResourceFileWithDefaultValue () {
       return this.itemType === 'jobResourceFileWithDefaultValue'
+    },
+    isShowBtn () {
+      let target = this.unitData.unitMsg.execCmdDict.execCmdList
+      return Boolean(target) && !Boolean(this.unitData.unitMsg.unitShowBtn)
     },
     isCompleted () {
       if (this.isUxInput && this.uxInputDefaultValue) {

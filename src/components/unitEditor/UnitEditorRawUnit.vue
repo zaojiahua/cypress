@@ -76,7 +76,7 @@ export default {
     },
     endUnitContentEdit (save) { // 结束编辑
       if (save) { // 保存
-        if (!isJsonString(this.unitContent)) { // 不是JSON格式
+        if (!isJsonString(this.curUnitContent)) { // 不是JSON格式
           this.$Message.error({
             background: true,
             content: '不是 JSON 格式'
