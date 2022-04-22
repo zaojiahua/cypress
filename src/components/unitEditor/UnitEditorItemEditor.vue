@@ -124,9 +124,9 @@ export default {
     picUrl () { // 返回png文件组成的数组
       return this.resFiles.filter((val) => { return val.type === 'png' || (val.type === 'jpeg') || (val.type === 'jpg') })
     },
-    isShowBtn () {
+    isShowBtn () {  //双指Unit从图片选取坐标点，（只有picInput类型）不显示选取设备的框
       let target = this.unitData.unitMsg.execCmdDict.execCmdList
-      return Boolean(target) && !Boolean(this.unitData.unitMsg.unitShowBtn)
+      return Boolean(target) && !Boolean(this.unitData.unitMsg.unitShowBtn && (this.itemType==="picInput"))
     },
     loc () { // 当前编辑中的unitItem的位置, eg: -2_-4_inputImgFile / -3_-5_4
       return [this.normalKey, this.unitKey, this.itemName].join('_')
