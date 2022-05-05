@@ -169,8 +169,10 @@ export default {
           })
           return
         }
-        //  index===4指的是坐标点的第五个值，也就是速度。速度不需要加载在图上。所以去掉
-        if(index !== 4){
+        //  指的是坐标点的最后一个值，也就是速度。速度不需要加载在图上。所以去掉（单数说明有除了坐标点以外的属性，双数说明只有坐标点）
+        if(index === this.tmachBlanks.length-1 && (index % 2 === 0)){
+          //不用在图上画的点...
+        } else {
           if (index % 2 === 0) {
             SelectPointList.push({x:0,y:0})
             SelectPointList[SelectPointList.length - 1].x = parseFloat(value.trim().substring(5))
