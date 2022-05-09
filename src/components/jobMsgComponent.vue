@@ -246,6 +246,8 @@ export default {
       let flow_name = this.jobFlowInfo.name ? this.jobFlowInfo.name.trim() : null
       if (!flow_name) {
         callback(new Error('请输入流程图名称'));
+      }else if(flow_name.includes("/")){
+        callback(new Error('流程图名称不允许包含 /'));
       }else if (flow_name.length > 70) {
         callback(new Error('流程图名称长度不能大于70个字符'));
       } else if (this.jobId)  { // 在已经存在的用例中操作
@@ -256,6 +258,18 @@ export default {
           callback()
         }
       } else {
+        callback()
+      }
+    };
+    const validateJobName = (rule, value, callback) => {
+      let job_name = this.jobInfo.job_name ? this.jobInfo.job_name.trim() : null
+      if (!job_name) {
+        callback(new Error('请输入用例名称'));
+      }else if(job_name.includes("/")){
+        callback(new Error('用例名称不允许包含 /'));
+      }else if (job_name.length > 70) {
+        callback(new Error('用例名称长度不能大于70个字符'));
+      }else {
         callback()
       }
     };
@@ -285,10 +299,8 @@ export default {
       disabled: true,
       validateRules: { // 表单验证规则
         job_name: [{
-          required: true, message: '用例名称不能为空', trigger: 'blur,change'
-        }, {
-          type: 'string', max: 70, message: '用例名称不能超过70个字符', trigger: 'blur'
-      }],
+          required: true, validator:validateJobName, trigger: 'blur,change'
+        }],
         test_area: [{
           required: true, type: 'array', min: 1, message: '测试用途不能为空', trigger: 'change'
         }],
@@ -312,7 +324,7 @@ export default {
           required: true, type: 'array', min: 1, message: '适配系统不能为空', trigger: 'change'
         }],
         flow_name: [
-          { required: true,validator: validatePass, trigger: 'blur' }
+          { required: true,validator: validatePass, trigger: 'blur,change' }
         ],
       },
       job: util.validate(jobSerializer, {}),

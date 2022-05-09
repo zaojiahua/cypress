@@ -265,6 +265,10 @@ export default {
     async pasteJobFlow(){
       console.log(this.copyFlowObj.id)
       try {
+        if(this.copyFlowName.includes("/")){
+          this.$Message.error("流程图名称不允许包含/")
+          return
+        }
         let { status } = await copyFlowWithFlowId({job:this.jobId,flow:this.copyFlowObj.id,name:this.copyFlowName})
         if (status === 200) {
           this.showCopyModal = false

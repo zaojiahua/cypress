@@ -323,7 +323,11 @@ export default {
             "author_id": parseInt(sessionStorage.id)
           }
           if (self.copyJobName.length >=70){
-            self.$Message.error("文件名过长")
+            self.$Message.error("用例名称过长")
+            return
+          }
+          if (self.copyJobName.includes("/")){
+            self.$Message.error("用例名称不允许包含/")
             return
           }
           try{
