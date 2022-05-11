@@ -47,6 +47,14 @@
       </div>
     </Modal>
 
+    <Modal v-model="showCopyModal" footer-hide :closable="false" :mask-closable="false" width="420">
+      <Input v-model="copyJobName" maxlength="70" style="margin-top: 16px" placeholder="请输入新的用例名称"></Input>
+      <Row style="text-align: right;margin-top: 20px;">
+        <Button type="text" @click="showCopyModal=false;copyJobId = null;copyJobName=''">取消</Button>
+        <Button type="primary" @click="onSaveAs">确认</Button>
+      </Row>
+    </Modal>
+
     <Modal v-model="showErrorInner" :closable="false" :mask-closable="false" :footer-hide="true" width="50">
       <Icon type="ios-help-circle" style="color: #ff9900;float: left;margin: 15px 10px 0 0;" size="24"/>
       <p style="margin: 15px 0;font-size: 16px">提示</p>
@@ -264,6 +272,8 @@ export default {
       showErrorInner:false,
       errorInnerList:[],
       delJobIds:[],
+      showCopyModal:false,
+      copyJobId:null,
     }
   },
   computed: {
@@ -297,49 +307,33 @@ export default {
   },
   methods: {
     show (index) {
-      let self = this
-      self.copyJobName = `${self.jobData[index].job_name}_copy`
-      this.$Modal.confirm({
-        render: (h) => {
-          return h('Input', {
-            props: {
-              ref:'newJobName',
-              value: self.copyJobName,
-              autofocus: true,
-              placeholder: '请输入新的用例名称',
-            },
-            on: {
-              input: (val) => {
-                self.copyJobName = val
-              }
-            }
-          })
-        },
-        async onOk(){
-          let data = {
-            "job_id": self.jobData[index].id,
-            "job_name": self.copyJobName,
-            "job_label": createJobLabel(self),
-            "author_id": parseInt(sessionStorage.id)
-          }
-          if (self.copyJobName.length >=70){
-            self.$Message.error("用例名称过长")
-            return
-          }
-          if (self.copyJobName.includes("/")){
-            self.$Message.error("用例名称不允许包含/")
-            return
-          }
-          try{
-            await copyJob(data)
-            self.$Message.info("另存成功")
-          } catch (e) {
-            self.$Message.error("另存失败")
-          }
-          self.getFilteredJobs()
-        }
+      this.copyJobName = `${this.jobData[index].job_name}_copy`
+      this.showCopyModal = true
+      this.copyJobId = this.jobData[index].id
+    },
+    async onSaveAs(){
+      let data = {
+        "job_id": this.copyJobId,
+        "job_name": this.copyJobName,
+        "job_label": createJobLabel(this),
+        "author_id": parseInt(sessionStorage.id)
       }
-      )
+      if (this.copyJobName.length >70){
+        this.$Message.error("用例名称过长")
+        return
+      }
+      if (this.copyJobName.includes("/")){
+        this.$Message.error("用例名称不允许包含/")
+        return
+      }
+      this.showCopyModal = false
+      try{
+        await copyJob(data)
+        this.$Message.info("另存成功")
+      } catch (e) {
+        this.$Message.error("另存失败")
+      }
+      this.getFilteredJobs()
     },
     viewJobConnection(label){
       this.showJobConnectionModal = true
