@@ -22,7 +22,7 @@
               <Button v-if="(column.key==='job_test_area'||column.key==='custom_tag')&&isAdmin" type="error" size="small" style="float: right;" @click="onFilterDelete(column.key)">删除</Button>
               <CheckboxGroup v-model="filterConditions">
                 <Row type="flex">
-                  <Col span="4" v-for="(item, index) in filterData[column.key]" :key="index">
+                  <Col span="4" v-for="(item, index) in filterData[column.key]" :key="item.id">
                     <Checkbox :label="column.key + ':' + index + ':' + item[column.item_key] + ':' + item.id">
                       <span>{{ item[column.item_key] }}</span>
                     </Checkbox>
@@ -40,7 +40,7 @@
               <div v-for="(val, key, idx) in filterFactors" :key="val.title" v-show="val.values.length !== 0" class="filter-factor" style="margin-right: 65px">
                 <span class="filter-factor__title" @click="changeTab(idx + '')">{{val.title}}</span>
                 <div class="filter-factor__content">
-                  <Tag v-for="(factor, index) in val.values" :key="factor" closable @on-close="close(key, index)">{{ factor.split(':')[2] }}</Tag>
+                  <Tag v-for="(factor, index) in val.values" :key="factor" closable @on-close="close" :name="factor">{{ factor.split(':')[2] }}</Tag>
                 </div>
               </div>
             </div>
@@ -182,9 +182,12 @@ export default {
       this.filterConditions.forEach(item => {
         let info = item.split(':')
         let type = info[0]
-        let index = info[1]
+        let id = parseInt(info[3])
         if (filterFactors[type] === undefined) filterFactors[type] = []
-        filterFactors[type].push(this.filterData[type][index])
+        this.filterData[type].forEach(item=>{
+          if(item.id===id)
+            filterFactors[type].push(item)
+        })
       })
       return filterFactors
     },
@@ -216,13 +219,12 @@ export default {
       this.filterConditions = []
       this.getFilteredJob()
     },
-    close (key, index) { // 关闭标签页下方的小标签时触发, 在筛选条件中删除对应的元素
-      let temp = this.filterFactors[key].values[index]
+    close (event, name) { // 关闭标签页下方的小标签时触发, 在筛选条件中删除对应的元素
+      let info = name.split(':')
+      let key = info[0]
+      let index = this.filterFactors[key].values.indexOf(name)
       this.filterFactors[key].values.splice(index, 1)
-      let tempIndex = this.filterConditions.findIndex((val, idx) => {
-        return val === temp
-      })
-      this.filterConditions.splice(tempIndex, 1)
+      this.filterConditions.splice(this.filterConditions.indexOf(name), 1)
       this.getFilteredJob()
     },
     changeTab (index) { // 切换标签页时触发, 记录当前标签页的位置
