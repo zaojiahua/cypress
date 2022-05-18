@@ -2,7 +2,7 @@
   <Layout class="layout">
     <Header class="header">
       <Menu mode="horizontal" theme="dark" class="flex-row">
-        <div class="logo flex-row">
+        <div class="logo flex-row" @click="showModal=true">
           <b>TMach</b><span>®</span>
         </div>
         <div class="flex-row">
@@ -58,6 +58,17 @@
         </Content>
       </Layout>
     </Layout>
+    <Modal v-model="showModal" :closable="false" :mask-closable="false"  width="360" footer-hide>
+      <Form :label-width="120">
+        <FormItem style="margin-top: 10px">
+          <b slot="label">Cypress版本：</b>
+          <p>3.5.0</p>
+        </FormItem>
+      </Form>
+      <p style="text-align: center">
+        <Button type="primary"  @click="showModal = false">关闭</Button>
+      </p>
+    </Modal>
   </Layout>
 </template>
 <script>
@@ -72,6 +83,7 @@ export default {
   components: { jobMsgComponent, Countdown },
   data () {
     return {
+      showModal:false,
       isCollapsed: true,
       username: sessionStorage.username,
       totalTime: 30,
@@ -228,6 +240,7 @@ export default {
       width: 7em;
       height: 4em;
       padding: 0 0.8em;
+      cursor: pointer;
       color: @logoColor;
       font-weight: @logoWeight;
       b {
