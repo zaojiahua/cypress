@@ -23,7 +23,7 @@
               <CheckboxGroup v-model="filterConditions">
                 <Row type="flex">
                   <Col span="4" v-for="(item, index) in filterData[column.key]" :key="item.id">
-                    <Checkbox :label="column.key + ':' + index + ':' + item[column.item_key] + ':' + item.id">
+                    <Checkbox :label="column.key + ':000:' + item[column.item_key] + ':' + item.id">
                       <span>{{ item[column.item_key] }}</span>
                     </Checkbox>
                   </Col>
