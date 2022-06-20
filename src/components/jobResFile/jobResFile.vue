@@ -100,8 +100,13 @@ export default {
   methods: {
     beforeUpload(file) {
       let reader = new FileReader()
+      let reg = /[^\u0000-\u00FF]/g;
+      if(reg.test(file.name)){
+        this.$Message.warning("上传文件名不能包含汉字，请进行修改后重新上传")
+        return false
+      }
       if (this.resFilesCopyName.indexOf(file.name) !== -1){
-        this.$Message.warning("上传文件重名请进行修改后重新上传")
+        this.$Message.warning("上传文件重名，请进行修改后重新上传")
       }else {
         reader.onload = () => {
           // this.$store.commit('files/handleResFiles', { //尾端添加
