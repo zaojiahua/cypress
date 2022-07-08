@@ -177,7 +177,7 @@ function outerDiagramInit(context) {
     'toolManager.mouseWheelBehavior': go.ToolManager.WheelZoom,
     'LinkDrawn': showLinkLabel,
     'LinkRelinked': showLinkLabel,
-    'undoManager.isEnabled': true,
+    'undoManager.isEnabled': true, // 开启撤销(ctrl+Z)与重做(ctrl+R)功能!!注意!!这个功能开启后会导致连线过程中松手引发的normal数据消失的问题
     mouseDrop: function (e) {
       finishDrop(e, null)
     },
