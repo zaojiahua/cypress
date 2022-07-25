@@ -152,6 +152,9 @@ export default {
     ...mapState('unit', ['unitLists', 'unitData']),
     cabinet_type () {
       return this.$store.state.job.jobInfo.cabinet_type
+    },
+    unit_group(){
+      return this.$store.state.job.jobInfo.unit_group
     }
   },
   watch: {
@@ -168,7 +171,10 @@ export default {
     },
     cabinet_type () {
         this.updateUnitLists(this.defaultUnitTemplateType_bk)
-      }
+      },
+    unit_group () {
+      this.updateUnitListsByUnitGroup(this.defaultUnitTemplateType_bk)
+    }
     },
   methods: {
     handleClick(key, func){
@@ -283,10 +289,38 @@ export default {
     updateUnitLists(unitTemplateType = undefined) { // 更新unit模板信息
       let cb_type
       if(this.selectJobType === 'InnerJob'){
-        cb_type = 'Tcab_3'
+        cb_type = 'Tcab_1'
       }else
         cb_type = this.jobInfo.cabinet_type ? this.jobInfo.cabinet_type:  'Tcab_1'
       let group = CONST.UNIT_MAPPING_DICT[cb_type]
+      getJobUnitsBodyDict(
+        {"unit_group__in": 'ReefList[' + group.join('{%,%}') + ']'}
+      ).then(({status, data: {unit}}) => {
+        if (status === 200) {
+          let unitLists = {}
+          unit.forEach((val, idx) => {
+            if (!(val.type in unitLists)) unitLists[val.type] = {}
+            unitLists[val.type][val.unit_name] = {
+              unit_id: val.id,
+              unit_content: val.unit_content
+            }
+          })
+          this.$store.commit('unit/setUnitLists', unitLists) // 保存unit模板的信息
+          if (unitTemplateType) this.getSelectedUnit(unitTemplateType) // 显示当前选中种类的unit模板
+        } else {
+          throw new Error('获取 Unit 列表失败')
+        }
+      }).catch(err => {
+        console.log(err)
+        this.$Message.error({ background: true, content: '获取 Unit 列表失败' })
+      })
+    },
+    updateUnitListsByUnitGroup(unitTemplateType = undefined) { // 更新unit模板信息
+      let cb_type
+      if(this.selectJobType === 'InnerJob'){
+        cb_type = 'Tcab_1'
+      }
+      let group = CONST.UNIT_MAPPING_DICT[cb_type].concat(this.unit_group)
       getJobUnitsBodyDict(
         {"unit_group__in": 'ReefList[' + group.join('{%,%}') + ']'}
       ).then(({status, data: {unit}}) => {
