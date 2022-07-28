@@ -25,13 +25,13 @@
               <Option v-for="item in basicData[basicData.customTag]" :value="item.id" :key="item.id">{{ item.custom_tag_name }}</Option>
             </Select>
           </FormItem>
-          <FormItem label="硬件标签" v-show="selectJobType === 'InnerJob'&&isJobEditor">
-            <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.unit_group" multiple :transfer="true">
-              <Option :value="4">龙门架机械臂</Option>
-              <Option :value="3">旋转机械臂</Option>
-              <Option :value="5">摄像头</Option>
-              <Option :value="7">双指</Option>
-              <Option :value="6">usb通断</Option>
+          <FormItem label="硬件标签" v-show="selectJobType === 'InnerJob'">
+            <Select :disabled="!editJobMsg&&isJobEditor" v-model="$store.state.job.jobInfo.unit_group" multiple :transfer="true">
+              <Option value="4">龙门架机械臂</Option>
+              <Option value="3">旋转机械臂</Option>
+              <Option value="5">摄像头</Option>
+              <Option value="7">双指</Option>
+              <Option value="6">usb通断</Option>
             </Select>
           </FormItem>
           <FormItem label="caseNo" prop="case_number">

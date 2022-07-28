@@ -316,6 +316,9 @@ export default {
       })
     },
     updateUnitListsByUnitGroup(unitTemplateType = undefined) { // 更新unit模板信息
+      if(this.selectJobType !== 'InnerJob'){
+        return
+      }
       let cb_type
       if(this.selectJobType === 'InnerJob'){
         cb_type = 'Tcab_1'
@@ -412,7 +415,10 @@ export default {
   mounted () {
     innerDiagramInit(this) // 挂载时初始化NormalEditor的画布与画板
     innerPaletteInit(this)
-    this.updateUnitLists() // 获取unit模板
+    if(this.selectJobType === 'InnerJob'){
+      this.updateUnitListsByUnitGroup()  // 获取unit模板 ==> inner
+    }else
+      this.updateUnitLists() // 获取unit模板  ===>  普通
     this.unitController = document.querySelector('#unit-controller')
   }
 }

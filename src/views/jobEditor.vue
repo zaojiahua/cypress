@@ -665,6 +665,7 @@ export default {
       })
       jobInfo.subsidiary_device_count = this.calcWingmanCount()
       jobInfo.author = parseInt( sessionStorage.id)
+      jobInfo.unit_group = jobInfo.unit_group.join(",")
       // 创建新的标签
       if (shouldCreateNewTag('test_area', jobInfo)) {
         try {
