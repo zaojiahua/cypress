@@ -727,6 +727,7 @@ export default {
           setTimeout(() => {
             let jobInfo = this._.cloneDeep(this.jobInfo)
             jobInfo.author = parseInt(sessionStorage.id)
+            jobInfo.unit_group = jobInfo.unit_group.join(",")
             updateJobMsg(this.jobId, jobInfo).then(() => { // 更新用例信息
               this.$Message.info('修改成功')
               this.$store.commit('refreshJobList')

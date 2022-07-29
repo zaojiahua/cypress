@@ -323,7 +323,9 @@ export default {
       if(this.selectJobType === 'InnerJob'){
         cb_type = 'Tcab_1'
       }
-      let group = CONST.UNIT_MAPPING_DICT[cb_type].concat(this.unit_group)
+      let group = CONST.UNIT_MAPPING_DICT[cb_type]
+      if(this.unit_group&&this.unit_group.length>0)
+        group = group.concat(this.unit_group)
       getJobUnitsBodyDict(
         {"unit_group__in": 'ReefList[' + group.join('{%,%}') + ']'}
       ).then(({status, data: {unit}}) => {
