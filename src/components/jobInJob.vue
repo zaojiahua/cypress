@@ -19,6 +19,7 @@
 import jobListFilter from '../components/jobListFilter'
 import axios from '../api'
 import util from '../lib/util/validate.js'
+import CONST from '../constant/constant'
 import { serializer } from '../lib/util/jobListSerializer'
 import { getJobFlowList } from 'api/reef/request'
 
@@ -50,6 +51,10 @@ export default {
         {
           title: '自定义标签',
           key: 'custom_tag'
+        },
+        {
+          title: '硬件标签',
+          key: 'unit_group'
         },
         {
           title: '作者',
@@ -110,6 +115,7 @@ export default {
         'description,' +
         'job_name,' +
         'job_type,' +
+        'unit_group,' +
         'rom_version,rom_version.id,' +
         'android_version,android_version.id,' +
         'custom_tag,custom_tag.custom_tag_name,custom_tag.id,' +
@@ -148,12 +154,18 @@ export default {
               jobPhoneModes.push(jobPhoneMode.phone_model_name)
             })
 
+            let unitGroup = []
+            if(job.unit_group){
+              job.unit_group.split(',').forEach(unit=>{
+                unitGroup.push(CONST.UNIT_GROUP_DICT[unit])
+              })
+            }
             job.author = job.author.username
 
             job.test_area = jobTestAreas.join(',')
             job.custom_tag = jobCustomTags.join(',')
             job.phone_model = jobPhoneModes.join(',')
-
+            job.unit_group = unitGroup.join(',')
           })
         } else {
           this.$Message.error({
