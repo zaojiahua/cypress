@@ -7,6 +7,7 @@ export default {
     START: '#064973',
     SWITCH: '#768BB9',
     NORMAL: '#F76132',
+    COMBO: '#F76132',
     JOB: '#50A5F4',
     END: '#313131',
     FAIL: '#ec9139',
@@ -14,6 +15,7 @@ export default {
     ABNORMAL: '#818286',
     FINISH: '#29BB87',
     UNFINISHED: '#F76132',
+    FINISH_COMBO: '#1ABCB8',
     UNIT: '#338FF0',
     GROUP: '#50A5F4',
     RESULT: '#3AFFF3', // 作为最终结果的unit
@@ -95,6 +97,82 @@ export default {
     'COMPLEX'
   ]),
   OUTER_PALETTE_MODEL: [
+    {
+      category: 'normalBlock',
+      text: 'Normal',
+      unitLists: {
+        'class': 'GraphLinksModel',
+        'linkFromPortIdProperty': 'fromPort',
+        'linkToPortIdProperty': 'toPort',
+        'nodeDataArray': [{
+          'category': 'Start',
+          'text': 'Entry',
+          'key': -1
+        }, {
+          'category': 'UnitList',
+          'text': 'UnitList',
+          'isGroup': true,
+          'key': -2
+        }, {
+          'category': 'End',
+          'text': 'Exit',
+          'key': -3
+        }],
+        'linkDataArray': [{
+          'from': -1,
+          'to': -2,
+          'fromPort': 'R',
+          'toPort': 'L'
+        }, {
+          'from': -2,
+          'to': -3,
+          'fromPort': 'R',
+          'toPort': 'L'
+        }]
+      }
+    },
+    { category: 'Job', text: 'Job' },
+    { category: 'switchBlock', text: 'Switch' },
+    { category: 'Abnormal', text: 'Abnormal' },
+    { category: 'Success', text: 'Success' },
+    { category: 'Fail', text: 'Fail' },
+    { category: 'End', text: 'End' }
+  ],
+  OUTER_PALETTE_MODEL_WITH_COMBO: [
+    {
+      category: 'comboBlock',
+      text: 'Combo',
+      unitLists: {
+        'class': 'GraphLinksModel',
+        'linkFromPortIdProperty': 'fromPort',
+        'linkToPortIdProperty': 'toPort',
+        'nodeDataArray': [{
+          'category': 'Start',
+          'text': 'Entry',
+          'key': -1
+        }, {
+          'category': 'UnitList',
+          'text': 'UnitList',
+          'isGroup': true,
+          'key': -2
+        }, {
+          'category': 'End',
+          'text': 'Exit',
+          'key': -3
+        }],
+        'linkDataArray': [{
+          'from': -1,
+          'to': -2,
+          'fromPort': 'R',
+          'toPort': 'L'
+        }, {
+          'from': -2,
+          'to': -3,
+          'fromPort': 'R',
+          'toPort': 'L'
+        }]
+      }
+    },
     {
       category: 'normalBlock',
       text: 'Normal',

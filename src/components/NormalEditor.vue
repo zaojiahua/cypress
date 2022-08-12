@@ -254,7 +254,11 @@ export default {
         if (units.length === 0 || units.some(item => item.completed === false)) { // 如果没有unit或存在未完成的unit
           this.curNormalData.color = CONST.COLORS.UNFINISHED // 标识normal为未完成的红色
         } else { // 否则
-          this.curNormalData.color = CONST.COLORS.FINISH // 标识normal为已完成的绿色
+          if(this.curNormalData.category === 'normalBlock'){
+            this.curNormalData.color = CONST.COLORS.FINISH // 标识normal为已完成的绿色
+          }else if(this.curNormalData.category === 'comboBlock'){
+            this.curNormalData.color = CONST.COLORS.FINISH_COMBO // 标识combo为已完成的颜色
+          }
         }
         if (!this._normalRules()) this.curNormalData.color = CONST.COLORS.UNFINISHED
         this.$emit('saveNormalData', this._.cloneDeep(this.curNormalData)) // 将编辑完成后的normalData传递给jobEditor并触发保存操作

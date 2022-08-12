@@ -69,6 +69,7 @@
   </div>
 </template>
 <script>
+import go from 'gojs'
 import { init,setOuterDiagramData } from './JobEditorGoInit'
 import jobInJob from '_c/jobInJob'
 import jobResFile from '_c/jobResFile/jobResFile.vue'
@@ -155,6 +156,11 @@ export default {
             background: true,
             content: '无法为内嵌用例指定结果Block'
           })
+        }
+        if(val.job_type === 'ComboJob'){
+          this.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL_WITH_COMBO)  // 渲染带有combo的模板
+        }else {
+          this.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL)  // 重新渲染 不带 combo的模板
         }
       },
       deep: true

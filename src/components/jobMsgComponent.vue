@@ -338,7 +338,7 @@ export default {
       },
       job: util.validate(jobSerializer, {}),
       isConflicted: false,
-      jobTypes: { // 用例类型, 用于级联选择器
+      jobTypes: !this.isTest ? { // 用例类型, 用于级联选择器
         InnerJob: [
           {
             value: 'InnerJob',
@@ -350,6 +350,40 @@ export default {
           {
             value: 'Joblib',
             label: '功能测试',
+            children: []
+          },
+          {
+            value: 'PerfJob', // job_type
+            label: '性能测试',
+            children: [
+              {
+                value: 'TimeJob', // job_second_type
+                label: '响应时间'
+              },
+              {
+                value: 'SmoothJob',
+                label: '流畅度'
+              }
+            ]
+          }
+        ]
+      } : {
+        InnerJob: [
+          {
+            value: 'InnerJob',
+            label: '内嵌用例',
+            children: []
+          }
+        ],
+        norMalJob: [
+          {
+            value: 'Joblib',
+            label: '功能测试',
+            children: []
+          },
+          {
+            value: 'ComboJob',
+            label: 'combo',
             children: []
           },
           {
@@ -479,6 +513,9 @@ export default {
     },
     isAdmin (){
       return sessionStorage.groups && sessionStorage.groups.includes('Admin')
+    },
+    isTest (){
+      return sessionStorage.username === 'testreport@anhereef.com'
     },
     manufacturer () {
       return this.basicData[this.basicData.manufacturer]
