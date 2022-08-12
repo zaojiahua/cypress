@@ -49,6 +49,10 @@ export default {
       this.drawImg(val)
     },
     areasInfo (val) { // 传入选取信息时
+      this.startX = null
+      this.startY = null
+      this.endX = null
+      this.endY = null
       this.context2D.clearRect(0, 0, this.canvasW, this.canvasH) // 清空当前绘制的内容
       val.forEach((v, i) => {
         if (v.h <= 1 && v.w <= 1) { // 传入的是小数
