@@ -7,7 +7,7 @@
     </div>
     <!-- extra -->
     <div slot="extra">
-      <div v-show="tGuard" style="float: left;margin-right: 10px">
+      <div v-show="tGuard&&isShowTGuard" style="float: left;margin-right: 10px">
         <span>T-Guard：</span>
         <Switch false-color="#ff4949" v-model="tGuardToggle" @on-change="handleTGuard">
           <span slot="open">开</span>
@@ -61,6 +61,7 @@ export default {
   },
   computed: {
     ...mapState('unit', ['unitData']),
+    ...mapState('job', ['jobInfo']),
     unitItemsData: { // 在当前的Unit信息中提取Items的信息
       get () {
         if (!this.unitData.unitMsg) return
@@ -95,6 +96,9 @@ export default {
     directionSwitch(){
       if (!this.unitData.unitMsg) return
       return this.unitData.unitMsg.portrait
+    },
+    isShowTGuard(){
+      return this.jobInfo.job_type !== 'ComboJob';
     }
   },
   watch: {

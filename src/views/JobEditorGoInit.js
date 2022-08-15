@@ -272,6 +272,15 @@ function outerDiagramInit(context) {
     context.openNormalEditor = true
   }
 
+  const comboBlockTemplate = baseNodeTemplateForPort(CONST.COLORS.COMBO, 'Rectangle')
+  comboBlockTemplate.doubleClick = function (e, node) {
+    if (e.diagram instanceof go.Palette) return
+    let {data} = context._.cloneDeep(node)
+    context.$store.commit('job/handleNormalData', {action: 'set', data})
+    context.outerDiagram.div.firstElementChild.blur()  // 失去焦点，防止粘贴错误
+    context.openNormalEditor = true
+  }
+
   function deleteNode() { // 删除节点时同步更新配置信息
     return context.outerDiagram.selection.all(function ({data}) {
       if (data.category === 'normalBlock') {
@@ -308,6 +317,7 @@ function outerDiagramInit(context) {
   // Diagram下可以展示的node 节点的 Template 模版 （向 Diagram 注册 node Template）
   context.outerDiagram.nodeTemplateMap.add('normalBlock', normalBlockTemplate)
   context.outerDiagram.nodeTemplateMap.add('switchBlock', switchBlockTemplate)
+  context.outerDiagram.nodeTemplateMap.add('comboBlock', comboBlockTemplate)
   context.outerDiagram.nodeTemplateMap.add('Start', startTemplate)
   context.outerDiagram.nodeTemplateMap.add('End', endTemplate)
   context.outerDiagram.nodeTemplateMap.add('Fail', failTemplate)
@@ -324,6 +334,7 @@ function outerPaletteInit(context) {
       layout: MAKE(go.GridLayout, {wrappingColumn: 1, alignment: go.GridLayout.Location})
     }
   )
+  //OUTER_PALETTE_MODEL 左边的模板类型 默认是不带combo类型的
   context.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL)
 }
 
