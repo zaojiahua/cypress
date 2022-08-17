@@ -1,7 +1,7 @@
 import files from './files'
 
 let state = {
-  imgRecRate: 0.99, // 图片识别率
+  imgRecRate: 99, // 图片识别率  22/8/17改为整数=>99
   coordinates: [], // 选取区域的信息保存在这里
   absCoordinates: null, // 选点的位置(可以是相对或则比例（绝对）)
   offsetCoordinates: null // x,y偏移点的位置
@@ -42,7 +42,7 @@ let mutations = {
     }
     for (let key in areasData) {
       if (key === 'threshold') {
-        state.imgRecRate = areasData[key]
+        state.imgRecRate = areasData[key]*100
       }
       if (key.startsWith('area')) {
         let coordinate = {}
@@ -56,7 +56,7 @@ let mutations = {
 
 let getters = {
   imgRecRate (state) {
-    return state.imgRecRate * 100
+    return state.imgRecRate
   }
 }
 

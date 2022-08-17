@@ -223,7 +223,7 @@ export default {
         let nameInfo = this.tmachBlanks[0]
         let coordinateNum = 1
         let coordinateDataList = {} // 存放选区信息
-        coordinateDataList.threshold = this.imgRecRate // 图片识别率
+        coordinateDataList.threshold = (this.imgRecRate/100).toFixed(4) // 图片识别率
         for (let i = 0; i < this.coordinates.length; i++) {
           let area = 'area' + coordinateNum++
           let coordinateRowList = this.coordinates[i].coordinate_a.split(',').concat(this.coordinates[i].coordinate_b.split(',')).map(parseFloat)

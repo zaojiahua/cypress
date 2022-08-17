@@ -195,7 +195,7 @@ export default {
       }
       for (let key in areasData) {
         if (key === 'threshold') {
-          this.$store.commit('img/setImgRecRate', areasData[key])
+          this.$store.commit('img/setImgRecRate', areasData[key]*100)
         }
         if (key.startsWith('area')) {
           this.$store.commit('img/handleCoordinate', {
@@ -245,7 +245,7 @@ export default {
         this.addAreas()
       }else {
         // 新选取默认初始化识别率
-        this.$store.commit('img/setImgRecRate', 0.99)
+        this.$store.commit('img/setImgRecRate', 99)
       }
       if (this.isPicInput){
         this.parseSelectPoint()

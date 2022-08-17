@@ -68,10 +68,10 @@ export default {
     ]),
     imgRecRate: {
       get () {
-        return this.$store.state.img.imgRecRate * 100
+        return this.$store.state.img.imgRecRate
       },
       set (val) {
-        this.$store.commit('img/setImgRecRate', (val / 100).toFixed(4))
+        this.$store.commit('img/setImgRecRate', val)
       }
     }
   },
