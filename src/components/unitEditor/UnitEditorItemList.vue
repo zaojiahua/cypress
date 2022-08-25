@@ -149,6 +149,7 @@ export default {
   .unit-item-list-card {
     flex: 1;
     margin-bottom: 1em;
+    max-height: calc(50% + 2px);
     /deep/ .ivu-card-extra {
       top: 10px;
     }
