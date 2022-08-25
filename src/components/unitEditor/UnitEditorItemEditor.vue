@@ -281,8 +281,10 @@ export default {
       }
       // 检查是否存在空值
       for (let i = 0; i < this.tmachBlanks.length; i++) {
-        if (!this.tmachBlanks[i].content.trim()) flag = false
-        break
+        if (!this.tmachBlanks[i].content.trim()){
+          flag = false
+          break
+        }
       }
       // if(this.isAllowNull&&this.isInputPicture) {
       //   //inputPicture 部分允许填入空值
