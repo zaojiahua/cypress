@@ -251,7 +251,7 @@ export default {
         } else { // 否则取消右上角的黄色标识
           this.curNormalData.star = null
         }
-        if (units.length === 0 || units.some(item => item.completed === false)) { // 如果没有unit或存在未完成的unit
+        if (units.length === 0 || units.some(item => item.completed === false || (item.group===undefined))) { // 如果没有unit或存在未完成的unit或存在不在unitList中的unit
           this.curNormalData.color = CONST.COLORS.UNFINISHED // 标识normal为未完成的红色
         } else { // 否则
           if(this.curNormalData.category === 'normalBlock'){
