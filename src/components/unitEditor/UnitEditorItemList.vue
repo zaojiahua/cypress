@@ -54,7 +54,7 @@ export default {
   data () {
     return {
       ocrChoiceToggle: undefined,
-      tGuardToggle:undefined,
+      // tGuardToggle:undefined,
       directionToggle:undefined,
       curUnitItem: undefined
     }
@@ -99,15 +99,20 @@ export default {
     },
     isShowTGuard(){
       return this.jobInfo.job_type !== 'ComboJob';
+    },
+    tGuardToggle(){
+      return this.tGuard === 1
     }
   },
   watch: {
     ocrChoice (val) {
       this.ocrChoiceToggle = val === 1
     },
-    tGuard (val) {
-      this.tGuardToggle = val === 1
-    },
+    // tGuard (val) {
+    //   this.tGuardToggle = val === 1
+    //   console.log("this.tGuardToggle 开关")
+    //   console.log(this.tGuardToggle)
+    // },
     directionSwitch (val) {
       this.directionToggle = val === 1
     }
