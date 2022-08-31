@@ -157,13 +157,15 @@ export default {
             content: '无法为内嵌用例指定结果Block'
           })
         }
-        if(val.job_type === 'ComboJob'){
-          this.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL_WITH_COMBO)  // 渲染带有combo的模板
-        }else {
-          this.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL)  // 重新渲染 不带 combo的模板
-        }
       },
       deep: true
+    },
+    'jobInfo.job_type' (val) { // 当用例类型发生变动时刷新左侧..
+      if(val === 'ComboJob'){
+        this.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL_WITH_COMBO)  // 渲染带有combo的模板
+      }else {
+        this.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL)  // 重新渲染 不带 combo的模板
+      }
     },
     saving (val) { //监听saving字段
       if (!val && !this.autoSaveToggle) { // 保存动作结束时，且自动保存没有开启则跳转到jobList页面
