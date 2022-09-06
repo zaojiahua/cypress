@@ -28,6 +28,14 @@
           <span slot="close">横</span>
         </Switch>
       </div>
+      <div v-show="methodSelect" style="float: right;margin-left: 10px">
+        <span>检测：</span>
+        <Select v-model="methodSelect" style="width:90px" size="small">
+          <Option :value="1">按下算法</Option>
+          <Option :value="2">按下压感</Option>
+          <Option :value="3">图标膨胀</Option>
+        </Select>
+      </div>
     </div>
     <!-- body -->
     <transition-group name="item" tag="div" class="item-container">
@@ -102,6 +110,19 @@ export default {
     },
     tGuardToggle(){
       return this.tGuard === 1
+    },
+    methodSelect:{
+      get () {
+        return this.unitData.unitMsg.start_method
+      },
+      set(val){
+        let { unitMsg } = this._.cloneDeep(this.unitData)
+        unitMsg.start_method = val
+        this.$store.commit('unit/handleUnitData', {
+          action: 'setUnitMsg',
+          data: unitMsg
+        })
+      }
     }
   },
   watch: {
