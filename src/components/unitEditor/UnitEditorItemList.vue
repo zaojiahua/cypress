@@ -33,7 +33,7 @@
         <Select v-model="methodSelect" style="width:90px" size="small">
           <Option :value="1">按下算法</Option>
           <Option :value="2">按下压感</Option>
-          <Option :value="3">图标膨胀</Option>
+          <Option :value="3" v-show="showOption">图标膨胀</Option>
         </Select>
       </div>
     </div>
@@ -111,8 +111,14 @@ export default {
     tGuardToggle(){
       return this.tGuard === 1
     },
+    showOption(){
+      if (!this.unitData.unitMsg) return
+      let unitList = ['start_point_with_swipe_slow','start_point_with_icon']
+      return !unitList.includes(this.unitData.unitMsg.jobUnitName);
+    },
     methodSelect:{
       get () {
+        if (!this.unitData.unitMsg) return
         return this.unitData.unitMsg.start_method
       },
       set(val){
