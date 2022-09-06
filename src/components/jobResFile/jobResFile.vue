@@ -144,6 +144,9 @@ export default {
       this.resFilesCopy.splice(index, 1)
     },
     saveResFileChange(){
+      this.resFilesCopy.forEach((item,index)=>{
+        item.index = index
+      })
       this.$store.commit('files/handleResFiles', { action: 'setResFiles', data: this.resFilesCopy })
     },
     closeResFileModal () {
