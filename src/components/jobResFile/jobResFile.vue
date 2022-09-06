@@ -44,7 +44,7 @@ export default {
   },
   data () {
     return {
-      Accept: ".png,.jpg,.jpeg,.mp3,.mp4,.txt,.json,.apk,.log",//上传文件格式限制
+      Accept: ".png,.jpg,.jpeg,.mp3,.mp4,.txt,.json,.apk,.log,.sh,.py",//上传文件格式限制
       filesColumn: [
         {
 
