@@ -13,6 +13,7 @@ export default {
     FAIL: '#ec9139',
     SUCCESS: '#F65A6D',
     ABNORMAL: '#818286',
+    TERMINATE: '#67718A',
     FINISH: '#29BB87',
     UNFINISHED: '#F76132',
     FINISH_COMBO: '#1ABCB8',
@@ -213,6 +214,9 @@ export default {
     { category: 'Success', text: 'Success' },
     { category: 'Fail', text: 'Fail' },
     { category: 'End', text: 'End' }
+  ],
+  OUTER_PALETTE_MODEL_WITH_TERMINATE:[   //自己决定是否需要Terminate终点
+    { category: 'Terminate', text: 'Terminate' }
   ],
   BASIC_OUTER_DIAGRAM_MODEL: JSON.stringify({
     'class': 'GraphLinksModel',

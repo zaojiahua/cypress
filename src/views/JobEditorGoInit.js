@@ -208,6 +208,7 @@ function outerDiagramInit(context) {
   const failTemplate = failNodeTemplate(CONST.COLORS.FAIL)
   const successTemplate = successNodeTemplate(CONST.COLORS.SUCCESS)
   const abnormalTemplate = abnormalNodeTemplate(CONST.COLORS.ABNORMAL)
+  const terminateTemplate = abnormalNodeTemplate(CONST.COLORS.TERMINATE)
 
 
   // endTemplate.doubleClick = (e, node) => {
@@ -323,6 +324,7 @@ function outerDiagramInit(context) {
   context.outerDiagram.nodeTemplateMap.add('Fail', failTemplate)
   context.outerDiagram.nodeTemplateMap.add('Success', successTemplate)
   context.outerDiagram.nodeTemplateMap.add('Abnormal', abnormalTemplate)
+  context.outerDiagram.nodeTemplateMap.add('Terminate', terminateTemplate)
   context.outerDiagram.nodeTemplateMap.add('Job', jobBlockTemplate)
 }
 
@@ -335,7 +337,11 @@ function outerPaletteInit(context) {
     }
   )
   //OUTER_PALETTE_MODEL 左边的模板类型 默认是不带combo类型的
-  context.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL)
+  // OUTER_PALETTE_MODEL_WITH_TERMINATE 指的是TERMINATE类型的模板，inner不带此模板，通用用例带这个模板
+  if(context.selectJobType==='InnerJob')
+    context.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL)
+  else
+    context.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL.concat(CONST.OUTER_PALETTE_MODEL_WITH_TERMINATE))
 }
 
 export function innerDiagramInit(context) {
