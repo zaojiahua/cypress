@@ -394,6 +394,7 @@ export default {
         cabinet_type:job.cabinet_type,
         resource_data:job.matching_rule ? job.matching_rule.resource_data : [],
         unit_group:job.unit_group ? job.unit_group.split(",") : [],
+        is_support_parameter:job.is_support_parameter,
       }
       CONST.SIMPLE_JOB_KEY.forEach(val => {
         jobInfo[val] = job[val]

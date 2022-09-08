@@ -20,6 +20,12 @@
             <Cascader :disabled="!editJobMsg" :data="jobTypes[selectJobType]" v-model="curJobType"></Cascader>
             <Input v-model="jobTypeString" style="display: none;" disabled />
           </FormItem>
+          <FormItem label="输入参数">
+            <Select :disabled="!editJobMsg" v-model="jobParameter" :transfer="true">
+              <Option :value="0">不需要</Option>
+              <Option :value="1">需要</Option>
+            </Select>
+          </FormItem>
           <FormItem label="自定义标签" prop="custom_tag">
             <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.custom_tag" multiple placeholder="请选择" filterable allow-create>
               <Option v-for="item in basicData[basicData.customTag]" :value="item.id" :key="item.id">{{ item.custom_tag_name }}</Option>
@@ -495,6 +501,7 @@ export default {
         }
       ],
       cascaderIndex:1,
+      jobParameter:null,
     }
   },
   computed: {
@@ -546,6 +553,10 @@ export default {
       } else {
         this.curJobType.splice(1, 1)
       }
+      this.jobParameter = val.is_support_parameter ? 1 : 0
+    },
+    jobParameter(val){
+      this.jobInfo.is_support_parameter = !!val
     },
     resourceList(val){
       if(val.length>0)
