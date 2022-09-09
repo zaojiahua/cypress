@@ -495,6 +495,7 @@ export default {
         }
       ],
       cascaderIndex:1,
+      isTest:sessionStorage.username === 'testreport@anhereef.com'
     }
   },
   computed: {
@@ -513,9 +514,6 @@ export default {
     },
     isAdmin (){
       return sessionStorage.groups && sessionStorage.groups.includes('Admin')
-    },
-    isTest (){
-      return sessionStorage.username === 'testreport@anhereef.com'
     },
     manufacturer () {
       return this.basicData[this.basicData.manufacturer]
@@ -922,6 +920,9 @@ export default {
     }).catch(error=>{
       this.$Message.error({content:"获取app列表失败"+ error.response.data.message,duration:3})
     })
+  },
+  beforeCreate(){
+    this.isTest = sessionStorage.username === 'testreport@anhereef.com'
   }
 }
 </script>
