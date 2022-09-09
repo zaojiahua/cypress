@@ -9,7 +9,7 @@
         <Input v-model="switchBlockInfo.switchBlockName" placeholder="Enter something..."/>
       </FormItem>
       <FormItem label="最大循环次数">
-        <InputNumber v-model="switchBlockInfo.switchBlockTime" :min="1" :precision="0" :max="100"></InputNumber>
+        <Input v-model="switchBlockInfo.switchBlockTime" />
       </FormItem>
     </Form>
 
