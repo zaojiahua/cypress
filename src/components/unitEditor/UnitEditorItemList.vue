@@ -33,7 +33,8 @@
         <Select v-model="methodSelect" style="width:90px" size="small">
           <Option :value="1">按下算法</Option>
           <Option :value="2">按下压感</Option>
-          <Option :value="3" v-show="showOption">图标膨胀</Option>
+          <Option :value="3">抬起压感</Option>
+          <!--<Option :value="4" v-show="showOption">图标膨胀</Option>-->
         </Select>
       </div>
     </div>
