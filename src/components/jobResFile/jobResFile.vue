@@ -105,6 +105,11 @@ export default {
         this.$Message.warning("上传文件名不能包含汉字，请进行修改后重新上传")
         return false
       }
+      let tempArr = file.name.split(' ')
+      if (tempArr.length !== 1) {
+        this.$Message.warning("上传文件名不能包含空格，请进行修改后重新上传")
+        return false
+      }
       if (this.resFilesCopyName.indexOf(file.name) !== -1){
         this.$Message.warning("上传文件重名，请进行修改后重新上传")
       }else {
