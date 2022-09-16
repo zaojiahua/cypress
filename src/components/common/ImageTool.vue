@@ -9,6 +9,7 @@
           <li @click="savePic">保存图片到本地</li>
         </ul>
         <canvas id="image-tool-canvas" :height="canvasH" :width="canvasW"></canvas>
+        <canvas v-show="showMagnifier" width="200" height="200" style="position: absolute;left: 0;top: 0" id="magnifier"></canvas>
       </div>
     </div>
   </div>
@@ -33,7 +34,11 @@ export default {
       eventTypes: ['选区', '选点', '测距'],
       eventType: '选区', // 当前功能
       canvasToggle: false,
-      outputInfo: null
+      outputInfo: null,
+      //放大镜
+      showMagnifier:false,
+      selectorMagnifierCanvas:null,
+      canvasContext:null,
     }
   },
   computed: {
@@ -220,7 +225,7 @@ export default {
                 }
                 let areaW = (absoluteCoordinate.bottomRight.x - absoluteCoordinate.topLeft.x) / this.sizeRatio
                 let areaH = (absoluteCoordinate.bottomRight.y - absoluteCoordinate.topLeft.y) / this.sizeRatio
-                if (areaW > 10 || areaH > 10) {
+                if (areaW > 1 || areaH > 1) {
                   this.drawRect(absoluteCoordinate.topLeft.x / this.sizeRatio, absoluteCoordinate.topLeft.y / this.sizeRatio, areaW, areaH)
                   this.fillCircle(this.startX, this.startY, 4)
                   this.fillCircle(offsetX, offsetY, 4)
@@ -395,11 +400,48 @@ export default {
       a.download = "picture";
       a.click();
       window.URL.revokeObjectURL(url);
+    },
+    // 放大镜相关
+    handleshowMagnifier (event) {
+      switch (event.type) {
+        case 'keydown':
+          if (event.key === 'Control' || event.keyCode === 17) {
+            this.showMagnifier = !this.showMagnifier
+          }
+      }
+    },
+    magnifier (evt) {
+      if (!this.showMagnifier) return
+      let sx = evt.offsetX * this.sizeRatio  -100
+      let sy = evt.offsetY * this.sizeRatio  -100
+      let imgData = this.offscreenContext.getImageData(sx, sy, 200, 200)
+
+      this.selectorMagnifierCanvas.style.left = evt.offsetX - 210 + "px"
+      this.selectorMagnifierCanvas.style.top = evt.offsetY - 210  + "px"
+      this.selectorMagnifierCanvas.style.boxShadow ='0 0 5px #dcdcdc'
+      this.selectorMagnifierCanvas.style.zIndex = 1000
+
+      this.canvasContext.putImageData(imgData, 0, 0)
+      this.canvasContext.drawImage(this.selectorMagnifierCanvas, 0, 0)
+
+      let w = this.canvasContext.canvas.width
+      let h = this.canvasContext.canvas.height
+      //画一个十字架在画布的中心
+      this.canvasContext.beginPath()
+      this.canvasContext.moveTo(0, h/2)
+      this.canvasContext.lineTo(w, h/2)
+      this.canvasContext.moveTo(w/2, 0)
+      this.canvasContext.lineTo(w/2, h)
+      this.canvasContext.strokeStyle = '#F76132'
+      this.canvasContext.stroke()
+      this.canvasContext.restore()
     }
   },
   mounted () {
     this.canvas = document.querySelector('#image-tool-canvas')
     let menu = document.getElementById("right-menu")
+    this.selectorMagnifierCanvas = document.querySelector('#magnifier')
+    this.canvasContext = this.selectorMagnifierCanvas.getContext('2d')
     this.canvas.addEventListener('mousedown', (e)=>{
       menu.style.display = "none"
       if(e.button===0){
@@ -414,6 +456,13 @@ export default {
     this.canvas.addEventListener('mouseup', this.dispatchMouseEvent)
     this.canvas.addEventListener('mouseleave', this.dispatchMouseEvent)
     this.context2D = this.canvas.getContext('2d') // 使用canvas
+    this.canvas.addEventListener('mousemove', this.magnifier)
+    window.addEventListener('keydown', this.handleshowMagnifier)
+    window.addEventListener('keyup', this.handleshowMagnifier)
+  },
+  beforeDestroy () {
+    window.removeEventListener('keydown', this.handleshowMagnifier)
+    window.removeEventListener('keyup', this.handleshowMagnifier)
   }
 }
 </script>
