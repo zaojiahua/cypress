@@ -404,7 +404,7 @@ export default {
     // 放大镜相关
     handleshowMagnifier (event) {
       switch (event.type) {
-        case 'keydown':
+        case 'keyup':
           if (event.key === 'Control' || event.keyCode === 17) {
             this.showMagnifier = !this.showMagnifier
           }
