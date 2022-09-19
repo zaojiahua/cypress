@@ -33,12 +33,12 @@
           <div class="flow-class">{{item.name}}</div>
           <div v-show="edit" style="width: 20%; text-align: right">
             <Icon v-show="index!==0" type="md-arrow-up" :size="iconSize" @click="zIndexBottom(index)"/>
-            <Icon v-show="jobFlowList.length !== 1" type="ios-trash" :size="iconSize" @click="deleteJobFlow(index)"/>
-            <Icon v-handle type="ios-menu" :size="iconSize"/>
+            <Icon v-show="jobFlowList.length !== 1" type="ios-trash" :size="iconSize" @click="deleteJobFlow(index)" style="margin-left: 8px"/>
+            <Icon v-handle type="ios-menu" :size="iconSize" style="margin-left: 8px"/>
           </div>
           <div v-show="!edit" style="width: 20%; text-align: right">
             <Icon v-show="!isAdmin" type="ios-copy" :size="iconSize" @click="copyFlow(item)"/>
-            <Icon type="ios-create" :size="iconSize" @click="showFlowMsg(item)"/>
+            <Icon type="ios-create" :size="iconSize" @click="showFlowMsg(item)" style="margin-left: 8px"/>
           </div>
   <!--        <Dropdown v-show="!edit" triggexr="click" @on-click="flowHandleMenu" style=" width: 20%; text-align: right">-->
   <!--          <Icon :size="iconSize" type="md-more" @click="handleOpen(item)"/>-->
