@@ -162,11 +162,9 @@ export default {
     },
     'jobInfo.job_type' (val) { // 当用例类型发生变动时刷新左侧..
       if(val === 'ComboJob'){
-        this.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL_WITH_COMBO.concat(CONST.OUTER_PALETTE_MODEL_WITH_TERMINATE))  // 渲染带有combo的模板
-      }else if(val === 'InnerJob'){
-        this.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL)  // 重新渲染 不带 Terminate的模板
+        this.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL_WITH_COMBO)  // 渲染带有combo的模板
       }else {
-        this.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL.concat(CONST.OUTER_PALETTE_MODEL_WITH_TERMINATE))  // 重新渲染 不带 combo的模板
+        this.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL)  // 重新渲染 不带 combo的模板
       }
     },
     saving (val) { //监听saving字段

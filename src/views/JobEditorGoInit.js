@@ -208,26 +208,21 @@ function outerDiagramInit(context) {
   const failTemplate = failNodeTemplate(CONST.COLORS.FAIL)
   const successTemplate = successNodeTemplate(CONST.COLORS.SUCCESS)
   const abnormalTemplate = abnormalNodeTemplate(CONST.COLORS.ABNORMAL)
-  const terminateTemplate = abnormalNodeTemplate(CONST.COLORS.TERMINATE)
+  // const terminateTemplate = abnormalNodeTemplate(CONST.COLORS.TERMINATE)
 
 
-  // endTemplate.doubleClick = (e, node) => {
-  //   if (e.diagram instanceof go.Palette) return
-  //   if (node.data.text === 'End') {
-  //     context.outerDiagram.model.setDataProperty(node.data, 'text', 'Fail')
-  //     context.outerDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.FAIL)
-  //   } else if (node.data.text === 'Fail') {
-  //     context.outerDiagram.model.setDataProperty(node.data, 'text', 'Success')
-  //     context.outerDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.SUCCESS)
-  //   } else if (node.data.text === 'Success') {
-  //     context.outerDiagram.model.setDataProperty(node.data, 'text', 'Abnormal')
-  //     context.outerDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.ABNORMAL)
-  //   }
-  //   else {
-  //     context.outerDiagram.model.setDataProperty(node.data, 'text', 'End')
-  //     context.outerDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.END)
-  //   }
-  // }
+  abnormalTemplate.doubleClick = (e, node) => {
+    if (e.diagram instanceof go.Palette) return
+    if(context.selectJobType === 'InnerJob') return
+    if (node.data.text === 'Abnormal') {
+      context.outerDiagram.model.setDataProperty(node.data, 'text', 'Terminate')
+      context.outerDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.TERMINATE)
+    }
+    else if(node.data.text === 'Terminate') {
+      context.outerDiagram.model.setDataProperty(node.data, 'text', 'Abnormal')
+      context.outerDiagram.model.setDataProperty(node.data, 'color', CONST.COLORS.ABNORMAL)
+    }
+  }
 
   const switchBlockTemplate = baseNodeTemplateForPort(CONST.COLORS.SWITCH, 'Diamond')
   switchBlockTemplate.doubleClick = function (e, node) {
@@ -324,7 +319,7 @@ function outerDiagramInit(context) {
   context.outerDiagram.nodeTemplateMap.add('Fail', failTemplate)
   context.outerDiagram.nodeTemplateMap.add('Success', successTemplate)
   context.outerDiagram.nodeTemplateMap.add('Abnormal', abnormalTemplate)
-  context.outerDiagram.nodeTemplateMap.add('Terminate', terminateTemplate)
+  // context.outerDiagram.nodeTemplateMap.add('Terminate', terminateTemplate)
   context.outerDiagram.nodeTemplateMap.add('Job', jobBlockTemplate)
 }
 
@@ -336,12 +331,13 @@ function outerPaletteInit(context) {
       layout: MAKE(go.GridLayout, {wrappingColumn: 1, alignment: go.GridLayout.Location})
     }
   )
+  context.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL)
   //OUTER_PALETTE_MODEL 左边的模板类型 默认是不带combo类型的
   // OUTER_PALETTE_MODEL_WITH_TERMINATE 指的是TERMINATE类型的模板，inner不带此模板，通用用例带这个模板
-  if(context.selectJobType==='InnerJob')
-    context.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL)
-  else
-    context.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL.concat(CONST.OUTER_PALETTE_MODEL_WITH_TERMINATE))
+  // if(context.selectJobType==='InnerJob')
+  //   context.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL)
+  // else
+  //   context.outerPalette.model = new go.GraphLinksModel(CONST.OUTER_PALETTE_MODEL.concat(CONST.OUTER_PALETTE_MODEL_WITH_TERMINATE))
 }
 
 export function innerDiagramInit(context) {
