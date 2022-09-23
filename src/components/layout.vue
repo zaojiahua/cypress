@@ -62,7 +62,7 @@
       <Form :label-width="120">
         <FormItem style="margin-top: 10px">
           <b slot="label">Cypress版本：</b>
-          <p>3.7</p>
+          <p>3.8</p>
         </FormItem>
       </Form>
       <p style="text-align: center">
