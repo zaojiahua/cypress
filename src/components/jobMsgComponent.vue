@@ -49,7 +49,7 @@
           <FormItem label="用例说明" prop="description">
             <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.description" clearable placeholder="请输入说明信息" />
           </FormItem>
-          <Divider orientation="left" class="device-info-title" style="margin-top: 60px;">
+          <Divider class="device-info-title" style="margin-top: 60px;">
             <b>设备信息</b>
             <Button v-if="editJobMsg" type="info" @click="onSelectDevice">选取设备</Button>
           </Divider>
@@ -74,7 +74,7 @@
             </Select>
           </FormItem>
           <div v-show="selectJobType !== 'InnerJob'">
-            <Divider orientation="left" class="device-info-title" style="margin-top: 60px;">
+            <Divider class="device-info-title" style="margin-top: 60px;">
               <b>资源信息</b>
             </Divider>
             <FormItem label="测试柜类型" prop="cabinet_type">
@@ -90,7 +90,7 @@
             </FormItem>
           </div>
           <div v-show="isJobEditor">
-            <Divider orientation="left" class="device-info-title" style="margin-top: 60px;">
+            <Divider class="device-info-title" style="margin-top: 60px;">
               <b>流程图信息</b>
             </Divider>
             <FormItem label="名称" prop="flow_name">
