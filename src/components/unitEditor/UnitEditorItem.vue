@@ -68,7 +68,7 @@ export default {
     },
     isShowBtn () {
       let target = this.unitData.unitMsg.execCmdDict.execCmdList
-      return Boolean(target) && !Boolean(this.unitData.unitMsg.unitShowBtn)
+      return Boolean(target) && !Boolean(this.unitData.unitMsg.unitShowItemBtn)
     },
     isCompleted () {
       if (this.isUxInput && this.uxInputDefaultValue) {
