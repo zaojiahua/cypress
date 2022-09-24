@@ -124,9 +124,11 @@ export default {
         if (image.width > image.height) {
           this.picDom.style.width = '100%'
           this.picDom.style.maxWidth = '100%'
+          this.picDom.style.maxHeight= '100%'
         } else {
           this.picDom.style.height = '100%'
           this.picDom.style.maxHeight = '100%'
+          this.picDom.style.maxWidth = '100%'
         }
       }
     },
