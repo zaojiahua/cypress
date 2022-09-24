@@ -15,8 +15,13 @@
     </div>
     <div v-show="editing" class="item-editing">
       <div>
+        <ScreenShot
+          v-if="showScreenShot&&isShowBtn"
+          ref="screenShot"
+          @handleImgName="setName"
+        ></ScreenShot>
         <div v-if="showInput">
-          <Input
+          <Input style="margin-bottom: 1em"
             v-for="(blank, index) in tmachBlanks"
             :key="index"
             v-model="tmachBlanks[index].content"
@@ -47,11 +52,6 @@
             </div>
           </AutoComplete>
         </div>
-        <ScreenShot
-          v-if="showScreenShot&&isShowBtn"
-          ref="screenShot"
-          @handleImgName="setName"
-        ></ScreenShot>
         <FeaturePoint
           v-if="showFeaturePoint"
         ></FeaturePoint>
@@ -502,6 +502,7 @@ export default {
       flex-direction: column;
       justify-content: space-between;
       height: 100%;
+      overflow-y: auto;
       & > div:first-child {
         margin-bottom: 1em;
         & > * {
