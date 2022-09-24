@@ -1,9 +1,6 @@
 <template>
-  <Card class="screen-shot-container">
+  <div class="screen-shot-container">
     <!-- title -->
-    <div slot="title">
-      <Divider orientation="left" style="margin: 0;">获取图片</Divider>
-    </div>
     <!-- body -->
     <div class="screen-shot-body">
       <Table
@@ -42,7 +39,7 @@
         </Dropdown> -->
       </div>
     </div>
-  </Card>
+  </div>
 </template>
 
 <script>
