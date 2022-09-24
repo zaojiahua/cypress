@@ -16,6 +16,7 @@
 </template>
 <script>
 import { dataURLtoBlob } from '../../lib/tools'
+import { mapGetters, mapState } from 'vuex'
 export default {
   name: 'ImageTool',
   props: {
@@ -42,6 +43,7 @@ export default {
     }
   },
   computed: {
+    ...mapGetters('item', ['itemType']),
     offsetString () {
       if (this.outputInfo && this.outputInfo.offset) {
         return `offsetX: ${this.outputInfo.offset.offsetX}, offsetY: ${this.outputInfo.offset.offsetY}`
@@ -50,6 +52,12 @@ export default {
     }
   },
   watch: {
+    itemType(val){
+      if(val==='picInput'){
+        this.eventType  = '选点'
+      }else
+        this.eventType  = '选区'
+    },
     imgSrc (val) {
       this.drawImg(val)
     },
