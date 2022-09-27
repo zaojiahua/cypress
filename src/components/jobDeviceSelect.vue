@@ -186,12 +186,16 @@ export default {
       localStorage.setItem('device-management:DEFAULT_DEVICE_COLUMN', this.deviceColumnChecked.join(','))
       localStorage.setItem('device-management:DEFAULT_PAGE_SIZE', this.pageSize)
       if (save) {
-        this.$store.commit('device/setDeviceInfo', this.deviceSelected)
+        this.$store.commit('device/setJobMsgDeviceInfo', this.deviceSelected)
+        if(!this.isJobDeviceMsg){
+          this.$store.commit('device/setDeviceInfo', this.deviceSelected)
+        }
         if(this.isControlDevice){
           this.$store.commit('device/setReleaseDeviceId', this.deviceSelected.id)
         }
       }
       this.$store.commit('device/setSelectDevice', false)
+      this.$store.commit('device/setIsJobDeviceMsg', false)
     },
     select (currentRow, oldCurrentRow) {
       this.deviceSelected = currentRow
@@ -296,7 +300,8 @@ export default {
   computed: {
     ...mapState('device', [
       'selectDevice',
-      'isControlDevice'
+      'isControlDevice',
+      'isJobDeviceMsg'
     ])
   },
   watch: {

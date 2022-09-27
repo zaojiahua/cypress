@@ -656,6 +656,7 @@ export default {
     },
     clearDevice(){
       this.$store.commit('device/clearDeviceInfo')
+      this.$store.commit('device/clearJobMsgDeviceInfo')
       this.$store.commit('device/clearPreDeviceInfo')
       this.$store.commit('device/setReleaseDeviceId')
     },
@@ -985,8 +986,10 @@ export default {
       this.$store.commit('job/setDuplicateId', null)
     })
   },
-  destroyed(){
+  async destroyed(){
     this.$Notice.destroy()
+    await this.clearData()
+    this.clearDevice()
   }
 }
 </script>

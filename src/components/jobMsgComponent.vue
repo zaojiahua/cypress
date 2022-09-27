@@ -509,7 +509,7 @@ export default {
     ...mapState(['showDrawer', 'basicData']),
     ...mapState('job', ['jobInfo', 'duplicateId', 'duplicateLabel','jobFlowInfo','selectJobType','cabinetList','resourceList','isClearJobInfo']),
     ...mapGetters('job', ['jobId']),
-    ...mapState('device', ['deviceInfo', 'preDeviceInfo', 'countdown', 'isControlDevice']),
+    ...mapState('device', ['deviceInfo','jobMsgDeviceInfo', 'preDeviceInfo', 'countdown', 'isControlDevice']),
     isJobEditor () { // 是否在 JobEditor 页面
       return this.$route.name === 'jobEditor'
     },
@@ -575,6 +575,8 @@ export default {
     },
     deviceInfo (newVal, oldVal) { // 设备信息变化时检测是否和已填信息发生冲突并进行处理
       this.$store.commit('device/setPreDeviceInfo', oldVal)
+    },
+    jobMsgDeviceInfo (newVal, oldVal) { // 设备信息变化时检测是否和已填信息发生冲突并进行处理
       this.checkConflict(false, true)
     },
     'jobInfo.manufacturer' (val) { // 当厂商发生变动时刷新列表
@@ -599,6 +601,7 @@ export default {
     },
     onSelectDevice(){
       this.$store.commit('device/setSelectDevice')
+      this.$store.commit('device/setIsJobDeviceMsg',true)
       this.$store.commit('device/setControlDeviceFlag')
     },
     async getcabinetList(){
@@ -801,22 +804,22 @@ export default {
       this.isConflicted = !this.isConflicted
     },
     deviceInfoAppend () { // 发生冲突后将选取的设备信息追加
-      if (!this.phoneModelFlag) this.jobInfo.phone_models.push(this.deviceInfo.phone_model_id)
-      if (!this.romVersionFlag) this.jobInfo.rom_version.push(this.deviceInfo.rom_version_id)
-      if (!this.androidVersionFlag) this.jobInfo.android_version.push(this.deviceInfo.android_version_id)
+      if (!this.phoneModelFlag) this.jobInfo.phone_models.push(this.jobMsgDeviceInfo.phone_model_id)
+      if (!this.romVersionFlag) this.jobInfo.rom_version.push(this.jobMsgDeviceInfo.rom_version_id)
+      if (!this.androidVersionFlag) this.jobInfo.android_version.push(this.jobMsgDeviceInfo.android_version_id)
       if(this.isControlDevice)
         this.controlDevice()
       this.handleConflict()
     },
     deviceInfoReplace (toggle = true) { // 发生冲突后用选取的设备信息替换原设备信息
-      if (!this.deviceInfo) return
-      this.$set(this.jobInfo, 'manufacturer', this.deviceInfo.manufacturer_id)
+      if (!this.jobMsgDeviceInfo) return
+      this.$set(this.jobInfo, 'manufacturer', this.jobMsgDeviceInfo.manufacturer_id)
       this.$set(this.jobInfo, 'phone_models', [])
-      this.jobInfo.phone_models.push(this.deviceInfo.phone_model_id)
+      this.jobInfo.phone_models.push(this.jobMsgDeviceInfo.phone_model_id)
       this.$set(this.jobInfo, 'rom_version', [])
-      this.jobInfo.rom_version.push(this.deviceInfo.rom_version_id)
+      this.jobInfo.rom_version.push(this.jobMsgDeviceInfo.rom_version_id)
       this.$set(this.jobInfo, 'android_version', [])
-      this.jobInfo.android_version.push(this.deviceInfo.android_version_id)
+      this.jobInfo.android_version.push(this.jobMsgDeviceInfo.android_version_id)
       if(this.isControlDevice)
         this.controlDevice()
       if (toggle) this.handleConflict()
@@ -841,13 +844,13 @@ export default {
       })
     },
     async checkConflict (formToggle, deviceToggle) { // 检测选中的设备和用例信息是否有冲突
-      if (!this.jobInfo || !this.deviceInfo) return
+      if (!this.jobInfo || !this.jobMsgDeviceInfo) return
       if (deviceToggle) { // 选取设备时
         if (!this.jobInfo.manufacturer) {
           this.deviceInfoReplace(false)
           return
         }
-        if (this.jobInfo.manufacturer !== this.deviceInfo.manufacturer_id) { // 厂商不一样时只能替换
+        if (this.jobInfo.manufacturer !== this.jobMsgDeviceInfo.manufacturer_id) { // 厂商不一样时只能替换
           this.canAppend = false
           this.handleConflict()
           return
@@ -858,15 +861,15 @@ export default {
         this.phoneModelFlag = true
         this.romVersionFlag = true
         this.androidVersionFlag = true
-        if (!this.jobInfo.phone_models.includes(this.deviceInfo.phone_model_id)) {
+        if (!this.jobInfo.phone_models.includes(this.jobMsgDeviceInfo.phone_model_id)) {
           this.phoneModelFlag = false
           same = false
         }
-        if (!this.jobInfo.rom_version.includes(this.deviceInfo.rom_version_id)) { // 检测 ROM 版本是否冲突
+        if (!this.jobInfo.rom_version.includes(this.jobMsgDeviceInfo.rom_version_id)) { // 检测 ROM 版本是否冲突
           this.romVersionFlag = false
           same = false
         }
-        if (!this.jobInfo.android_version.includes(this.deviceInfo.android_version_id)) { // 检测适配系统是否冲突
+        if (!this.jobInfo.android_version.includes(this.jobMsgDeviceInfo.android_version_id)) { // 检测适配系统是否冲突
           this.androidVersionFlag = false
           same = false
         }
@@ -877,15 +880,15 @@ export default {
         }
       }
       if (formToggle) { // 手动更新表单信息时
-        if (!this.deviceInfo) return
+        if (!this.jobMsgDeviceInfo) return
         if (
-          this.jobInfo.manufacturer !== this.deviceInfo.manufacturer_id ||
-          !this.jobInfo.phone_models.includes(this.deviceInfo.phone_model_id) ||
-          !this.jobInfo.rom_version.includes(this.deviceInfo.rom_version_id) ||
-          !this.jobInfo.android_version.includes(this.deviceInfo.android_version_id)
+          this.jobInfo.manufacturer !== this.jobMsgDeviceInfo.manufacturer_id ||
+          !this.jobInfo.phone_models.includes(this.jobMsgDeviceInfo.phone_model_id) ||
+          !this.jobInfo.rom_version.includes(this.jobMsgDeviceInfo.rom_version_id) ||
+          !this.jobInfo.android_version.includes(this.jobMsgDeviceInfo.android_version_id)
         ) {
           let { status } = await releaseOccupyDevice({
-            device_id_list: [this.deviceInfo.id]
+            device_id_list: [this.jobMsgDeviceInfo.id]
           })
           if (status === 200) {
             this.$Message.warning({
