@@ -227,7 +227,7 @@ export default {
         data: itemData
       })
       let { pic, area, content } = itemData.itemContent
-      if (pic) { // item 有图片就展示
+      if (pic&&this.resFilesName.indexOf(pic)!==-1) { // item 有图片就展示
         this.$store.commit('files/handleCurFile', {
           action: 'setCurFile',
           data: {
