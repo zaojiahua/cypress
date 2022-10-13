@@ -430,9 +430,9 @@ export default {
               _this.autoSaveToggle = false
               _this.$router.push({ path: '/jobList' })
               // this.$store.commit('setCurPage', 1)
-              _this.$Notice.destroy()
-              _this.clearData()
-              _this.clearDevice()
+              // _this.$Notice.destroy()
+              // _this.clearData()
+              // _this.clearDevice()
             }
           })
           return
