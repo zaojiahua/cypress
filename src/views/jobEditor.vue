@@ -616,7 +616,7 @@ export default {
                             })
                             return
                           }
-                          await this.clearData()
+                          // await this.clearData()
                           this.$Modal.remove()
                           break
                         case 27: // 监听esc 触发 取消
@@ -642,7 +642,7 @@ export default {
                   return
                 }
                 // console.log("onOk")
-                await this.clearData()
+                // await this.clearData()
               }
             })
             // console.log("save as end")
@@ -651,8 +651,8 @@ export default {
         }
       }
       this.$Notice.destroy()
-      await this.clearData()
-      this.clearDevice()
+      // await this.clearData()
+      // this.clearDevice()
     },
     clearDevice(){
       this.$store.commit('device/clearDeviceInfo')
