@@ -60,6 +60,7 @@ export default {
     },
     imgSrc (val) {
       this.drawImg(val)
+      this.showMagnifier = false
     },
     areasInfo (val) { // 传入选取信息时
       this.startX = null
