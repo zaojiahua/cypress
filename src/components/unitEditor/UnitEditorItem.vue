@@ -9,8 +9,8 @@
       </span>
     </p>
     <div class="btn-list" v-if="isPicInput&&isShowBtn">
-      <span class="add-new-item" @click.stop="handleItem(true)"> + </span>
       <span class="remove-item" :class="disable ? '' : 'disable'" @click.stop="handleItem(false)"> - </span>
+      <span class="add-new-item" @click.stop="handleItem(true)"> + </span>
     </div>
   </div>
 </template>
@@ -334,11 +334,11 @@ export default {
     }
     .add-new-item {
       background: rgb(48, 207, 61);
-      margin-right: 6px;
       cursor: copy;
     }
     .remove-item {
       background: rgb(214, 50, 32);
+      margin-right: 6px;
       cursor: default;
     }
     .disable {

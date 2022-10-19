@@ -27,6 +27,14 @@
             v-model="tmachBlanks[index].content"
             clearable
           />
+          <div v-show="isShowInputBtn" style="text-align: right">
+            <Button style="margin-right: 16px" @click="onRemoveTmachBlanks">
+              <Icon type="ios-remove-circle-outline" size="20" />
+            </Button>
+            <Button @click="onAddTmachBlanks">
+              <Icon type="ios-add-circle-outline" size="20" />
+            </Button>
+          </div>
         </div>
         <div v-if="showAutoComplete">
           <AutoComplete
@@ -132,6 +140,10 @@ export default {
       else
         return !Boolean(this.unitData.unitMsg.unitShowBtn && (this.itemType==="picInput"))
     },
+    isShowInputBtn(){  // 部分滑动类可自己添加多个坐标点---加减按钮对应增删input框  0： false  1：true
+      let target = this.unitData.unitMsg.execCmdDict.execCmdList
+      return Boolean(target) && Boolean(this.unitData.unitMsg.unitShowInputBtn)
+    },
     loc () { // 当前编辑中的unitItem的位置, eg: -2_-4_inputImgFile / -3_-5_4
       return [this.normalKey, this.unitKey, this.itemName].join('_')
     }
@@ -186,6 +198,24 @@ export default {
     }
   },
   methods: {
+    onAddTmachBlanks(){
+      this.tmachBlanks.push({
+        content: "",
+        suffix: ""
+      })
+      this.itemData.itemContent.content = this.itemData.itemContent.content + " Tmach "
+    },
+    onRemoveTmachBlanks(){
+      if(this.tmachBlanks.length===2){
+        this.$Message.info("至少需要一个点的坐标！")
+        return
+      }
+      this.tmachBlanks.pop()
+      let arr = this.itemData.itemContent.content.split(" ")
+      arr.pop()
+      arr.pop()
+      this.itemData.itemContent.content = arr.join(" ")
+    },
     handleTmachBlanks (rawData) { // 传入原始数组, 返回修改后的tmach数组
       let child = '<copy2rdsDatPath>'
       let suffix = this.saveToFinalResult ? child : '' // 如果要保存到最终结果, 后缀需要添加宏命令'<copy2rdsDatPath>'
