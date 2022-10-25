@@ -51,7 +51,7 @@
         <RawUnit></RawUnit>
       </div>
       <div class="pane">
-        <ItemEditor
+        <ItemEditor ref="unitItemEditor"
           @updateUnitItem="updateUnitItem"
           @on-change-unit-name="changeUnitName"
         ></ItemEditor>
@@ -282,6 +282,7 @@ export default {
       this.unitItems.forEach(item => { // 使每一个unitItem处于非点击状态
         item.isClicked = false
       })
+      this.$refs.unitItemEditor.tmachIndex = 0
       this.$emit('closeUnitEditor') // 关闭unitEditor
       this.$store.commit('item/handleAreasInfo', {action: 'clear'}) // 清除当前选区信息
       this.$store.commit('item/handleShowItemEditor', false) // 关闭itemEditor
