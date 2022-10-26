@@ -460,7 +460,7 @@ export function innerDiagramInit(context) {
     } else {
       context.isDiagram = true
       context.curUnitKey = data.key
-      context.dropdownMenuData[0].visible = !data.star
+      // context.dropdownMenuData[0].visible = !data.star
     }
     context.unitController.style.top = `${e.event.y - 50}px`
     context.unitController.style.left = `${e.event.x}px`

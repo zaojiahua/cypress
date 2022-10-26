@@ -127,7 +127,7 @@ export default {
             {name:"非结果unit",key:0},
             {name:"结果unit",key:1}
           ],
-          visible: true, // 默认不允许
+          visible: false, // 放开所有限制
           func: this.setUnitCategory
 
         },
