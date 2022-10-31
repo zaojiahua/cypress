@@ -243,7 +243,7 @@ export default {
           this.$Message.info({content:"执行失败",duration:8})
         }else {
           this.loading = false
-         this.$Message.info({content:"执行异常",duration:8})
+         this.$Message.info({content:"执行异常 " + response.data.result,duration:8})
         }
       } catch (e) {
         this.loading = false
