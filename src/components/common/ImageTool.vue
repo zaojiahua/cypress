@@ -414,7 +414,7 @@ export default {
     handleshowMagnifier (event) {
       switch (event.type) {
         case 'keyup':
-          if (event.key === 'Control' || event.keyCode === 17) {
+          if (event.key === '=' || event.keyCode === 187) {
             this.showMagnifier = !this.showMagnifier
           }
       }
