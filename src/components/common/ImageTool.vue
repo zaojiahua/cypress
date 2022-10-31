@@ -339,11 +339,11 @@ export default {
                 this.context2D.clearRect(0, 0, this.canvasW, this.canvasH)
                 if (Math.abs(offsetX - this.startX) > 10 || Math.abs(offsetY - this.startY) > 10) {
                   this.drawTriangle(this.startX, this.startY, offsetX, offsetY)
-                  this.drawRect(0, 0, this.canvasW, 20, 'white')
+                  // this.drawRect(0, 0, this.canvasW, 20, 'white')
                   this.fillCircle(this.startX, this.startY, 4)
                   let tempOffsetX = ((offsetX - this.startX) / this.canvasW).toFixed(2)
                   let tempOffsetY = ((offsetY - this.startY) / this.canvasH).toFixed(2)
-                  this.fillText(`offsetX: ${tempOffsetX}, offsetY: ${tempOffsetY}`, 2, 5, 'black')
+                  // this.fillText(`offsetX: ${tempOffsetX}, offsetY: ${tempOffsetY}`, 2, 5, 'black')
                   this.outputInfo = {
                     offset: {
                       offsetX: tempOffsetX,
@@ -359,11 +359,11 @@ export default {
                 this.canvasToggle = false
                 if (Math.abs(offsetX - this.startX) > 10 || Math.abs(offsetY - this.startY) > 10) {
                   this.drawTriangle(this.startX, this.startY, offsetX, offsetY)
-                  this.drawRect(0, 0, this.canvasW, 20, 'white')
+                  // this.drawRect(0, 0, this.canvasW, 20, 'white')
                   this.fillCircle(this.startX, this.startY, 4)
                   let tempOffsetX = ((offsetX - this.startX) / this.canvasW).toFixed(2)
                   let tempOffsetY = ((offsetY - this.startY) / this.canvasH).toFixed(2)
-                  this.fillText(`offsetX: ${tempOffsetX}, offsetY: ${tempOffsetY}`, 2, 5, 'black')
+                  // this.fillText(`offsetX: ${tempOffsetX}, offsetY: ${tempOffsetY}`, 2, 5, 'black')
                   this.outputInfo = {
                     offset: {
                       offsetX: tempOffsetX,
