@@ -28,6 +28,13 @@
           <span slot="close">横</span>
         </Switch>
       </div>
+      <div v-show="saveSwitch" style="float: right;">
+        <span>用例结果成功时仍推送：</span>
+        <Switch false-color="#ff4949" v-model="saveToggle" @on-change="handleSave">
+          <span slot="open">开</span>
+          <span slot="close">关</span>
+        </Switch>
+      </div>
       <div v-show="methodSelect" style="float: right;margin-left: 10px">
         <span>检测：</span>
         <Select v-model="methodSelect" style="width:90px" size="small">
@@ -112,6 +119,13 @@ export default {
     tGuardToggle(){
       return this.tGuard === 1
     },
+    saveSwitch(){
+      if (!this.unitData.unitMsg) return
+      return this.unitData.unitMsg.save
+    },
+    saveToggle(){
+      return this.saveSwitch === 1
+    },
     showOption(){
       if (!this.unitData.unitMsg) return
       let unitList = ['start_point_with_swipe_slow','start_point_with_icon']
@@ -165,6 +179,14 @@ export default {
     handleDirection(val){
       let { unitMsg } = this._.cloneDeep(this.unitData)
       unitMsg.portrait = val ? 1 : 2
+      this.$store.commit('unit/handleUnitData', {
+        action: 'setUnitMsg',
+        data: unitMsg
+      })
+    },
+    handleSave(val){
+      let { unitMsg } = this._.cloneDeep(this.unitData)
+      unitMsg.save = val ? 1 : 2
       this.$store.commit('unit/handleUnitData', {
         action: 'setUnitMsg',
         data: unitMsg
