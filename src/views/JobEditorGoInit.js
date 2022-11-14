@@ -182,7 +182,8 @@ function outerDiagramInit(context) {
       finishDrop(e, null)
     },
     'commandHandler.canDeleteSelection': deleteNode,
-    'commandHandler.canCopySelection': canCopySelect
+    'commandHandler.canCopySelection': canCopySelect,
+    'commandHandler.canCutSelection': canCopySelect,
   })
 
   function canCopySelect() {
@@ -195,7 +196,7 @@ function outerDiagramInit(context) {
     })
     if (!flag) context.$Message.error({
       background: true,
-      content: 'Start不可以被复制'
+      content: 'Start不可以被复制或剪切'
     })
     return flag
   }
@@ -355,7 +356,8 @@ export function innerDiagramInit(context) {
       finishDrop(e, null)
     },
     'commandHandler.canDeleteSelection': deleteNode,
-    'commandHandler.canCopySelection': canCopySelect
+    'commandHandler.canCopySelection': canCopySelect,
+    'commandHandler.canCutSelection': canCopySelect,
   })
 
   function canCopySelect() { // 删除节点时同步更新配置信息
@@ -368,7 +370,7 @@ export function innerDiagramInit(context) {
     })
     if (!flag) context.$Message.error({
       background: true,
-      content: 'Entry,Exit 不可以被复制'
+      content: 'Entry,Exit 不可以被复制或剪切'
     })
     return flag
   }
