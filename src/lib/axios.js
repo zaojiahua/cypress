@@ -10,6 +10,7 @@ class HttpRequest {
   getInsideConfig () {
     return {
       baseURL: this.baseUrl,
+      timeout:60*1000,
       headers: {
         //
       }

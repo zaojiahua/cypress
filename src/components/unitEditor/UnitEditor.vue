@@ -233,6 +233,7 @@ export default {
         let response = await axios.request({
           url,
           method: 'post',
+          timeout:100*1000,
           data: data
         })
         if (response.data.result === 0) {
