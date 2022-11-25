@@ -86,7 +86,7 @@ export default {
       showModal:false,
       isCollapsed: true,
       username: sessionStorage.username,
-      totalTime: 30,
+      totalTime: 120,
       remindTime: 5
     }
   },
