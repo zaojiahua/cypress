@@ -95,6 +95,11 @@ export default {
     },
     resFilesCopy(val){
       this.resFilesCopyName = val.map(item => item.name)
+    },
+    resFiles(val){
+      if(this.showResFileModal){
+        this.resFilesCopy = [].concat(val)
+      }
     }
   },
   methods: {
