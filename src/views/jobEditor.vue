@@ -348,6 +348,9 @@ export default {
             if (name === 'FILES_NAME_CONFIG.json') continue // 移除老版本中遗留的文件，文件内容已经写入到start节点了
             if (this.dataURLtoFileFormat.indexOf(type) !== -1) {
               data.append('file', dataURLtoFile(file, name))
+            }else if (type=== 'apk') {
+              let blob = new Blob([file])
+              data.append('file', new File([blob], name, { type }))
             } else {
               data.append('file', new File([file], name, { type }))
             }
@@ -822,10 +825,15 @@ export default {
               if (file.data.type.startsWith('image') || file.data.type.startsWith('audio') || file.data.type.startsWith('video')) { // 图片则存放 dataURL
                 //开始读取指定的Blob中的内容。一旦完成，result属性中将包含一个data: URL格式的Base64字符串以表示所读取文件的内容,img通过加载这个地址,完成图片的加载
                 reader.readAsDataURL(file.data)
+              }else if( file.data.type === 'application/octet-stream'){  // apk 文件
+                if(filesData[index].type==='apk'){
+                  reader.readAsArrayBuffer(file.data)
+                }else {  //除了apk以外的其他格式，如log
+                  reader.readAsText(file.data)
+                }
               } else { // json 则存放 text
                 //开始读取指定的Blob中的内容。一旦完成，result属性中将包含一个字符串以表示所读取的文件内容。
                 reader.readAsText(file.data)
-
               }
               reader.onload = () => {   //在读取操作完成时触发
                 filesData[index].file = reader.result

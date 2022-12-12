@@ -44,7 +44,7 @@ export default {
   },
   data () {
     return {
-      Accept: ".png,.jpg,.jpeg,.mp3,.mp4,.txt,.json,.apk,.log,.sh,.py",//上传文件格式限制
+      Accept: ".png,.jpg,.jpeg,.mp3,.mp4,.txt,.json,.apk,.log,.py",//上传文件格式限制
       filesColumn: [
         {
 
@@ -135,9 +135,10 @@ export default {
         }
         if (file.type.startsWith(('image')) || file.type.startsWith('audio') || file.type.startsWith('video')) { // 图片则存放 dataURL
           reader.readAsDataURL(file)
+        } else if (file.name.split(".")[1]==='apk'){
+          reader.readAsArrayBuffer(file)
         } else { // json 则存放 text
           reader.readAsText(file)
-
         }
       }
       return false
