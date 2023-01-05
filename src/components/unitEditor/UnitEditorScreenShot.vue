@@ -122,6 +122,11 @@ export default {
         let deviceCondition = ''
         if(this.unitData.unitMsg && this.unitData.unitMsg.assistDevice)
           deviceCondition = '&assist_device=' + this.unitData.unitMsg.assistDevice
+        if(this.unitData.unitMsg && this.unitData.unitMsg.camera_rotate ){
+          if(this.unitData.unitMsg.camera_rotate!=="-1"){
+            deviceCondition = deviceCondition +'&camera_rotate=' + this.unitData.unitMsg.camera_rotate
+          }
+        }
         let screenshot = cypressGet({
           url: `http://${screenShotParams.cabinet_ip}:5000/pane/snap_shot/?device_label=${screenShotParams.device_label}&device_ip=${screenShotParams.device_ip}&picture_name=${screenShotParams.picture_name}${deviceCondition}`,
           responseType: 'blob'
