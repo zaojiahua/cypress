@@ -297,7 +297,8 @@ export default {
     "Tcab_5se": [1, 4, 5],
     "Tcab_5D": [1, 4, 5, 7],
     "Tcab_5pro":[1, 4, 5, 6],
-    "ABot":[1, 4, 5, 7, 8]
+    "ABot":[1, 4, 5, 7, 8],
+    "Tcab_5D plus":[1, 4, 5, 7],
 
   },
   UNIT_GROUP_DICT:{
