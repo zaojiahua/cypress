@@ -7,22 +7,22 @@
         </div>
         <div class="flex-row">
           <div class="countdown" v-if="countdown">
-            距设备释放还有：
+            {{$t('layout.release')}}：
             <Countdown
               ref="countdown"
               :totalTime="totalTime" :remindTime="remindTime"
               @remind="remind" @timeout="releaseDevice"
             ></Countdown>
             <ButtonGroup vertical class="countdown-pane">
-              <Button icon="ios-trash-outline" long @click="releaseDevice(false)">提前释放</Button>
-              <Button icon="ios-add" long @click="extendTime">延期使用</Button>
+              <Button icon="ios-trash-outline" long @click="releaseDevice(false)">{{$t('layout.btn_1')}}</Button>
+              <Button icon="ios-add" long @click="extendTime">{{$t('layout.btn_2')}}</Button>
             </ButtonGroup>
           </div>
           <MenuItem name="1">
             {{ username }}
           </MenuItem>
           <MenuItem name="3" @click.native="logout">
-            登出
+            {{$t('layout.login_out')}}
             <Icon type="ios-exit-outline" size="24">
             </Icon>
           </MenuItem>
@@ -33,17 +33,17 @@
       <Sider collapsible :width="isCollapsed ? 78 : 110" v-model="isCollapsed" class="sider">
         <Menu :active-name="$route.name" ref="menu" theme="dark" width="auto"
         :class="['sider-menu', this.isCollapsed ? 'sider-menu-collapsed' : '']">
-          <MenuItem name="jobList" @click.native="viewJobList" title="用例管理">
+          <MenuItem name="jobList" @click.native="viewJobList" :title="$t('layout.jobManagement')">
             <Icon type="logo-buffer"></Icon>
-            <span>用例管理</span>
+            <span>{{$t('layout.jobManagement')}}</span>
           </MenuItem>
-          <MenuItem v-show="isNotAdmin()&&($route.name!=='jobEditor')" name="createJob" @click.native="viewJobCreate" title="用例编辑">
+          <MenuItem v-show="isNotAdmin()&&($route.name!=='jobEditor')" name="createJob" @click.native="viewJobCreate" :title="$t('layout.jobEdit')">
             <Icon type="ios-create"></Icon>
-            <span>用例编辑</span>
+            <span>{{$t('layout.jobEdit')}}</span>
           </MenuItem>
-          <MenuItem v-show="isNotAdmin()&&($route.name==='jobEditor')" name="jobEditor" @click.native="viewJobCreate" title="用例编辑">
+          <MenuItem v-show="isNotAdmin()&&($route.name==='jobEditor')" name="jobEditor" @click.native="viewJobCreate" :title="$t('layout.jobEdit')">
             <Icon type="ios-create"></Icon>
-            <span>用例编辑</span>
+            <span>{{$t('layout.jobEdit')}}</span>
           </MenuItem>
         </Menu>
       </Sider>
@@ -61,12 +61,12 @@
     <Modal v-model="showModal" :closable="false" :mask-closable="false"  width="360" footer-hide>
       <Form :label-width="120">
         <FormItem style="margin-top: 10px">
-          <b slot="label">Cypress版本：</b>
+          <b slot="label">Cypress version：</b>
           <p>3.8</p>
         </FormItem>
       </Form>
       <p style="text-align: center">
-        <Button type="primary"  @click="showModal = false">关闭</Button>
+        <Button type="primary"  @click="showModal = false">{{$t('public.btn_close')}}</Button>
       </p>
     </Modal>
   </Layout>
@@ -98,9 +98,10 @@ export default {
       return !sessionStorage.groups.includes('Admin')
     },
     logout () {
+      let _this = this
       if (this.isTrigger()) {
         this.$Modal.confirm({
-          title: '您确定要登出?',
+          title: _this.$t('layout.loginOutTit'),
           onOk: () => {
             this.$Loading.start()
             // 登出后不能通过后退键回到TMach操作页面中
@@ -109,7 +110,7 @@ export default {
               localStorage.removeItem(val)
             })
             this.$router.push({ name: 'login' })
-            this.$Message.success('登出成功!')
+            this.$Message.success(_this.$t('layout.loginOutSuccess'))
             this.$Loading.finish()
           }
         })
@@ -124,7 +125,7 @@ export default {
     },
     isTrigger() { // 当处于jobEditor时，页面跳转给予警告
       if (this.$route.name === 'jobEditor') {
-        return  window.confirm('确定要离开该页面吗？会导致编辑的内容丢失。')
+        return  window.confirm(this.$t('layout.title_1'))
       } else {
         return true
       }
@@ -136,20 +137,20 @@ export default {
         })
         if (status === 200 && auto) {
           this.$Notice.info({
-            title: '到期提醒',
-            desc: '占用时间耗尽，设备已自动释放',
+            title: this.$t('layout.modalTit_1'),
+            desc: this.$t('layout.modalTit_2'),
             duration: 0
           })
           this.$Modal.remove()
         } else if (status === 200 && !auto) {
           this.$Message.success({
             background: true,
-            content: '设备释放成功'
+            content: this.$t('layout.modalTit_3')
           })
         }
       } catch (error) {
         this.$Notice.error({
-          title: '设备释放失败',
+          title: this.$t('layout.modalTit_4'),
           duration: 0
         })
       } finally {
@@ -173,17 +174,17 @@ export default {
               this.$Message.success({
                 background: true,
                 // eslint-disable-next-line camelcase
-                content: `延期占用设备 ${device_name}`
+                content: this.$t('layout.modalTit_5')+` ${device_name}`
               })
             }
           }).catch(err=>{
             if(err.response.status>=500)
-              this.$Message.error("服务器错误")
+              this.$Message.error(this.$t('public.error_500'))
             else
-              this.$Message.error("延期占用失败")
+              this.$Message.error(this.$t('layout.modalTit_6'))
           })
         }else{
-          this.$Message.error({content:"设备为"+ response.data.status +"状态，无法延期",duration:6})
+          this.$Message.error({content:this.$t('layout.device')+ response.data.status +this.$t('layout.modalTit_7'),duration:6})
           this.$store.commit('device/setCountdown')
           this.$store.commit('device/clearDeviceInfo')
           this.$store.commit('device/clearPreDeviceInfo')
@@ -191,7 +192,7 @@ export default {
 
       }).catch(error=>{
         if(error.response.status>=500)
-          this.$Message.error("服务器错误")
+          this.$Message.error(this.$t('public.error_500'))
         else
           this.$Message.error({content:error.response.data.description,duration:6})
       })
@@ -199,10 +200,10 @@ export default {
     remind () {
       let _this = this
       this.$Modal.confirm({
-        title: '延期提醒',
-        content: `距自动释放设备还剩 ${this.remindTime} 分钟，要延长设备占用时间吗？`,
-        okText: '延期',
-        cancelText: '取消',
+        title: this.$t('layout.title_2'),
+        content: this.$t('layout.modalTit_8')+` ${this.remindTime} `+this.$t('layout.modalTit_9'),
+        okText: this.$t('layout.modalTit_10'),
+        cancelText: this.$t('public.btn_cancel'),
         async onOk () {
           _this.extendTime()
         }

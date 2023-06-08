@@ -1,16 +1,16 @@
 <template>
   <Modal v-model="jobModalShow" :closable="false" :mask-closable="false" :fullscreen="true">
     <div slot="header">
-      <p v-show="currentJobName === 'Job'">请选择您需要的InnerJob</p>
-      <p v-show="currentJobName !== 'Job'">当前选中的InnerJob为：<strong>{{ currentJobName }}</strong></p>
+      <p v-show="currentJobName === 'Job'">{{this.$t('jobFlow.tips_5')}}</p>
+      <p v-show="currentJobName !== 'Job'">{{this.$t('jobFlow.tips_6')}}：<strong>{{ currentJobName }}</strong></p>
     </div>
     <job-list-filter @getFilterParam="getFilterParam"></job-list-filter>
-    <p style="font-size: 12px;color: #999">提示：双击查看用例流程图</p>
+    <p style="font-size: 12px;color: #999">{{this.$t('jobFlow.tips_7')}}</p>
     <Table ref="jobTable" highlight-row border height="520" :columns="columns" :data="innerJobs" @on-row-click="selectJob" @on-row-dblclick="jumpToInner"></Table>
     <Page simple :page-size="pageSize" :total="jobNum" :current="curPage" @on-change="pageChange" style="text-align :center; margin-top: 20px;"></Page>
     <div slot="footer">
-      <Button type="text" size="large" @click="cancel">取消</Button>
-      <Button type="primary" size="large" @click="confirm">确定</Button>
+      <Button type="text" size="large" @click="cancel">{{$t('public.btn_cancel')}}</Button>
+      <Button type="primary" size="large" @click="confirm">{{$t('public.btn_ok')}}</Button>
     </div>
   </Modal>
 </template>
@@ -41,27 +41,27 @@ export default {
     return {
       columns: [
         {
-          title: '用例名称',
+          title: this.$t('jobList.job_name'),
           key: 'job_name'
         },
         {
-          title: '测试用途',
+          title: this.$t('jobList.test_area'),
           key: 'test_area'
         },
         {
-          title: '自定义标签',
+          title: this.$t('jobList.custom_tag'),
           key: 'custom_tag'
         },
         {
-          title: '硬件标签',
+          title: this.$t('jobFlow.unit_group'),
           key: 'unit_group'
         },
         {
-          title: '作者',
+          title: this.$t('jobList.author'),
           key: 'author'
         },
         {
-          title: '适用机型',
+          title: this.$t('jobFlow.phone_model'),
           key: 'phone_model'
         }
       ],
@@ -170,7 +170,7 @@ export default {
         } else {
           this.$Message.error({
             background: true,
-            content: '获取 InnerJob 列表失败'
+            content: this.$t('jobFlow.error_1')
           })
         }
       // }

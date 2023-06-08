@@ -12,9 +12,9 @@
       <div class="child-m-right--1">
         <Button
           @click="showDeviceSelectPage" type="success"
-        >选取设备</Button>
+        >{{$t('unitEditor.selDev')}}</Button>
         <Button type="primary" :loading="isLoading" @click="getImage">
-          <span v-if="!isLoading">获取截图</span>
+          <span v-if="!isLoading">{{$t('unitEditor.selPic')}}</span>
           <span v-else>Loading...</span>
         </Button>
         <!-- <Dropdown placement="bottom-end">
@@ -52,22 +52,22 @@ export default {
     return {
       deviceInfoColumns: [
         {
-          title: '名称',
+          title: this.$t('unitEditor.device_name'),
           key: 'device_name',
           align: 'center'
         },
         {
-          title: '型号',
+          title: this.$t('unitEditor.phone_model'),
           key: 'phone_model',
           align: 'center'
         },
         {
-          title: '安卓版本',
+          title: this.$t('unitEditor.android_version'),
           key: 'android_version',
           align: 'center'
         },
         {
-          title: 'ROM版本',
+          title: this.$t('unitEditor.rom_version'),
           key: 'rom_version',
           align: 'center'
         }
@@ -95,7 +95,7 @@ export default {
     },
     handleErrors () {
       let errors = []
-      if (!this.deviceInfo.length) errors.push('未选择设备')
+      if (!this.deviceInfo.length) errors.push(this.$t('unitEditor.desc_1'))
       if (errors.length) {
         errors.forEach(error => {
           this.$Message.error({
@@ -142,8 +142,8 @@ export default {
               })
               if(data.error_code!==0){
                 this.$Notice.error({
-                  title: '截图失败',
-                  desc: '请检查您的设备',
+                  title: this.$t('unitEditor.desc_2'),
+                  desc: this.$t('unitEditor.desc_3'),
                   duration: 4
                 })
               }
@@ -175,8 +175,8 @@ export default {
         }).catch(err => {
           console.log('error', err)
           this.$Notice.error({
-            title: '截图失败',
-            desc: '请检查您的设备',
+            title: this.$t('unitEditor.desc_2'),
+            desc: this.$t('unitEditor.desc_3'),
             duration: 4
           })
         }).finally(() => {

@@ -2,7 +2,7 @@
   <Card class="feature-point-container">
     <!-- title -->
     <p slot="title">
-      <Divider orientation="left" style="margin: 0;">选取特征点</Divider>
+      <Divider orientation="left" style="margin: 0;">{{$t('unitEditor.msg_1')}}</Divider>
     </p>
     <!-- body -->
     <Table
@@ -20,8 +20,8 @@
     <div class="file-info">
       <div class="recognition-rate">
         <Poptip trigger="focus">
-          <Input v-model="imgRecRate" size="small" placeholder="请设定识别率">
-            <span slot="prepend">识别率</span>
+          <Input v-model="imgRecRate" size="small" :placeholder="$t('unitEditor.msg_2')">
+            <span slot="prepend">{{$t('unitEditor.msg_3')}}</span>
           </Input>
           <div slot="content">{{ `${this.imgRecRate}%` }}</div>
         </Poptip>

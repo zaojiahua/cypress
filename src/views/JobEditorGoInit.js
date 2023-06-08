@@ -196,7 +196,7 @@ function outerDiagramInit(context) {
     })
     if (!flag) context.$Message.error({
       background: true,
-      content: 'Start不可以被复制或剪切'
+      content: context.$t('goInit.startCheck')
     })
     return flag
   }
@@ -370,7 +370,7 @@ export function innerDiagramInit(context) {
     })
     if (!flag) context.$Message.error({
       background: true,
-      content: 'Entry,Exit 不可以被复制或剪切'
+      content: context.$t('goInit.entryCheck')
     })
     return flag
   }
@@ -443,15 +443,15 @@ export function innerDiagramInit(context) {
     if (e.diagram instanceof go.Palette) { // 右键点击左侧unit模板
       if (!sessionStorage.groups) {
         context.$Notice.warning({
-          title: '温馨提醒',
-          desc: '用户权限信息丢失,请重新登录。'
+          title: context.$t('goInit.notice'),
+          desc: context.$t('goInit.notice_msg1')
         })
         return
       }
       if (!sessionStorage.groups.includes('Admin')) {
         context.$Notice.warning({
-          title: '温馨提醒',
-          desc: '该功能仅限管理员使用，请切换您的账号或重新登录。'
+          title: context.$t('goInit.notice'),
+          desc: context.$t('goInit.notice_msg2')
         })
         return
       }
@@ -533,7 +533,7 @@ export function setOuterDiagramData(context, job_flow = null) { // 打开jobEdit
         if (JSON.stringify(data) === '{}') {
           context.$Message.err({
             background: true,
-            content: '这个 job 不存在'
+            content: context.$t('goInit.jobCheck')
           })
           return context.$router.push({path: '/'})
         }
@@ -567,7 +567,7 @@ export function setOuterDiagramData(context, job_flow = null) { // 打开jobEdit
           newConfig.finalResultKey = null
           context.$Message.error({
             background: true,
-            content: '结果unit设置有误,请重新设置'
+            content: context.$t('goInit.unitCheck')
           })
         }
         context.$store.commit('job/handleConfig', {
@@ -576,13 +576,13 @@ export function setOuterDiagramData(context, job_flow = null) { // 打开jobEdit
         })
         context.outerDiagram.model.setDataProperty(start, 'config', newConfig)
       } else {
-        throw new Error('获取 Job 信息失败')
+        throw new Error(context.$t('goInit.error_1'))
       }
     }).catch(err => {
       console.log(err)
       context.$Message.error({
         background: true,
-        content: '获取 Job 信息失败'
+        content: context.$t('goInit.error_1')
       })
       return context.$router.push({path: '/'})
     })

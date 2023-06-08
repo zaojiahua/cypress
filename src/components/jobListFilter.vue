@@ -1,7 +1,7 @@
 <template>
   <div class="collapse">
     <div class="collapse__header">
-      <span class="collapse__header-tip">搜索</span>
+      <span class="collapse__header-tip">{{$t('jobListFilter.search')}}</span>
       <Input
         clearable
         v-model="keyword"
@@ -11,7 +11,7 @@
       />
       <Icon type="ios-arrow-up" class="collapse__header-arrow-up" v-show="collapseIsOpen" @click="handleCollapse"/>
       <Icon type="ios-arrow-down" class="collapse__header-arrow-down" v-show="!collapseIsOpen" @click="handleCollapse"/>
-      <!-- <Button type="error" icon="ios-trash" @click="deleteFilterFactor" v-show="filterConditions.length !== 0">删除</Button> -->
+      <!-- <Button type="error" icon="ios-trash" @click="deleteFilterFactor" v-show="filterConditions.length !== 0">{{$t('public.btn_del')}}</Button> -->
       <!--<Button icon="ios-close" class="filter__clear" @click="clearFilterFactor" v-show="filterConditions.length !== 0">清除</Button>-->
     </div>
     <transition name="slide-fade">
@@ -19,7 +19,7 @@
         <Row>
           <Tabs class="tabs" :value="curTab" @on-click="changeTab">
             <TabPane v-for="(column, index) in filterColumn" :key="column.title" :label="column.title" :class="column.key" :name="index.toString()" style="max-height: 130px;overflow: auto">
-              <Button v-if="(column.key==='job_test_area'||column.key==='custom_tag')&&isAdmin" type="error" size="small" style="float: right;" @click="onFilterDelete(column.key)">删除</Button>
+              <Button v-if="(column.key==='job_test_area'||column.key==='custom_tag')&&isAdmin" type="error" size="small" style="float: right;" @click="onFilterDelete(column.key)">{{$t('public.btn_del')}}</Button>
               <CheckboxGroup v-model="filterConditions">
                 <Row type="flex">
                   <Col span="4" v-for="(item, index) in filterData[column.key]" :key="item.id">
@@ -36,7 +36,7 @@
           <Row class="filter__container">
             <!-- <span class="filter__title">筛选条件</span> -->
             <div class="filter__content" v-show="filterConditions.length !== 0">
-              <Button style="position: absolute;right: 0" @click="clearFilterFactor" v-show="filterConditions.length !== 0">清除</Button>
+              <Button style="position: absolute;right: 0" @click="clearFilterFactor" v-show="filterConditions.length !== 0">{{$t('jobListFilter.clean')}}</Button>
               <div v-for="(val, key, idx) in filterFactors" :key="val.title" v-show="val.values.length !== 0" class="filter-factor" style="margin-right: 65px">
                 <span class="filter-factor__title" @click="changeTab(idx + '')">{{val.title}}</span>
                 <div class="filter-factor__content">
@@ -50,10 +50,10 @@
     </transition>
     <Modal v-model="isdeleteError" :closable="false" :mask-closable="false" :footer-hide="true" width="500">
       <Icon type="ios-help-circle" style="color: #ff9900;float: left;margin: 15px 10px 0 0;" size="24"/>
-      <p style="margin: 15px 0;font-size: 16px">部分删除失败</p>
-      <div style="margin-left: 15px;word-break: break-all;word-wrap: break-word;">{{ errorList.join(",")  }} 仍在被使用，无法删除</div>
+      <p style="margin: 15px 0;font-size: 16px">{{$t('jobListFilter.tips_1')}}</p>
+      <div style="margin-left: 15px;word-break: break-all;word-wrap: break-word;">{{ errorList.join(",")  }} {{$t('jobListFilter.tips_2')}}</div>
       <Row type="flex" justify="end" style="margin-top: 30px;">
-        <Button type="primary" @click="onModalClick">确定</Button>
+        <Button type="primary" @click="onModalClick">{{$t('public.btn_ok')}}</Button>
       </Row>
     </Modal>
   </div>
@@ -69,27 +69,27 @@ export default {
     return {
       filterColumn: [ // 将获得的数据以统一的格式存放到filterData中，以便于v-for循环
         {
-          title: '适用机型',
+          title: this.$t('jobFlow.phone_model'),
           key: 'phone_model',
           item_key: 'phone_model_name'
         },{
-          title: '测试用途',
+          title: this.$t('jobList.test_area'),
           key: 'job_test_area',
           item_key: 'description'
         },{
-          title: '安卓版本',
+          title: this.$t('jobDevSel.android_version'),
           key: 'android_version',
           item_key: 'version'
         }, {
-          title: 'ROM版本',
+          title: this.$t('jobDevSel.rom_version'),
           key: 'rom_version',
           item_key: 'version'
         },{
-          title: '维护人员',
+          title: this.$t('jobList.author'),
           key: 'reefuser',
           item_key: 'username'
         }, {
-          title: '自定义标签',
+          title: this.$t('jobList.custom_tag'),
           key: 'custom_tag',
           item_key: 'custom_tag_name'
         }
@@ -113,27 +113,27 @@ export default {
       */
       filterFactors: { // 将勾选的筛选条件分组存储下来, valuse数组中的元素格式同 filterConditions
         'phone_model': {
-          title: '适用机型',
+          title: this.$t('jobFlow.phone_model'),
           values: []
         },
         'job_test_area': {
-          title: '测试用途',
+          title: this.$t('jobList.test_area'),
           values: []
         },
         'android_version': {
-          title: '安卓版本',
+          title: this.$t('jobDevSel.android_version'),
           values: []
         },
         'rom_version': {
-          title: 'ROM版本',
+          title: this.$t('jobDevSel.rom_version'),
           values: []
         },
         'reefuser': {
-          title: '维护人员',
+          title: this.$t('jobList.author'),
           values: []
         },
         'custom_tag': {
-          title: '自定义标签',
+          title: this.$t('jobList.custom_tag'),
           values: []
         }
       },
@@ -252,7 +252,7 @@ export default {
       let ids = []
       if(type==='job_test_area'){
         if(this.filterFactors.job_test_area.values.length===0){
-          this.$Message.info("请选择要删除的数据！")
+          this.$Message.info(this.$t('jobListFilter.tips_3'))
           return
         }
         this.filterFactors.job_test_area.values.map(val => {
@@ -260,26 +260,26 @@ export default {
           ids.push(data[3])
         })
         this.$Modal.confirm({
-          title:"确认要删除标签吗？",
-          content:"若标签已在系统中被使用，则不能完成删除操作",
+          title:this.$t('jobListFilter.tips_4'),
+          content:this.$t('jobListFilter.tips_5'),
           onOk(){
             deleteTags({
               module:"JobTestArea",
               id_list: ids
             }).then(response=>{
-              this.$Message.success("删除成功")
+              this.$Message.success(_this.$t('public.delSuccess'))
               setTimeout(function (){
                 location.reload()
               },1000)
             }).catch(error=>{
               if(error.response.status>=500){
-                this.$Message.error("服务器错误")
+                this.$Message.error(_this.$t('public.error_500'))
               }else{
                 if(error.response.data.data_info.length!==ids.length){
                   _this.isdeleteError = true
                   _this.errorList = error.response.data.data_info
                 }else {
-                  this.$Message.error({content:"标签正在被使用，删除失败",duration:5})
+                  this.$Message.error({content:_this.$t('jobListFilter.tips_6'),duration:5})
                 }
               }
             })
@@ -287,7 +287,7 @@ export default {
         })
       } else if(type==='custom_tag'){
         if(this.filterFactors.custom_tag.values.length===0){
-          this.$Message.info("请选择要删除的数据！")
+          this.$Message.info(this.$t('jobListFilter.tips_3'))
           return
         }
         this.filterFactors.custom_tag.values.map(val => {
@@ -295,26 +295,26 @@ export default {
           ids.push(data[3])
         })
         this.$Modal.confirm({
-          title:"确认要删除标签吗？",
-          content:"若标签已在系统中被使用，则不能完成删除操作",
+          title:this.$t('jobListFilter.tips_4'),
+          content:this.$t('jobListFilter.tips_5'),
           onOk(){
             deleteTags({
               module:"CustomTag",
               id_list: ids
             }).then(response=>{
-              this.$Message.success("删除成功")
+              this.$Message.success(_this.$t('public.delSuccess'))
               setTimeout(function (){
                 location.reload()
               },1000)
             }).catch(error=>{
               if(error.response.status>=500){
-                this.$Message.error("服务器错误")
+                this.$Message.error(_this.$t('public.error_500'))
               }else{
                 if(error.response.data.data_info.length!==ids.length){
                   _this.isdeleteError = true
                   _this.errorList = error.response.data.data_info
                 }else {
-                  this.$Message.error({content:"标签正在被使用，删除失败",duration:5})
+                  this.$Message.error({content:_this.$t('jobListFilter.tips_6'),duration:5})
                 }
               }
             })

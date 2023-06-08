@@ -20,10 +20,10 @@
           </Upload> -->
         </div>
         <div class="child-m-right--1 flex-row">
-          <Tag size="large" style="margin-top: 0; margin-bottom: 0;"> 已选 {{Object.keys(this.selectedJobs).length}} 个</Tag>
+          <Tag size="large" style="margin-top: 0; margin-bottom: 0;"> {{$t('jobList.sel_1')}} {{Object.keys(this.selectedJobs).length}} {{$t('jobList.sel_2')}}</Tag>
           <!-- <Button type="success" icon="ios-cloud-download" @click="exportJobs">导出用例</Button> -->
-          <Button type="warning" icon="ios-qr-scanner" @click="clear">取消选择</Button>
-          <Button type="error" icon="md-trash" @click="delSelectedJobs">批量删除</Button>
+          <Button type="warning" icon="ios-qr-scanner" @click="clear">{{$t('public.cancelSelect')}}</Button>
+          <Button type="error" icon="md-trash" @click="delSelectedJobs">{{$t('public.del_list')}}</Button>
         </div>
       </div>
       <Table
@@ -34,36 +34,36 @@
         @on-selection-change="selectedJobsChange"
       ></Table>
       <div class="flex-row page">
-        <Button size="small" :disabled="this.curPage === 1" @click="jobPageChange(1)">首页</Button>
+        <Button size="small" :disabled="this.curPage === 1" @click="jobPageChange(1)">{{$t('jobList.page_1')}}</Button>
         <Page simple :page-size="pageSize" :total="dataCount" :current.sync="curPage" @on-change="jobPageChange" style="margin: 0 1em;"></Page>
-        <Button size="small" :disabled="this.curPage === this.lastPage" @click="jobPageChange(lastPage)">尾页</Button>
+        <Button size="small" :disabled="this.curPage === this.lastPage" @click="jobPageChange(lastPage)">{{$t('jobList.page_2')}}</Button>
       </div>
     </div>
 
     <Modal v-model="showJobConnectionModal" :fullscreen="true" :transfer="false" :closable="false" >
       <inner-job-connection ref="innerJobConnection" :prop-inner="propInner"></inner-job-connection>
       <div slot="footer">
-        <Button type="primary" @click="showJobConnectionModal = false">关闭</Button>
+        <Button type="primary" @click="showJobConnectionModal = false">{{$t('public.btn_close')}}</Button>
       </div>
     </Modal>
 
     <Modal v-model="showCopyModal" footer-hide :closable="false" :mask-closable="false" width="420">
-      <Input v-model="copyJobName" maxlength="70" style="margin-top: 16px" placeholder="请输入新的用例名称"></Input>
+      <Input v-model="copyJobName" maxlength="70" style="margin-top: 16px" :placeholder="$t('jobList.title_1')"></Input>
       <Row style="text-align: right;margin-top: 20px;">
-        <Button type="text" @click="showCopyModal=false;copyJobId = null;copyJobName=''">取消</Button>
-        <Button type="primary" @click="onSaveAs">确认</Button>
+        <Button type="text" @click="showCopyModal=false;copyJobId = null;copyJobName=''">{{$t('public.btn_cancel')}}</Button>
+        <Button type="primary" @click="onSaveAs">{{$t('public.btn_ok')}}</Button>
       </Row>
     </Modal>
 
     <Modal v-model="showErrorInner" :closable="false" :mask-closable="false" :footer-hide="true" width="50">
       <Icon type="ios-help-circle" style="color: #ff9900;float: left;margin: 15px 10px 0 0;" size="24"/>
-      <p style="margin: 15px 0;font-size: 16px">提示</p>
+      <p style="margin: 15px 0;font-size: 16px">{{$t('public.modal_info')}}</p>
       <Row style="margin: 10px 0 0 30px;">
-        Inner 【{{ errorInnerList.join("】,【") }}】 存在关联用例，无法删除，继续删除选中的其他用例吗？
+        Inner 【{{ errorInnerList.join("】,【") }}】 {{$t('jobList.title_2')}}
       </Row>
       <Row type="flex" justify="end" style="margin-top: 30px;">
-        <Button type="text" @click="showErrorInner=false">取消</Button>
-        <Button type="primary" :disabled="delJobIds.length===0" @click="continueDeleted">继续</Button>
+        <Button type="text" @click="showErrorInner=false">{{$t('public.btn_cancel')}}</Button>
+        <Button type="primary" :disabled="delJobIds.length===0" @click="continueDeleted">{{$t('jobList.continue')}}</Button>
       </Row>
     </Modal>
   </div>
@@ -106,30 +106,30 @@ export default {
           align: 'center'
         },
         {
-          title: '用例名称',
+          title: this.$t('jobList.job_name'),
           key: 'job_name',
           width:300
         },
         {
-          title: '测试用途',
+          title: this.$t('jobList.test_area'),
           key: 'test_area'
         },
         {
-          title: '自定义标签',
+          title: this.$t('jobList.custom_tag'),
           key: 'custom_tag'
         },
         {
-          title: '用例状态',
+          title: this.$t('jobList.job_state'),
           key: 'job_state',
-          width:110,
+          width:125,
           align: 'center',
           filters: [
             {
-              label: '草稿',
+              label: this.$t('jobList.draft'),
               value: 'draft'
             },
             {
-              label: '正式',
+              label: this.$t('jobList.release'),
               value: 'release'
             }
           ],
@@ -142,22 +142,22 @@ export default {
           }
         },
         {
-          title: '用例类型',
+          title: this.$t('jobList.job_type'),
           key: 'job_type',
           width:130,
           sortable: 'true',
           align: 'center',
           filters: [
             {
-              label: '功能',
+              label: this.$t('jobList.Joblib'),
               value: 'Joblib'
             },
             {
-              label: '性能',
+              label: this.$t('jobList.PerfJob'),
               value: 'PerfJob'
             },
             {
-              label: '内嵌',
+              label: this.$t('jobList.InnerJob'),
               value: 'InnerJob'
             }
           ],
@@ -170,9 +170,9 @@ export default {
           }
         },
         {
-          title: '测试柜类型',
+          title: this.$t('jobList.cabinet_type'),
           key: 'cabinet_type',
-          width:130,
+          width:140,
           align: 'center',
           filters: [],
           filterRemote (value) {
@@ -182,17 +182,17 @@ export default {
           }
         },
         {
-          title: '维护人员',
+          title: this.$t('jobList.author'),
           key: 'author',
           width:200
         },
         {
-          title: '操作',
+          title: this.$t('jobList.operation'),
           key: 'operation',
           width: 150,
           render: (h, params) => {
             if (!this.isAdmin) {
-              if(params.row.job_type==="内嵌"){
+              if(params.row.job_type===this.$t('jobList.InnerJob')){
                 return h('div', [
                   h('span', {
                     class: 'mouse-hover',
@@ -202,7 +202,7 @@ export default {
                         this.show(params.index)
                       }
                     }
-                  },'另存'),
+                  },this.$t('jobList.saveAs')),
                   h('span', {
                     class: 'mouse-hover',
                     style:{
@@ -216,7 +216,7 @@ export default {
                         this.viewJobConnection(params.row.job_label)
                       }
                     }
-                  },'参考'),
+                  },this.$t('jobList.view')),
                 ]);
               }else {
                 return h('div', [
@@ -228,11 +228,11 @@ export default {
                         this.show(params.index)
                       }
                     }
-                  },'另存'),
+                  },this.$t('jobList.saveAs')),
                 ]);
               }
             }else {
-              if(params.row.job_type==="内嵌") {
+              if(params.row.job_type===this.$t('jobList.InnerJob')) {
                 return h('div', [
                   h('span', {
                     class: 'mouse-hover',
@@ -247,7 +247,7 @@ export default {
                         this.viewJobConnection(params.row.job_label)
                       }
                     }
-                  },'参考'),
+                  },this.$t('jobList.view')),
                 ])
               }else {
 
@@ -319,19 +319,19 @@ export default {
         "author_id": parseInt(sessionStorage.id)
       }
       if (this.copyJobName.length >70){
-        this.$Message.error("用例名称过长")
+        this.$Message.error(this.$t('jobList.tips_1'))
         return
       }
       if (this.copyJobName.includes("/")){
-        this.$Message.error("用例名称不允许包含/")
+        this.$Message.error(this.$t('jobList.tips_2'))
         return
       }
       this.showCopyModal = false
       try{
         await copyJob(data)
-        this.$Message.info("另存成功")
+        this.$Message.info(this.$t('jobList.tips_3'))
       } catch (e) {
-        this.$Message.error("另存失败")
+        this.$Message.error(this.$t('jobList.tips_4'))
       }
       this.getFilteredJobs()
     },
@@ -357,14 +357,14 @@ export default {
           // if (job.job_type === "InnerJob" || parseInt(sessionStorage.getItem("id")) !== job.author.id) job._disabled = true
           job.test_area = job.test_area.map(item => item.description).join(',')
           job.custom_tag = job.custom_tag.map(item => item.custom_tag_name).join(',')
-          job.job_state = job.draft ? '草稿' : '正式'
+          job.job_state = job.draft ? this.$t('jobList.draft') : this.$t('jobList.release')
           job.author = job.author.username
           if( job.job_type === "Joblib" )
-            job.job_type = '功能'
+            job.job_type = this.$t('jobList.Joblib')
           else if( job.job_type === "InnerJob" )
-            job.job_type = '内嵌'
+            job.job_type = this.$t('jobList.InnerJob')
           else if( job.job_type === "PerfJob" )
-            job.job_type = '性能'
+            job.job_type = this.$t('jobList.PerfJob')
 
           // 勾选已选的选项
           if (this.selectedJobs[job.id] !== undefined) {
@@ -437,7 +437,7 @@ export default {
         this.jobData.forEach((value, index) => {
           if (key === value.id) {
             this.$refs.jobList.toggleSelect(index)
-            throw Error('已找到目标')
+            throw Error(this.$t('jobList.error_1'))
           }
         })
       } catch (e) {
@@ -457,27 +457,27 @@ export default {
     },
     handleFormatError () {
       this.$Notice.error({
-        title: '文件上传失败',
-        desc: '请使用ZIP格式的压缩包！'
+        title: this.$t('jobList.error_2'),
+        desc: this.$t('jobList.error_3')
       })
       this.$refs.upload.clearFiles()
     },
     handleUploadSuccess (res) {
       if (res.state === 'OK') {
-        this.$Message.success('文件上传成功！')
+        this.$Message.success( this.$t('jobList.error_4'))
       }
     },
     exportJobs () {
       if (this.jobIdList.length === 0) {
         this.$Modal.error({
-          title: '错误',
-          content: '请先选择要导出的用例'
+          title: this.$t('public.modal_warn'),
+          content:  this.$t('jobList.error_5')
         })
       } else {
         let _this = this
         this.$Modal.confirm({
-          title: '提示',
-          content: '您确定要导出这些用例吗？',
+          title: this.$t('public.modal_info'),
+          content:  this.$t('jobList.error_6'),
           closable: false,
           onOk () {
             getSelectedJobs({
@@ -487,7 +487,7 @@ export default {
               if (res.data.file) {
                 window.location.href = res.data.file
               } else {
-                this.$Message.error('导出用例失败！')
+                this.$Message.error(_this.$t('jobList.error_7'))
               }
             }).catch(err => {
               console.log(err)
@@ -499,14 +499,14 @@ export default {
     delSelectedJobs () {
       if (this.jobIdList.length === 0) {
         this.$Modal.error({
-          title: '错误',
-          content: '请先选择要删除的用例！'
+          title: this.$t('public.modal_warn'),
+          content: this.$t('jobList.error_8')
         })
       } else {
         let _this = this
         this.$Modal.confirm({
-          title: '提示',
-          content: '您真的要删除这些用例吗？',
+          title: this.$t('public.modal_info'),
+          content: this.$t('jobList.error_9'),
           onOk: () => {
             deleteJob({ job_ids: _this.jobIdList })
               .then(response=>{
@@ -516,12 +516,12 @@ export default {
                   } else {
                     _this.jobPageChange(_this.curPage)
                   }
-                  this.$Message.success('用例删除成功')
+                  this.$Message.success(_this.$t('jobList.error_10'))
                   _this.selectedJobs = {}
                 }
               }).catch(error=>{
               if(error.response.status===500){
-                this.$Message.error('服务器错误！')
+                this.$Message.error(_this.$t('public.error_500'))
                 return
               }
               if(error.response.data.custom_code==="0"){
@@ -531,7 +531,7 @@ export default {
                   } else {
                     _this.jobPageChange(_this.curPage)
                   }
-                  this.$Message.success('用例删除成功')
+                  this.$Message.success(_this.$t('jobList.error_10'))
                   _this.selectedJobs = {}
                 }else {
                   _this.showErrorInner = true
@@ -539,7 +539,7 @@ export default {
                   _this.delJobIds = error.response.data.enable
                 }
               }else
-                this.$Message.error({content:'用例删除失败！'+error.response.data.description,duration:10})
+                this.$Message.error({content:this.$t('jobList.error_11')+error.response.data.description,duration:10})
             })
           }
         })
@@ -555,15 +555,15 @@ export default {
             } else {
               this.jobPageChange(this.curPage)
             }
-            this.$Message.success('用例删除成功')
+            this.$Message.success(this.$t('jobList.error_10'))
             this.selectedJobs = {}
           }
         }).catch(error=>{
         if(error.response.status===500){
-          this.$Message.error('服务器错误！')
+          this.$Message.error(this.$t('public.error_500'))
           return
         }
-        this.$Message.error({content:'用例删除失败！'+error.response.data.description,duration:10})
+        this.$Message.error({content:this.$t('jobList.error_11')+error.response.data.description,duration:10})
       })
     },
     getFilterParam (val) {
@@ -584,7 +584,7 @@ export default {
           this.columns[7].filters = CabinetFilters;
         })
         .catch(error=>{
-          this.$Message.error("测试柜列表获取失败")
+          this.$Message.error(this.$t('jobList.error_12'))
         })
     },
     setTableHeight () {

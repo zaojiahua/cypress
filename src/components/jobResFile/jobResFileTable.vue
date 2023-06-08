@@ -7,11 +7,11 @@
             <td>{{ row.name }}</td>
             <td>{{ row.type }}</td>
             <td>
-                <Button type="error" @click.stop="removeFile(trIndex)">删除</Button>
+                <Button type="error" @click.stop="removeFile(trIndex)">{{$t('public.btn_del')}}</Button>
             </td>
         </tr>
         <tr v-show="data.length === 0">
-          <td colspan="4">没有更多数据了</td>
+          <td colspan="4">{{$t('jobResFile.notices_6')}}</td>
         </tr>
     </table>
   </div>

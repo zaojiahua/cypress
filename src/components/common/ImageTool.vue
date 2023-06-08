@@ -6,7 +6,7 @@
     <div class="image-tool-content">
       <div>
         <ul class="right-menu" id="right-menu">
-          <li @click="savePic">保存图片到本地</li>
+          <li @click="savePic">{{$t('common.savePic')}}</li>
         </ul>
         <canvas id="image-tool-canvas" :height="canvasH" :width="canvasW"></canvas>
         <canvas v-show="showMagnifier" width="200" height="200" style="position: absolute;left: 0;top: 0" id="magnifier"></canvas>
@@ -32,8 +32,8 @@ export default {
       canvasW: 0,
       aspectRatio: 1.0,
       sizeRatio: 1.0,
-      eventTypes: ['选区', '选点', '测距'],
-      eventType: '选区', // 当前功能
+      eventTypes: [this.$t('common.eventType_1'), this.$t('common.eventType_2'), this.$t('common.eventType_3')],
+      eventType: this.$t('common.eventType_1'), // 当前功能
       canvasToggle: false,
       outputInfo: null,
       //放大镜
@@ -54,9 +54,9 @@ export default {
   watch: {
     itemType(val){
       if(val==='picInput'){
-        this.eventType  = '选点'
+        this.eventType  = this.$t('common.eventType_2')
       }else
-        this.eventType  = '选区'
+        this.eventType  = this.$t('common.eventType_1')
     },
     imgSrc (val) {
       this.drawImg(val)
@@ -200,7 +200,7 @@ export default {
     dispatchMouseEvent (evt) { // 分发鼠标事件
       let { type, offsetX, offsetY } = evt
       switch (this.eventType) {
-        case '选区':
+        case this.$t('common.eventType_1'):
           switch (type) {
             case 'mousedown':
               if((offsetX>=this.startX-6&&offsetX<=this.startX+6)&&(offsetY>=this.startY-6&&offsetY<=this.startY+6)){
@@ -305,7 +305,7 @@ export default {
               break
           }
           break
-        case '选点':
+        case this.$t('common.eventType_2'):
           switch (type) {
             case 'mousedown':
               this.context2D.clearRect(0, 0, this.canvasW, this.canvasH)
@@ -326,7 +326,7 @@ export default {
               break
           }
           break
-        case '测距':
+        case this.$t('common.eventType_3'):
           switch (type) {
             case 'mousedown':
               this.context2D.clearRect(0, 0, this.canvasW, this.canvasH)

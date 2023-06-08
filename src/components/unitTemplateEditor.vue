@@ -16,12 +16,12 @@
       </div>
     </Card>
     <Modal v-model="setNewUnitName" :mask-closable="false" :styles="{top: '48%'}" :closable="false" @on-ok="_saveAs">
-      <Input placeholder="为新的 Unit 起一个名字吧" v-model="newUnitName"/>
+      <Input :placeholder="$t('jobResFile.tips_10')" v-model="newUnitName"/>
     </Modal>
     <div slot="footer">
-      <Button type="warning" @click="closeUnitTemplateEditor">取消</Button>
-      <Button type="success" @click="saveAs">另存为</Button>
-      <Button type="primary" @click="updateUnitTemplate">更新</Button>
+      <Button type="warning" @click="closeUnitTemplateEditor">{{$t('public.btn_cancel')}}</Button>
+      <Button type="success" @click="saveAs">{{$t('jobEdit.btn_5')}}</Button>
+      <Button type="primary" @click="updateUnitTemplate">{{$t('jobResFile.btn_1')}}</Button>
     </div>
   </Modal>
 </template>
@@ -33,6 +33,7 @@ import { updateJobUnitTemplate, createNewUnitTemplate } from 'api/reef/request'
 
 import { mapState } from 'vuex'
 
+const lang = sessionStorage.getItem("lang")
 export default {
   props: {
     openUnitTemplateEditor: {
@@ -41,7 +42,7 @@ export default {
     },
     unitTemplateName: {
       type: String,
-      default: '请为当前 unit 模板起一个名字吧'
+      default: lang ==='zh' ? "请为当前 unit 模板起一个名字吧" : "Please give the current unit template a name."
     },
     unitTemplateType: {
       type: String,
@@ -91,7 +92,7 @@ export default {
       if (!isJsonString(str)) {
         this.$Message.error({
           background: true,
-          content: '不是 JSON 格式'
+          content: this.$t('jobResFile.notices_2')
         })
         return false
       } else {
@@ -112,7 +113,7 @@ export default {
         if (res.status === 201) {
           this.$Message.success({
             background: true,
-            content: '新建成功'
+            content: this.$t('jobResFile.notices_3')
           })
           this.$emit('updateUnitLists', this.currentUnitType)
         }
@@ -139,13 +140,13 @@ export default {
           if (status === 200) {
             this.$Message.success({
               background: true,
-              content: '更新成功'
+              content: this.$t('jobResFile.notices_4')
             })
             this.$emit('updateUnitLists', this.currentUnitType)
           } else {
             this.$Message.error({
               background: true,
-              content: '更新失败'
+              content: this.$t('jobResFile.notices_5')
             })
           }
         } catch (error) {

@@ -1,34 +1,34 @@
 <template>
   <div class="container" @click="closeJobController">
     <div class="header flex-row">
-      <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.job_name" clearable class="job-name" placeholder="请输入JOB名称" size="large" />
+      <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.job_name" clearable class="job-name" :placeholder="$t('jobEdit.enterTips_1')" size="large" />
       <div class="child-m-right--1 flex-row">
         <div class="child-m-right--1 flex-row">
-          <Button type="primary" @click="$store.commit('handleShowDrawer',true)" size="large" style="margin-right: 10px;">用例详情</Button>
-          <Button v-if="editJobFlow" type="info" ghost size="large" @click="viewResFile" style="margin-right: 10px;">查看依赖文件</Button>
+          <Button type="primary" @click="$store.commit('handleShowDrawer',true)" size="large" style="margin-right: 10px;">{{$t('jobEdit.btn_1')}}</Button>
+          <Button v-if="editJobFlow" type="info" ghost size="large" @click="viewResFile" style="margin-right: 10px;">{{$t('jobEdit.btn_2')}}</Button>
 <!--          <Button v-if="editJobFlow" type="info" ghost size="large" :disabled="!duplicateId" @click="duplicateTipModal = true" style="margin-right: 10px;">使用副本</Button>-->
           <Modal
-            title="确认使用副本替换当前的编辑内容吗？"
+            :title="$t('jobEdit.tips_1')"
             v-model="duplicateTipModal"
             @on-ok="showDuplicateJob"
             class-name="vertical-center-modal">
-            <p>替换内容包括运行流程图，依赖文件以及用例的详细信息，且不可逆</p>
+            <p>{{$t('jobEdit.tips_2')}}</p>
           </Modal>
         </div>
         <div class="child-m-right--1 flex-row">
           <a :href="bat_url">
-            <Button size="large" @click="checkDeviceChoose" style="margin-right: 7px">打开手机监控</Button>
+            <Button size="large" @click="checkDeviceChoose" style="margin-right: 7px">{{$t('jobEdit.btn_3')}}</Button>
           </a>
           <Dropdown @on-click="handleMenu">
             <Button size="large">
-              菜单
+              {{$t('jobEdit.btn_4')}}
               <Icon type="ios-menu" />
             </Button>
             <DropdownMenu slot="list">
-              <DropdownItem v-if="editJobFlow" name="save">保存</DropdownItem>
-              <DropdownItem v-if="editJobFlow && selectJobType === 'InnerJob'" name="saveAs">另存为</DropdownItem>
-              <DropdownItem v-if="editJobFlow" name="saveDraft">存草稿</DropdownItem>
-              <DropdownItem name="quit">退出</DropdownItem>
+              <DropdownItem v-if="editJobFlow" name="save">{{$t('public.btn_save')}}</DropdownItem>
+              <DropdownItem v-if="editJobFlow && selectJobType === 'InnerJob'" name="saveAs">{{$t('jobEdit.btn_5')}}</DropdownItem>
+              <DropdownItem v-if="editJobFlow" name="saveDraft">{{$t('jobEdit.btn_6')}}</DropdownItem>
+              <DropdownItem name="quit">{{$t('jobEdit.btn_7')}}</DropdownItem>
             </DropdownMenu>
           </Dropdown>
         </div>
@@ -39,8 +39,8 @@
       <div id="outer-diagram"></div>
     </div>
     <ButtonGroup vertical size="default" id="job-controller">
-      <Button type="primary" @click="setWingman(0)">主机</Button>
-      <Button v-for="wingman in wingmans" :key="wingman" @click="setWingman(wingman)">{{wingman}} 号机</Button>
+      <Button type="primary" @click="setWingman(0)">{{$t('jobEdit.btn_8')}}</Button>
+      <Button v-for="wingman in wingmans" :key="wingman" @click="setWingman(wingman)">{{wingman}} {{$t('jobEdit.btn_9')}}</Button>
     </ButtonGroup>
     <job-in-job
       :jobModalShow="jobModalShow"
@@ -154,7 +154,7 @@ export default {
         if (val.job_type === 'InnerJob' && this.config.finalResultKey) { // 如果当前用例为innerjob且已经指定了结果unit，则提醒用户错误
           this.$Message.error({
             background: true,
-            content: '无法为内嵌用例指定结果Block'
+            content: this.$t('jobEdit.tips_3')
           })
         }
       },
@@ -215,13 +215,13 @@ export default {
     checkDeviceChoose(){
       if (!this.deviceInfo){
         this.$Message.error({
-          content: '请先选择一个设备',
+          content: this.$t('jobEdit.tips_4'),
           duration:3,
           closable: true
         })
       }else if (!this.compareIPAdress()){
         this.$Message.error({
-          content: '请先确保连接在同一个wifi',
+          content: this.$t('jobEdit.tips_5'),
           duration:3,
           closable: true
         })
@@ -259,7 +259,7 @@ export default {
         })
         // message提示
         this.$Notice.error({
-          title: '当前用例出现以下错误',
+          title: this.$t('jobEdit.tips_6'),
           duration: 0,
           render: h => {
             return h('div', [
@@ -275,7 +275,7 @@ export default {
                 on: {
                   click: () => this.handleMenu('saveDraft')
                 }
-              }, '存为草稿')
+              }, this.$t('jobEdit.tips_7'))
             ])
           }
         })
@@ -299,14 +299,14 @@ export default {
         if (this.config.finalResultKey) {
           this.$Message.error({
             background: true,
-            content: '无法为内嵌用例指定结果unit'
+            content: this.$t('jobEdit.tips_8')
           })
           flag = true
         }
         if (count > 0) {
           this.$Message.error({
             background: true,
-            content: '内嵌用例暂不支持嵌套'
+            content: this.$t('jobEdit.tips_9')
           })
           flag = true
         }
@@ -363,14 +363,14 @@ export default {
             }
           } catch (error) {
             console.log(error)
-            throw new Error('Job保存失败')
+            throw new Error(this.$t('jobEdit.jobError_1'))
           }
         } else {
-          throw new Error('Job保存失败')
+          throw new Error(this.$t('jobEdit.jobError_1'))
         }
         this.$Message.success({
           background: true,
-          content: '用例保存成功'
+          content: this.$t('jobEdit.jobError_2')
         })
       } catch (error) {
         console.log(error)
@@ -384,7 +384,7 @@ export default {
         // this.$Message.success('用例资源绑定成功')
       }).catch(error => {
         console.log(error)
-        this.$Message.error('用例资源绑定失败')
+        this.$Message.error(this.$t('jobEdit.error_1'))
       })
     },
     calcWingmanCount () { // 计算用到的僚机数量, 僚机信息保存在normal/job块的data中
@@ -427,8 +427,8 @@ export default {
         let _this = this
         if(this.editJobFlow){
           this.$Modal.confirm({
-            title:"提示！",
-            content:"该用例尚未保存，确定要退出吗？",
+            title:this.$t('public.modal_info'),
+            content:this.$t('jobEdit.notices_1'),
             onOk(){
               _this.autoSaveToggle = false
               _this.$router.push({ path: '/jobList' })
@@ -447,7 +447,7 @@ export default {
           if (!this.editJobMsg || !this.editJobFlow ){
             this.$Message.error({
               background: true,
-              content: '没有编辑当前用例的权限'
+              content: this.$t('jobEdit.notices_2')
             })
             return
           }
@@ -524,7 +524,7 @@ export default {
           if (!innerJobRule) {
             this.$Message.error({
               background: true,
-              content: '不允许存在空的Job块'
+              content: this.$t('jobEdit.notices_3')
             })
             return
           }
@@ -539,7 +539,7 @@ export default {
             if (normalBlockRule) {
               this.$Message.error({
                 background: true,
-                content: '存在未完成的Normal',
+                content: this.$t('jobEdit.notices_4'),
                 duration:5,
               })
               return
@@ -586,7 +586,7 @@ export default {
             if (this.selectJobType !== 'InnerJob') {
               this.$Message.error({
                 background: true,
-                content: 'Inner Job 才具备另存为功能'
+                content: this.$t('jobEdit.notices_5')
               })
               return
             }
@@ -596,7 +596,7 @@ export default {
                   props: {
                     value: this.$store.state.job.jobInfo.job_name,
                     autofocus: true,
-                    placeholder: '请输入新的用例名称'
+                    placeholder: this.$t('jobEdit.notices_6')
                   },
                   on: {
                     input: (val) => {
@@ -686,7 +686,7 @@ export default {
         }
         catch (e) {
           if(e.response.status>=500){
-            this.$Message.error("服务器错误！")
+            this.$Message.error(this.$t('public.error_500'))
           }else {
             this.$Message.error({content:e.response.data.description.join(","),duration:10})
           }
@@ -699,7 +699,7 @@ export default {
         }
         catch (e) {
           if(e.response.status>=500){
-            this.$Message.error("服务器错误！")
+            this.$Message.error(this.$t('public.error_500'))
           }else {
             this.$Message.error({content:e.response.data.custom_tag_name.join(","),duration:10})
           }
@@ -785,7 +785,7 @@ export default {
           }
         }catch (error){
           console.log(error)
-          throw new Error('请求失败')
+          throw new Error(this.$t('public.requestFail'))
         }
       } else
         {
@@ -856,7 +856,7 @@ export default {
             throw new Error(error)
           })
         } else {
-          throw new Error('依赖文件获取失败')
+          throw new Error(this.$t('jobEdit.notices_7'))
         }
       }).catch(err => {
         console.log(err)
@@ -883,7 +883,7 @@ export default {
           if (status === 200) {
             this.$Message.info({
               background: true,
-              content: '设备已释放'
+              content: this.$t('jobEdit.deviceRelease')
             })
             this.$store.commit('device/setCountdown')
             this.$store.commit('device/clearDeviceInfo')
@@ -894,7 +894,7 @@ export default {
           console.log(err)
           this.$Message.error({
             background: true,
-            content: '设备释放失败' + err.toString()
+            content: this.$t('layout.modalTit_4') + err.toString()
           })
         }
       }
@@ -910,7 +910,7 @@ export default {
       }
     },
     beforeunloadHandler(e) {
-      e.returnValue = "确定要关闭窗口吗？"
+      e.returnValue = this.$t('jobEdit.notices_8')
     },
     setWingman (id) { // 设置执行inner job的僚机
       let curJobBlock = this.outerDiagram.findNodeForKey(this.currentJobBlockKey)

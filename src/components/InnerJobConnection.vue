@@ -1,11 +1,11 @@
 <template>
   <div>
-    <row style="margin-bottom: 16px;">用例名称：{{ propInner }}</row>
+    <row style="margin-bottom: 16px;">{{$t('jobList.job_name')}}：{{ propInner }}</row>
     <Table stripe :columns="columns" :data="data" border></Table>
     <div class="flex-row page">
-      <Button size="small" :disabled="this.curPage === 1" @click="onPageChange(1)">首页</Button>
+      <Button size="small" :disabled="this.curPage === 1" @click="onPageChange(1)">{{$t('jobList.page_1')}}</Button>
       <Page simple :page-size="pageSize" :total="dataCount" :current.sync="curPage" @on-change="onPageChange" style="margin: 0 1em;"></Page>
-      <Button size="small" :disabled="this.curPage === this.lastPage" @click="onPageChange(lastPage)">尾页</Button>
+      <Button size="small" :disabled="this.curPage === this.lastPage" @click="onPageChange(lastPage)">{{$t('jobList.page_2')}}</Button>
     </div>
   </div>
 </template>
@@ -40,15 +40,15 @@
             }
           },
           {
-            title: '关联用例',
+            title: this.$t('innerConnect.jobConnect'),
             key: 'job_name',
           },
           {
-            title: '测试柜类型',
+            title: this.$t('jobList.cabinet_type'),
             key: 'cabinet_type',
           },
           {
-            title: '维护人员',
+            title: this.$t('jobList.author'),
             key: 'author',
             // width:200
           },
@@ -78,7 +78,7 @@
           this.lastPage = 0
           this.data = []
           this.curPage = 1
-          this.$Message.error("inner关联信息获取失败")
+          this.$Message.error(this.$t('innerConnect.tips_1'))
         })
       },
       onPageChange (page) {

@@ -9,10 +9,10 @@
           </div>
         </div>
         <div slot="footer">
-          <Button type="primary" size="large" @click="closeResFileModal">确定</Button>
+          <Button type="primary" size="large" @click="closeResFileModal">{{$t('public.btn_ok')}}</Button>
         </div>
       </TabPane>
-      <TabPane label="上传文件" name="upload" icon="ios-cloud-upload-outline" class="upload-wrapper">
+      <TabPane :label="$t('jobResFile.upload')" name="upload" icon="ios-cloud-upload-outline" class="upload-wrapper">
         <Upload
           type="drag"
           action="#"
@@ -20,7 +20,7 @@
           :before-upload="beforeUpload">
           <div class="upload-area">
             <Icon type="ios-cloud-upload" size="300" style="color: #3399ff"></Icon>
-            <p style="font-size: 18px;">单击或拖动此处上载文件</p>
+            <p style="font-size: 18px;">{{$t('jobResFile.tips_1')}}</p>
           </div>
         </Upload>
       </TabPane>
@@ -50,10 +50,10 @@ export default {
 
         },
         {
-          title: '文件名称'
+          title: this.$t('jobResFile.filesColumn_1')
         },
         {
-          title: '文件类型'
+          title: this.$t('jobResFile.filesColumn_2')
         },
         {
           title: 'Action'
@@ -64,7 +64,7 @@ export default {
       resFilesCopyName:[],
       label: (h) => {
         return h('div', [
-          h('span', '依赖文件'),
+          h('span', this.$t('jobResFile.filesColumn_3')),
           h('Badge', {
             props: {
               count: this.resFilesCopy.length
@@ -107,16 +107,16 @@ export default {
       let reader = new FileReader()
       let reg = /[^\u0000-\u00FF]/g;
       if(reg.test(file.name)){
-        this.$Message.warning("上传文件名不能包含汉字，请进行修改后重新上传")
+        this.$Message.warning(this.$t('jobResFile.tips_2'))
         return false
       }
       let tempArr = file.name.split(' ')
       if (tempArr.length !== 1) {
-        this.$Message.warning("上传文件名不能包含空格，请进行修改后重新上传")
+        this.$Message.warning(this.$t('jobResFile.tips_3'))
         return false
       }
       if (this.resFilesCopyName.indexOf(file.name) !== -1){
-        this.$Message.warning("上传文件重名，请进行修改后重新上传")
+        this.$Message.warning(this.$t('jobResFile.tips_4'))
       }else {
         reader.onload = () => {
           // this.$store.commit('files/handleResFiles', { //尾端添加
@@ -136,7 +136,7 @@ export default {
             file: reader.result,
             type: file.name.split('.').pop()
           })
-          this.$Message.info("上传成功！！")
+          this.$Message.info(this.$t('jobResFile.tips_5'))
         }
         if (file.type.startsWith(('image')) || file.type.startsWith('audio') || file.type.startsWith('video')) { // 图片则存放 dataURL
           reader.readAsDataURL(file)
@@ -167,7 +167,7 @@ export default {
       this.resFilesCopy[this.curFile].file = file
       this.$Message.success({
         background: true,
-        content: '修改成功'
+        content: this.$t('jobResFile.tips_6')
       })
     },
     showFile (index) { // 展示依赖文件的内容

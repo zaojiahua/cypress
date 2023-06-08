@@ -1,15 +1,15 @@
 <template>
     <div>
         <div class="sel-box" v-if="testIndex===0">
-            <h3 class="sel-tip">请先确定用例类型</h3>
+            <h3 class="sel-tip">{{$t('createJob.tips_1')}}</h3>
             <div style="text-align: center">
                 <div class="sel-grey-box" style="margin-right: 30px;" @click="enterJobEditor('norMalJob')">
                     <Icon type="ios-filing" size="50" />
-                    <p>通用用例</p>
+                    <p>{{$t('createJob.tips_2')}}</p>
                 </div>
                 <div class="sel-grey-box" @click="enterJobEditor('InnerJob')">
                     <Icon type="ios-filing-outline" size="50" />
-                    <p>内嵌用例</p>
+                    <p>{{$t('createJob.tips_3')}}</p>
                 </div>
             </div>
         </div>

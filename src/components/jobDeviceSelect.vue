@@ -12,12 +12,12 @@
         <Checkbox v-for="item in deviceColumnDictionary" :label="item.key" :key="item.key">{{ item.title }}</Checkbox>
       </CheckboxGroup>
       <div style="width:300px;" v-click-outside="onClickOutSide">
-        <Input v-model="deviceKeyword" clearable search enter-button="Search" placeholder="输入设备自定义名称" class="search-input"
+        <Input v-model="deviceKeyword" clearable search enter-button="Search" :placeholder="$t('jobDevSel.tips_1')" class="search-input"
                @on-focus="isShowHistory=true" @on-search="onDeviceSearch" @on-clear="deviceKeyword='';onPageChange(1)"/>
         <Card v-show="isShowHistory" style="position:absolute;width: 300px;z-index: 100;margin-top: 5px;">
-          <Row>历史搜索<Icon style="float: right;" type="ios-trash-outline" size="18" @click="emptyHistory" /></Row>
+          <Row>{{$t('jobDevSel.tips_2')}}<Icon style="float: right;" type="ios-trash-outline" size="18" @click="emptyHistory" /></Row>
           <div class="history-box" v-for="(item,index) in historyList" :key="index" @click="onSearchHistory(item)">{{ item }}</div>
-          <Row v-show="historyList.length===0" style="margin-top: 10px;color: #cccccc;cursor: default;">暂无历史搜索记录</Row>
+          <Row v-show="historyList.length===0" style="margin-top: 10px;color: #cccccc;cursor: default;">{{$t('jobDevSel.tips_3')}}</Row>
         </Card>
       </div>
     </Row>
@@ -42,7 +42,7 @@
         style="display: inline-flex;"
       />
       <div style="display: inline-block;margin-left: 30px">
-        <span style="margin-right: 16px;">每页展示设备数</span>
+        <span style="margin-right: 16px;">{{$t('jobDevSel.tips_4')}}</span>
         <InputNumber :max="100" :min="10" v-model="pageSize" :active-change="false" size="small"></InputNumber>
       </div>
     </Row>
@@ -90,33 +90,33 @@ export default {
     return {
       deviceColumnDictionary: {
         'device_name': {
-          title: '自定义名称',
+          title: this.$t('jobDevSel.device_name'),
           key: 'device_name',
           sortable: true
         },
         'phone_model': {
-          title: '设备型号',
+          title: this.$t('jobDevSel.phone_model'),
           key: 'phone_model',
           sortable: true,
           filters: []
         },
         'rom_version': {
-          title: 'ROM版本',
+          title: this.$t('jobDevSel.rom_version'),
           key: 'rom_version',
           sortable: true
         },
         'android_version': {
-          title: '安卓版本',
+          title: this.$t('jobDevSel.android_version'),
           key: 'android_version',
           sortable: true
         },
         'cpu_name': {
-          title: 'CPU型号',
+          title: this.$t('jobDevSel.cpu_name'),
           key: 'cpu_name',
           sortable: true
         },
         'device_label': {
-          title: '设备编号',
+          title: this.$t('jobDevSel.device_label'),
           key: 'device_label',
           sortable: true
         },
@@ -126,7 +126,7 @@ export default {
           sortable: true
         },
         'status': {
-          title: '使用状态',
+          title: this.$t('jobDevSel.status'),
           key: 'status',
           sortable: true,
           filters: [
@@ -148,7 +148,7 @@ export default {
           }
         },
         'power': {
-          title: '电量',
+          title: this.$t('jobDevSel.power'),
           key: 'power',
           sortable: true
         }
@@ -241,21 +241,21 @@ export default {
                     this.$set(device, 'power', item.battery_level + '%')
                     return
                   }
-                  this.$set(device, 'power', '无电量信息')
+                  this.$set(device, 'power', this.$t('jobDevSel.tips_5'))
                 }
               })
             })
           } else {
             this.$Message.error({
               background: true,
-              content: '获取设备电量信息失败'
+              content: this.$t('jobDevSel.tips_6')
             })
           }
         }
       } else {
         this.$Message.error({
           background: true,
-          content: '获取设备列表失败'
+          content: this.$t('jobDevSel.tips_7')
         })
       }
     },

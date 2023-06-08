@@ -6,10 +6,16 @@
       </div>
       <Divider/>
       <div class="login-input">
-        <Input prefix="ios-person-outline" v-model="username" placeholder="请输入账户"/>
-        <Input prefix="ios-lock-outline" @on-enter="login" type="password" password v-model="password" placeholder="请输入密码"/>
-        <Checkbox v-model="keepLogin">保持登入</Checkbox>
-        <Button type="success" @click="login">登入</Button>
+        <Input prefix="ios-person-outline" v-model="username" :placeholder="lang==='zh'?'请输入账户':'username'"/>
+        <Input prefix="ios-lock-outline" @on-enter="login" type="password" password v-model="password" :placeholder="lang==='zh'?'请输入密码':'password'"/>
+        <Row type="flex" justify="space-between">
+          <Checkbox v-model="keepLogin">{{$t('login.remember')}}</Checkbox>
+          <Select v-model="lang" size="small" style="width:100px;display: inline-block" @on-change="onLangChange">
+            <Option value="zh">简体中文</Option>
+            <Option value="en">English</Option>
+          </Select>
+        </Row>
+        <Button type="success" @click="login">{{$t('login.login_btn')}}</Button>
       </div>
     </div>
   </div>
@@ -22,6 +28,7 @@ export default {
   name: 'login',
   data () {
     return {
+      lang: sessionStorage.getItem("lang") ||  'zh',
       username: '',
       password: '',
       keepLogin: false
@@ -33,6 +40,11 @@ export default {
     }
   },
   methods: {
+    onLangChange(select){
+      this.lang = select
+      this.$i18n.locale = select
+      sessionStorage.setItem('lang', select)
+    },
     login () {
       login(this.username, this.password).then(({ status, data }) => {
         // 清空 用户信息 获取用户token
@@ -45,14 +57,19 @@ export default {
         if (this.keepLogin) {
             localStorage.setItem('token', sessionStorage.token)
           }
+        localStorage.setItem('lang', this.lang)
         this.$router.push('/')
-        this.$Message.success('登录成功!');
+        this.$Message.success(this.$t('login.successMsg'));
       }).catch(error => {
         let errorMsg = ''
-        if (error.response.status >= 401) {
-          errorMsg = '错误的 用户名 或 密码 ！'
-        } else if (error.response.status >= 500) {
-          errorMsg = '服务器错误！'
+        if (error.response.status === 400) {
+          errorMsg = this.$t('login.errorMsg_400')
+        }else if (error.response.status === 401) {
+          errorMsg = this.$t('login.errorMsg_401')
+        }else if (error.response.status === 404)
+          errorMsg = this.$t('login.errorMsg_404')
+        else if(error.response.status >= 500) {
+          errorMsg = this.$t('public.error_500')
         } else {
           errorMsg = error.toString()
         }

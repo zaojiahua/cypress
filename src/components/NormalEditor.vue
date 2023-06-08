@@ -21,8 +21,8 @@
       </main>
       <div id="unit-controller">
         <ButtonGroup vertical size="default" v-if="!isDiagram">
-          <Button type="error" @click="delUnitTemplate">删除</Button>
-          <Button type="success" @click="handleUnitTemplateEditor(true)">编辑</Button>
+          <Button type="error" @click="delUnitTemplate">{{$t('public.btn_del')}}</Button>
+          <Button type="success" @click="handleUnitTemplateEditor(true)">{{$t('unitEditor.btn_edit')}}</Button>
         </ButtonGroup>
         <Dropdown trigger="custom" :visible="true" v-else>
           <DropdownMenu slot="list">
@@ -60,8 +60,8 @@
       @setUnitName="setUnitName"
     ></unit-editor>
     <div slot="footer">
-      <Button type="text" @click="saveNormalData(false)">取消</Button>
-      <Button type="primary" @click="saveNormalData(true)">确定</Button>
+      <Button type="text" @click="saveNormalData(false)">{{$t('public.btn_cancel')}}</Button>
+      <Button type="primary" @click="saveNormalData(true)">{{$t('public.btn_ok')}}</Button>
     </div>
   </Modal>
 </template>
@@ -121,23 +121,23 @@ export default {
       showUnitEditor: false,
       dropdownMenuData:[
         {
-          name: "unit类型",
+          name: this.$t('normal.menu_1'),
           // data:["结果unit","非结果unit"],
           data:[
-            {name:"非结果unit",key:0},
-            {name:"结果unit",key:1}
+            {name:this.$t('normal.menu_2'),key:0},
+            {name:this.$t('normal.menu_3'),key:1}
           ],
           visible: false, // 放开所有限制
           func: this.setUnitCategory
 
         },
         {
-          name: "运行载体",
+          name: this.$t('normal.menu_4'),
           data:[
-            {name:"主机",key:0},
-            {name:"一号僚机",key:1},
-            {name:"二号僚机",key:2},
-            {name:"三号僚机",key:3}
+            {name:this.$t('jobMsg.type_6'),key:0},
+            {name:this.$t('normal.menu_5'),key:1},
+            {name:this.$t('normal.menu_6'),key:2},
+            {name:this.$t('normal.menu_7'),key:3}
           ],
           visible: false,
           func: this.setWingman
@@ -187,7 +187,7 @@ export default {
     setUnitCategory(key) { // 改变unit类型
       if (this.innerDiagram.selection.count > 1) {
         this.$Message.error({
-          content: '仅可选取一个Unit'
+          content: this.$t('normal.tips_1')
         })
         return
       }
@@ -196,7 +196,7 @@ export default {
       if (key) { // 结果unit
         if (this.finalResKey){ // 有设置结果unit
           if (this.finalResKey !== `${this.normalData.key},${data.key}`){ // 且不是当前unit
-            this.$Message.error({ background: true, content: '结果unit有且只能有一个' })
+            this.$Message.error({ background: true, content: this.$t('normal.tips_2') })
           }
         }else // 没有设置结果unit
         {
@@ -235,7 +235,7 @@ export default {
         if (resultUnitCount > 1 ) {
           this.$Message.error({
             background: true,
-            content: '只能有一个结果unit'
+            content: this.$t('normal.tips_3')
           })
           return
         }
@@ -312,11 +312,11 @@ export default {
           this.$store.commit('unit/setUnitLists', unitLists) // 保存unit模板的信息
           if (unitTemplateType) this.getSelectedUnit(unitTemplateType) // 显示当前选中种类的unit模板
         } else {
-          throw new Error('获取 Unit 列表失败')
+          throw new Error(this.$t('normal.tips_4'))
         }
       }).catch(err => {
         console.log(err)
-        this.$Message.error({ background: true, content: '获取 Unit 列表失败' })
+        this.$Message.error({ background: true, content: this.$t('normal.tips_4') })
       })
     },
     updateUnitListsByUnitGroup(unitTemplateType = undefined) { // 更新unit模板信息
@@ -345,11 +345,11 @@ export default {
           this.$store.commit('unit/setUnitLists', unitLists) // 保存unit模板的信息
           if (unitTemplateType) this.getSelectedUnit(unitTemplateType) // 显示当前选中种类的unit模板
         } else {
-          throw new Error('获取 Unit 列表失败')
+          throw new Error(this.$t('normal.tips_4'))
         }
       }).catch(err => {
         console.log(err)
-        this.$Message.error({ background: true, content: '获取 Unit 列表失败' })
+        this.$Message.error({ background: true, content: this.$t('normal.tips_4') })
       })
     },
     handleUnitTemplateEditor (toggle) { // 打开/关闭Unit模板编辑页面
@@ -358,17 +358,17 @@ export default {
     },
     delUnitTemplate () { // 删除选中的单个unit模板
       this.$Modal.confirm({
-        title: '温馨提示',
-        content: '确定要删除当前 Unit 模板吗？',
-        okText: '心意已决',
-        cancelText: '我再想想',
+        title: this.$t('public.modal_info'),
+        content: this.$t('normal.tips_5'),
+        okText: this.$t('normal.tips_6'),
+        cancelText: this.$t('normal.tips_7'),
         onOk: async () => {
           let { status } = await deleteUnitTemplate(this.unitTemplateId)
           if (status === 204) {
-            this.$Message.success({ background: true, content: '删除成功' })
+            this.$Message.success({ background: true, content: this.$t('public.delSuccess') })
             setTimeout(() => { this.updateUnitLists(this.unitTemplateType) }, 300) // 延时获取更新后的模板信息
           } else {
-            this.$Message.error({ background: true, content: '删除失败' })
+            this.$Message.error({ background: true, content: this.$t('public.delFail') })
           }
         }
       })

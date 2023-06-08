@@ -1,88 +1,88 @@
 <template>
   <Drawer :closable="false" v-model="$store.state.showDrawer" width="45" @on-close="closeDrawer">
     <Tabs v-model="currTab" @on-click="showJobFlow" type="card">
-      <TabPane name="jobAttr" label="用例属性信息">
+      <TabPane name="jobAttr" :label="$t('jobMsg.label_1')">
         <Form ref="form"
               v-if="basicData"
               :model="$store.state.job.jobInfo"
-              width="30" :label-width="95"
+              width="30" :label-width="108"
               label-position="left"
               :rules="validateRules">
-          <FormItem label="用例名称" prop="job_name">
-            <Input  :disabled="!editJobMsg"  v-model="$store.state.job.jobInfo.job_name" clearable placeholder="请输入用例名称"/>
+          <FormItem :label="$t('jobList.job_name')" prop="job_name">
+            <Input  :disabled="!editJobMsg"  v-model="$store.state.job.jobInfo.job_name" clearable :placeholder="$t('jobMsg.label_2')"/>
           </FormItem>
-          <FormItem label="测试用途" prop="test_area">
-            <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.test_area" multiple placeholder="请选择" filterable allow-create>
+          <FormItem :label="$t('jobList.test_area')" prop="test_area">
+            <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.test_area" multiple :placeholder="$t('jobMsg.label_3')" filterable allow-create>
               <Option v-for="item in basicData[basicData.testArea]" :value="item.id" :key="item.id">{{ item.description }}</Option>
             </Select>
           </FormItem>
-          <FormItem label="用例类型" prop="job_type" class="type">
+          <FormItem :label="$t('jobList.job_type')" prop="job_type" class="type">
             <Cascader :disabled="!editJobMsg" :data="jobTypes[selectJobType]" v-model="curJobType"></Cascader>
             <Input v-model="jobTypeString" style="display: none;" disabled />
           </FormItem>
-          <FormItem label="输入参数">
+          <FormItem :label="$t('jobMsg.label_4')">
             <Select :disabled="!editJobMsg" v-model="jobParameter" :transfer="true">
-              <Option :value="0">不需要</Option>
-              <Option :value="1">需要</Option>
+              <Option :value="0">{{$t('jobMsg.switch_1')}}</Option>
+              <Option :value="1">{{$t('jobMsg.switch_2')}}</Option>
             </Select>
           </FormItem>
-          <FormItem label="自定义标签" prop="custom_tag">
-            <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.custom_tag" multiple placeholder="请选择" filterable allow-create>
+          <FormItem :label="$t('jobList.custom_tag')" prop="custom_tag">
+            <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.custom_tag" multiple :placeholder="$t('jobMsg.label_3')" filterable allow-create>
               <Option v-for="item in basicData[basicData.customTag]" :value="item.id" :key="item.id">{{ item.custom_tag_name }}</Option>
             </Select>
           </FormItem>
-          <FormItem label="硬件标签" v-show="selectJobType === 'InnerJob'">
+          <FormItem :label="$t('jobFlow.unit_group')" v-show="selectJobType === 'InnerJob'">
             <Select :disabled="!editJobMsg&&isJobEditor" v-model="$store.state.job.jobInfo.unit_group" multiple :transfer="true">
-              <Option value="4">龙门架机械臂</Option>
-              <Option value="3">旋转机械臂</Option>
-              <Option value="5">摄像头</Option>
-              <Option value="7">双指</Option>
-              <Option value="6">usb通断</Option>
+              <Option value="4">{{$t('jobMsg.switch_3')}}</Option>
+              <Option value="3">{{$t('jobMsg.switch_4')}}</Option>
+              <Option value="5">{{$t('jobMsg.switch_5')}}</Option>
+              <Option value="7">{{$t('jobMsg.switch_6')}}</Option>
+              <Option value="6">{{$t('jobMsg.switch_7')}}</Option>
             </Select>
           </FormItem>
           <FormItem label="caseNo" prop="case_number">
-            <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.case_number" clearable placeholder="请输入用例编号" />
+            <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.case_number" clearable :placeholder="$t('jobMsg.label_5')" />
           </FormItem>
           <FormItem label="priority" prop="priority">
-            <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.priority" clearable placeholder="请输入用例级别" />
+            <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.priority" clearable :placeholder="$t('jobMsg.label_6')" />
           </FormItem>
-          <FormItem label="用例说明" prop="description">
-            <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.description" clearable placeholder="请输入说明信息" />
+          <FormItem :label="$t('jobMsg.label_8')" prop="description">
+            <Input :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.description" clearable :placeholder="$t('jobMsg.label_7')" />
           </FormItem>
           <Divider class="device-info-title" style="margin-top: 60px;">
-            <b>设备信息</b>
-            <Button v-if="editJobMsg" type="info" @click="onSelectDevice">选取设备</Button>
+            <b>{{$t('jobMsg.label_9')}}</b>
+            <Button v-if="editJobMsg" type="info" @click="onSelectDevice">{{$t('unitEditor.selDev')}}</Button>
           </Divider>
-          <FormItem label="厂商信息" prop="manufacturer">
-            <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.manufacturer" placeholder="请选择" @on-change="clear" filterable :transfer="true">
+          <FormItem :label="$t('jobMsg.label_10')" prop="manufacturer">
+            <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.manufacturer" :placeholder="$t('jobMsg.label_3')" @on-change="clear" filterable :transfer="true">
               <Option v-for="item in basicData[basicData.manufacturer]" :value="item.id" :key="item.id">{{ item.manufacturer_name }}</Option>
             </Select>
           </FormItem>
-          <FormItem label="适配机型" prop="phone_models">
-            <Select :disabled="!editJobMsg || disabled" v-model="$store.state.job.jobInfo.phone_models" multiple  placeholder="请选择" filterable :transfer="true">
+          <FormItem :label="$t('jobFlow.phone_model')" prop="phone_models">
+            <Select :disabled="!editJobMsg || disabled" v-model="$store.state.job.jobInfo.phone_models" multiple  :placeholder="$t('jobMsg.label_3')" filterable :transfer="true">
               <Option v-for="item in curManufacturer.phonemodel" :value="item.id" :key="item.id">{{ item.phone_model_name }}</Option>
             </Select>
           </FormItem>
-          <FormItem label="ROM版本" prop="rom_version">
-            <Select :disabled="!editJobMsg || disabled" v-model="$store.state.job.jobInfo.rom_version" multiple placeholder="请选择" filterable :transfer="true">
+          <FormItem :label="$t('jobDevSel.rom_version')" prop="rom_version">
+            <Select :disabled="!editJobMsg || disabled" v-model="$store.state.job.jobInfo.rom_version" multiple :placeholder="$t('jobMsg.label_3')" filterable :transfer="true">
               <Option v-for="item in curManufacturer.romversion" :value="item.id" :key="item.id">{{ item.version }}</Option>
             </Select>
           </FormItem>
-          <FormItem label="适配系统" prop="android_version">
-            <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.android_version" multiple placeholder="请选择" :transfer="true">
+          <FormItem :label="$t('jobMsg.label_11')" prop="android_version">
+            <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.android_version" multiple :placeholder="$t('jobMsg.label_3')" :transfer="true">
               <Option v-for="item in basicData[basicData.androidVersion]" :value="item.id" :key="item.id">{{ item.version }}</Option>
             </Select>
           </FormItem>
           <div v-show="selectJobType !== 'InnerJob'">
             <Divider class="device-info-title" style="margin-top: 60px;">
-              <b>资源信息</b>
+              <b>{{$t('jobMsg.tips_1')}}</b>
             </Divider>
-            <FormItem label="测试柜类型" prop="cabinet_type">
+            <FormItem :label="$t('jobList.cabinet_type')" prop="cabinet_type">
               <Select :disabled="!editJobMsg" v-model="$store.state.job.jobInfo.cabinet_type" :transfer="true">
                   <Option v-for="(item,index) in $store.state.job.cabinetList" :value="item" :key="index">{{ item }}</Option>
               </Select>
             </FormItem>
-            <FormItem label="附加资源" prop="resource_list">
+            <FormItem :label="$t('jobMsg.tips_2')" prop="resource_list">
               <Cascader :disabled="!editJobMsg" v-model="$store.state.job.resourceList[i-1]" :data="cascaderData" filterable v-for="i in cascaderIndex" :key="i" :transfer="true" style="margin-bottom: 16px"></Cascader>
               <Button v-show="editJobMsg" type="primary" long @click="addResourceClick">
                 <Icon type="ios-add-circle-outline" size="20" />
@@ -91,24 +91,24 @@
           </div>
           <div v-show="isJobEditor">
             <Divider class="device-info-title" style="margin-top: 60px;">
-              <b>流程图信息</b>
+              <b>{{$t('jobFlow.title_1')}}</b>
             </Divider>
-            <FormItem label="名称" prop="flow_name">
-              <Input :disabled="!editJobMsg" v-model="jobFlowInfo.name" clearable placeholder="请输入名称" />
+            <FormItem :label="$t('jobFlow.label_1')" prop="flow_name">
+              <Input :disabled="!editJobMsg" v-model="jobFlowInfo.name" clearable :placeholder="$t('jobMsg.tips_3')" />
             </FormItem>
 
-            <FormItem label="描述">
-              <Input :disabled="!editJobMsg" v-model="jobFlowInfo.description" clearable placeholder="请输入描述信息" />
+            <FormItem :label="$t('jobFlow.label_2')">
+              <Input :disabled="!editJobMsg" v-model="jobFlowInfo.description" clearable :placeholder="$t('jobMsg.tips_4')" />
             </FormItem>
           </div>
 
           <div v-show="!isJobEditor" style="float: right;">
-            <Button v-if="editJobMsg" type="success" @click="saveChange" style="margin-right: 1em">保存修改</Button>
-            <Button v-if="selectJobType === 'InnerJob'" type="info" @click="enterJobEditor">开始编辑</Button>
+            <Button v-if="editJobMsg" type="success" @click="saveChange" style="margin-right: 1em">{{$t('jobMsg.tips_5')}}</Button>
+            <Button v-if="selectJobType === 'InnerJob'" type="info" @click="enterJobEditor">{{$t('jobMsg.tips_6')}}</Button>
           </div>
         </Form>
       </TabPane>
-      <TabPane v-if="!isJobEditor && selectJobType === 'norMalJob'" name="jobFlow" label="用例流程图信息">
+      <TabPane v-if="!isJobEditor && selectJobType === 'norMalJob'" name="jobFlow" :label="$t('jobMsg.tips_7')">
         <job-flow-component  ref="jobFlowCmp" v-show="!isJobEditor && selectJobType === 'norMalJob'" :job-id="jobInfo.job_id" @validate="validateForm"></job-flow-component>
       </TabPane>
     </Tabs>
@@ -116,16 +116,16 @@
     <Modal v-model="isConflicted" :closable="false" :styles="{top: '42%'}" width="390">
       <div slot="header" style="color:#f60;text-align:center">
         <Icon type="ios-information-circle" style="font-size: 20px;"></Icon>
-        <span style="font-size: 18px;">设备信息冲突</span>
+        <span style="font-size: 18px;">{{$t('jobMsg.tips_8')}}</span>
       </div>
       <div style="text-align:center;">
-        <p style="margin: 20px 0;">当前选择的设备与已填信息冲突，请选择您要进行的操作</p>
+        <p style="margin: 20px 0;">{{$t('jobMsg.tips_9')}}</p>
       </div>
       <div slot="footer" style="display: flex; justify-content: space-between;">
-        <Button @click="handleConflict">取消</Button>
+        <Button @click="handleConflict">{{$t('public.btn_cancel')}}</Button>
         <div>
-          <Button type="success" :disabled="!canAppend" @click="deviceInfoAppend">追加</Button>
-          <Button type="primary" @click="deviceInfoReplace">替换</Button>
+          <Button type="success" :disabled="!canAppend" @click="deviceInfoAppend">{{$t('jobMsg.btn_1')}}</Button>
+          <Button type="primary" @click="deviceInfoReplace">{{$t('jobMsg.btn_2')}}</Button>
         </div>
       </div>
     </Modal>
@@ -141,10 +141,11 @@ import { shouldCreateNewTag, createNewTag } from 'lib/tools'
 
 import { mapState, mapGetters } from 'vuex'
 
+const lang = sessionStorage.getItem("lang")
 const simChildren = [
   {
     value: '中国移动',
-    label: '中国移动',
+    label: lang ==='zh' ? '中国移动' : 'China Mobile',
     children: [
       {
         value: 'volte_true',
@@ -152,13 +153,13 @@ const simChildren = [
       },
       {
         value: 'volte_false',
-        label: '非Volte',
+        label: 'not Volte',
       }
     ]
   },
   {
     value: '中国联通',
-    label: '中国联通',
+    label: lang ==='zh' ? '中国联通' : 'China Unicom',
     children: [
       {
         value: 'volte_true',
@@ -166,13 +167,13 @@ const simChildren = [
       },
       {
         value: 'volte_false',
-        label: '非Volte',
+        label: 'not Volte',
       }
     ]
   },
   {
     value: '中国电信',
-    label: '中国电信',
+    label: lang ==='zh' ? '中国电信' : 'China Telecom',
     children: [
       {
         value: 'volte_true',
@@ -180,13 +181,13 @@ const simChildren = [
       },
       {
         value: 'volte_false',
-        label: '非Volte',
+        label: 'not Volte',
       }
     ]
   },
   {
     value: 'anything',
-    label: '移动/联通/电信',
+    label: lang ==='zh' ? '移动/联通/电信' : 'Mobile/Unicom/Telecom',
     children: [
       {
         value: 'volte_true',
@@ -194,13 +195,13 @@ const simChildren = [
       },
       {
         value: 'volte_false',
-        label: '非Volte',
+        label: 'not Volte',
       }
     ]
   },
   {
     value: 'not_中国移动',
-    label: '非中国移动',
+    label: lang ==='zh' ? '非中国移动':"not China Mobile",
     children: [
       {
         value: 'volte_true',
@@ -208,13 +209,13 @@ const simChildren = [
       },
       {
         value: 'volte_false',
-        label: '非Volte',
+        label: 'not Volte',
       }
     ]
   },
   {
     value: 'not_中国联通',
-    label: '非中国联通',
+    label: lang ==='zh' ? '非中国联通':"not China Unicom",
     children: [
       {
         value: 'volte_true',
@@ -222,13 +223,13 @@ const simChildren = [
       },
       {
         value: 'volte_false',
-        label: '非Volte',
+        label: 'not Volte',
       }
     ]
   },
   {
     value: 'not_中国电信',
-    label: '非中国电信',
+    label: lang ==='zh' ? '非中国电信':"not China Telecom",
     children: [
       {
         value: 'volte_true',
@@ -236,13 +237,13 @@ const simChildren = [
       },
       {
         value: 'volte_false',
-        label: '非Volte',
+        label: 'not Volte',
       }
     ]
   },
   {
     value: 'nothing',
-    label: '无卡'
+    label: lang ==='zh' ? '无卡':"no SIMCard"
   },
 ]
 
@@ -260,15 +261,15 @@ export default {
       // 可能jobFlowInfo没有name字段
       let flow_name = this.jobFlowInfo.name ? this.jobFlowInfo.name.trim() : null
       if (!flow_name) {
-        callback(new Error('请输入流程图名称'));
+        callback(new Error(this.$t('jobMsg.notices_1')));
       }else if(flow_name.includes("/")){
-        callback(new Error('流程图名称不允许包含 /'));
+        callback(new Error(this.$t('jobMsg.notices_2')));
       }else if (flow_name.length > 70) {
-        callback(new Error('流程图名称长度不能大于70个字符'));
+        callback(new Error(this.$t('jobMsg.notices_3')));
       } else if (this.jobId)  { // 在已经存在的用例中操作
         let {data:{job_flows}} = await getFlow({job_id: this.jobId,name: flow_name})
         if (job_flows.length === 1 && job_flows[0].pk !== this.jobFlowInfo.id){
-          callback(new Error('用例下的流程图名称重复'));
+          callback(new Error(this.$t('jobMsg.notices_4')));
         } else {
           callback()
         }
@@ -279,11 +280,11 @@ export default {
     const validateJobName = (rule, value, callback) => {
       let job_name = this.jobInfo.job_name ? this.jobInfo.job_name.trim() : null
       if (!job_name) {
-        callback(new Error('请输入用例名称'));
+        callback(new Error(this.$t('jobMsg.label_2')));
       }else if(job_name.includes("/")){
-        callback(new Error('用例名称不允许包含 /'));
+        callback(new Error(this.$t('jobMsg.notices_5')));
       }else if (job_name.length > 70) {
-        callback(new Error('用例名称长度不能大于70个字符'));
+        callback(new Error(this.$t('jobMsg.notices_6')));
       }else {
         callback()
       }
@@ -294,7 +295,7 @@ export default {
         return
       }
       if (!value || value === '') {
-        callback(new Error('测试柜类型不能为空'));
+        callback(new Error(this.$t('jobMsg.notices_7')));
       } else {
         callback();
       }
@@ -317,16 +318,16 @@ export default {
           required: true, validator:validateJobName, trigger: 'blur,change'
         }],
         test_area: [{
-          required: true, type: 'array', min: 1, message: '测试用途不能为空', trigger: 'change'
+          required: true, type: 'array', min: 1, message: this.$t('jobMsg.validate_1'), trigger: 'change'
         }],
         job_type: [{
-          required: true, type: 'string', message: '用例类型不能为空', trigger: 'change'
+          required: true, type: 'string', message: this.$t('jobMsg.validate_2'), trigger: 'change'
         }],
         cabinet_type:[{
           required: true, validator:validateCabinet, trigger: 'change'
         }],
         manufacturer: [{
-          required: true, type: 'number', message: '厂商信息不能为空', trigger: 'change'
+          required: true, type: 'number', message: this.$t('jobMsg.validate_3'), trigger: 'change'
         }],
         // 暂时去掉了对适配机型及Rom版本的表单验证
         // phone_models: [{
@@ -336,7 +337,7 @@ export default {
         //   required: true, type: 'array', min: 1, message: 'ROM版本不能为空', trigger: 'change'
         // }],
         android_version: [{
-          required: true, type: 'array', min: 1, message: '适配系统不能为空', trigger: 'change'
+          required: true, type: 'array', min: 1, message: this.$t('jobMsg.validate_4'), trigger: 'change'
         }],
         flow_name: [
           { required: true,validator: validatePass, trigger: 'blur,change' }
@@ -348,27 +349,27 @@ export default {
         InnerJob: [
           {
             value: 'InnerJob',
-            label: '内嵌用例',
+            label: this.$t('jobMsg.type_1'),
             children: []
           }
         ],
         norMalJob: [
           {
             value: 'Joblib',
-            label: '功能测试',
+            label: this.$t('jobMsg.type_2'),
             children: []
           },
           {
             value: 'PerfJob', // job_type
-            label: '性能测试',
+            label: this.$t('jobMsg.type_3'),
             children: [
               {
                 value: 'TimeJob', // job_second_type
-                label: '响应时间'
+                label: this.$t('jobMsg.type_4')
               },
               {
                 value: 'SmoothJob',
-                label: '流畅度'
+                label: this.$t('jobMsg.type_5')
               }
             ]
           }
@@ -377,14 +378,14 @@ export default {
         InnerJob: [
           {
             value: 'InnerJob',
-            label: '内嵌用例',
+            label: this.$t('jobMsg.type_1'),
             children: []
           }
         ],
         norMalJob: [
           {
             value: 'Joblib',
-            label: '功能测试',
+            label: this.$t('jobMsg.type_2'),
             children: []
           },
           {
@@ -394,15 +395,15 @@ export default {
           },
           {
             value: 'PerfJob', // job_type
-            label: '性能测试',
+            label: this.$t('jobMsg.type_3'),
             children: [
               {
                 value: 'TimeJob', // job_second_type
-                label: '响应时间'
+                label: this.$t('jobMsg.type_4')
               },
               {
                 value: 'SmoothJob',
-                label: '流畅度'
+                label: this.$t('jobMsg.type_5')
               }
             ]
           }
@@ -414,21 +415,21 @@ export default {
       cascaderData:[
         {
           value: 'device',
-          label: '主机',
+          label: this.$t('jobMsg.type_6'),
           children: [
             {
               value: 'simcard_1',
-              label: 'SIM卡1',
+              label: this.$t('jobMsg.type_7')+'1',
               children: simChildren,
             },
             {
               value: 'simcard_2',
-              label: 'SIM卡2',
+              label: this.$t('jobMsg.type_7')+'2',
               children: simChildren,
             },
             {
               value: 'account_resource',
-              label: '账号资源',
+              label: this.$t('jobMsg.type_8'),
               children:[]
             }
           ]
@@ -436,21 +437,21 @@ export default {
         //=========================================
         {
           value: 'subsidiary_device_1',
-          label: '僚机1',
+          label: this.$t('jobMsg.type_9')+'1',
           children: [
             {
               value: 'simcard_1',
-              label: 'SIM卡1',
+              label: this.$t('jobMsg.type_7')+'1',
               children: simChildren,
             },
             {
               value: 'simcard_2',
-              label: 'SIM卡2',
+              label: this.$t('jobMsg.type_7')+'2',
               children: simChildren,
             },
             {
               value: 'account_resource',
-              label: '账号资源',
+              label: this.$t('jobMsg.type_8'),
               children:[]
             }
           ]
@@ -458,21 +459,21 @@ export default {
         //============================
         {
           value: 'subsidiary_device_2',
-          label: '僚机2',
+          label: this.$t('jobMsg.type_9')+'2',
           children: [
             {
               value: 'simcard_1',
-              label: 'SIM卡1',
+              label: this.$t('jobMsg.type_7')+'1',
               children: simChildren,
             },
             {
               value: 'simcard_2',
-              label: 'SIM卡2',
+              label: this.$t('jobMsg.type_7')+'2',
               children: simChildren,
             },
             {
               value: 'account_resource',
-              label: '账号资源',
+              label: this.$t('jobMsg.type_8'),
               children:[]
             }
           ]
@@ -480,21 +481,21 @@ export default {
         //=======================
         {
           value: 'subsidiary_device_3',
-          label: '僚机3',
+          label: this.$t('jobMsg.type_9')+'3',
           children: [
             {
               value: 'simcard_1',
-              label: 'SIM卡1',
+              label: this.$t('jobMsg.type_7')+'1',
               children: simChildren,
             },
             {
               value: 'simcard_2',
-              label: 'SIM卡2',
+              label: this.$t('jobMsg.type_7')+'2',
               children: simChildren,
             },
             {
               value: 'account_resource',
-              label: '账号资源',
+              label: this.$t('jobMsg.type_8'),
               children:[]
             }
           ]
@@ -684,7 +685,7 @@ export default {
             this.$Message.success({
               background: true,
               // eslint-disable-next-line camelcase
-              content: `成功释放设备 ${device_name}`
+              content: this.$t('jobMsg.msg_1')+ device_name
             })
             this.$store.commit('device/setCountdown')
           }
@@ -703,7 +704,7 @@ export default {
           this.$Message.success({
             background: true,
             // eslint-disable-next-line camelcase
-            content: `成功占用设备 ${device_name}`
+            content: this.$t('jobMsg.msg_2')+ device_name
           })
           this.$store.commit('device/setCountdown', true) // 显示倒计时
         }
@@ -715,7 +716,7 @@ export default {
       if (!this.editJobMsg){
         this.$Message.error({
           background: true,
-          content: '没有编辑当前用例的权限'
+          content: this.$t('jobMsg.msg_3')
         })
         return
       }
@@ -746,14 +747,14 @@ export default {
       if(this.isRepeat(sim_1_name)){
         this.$Message.warning({
           background: true,
-          content: '每台设备仅能选择一张SIM1手机卡，请重新选择！'
+          content: this.$t('jobMsg.msg_4')
         })
         return
       }
       if(this.isRepeat(sim_2_name)){
         this.$Message.warning({
           background: true,
-          content: '每台设备仅能选择一张SIM2手机卡，请重新选择！'
+          content: this.$t('jobMsg.msg_5')
         })
         return
       }
@@ -778,24 +779,24 @@ export default {
             jobInfo.author = parseInt(sessionStorage.id)
             jobInfo.unit_group = jobInfo.unit_group.join(",")
             updateJobMsg(this.jobId, jobInfo).then(() => { // 更新用例信息
-              this.$Message.info('修改成功')
+              this.$Message.info(this.$t('jobResFile.tips_6'))
               this.$store.commit('refreshJobList')
               // if(resourceList.length>0)
                 jobBindResource( {"job_label":this.jobInfo.job_label,"resource_data":resourceList}).then(() => { // 更新用例信息
                   // this.$Message.success('用例资源绑定成功')
                 }).catch(error => {
                   console.log(error)
-                  this.$Message.error('用例资源绑定失败')
+                  this.$Message.error(this.$t('jobEdit.error_1'))
                 })
             }).catch(error => {
               console.log(error)
-              this.$Message.error('修改失败')
+              this.$Message.error(this.$t('jobMsg.msg_6'))
             })
           }, 400)
         } else { // 验证失败
           this.$Message.warning({
             background: true,
-            content: '请输入完整信息'
+            content: this.$t('jobMsg.msg_7')
           })
         }
       })
@@ -832,7 +833,7 @@ export default {
           if (!valid) {
             this.$Message.warning({
               background: true,
-              content: '请输入完整信息'
+              content: this.$t('jobMsg.msg_7')
             })
           }
         })
@@ -893,7 +894,7 @@ export default {
           if (status === 200) {
             this.$Message.warning({
               background: true,
-              content: '当前设备与 Job 冲突，已自动释放。'
+              content: this.$t('jobMsg.msg_8')
             })
           }
           this.$store.commit('device/setCountdown') // 取消计时
@@ -923,16 +924,16 @@ export default {
     getAppNameList().then(response=>{
       response.data.result.forEach(app=>{
         appChildren.push({value:app.name,label:app.name})
-        subsidiaryAppChildren.push({value:app.name,label:app.name,children:[{value:"account_alike_true",label:"与主机相同"},{value:"unrestrained",label:"无特殊要求"}]})
+        subsidiaryAppChildren.push({value:app.name,label:app.name,children:[{value:"account_alike_true",label:this.$t('jobMsg.type_10')},{value:"unrestrained",label:this.$t('jobMsg.type_11')}]})
       })
       this.cascaderData.forEach(item=> {
-        if(item.label === "主机")
+        if(item.label === this.$t('jobMsg.type_6'))
           item.children[2].children = appChildren
         else
           item.children[2].children = subsidiaryAppChildren
       })
     }).catch(error=>{
-      this.$Message.error({content:"获取app列表失败"+ error.response.data.message,duration:3})
+      this.$Message.error({content:this.$t('jobMsg.msg_9')+ error.response.data.message,duration:3})
     })
   },
   beforeCreate(){

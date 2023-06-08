@@ -12,7 +12,7 @@
         @click.native="handleCoordinate"
         id='btn-confirm-area'
         v-show="(isJobResourceFile || isJobResourceFileWithDefaultValue) && this.curFile"
-      >确定</Button>
+      >{{$t('public.btn_ok')}}</Button>
 <!--      <Button-->
 <!--        size="small"-->
 <!--        type="primary"-->
@@ -27,18 +27,18 @@
         @click="handleOffsetCoordinates"
         id="btn-point-offside"
         v-show="isOffset"
-      >确定</Button>
+      >{{$t('public.btn_ok')}}</Button>
       <Button
         size="small"
         type="primary"
         @click="handleAbsoluteCoordinates(true)"
         id="btn-get-relative-coordinate"
         v-show="isPicInput && this.curFile"
-      >获取坐标比例</Button>
+      >{{$t('unitEditor.btn_7')}}</Button>
     </div>
     <!-- body -->
     <div>
-      <p v-show="!editing">还没有可以展示/编辑的文件</p>
+      <p v-show="!editing">{{$t('unitEditor.desc_4')}}</p>
       <transition name="fade-loader">
         <CypressLoader
           :size="60"
@@ -88,10 +88,10 @@ export default {
     },
     utilTitle () {
       if (this.curFile && this.isJobResourcePicture) {
-        return '(图片名称：' + this.curFile.name + ')'
+        return '(' + this.$t('unitEditor.desc_5') + this.curFile.name + ')'
       }
       if (this.curFile && this.isJobResourceFile) {
-        return '(图片名称：' + this.curFile.name + ' | 识别率：' + this.imgRecRate + '%)'
+        return '(' + this.$t('unitEditor.desc_5') + this.curFile.name + this.$t('unitEditor.desc_6') + this.imgRecRate + '%)'
       }
       return null
     }
@@ -106,7 +106,7 @@ export default {
       if (!this.coordinate || !this.coordinate.relativeCoordinate || !this.coordinate.absoluteCoordinate) {
         this.$Message.warning({
           background: true,
-          content: '请选择区域'
+          content: this.$t('unitEditor.desc_7')
         })
         return false
       }
@@ -116,7 +116,7 @@ export default {
       if (!this.point) {
         this.$Message.warning({
           background: true,
-          content: '请选择坐标点'
+          content: this.$t('unitEditor.desc_8')
         })
         return false
       }
@@ -126,7 +126,7 @@ export default {
       if (!this.offset) {
         this.$Message.warning({
           background: true,
-          content: '请选择测距点'
+          content: this.$t('unitEditor.desc_9')
         })
         return false
       }
@@ -137,7 +137,7 @@ export default {
       let startPoint = this.coordinate.relativeCoordinate.topLeft
       let endPoint = this.coordinate.relativeCoordinate.bottomRight
       if((startPoint.y===endPoint.y) || (startPoint.x===endPoint.x)){
-        this.$Message.info("选区无效，请重新选择！")
+        this.$Message.info(this.$t('unitEditor.desc_10'))
         return
       }
       this.$store.commit('img/handleCoordinate', {

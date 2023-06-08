@@ -27,11 +27,11 @@
       <div v-show="editing">
         <Input type="textarea" v-model="unitContent"/>
         <div class="btns">
-          <Button @click="endUnitContentEdit(false)">取消</Button>
-          <Button type="primary" @click="endUnitContentEdit(true)">保存</Button>
+          <Button @click="endUnitContentEdit(false)">{{$t('public.btn_cancel')}}</Button>
+          <Button type="primary" @click="endUnitContentEdit(true)">{{$t('public.btn_save')}}</Button>
         </div>
       </div>
-      <Button @click="editUnitContent"><Icon type="ios-clipboard-outline" />编辑</Button>
+      <Button @click="editUnitContent"><Icon type="ios-clipboard-outline" />{{$t('unitEditor.btn_edit')}}</Button>
     </div>
   </Card>
 </template>
@@ -79,7 +79,7 @@ export default {
         if (!isJsonString(this.curUnitContent)) { // 不是JSON格式
           this.$Message.error({
             background: true,
-            content: '不是 JSON 格式'
+            content: this.$t('jobResFile.notices_2')
           })
           return
         } else { // 是JSON格式
@@ -89,7 +89,7 @@ export default {
           })
           this.$Message.success({
             background: true,
-            content: '保存成功'
+            content: this.$t('unitEditor.save_ok')
           })
         }
       }

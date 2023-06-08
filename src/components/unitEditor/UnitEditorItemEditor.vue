@@ -8,10 +8,10 @@
       size="small"
       v-show="this.picUrl.length !== 0"
       @click="gallery = !gallery"
-    >选取图片</Button>
+    >{{$t('unitEditor.btn_6')}}</Button>
     <!-- body -->
     <div v-show="!editing" class="item-not-editing">
-      <p>选择一个 ITEM 开始编辑吧</p>
+      <p>{{$t('unitEditor.msg_5')}}</p>
     </div>
     <div v-show="editing" class="item-editing">
       <div>
@@ -63,12 +63,12 @@
         <FeaturePoint
           v-if="showFeaturePoint"
         ></FeaturePoint>
-        <Checkbox v-model="$store.state.item.saveToFinalResult" v-if="showCheckbox" style="float: right;">添加此图片至最终结果</Checkbox>
-        <p class="instructions"><Tag>操作说明</Tag>{{ curItemMeaning }}</p>
+        <Checkbox v-model="$store.state.item.saveToFinalResult" v-if="showCheckbox" style="float: right;">{{$t('unitEditor.msg_6')}}</Checkbox>
+        <p class="instructions"><Tag>{{$t('unitEditor.msg_7')}}</Tag>{{ curItemMeaning }}</p>
       </div>
       <div>
         <Button type="primary" @click="saveItemData" :loading="saving">
-          <span v-if="!saving">确定</span>
+          <span v-if="!saving">{{$t('public.btn_ok')}}</span>
           <span v-else>saving...</span>
         </Button>
       </div>
@@ -207,7 +207,7 @@ export default {
     },
     onRemoveTmachBlanks(){
       if(this.tmachBlanks.length===2){
-        this.$Message.info("至少需要一个点的坐标！")
+        this.$Message.info(this.$t('unitEditor.msg_8'))
         return
       }
       this.tmachBlanks.pop()
@@ -330,7 +330,7 @@ export default {
       if (!flag&&(!this.isAllowNull||!this.isInputPicture)) { //  存在则报错并终止
         this.$Message.error({
           background: true,
-          content: '不允许填入空值'
+          content: this.$t('unitEditor.msg_9')
         })
         return flag
       }
@@ -403,7 +403,7 @@ export default {
           if (temp[i].loc !== byProductsInfo.loc && temp[i].text === byProductsInfo.text) {
             this.$Message.error({
               background: true,
-              content: '这个名字已经被占用了'
+              content: this.$t('unitEditor.msg_10')
             })
             return false
           }
@@ -415,7 +415,7 @@ export default {
             if(textList.indexOf(byProductsInfo.text)!==-1){
               this.$Message.error({
                 background: true,
-                content: '这个名字已经被占用了'
+                content: this.$t('unitEditor.msg_10')
               })
               return false
             }
@@ -445,7 +445,7 @@ export default {
         }
         else{
           this.saveFeaturePoint()
-          this.$Message.info("注意是否需要选择区域！")
+          this.$Message.info(this.$t('unitEditor.msg_11'))
           return
         }
       }else{

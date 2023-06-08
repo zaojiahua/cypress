@@ -8,14 +8,14 @@
       <FormItem label="name" prop="switchBlockName">
         <Input v-model="switchBlockInfo.switchBlockName" placeholder="Enter something..."/>
       </FormItem>
-      <FormItem label="最大循环次数">
+      <FormItem :label="$t('normal.tips_8')">
         <Input v-model="switchBlockInfo.switchBlockTime" />
       </FormItem>
     </Form>
 
     <div slot="footer">
-      <Button type="text" size="large" @click="cancel">取消</Button>
-      <Button type="primary" size="large" @click="submit">确定</Button>
+      <Button type="text" size="large" @click="cancel">{{$t('public.btn_cancel')}}</Button>
+      <Button type="primary" size="large" @click="submit">{{$t('public.btn_ok')}}</Button>
     </div>
   </Modal>
 </template>
@@ -38,7 +38,7 @@ export default {
       switchBlockRules: '',
       switchBlocRules: {
         switchBlockName: [
-          { required: true, message: 'Switch名称不能为空', trigger: 'blur' }
+          { required: true, message: this.$t('normal.tips_9'), trigger: 'blur' }
         ]
       }
     }

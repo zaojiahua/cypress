@@ -7,23 +7,23 @@
     <p slot="extra" v-show="!isAdmin">
       <a v-show="!edit" :disabled="!copyFlowObj || !editJobFlow" href="#"  @click.prevent="openFlowCopy">
         <Icon type="ios-loop-strong"></Icon>
-        粘贴
+        {{$t('jobFlow.btn_1')}}
       </a>
       <a v-show="!edit" :disabled="!editJobFlow" href="#"  @click.prevent="newFlow">
         <Icon type="ios-loop-strong"></Icon>
-        新增
+        {{$t('jobFlow.btn_2')}}
       </a>
       <a v-show="!edit" :disabled="!editJobFlow" href="#"  @click.prevent="toEdit">
         <Icon type="ios-loop-strong"></Icon>
-        编辑
+        {{$t('unitEditor.btn_edit')}}
       </a>
       <a v-show="edit" href="#"  @click.prevent="toCancel">
         <Icon type="ios-loop-strong"></Icon>
-        取消
+        {{$t('public.btn_cancel')}}
       </a>
       <a v-show="edit" href="#"  @click.prevent="toSave">
         <Icon type="ios-loop-strong"></Icon>
-        确认
+        {{$t('public.btn_ok')}}
       </a>
     </p>
 
@@ -51,19 +51,19 @@
             v-model="flowModal"
             :mask-closable="false"
             :closable="false"
-            title="流程图信息"
-            ok-text="查看"
+            :title="$t('jobFlow.title_1')"
+            :ok-text="$t('jobFlow.btn_3')"
             @on-ok="enterFlow">
             <Form ref="form"
               :model="currentFlow"
               width="30"
               :label-width="90">
               <FormItem>
-                <b slot="label">名称:</b>
+                <b slot="label">{{$t('jobFlow.label_1')}}:</b>
                 <Input v-model="currentFlow.name" disabled class="disabled-input" :autosize="{minRows: 1,maxRows: 4}"></Input>
               </FormItem>
               <FormItem>
-                <b slot="label">描述:</b>
+                <b slot="label">{{$t('jobFlow.label_2')}}:</b>
                 <Input v-model="currentFlow.description" disabled class="disabled-input" :autosize="{minRows: 1,maxRows: 4}"></Input>
               </FormItem>
             </Form>
@@ -74,8 +74,8 @@
     <Modal v-model="showCopyModal" footer-hide :closable="false" :mask-closable="false" width="420">
       <Input v-model="copyFlowName" maxlength="70" style="margin-top: 16px"></Input>
       <Row style="text-align: right;margin-top: 20px;">
-        <Button type="text" @click="showCopyModal=false;copyFlowObj = null">取消</Button>
-        <Button type="primary" @click="pasteJobFlow">确认</Button>
+        <Button type="text" @click="showCopyModal=false;copyFlowObj = null">{{$t('public.btn_cancel')}}</Button>
+        <Button type="primary" @click="pasteJobFlow">{{$t('public.btn_ok')}}</Button>
       </Row>
     </Modal>
   </Card>
@@ -85,11 +85,13 @@
 import { HandleDirective,SlickList, SlickItem } from 'vue-slicksort'
 import {getJobFlowList, copyFlowWithFlowId, deleteFlowWithFlowId, updateFlowOrder} from "api/reef/request";
 import {mapGetters, mapState} from "vuex";
+
+const lang = sessionStorage.getItem("lang")
 export default {
   props: {
     title: {
       type: String,
-      default: '用例流程图列表'
+      default: lang ==='zh' ? "用例流程图列表" : "job flow list"
     },
     jobId: {
       default: -1
@@ -104,7 +106,7 @@ export default {
     return {
       copyFlowObj:null,
       selectFlowObj:null,
-      enter:"查看",
+      enter:this.$t('jobFlow.btn_3'),
       flag: true,
       edit: false,
       iconSize: 18,
@@ -162,7 +164,7 @@ export default {
     },
     newFlow() {
       this.$Modal.confirm({
-        title: '您确认编辑新的流程图吗?',
+        title: this.$t('jobFlow.title_2'),
         onOk: () => {
           setTimeout(() => { // 延时关闭右侧抽屉
             this.$store.commit('handleShowDrawer')
@@ -199,7 +201,7 @@ export default {
     },
     copyFlow(item) {
       this.copyFlowObj = item
-      this.$Message.info("复制完成")
+      this.$Message.info(this.$t('jobFlow.title_3'))
 
     },
     enterFlow() { // 路由到jobEditor页面
@@ -259,14 +261,14 @@ export default {
         this.copyFlowName = data.flow_name
         this.showCopyModal = true
       }else {
-        this.$Message.error({content:"暂时无法粘贴！",duration:3})
+        this.$Message.error({content:this.$t('jobFlow.tips_1'),duration:3})
       }
     },
     async pasteJobFlow(){
       console.log(this.copyFlowObj.id)
       try {
         if(this.copyFlowName.includes("/")){
-          this.$Message.error("流程图名称不允许包含/")
+          this.$Message.error(this.$t('jobFlow.tips_2'))
           return
         }
         let { status } = await copyFlowWithFlowId({job:this.jobId,flow:this.copyFlowObj.id,name:this.copyFlowName})
@@ -274,12 +276,12 @@ export default {
           this.showCopyModal = false
           await this.refresh(this.jobId)
           this.copyFlowObj = null
-          this.$Message.success("粘贴成功")
+          this.$Message.success(this.$t('jobFlow.tips_3'))
         }else {
-          this.$Message.error({content:"粘贴失败！",duration:3})
+          this.$Message.error({content:this.$t('jobFlow.tips_4'),duration:3})
         }
       }catch (error) {
-        this.$Message.error({content:"粘贴失败！",duration:3})
+        this.$Message.error({content:this.$t('jobFlow.tips_4'),duration:3})
       }
 
     },

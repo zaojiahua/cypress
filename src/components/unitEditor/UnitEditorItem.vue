@@ -211,8 +211,8 @@ export default {
     handleItemClick () { // 点击item触发的事件
       if (!this.isEditable) {
         this.$Modal.warning({
-          title: '温馨提示',
-          content: '请先获取图片'
+          title: this.$t('public.modal_info'),
+          content: this.$t('unitEditor.msg_4')
         })
         return
       }

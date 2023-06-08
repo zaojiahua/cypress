@@ -8,7 +8,7 @@
     <!-- extra -->
     <div slot="extra">
       <div v-show="rotateChoice" style="float: left;margin-right: 10px">
-        <Select v-model="rotateChoice" style="width:65px" size="small" placeholder="角度" @on-select="handleRotateChoice">
+        <Select v-model="rotateChoice" style="width:65px" size="small" :placeholder="$t('unitEditor.bar_1')" @on-select="handleRotateChoice">
           <Option value="0">0</Option>
           <Option value="90">90</Option>
           <Option value="180">180</Option>
@@ -18,8 +18,8 @@
       <div v-show="tGuard&&isShowTGuard" style="float: left;margin-right: 10px">
         <span>T-Guard </span>
         <Switch false-color="#ff4949" v-model="tGuardToggle" @on-change="handleTGuard">
-          <span slot="open">开</span>
-          <span slot="close">关</span>
+          <span slot="open">{{$t('unitEditor.switch_1')}}</span>
+          <span slot="close">{{$t('unitEditor.switch_2')}}</span>
         </Switch>
       </div>
       <div v-show="ocrChoice" style="float: right;">
@@ -30,25 +30,25 @@
         </Switch>
       </div>
       <div v-show="directionSwitch" style="float: right;">
-        <span>屏幕切换 </span>
+        <span>{{$t('unitEditor.bar_2')}} </span>
         <Switch false-color="#ff4949" v-model="directionToggle" @on-change="handleDirection">
-          <span slot="open">竖</span>
-          <span slot="close">横</span>
+          <span slot="open">{{$t('unitEditor.switch_3')}}</span>
+          <span slot="close">{{$t('unitEditor.switch_4')}}</span>
         </Switch>
       </div>
       <div v-show="saveSwitch" style="float: right;">
-        <span>用例结果成功时仍推送 </span>
+        <span>{{$t('unitEditor.bar_3')}} </span>
         <Switch false-color="#ff4949" v-model="saveToggle" @on-change="handleSave">
-          <span slot="open">开</span>
-          <span slot="close">关</span>
+          <span slot="open">{{$t('unitEditor.switch_1')}}</span>
+          <span slot="close">{{$t('unitEditor.switch_2')}}</span>
         </Switch>
       </div>
       <div v-show="methodSelect" style="float: right;margin-left: 10px">
-        <span>检测 </span>
+        <span>{{$t('unitEditor.bar_4')}} </span>
         <Select v-model="methodSelect" style="width:90px" size="small">
-          <Option :value="1">按下算法</Option>
-          <Option :value="2">按下压感</Option>
-          <Option :value="3">抬起压感</Option>
+          <Option :value="1">{{$t('unitEditor.switch_5')}}</Option>
+          <Option :value="2">{{$t('unitEditor.switch_6')}}</Option>
+          <Option :value="3">{{$t('unitEditor.switch_7')}}</Option>
           <!--<Option :value="4" v-show="showOption">图标膨胀</Option>-->
         </Select>
       </div>

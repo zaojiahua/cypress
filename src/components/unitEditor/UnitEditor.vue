@@ -18,27 +18,27 @@
       <TestResult :openTestResultModal="openTestResultModal" @closeTestModal="closeTestModal">
         <template #left>
           <div v-if="Object.keys(testOcrResponseData).length !== 0">
-            <Divider>识别的图片</Divider>
+            <Divider>{{$t('unitEditor.tips_2')}}</Divider>
             <img :src="testOcrResponseData.data.img_detected" alt="" style="max-width: 100%">
-            <p> Tip：请确认识别的图片与你所选区相同，如果不同，请检查是否有保存选区</p>
+            <p>{{$t('unitEditor.tips_3')}}</p>
           </div>
           <div v-else-if="Object.keys(testIconResponseData).length !== 0">
-            <Divider>识别的图标</Divider>
+            <Divider>{{$t('unitEditor.tips_5')}}</Divider>
             <img :src="testIconResponseData.icon" alt="" style="max-width: 100%;border: 1px">
-            <p> Tip：请确认识别的图片与你所选区相同，如果不同，请检查是否有保存选区</p>
+            <p>{{$t('unitEditor.tips_3')}}</p>
           </div>
         </template>
         <template #right>
           <div v-if="Object.keys(testOcrResponseData).length !== 0">
             <List border size="small">
-              <Divider>识别的文字</Divider>
+              <Divider>{{$t('unitEditor.tips_4')}}</Divider>
               <ListItem v-for="(words,index) in testOcrResponseData.result">{{ index + 1 }}: {{ words.text }}</ListItem>
             </List>
           </div>
           <div v-else-if="Object.keys(testIconResponseData).length !== 0">
-            <Divider>识别的图片</Divider>
+            <Divider>{{$t('unitEditor.tips_2')}}</Divider>
             <img :src="testIconResponseData.img_detected" alt="" style="max-width: 100% ;max-height:500px">
-            <p> Tip：请确认识别的图片与你所选区相同，如果不同，请检查是否有保存选区</p>
+            <p>{{$t('unitEditor.tips_3')}}</p>
           </div>
 
         </template>
@@ -59,20 +59,20 @@
       <div class="pane">
         <Utils></Utils>
 <!--        根据unit不同，显示不同内容的按钮，调用不同方法发给不同api-->
-        <Button type="primary" v-show="hasIconTest" @click="sendIconTestRequest('icon_test')">测试图标</Button>
-        <Button type="primary" v-show="hasIconPositionTest" @click="sendIconPositionTestRequest('icon_test_position')">测试图标位置</Button>
-        <Button type="primary" v-show="hasOcrTest" @click="sendOcrTestRequest">测试文字</Button>
-        <Button type="primary" v-show="hasIconPositionFixTest" @click="sendIconPositionTestRequest('icon_test_position_fixed')">测试图标位置</Button>
-        <Button type="primary" v-show="hasIconTestFixTest" @click="sendIconTestRequest('icon_test_fixed')">测试图标</Button>
+        <Button type="primary" v-show="hasIconTest" @click="sendIconTestRequest('icon_test')">{{$t('unitEditor.btn_1')}}</Button>
+        <Button type="primary" v-show="hasIconPositionTest" @click="sendIconPositionTestRequest('icon_test_position')">{{$t('unitEditor.btn_2')}}</Button>
+        <Button type="primary" v-show="hasOcrTest" @click="sendOcrTestRequest">{{$t('unitEditor.btn_3')}}</Button>
+        <Button type="primary" v-show="hasIconPositionFixTest" @click="sendIconPositionTestRequest('icon_test_position_fixed')">{{$t('unitEditor.btn_2')}}</Button>
+        <Button type="primary" v-show="hasIconTestFixTest" @click="sendIconTestRequest('icon_test_fixed')">{{$t('unitEditor.btn_1')}}</Button>
       </div>
     </div>
     <div slot="footer">
       <Button :disabled="isNotExecutable()" @click="singleStepDebug">
-        <span v-if="!loading">执行</span>
-        <span v-else>执行中...</span>
+        <span v-if="!loading">{{$t('unitEditor.btn_4')}}</span>
+        <span v-else>{{$t('unitEditor.btn_5')}}</span>
       </Button>
-      <Button @click="closeUnitEditor(false)">取消</Button>
-      <Button @click="closeUnitEditor(true)" type="primary">保存</Button>
+      <Button @click="closeUnitEditor(false)">{{$t('public.btn_cancel')}}</Button>
+      <Button @click="closeUnitEditor(true)" type="primary">{{$t('public.btn_save')}}</Button>
     </div>
   </Modal>
 </template>
@@ -185,10 +185,10 @@ export default {
       if (!this.deviceInfo) {
         let _this = this
         this.$Modal.confirm({
-          title:'提示',
-          content:'还未选取设备，是否现在去选择？',
-          okText:'是',
-          cancelText:'否',
+          title:this.$t('public.modal_info'),
+          content:this.$t('unitEditor.tips_6'),
+          okText:this.$t('unitEditor.tips_7'),
+          cancelText:this.$t('unitEditor.tips_8'),
           onOk(){
             _this.$store.commit('device/setSelectDevice', true)
             _this.$store.commit('device/setControlDeviceFlag', true)
@@ -198,7 +198,7 @@ export default {
       }
       if(this.loading) return
       if(!this.checkWeatherCompleted()){
-        this.$Message.error("请将信息填写完整！")
+        this.$Message.error(this.$t('unitEditor.tips_9'))
         return
       }
       let unitData = this._.cloneDeep(this.unitData.unitMsg)
@@ -238,23 +238,23 @@ export default {
         })
         if (response.data.result === 0) {
           this.loading = false
-          this.$Message.info({content:"执行成功",duration:8})
+          this.$Message.info({content:this.$t('unitEditor.result_1'),duration:8})
         } else if (response.data.result === 1) {
           this.loading = false
-          this.$Message.info({content:"执行失败",duration:8})
+          this.$Message.info({content:this.$t('unitEditor.result_2'),duration:8})
         }else {
           this.loading = false
-         this.$Message.info({content:"执行异常 " + response.data.result,duration:8})
+         this.$Message.info({content:this.$t('unitEditor.result_3')+ " " + response.data.result,duration:8})
         }
       } catch (e) {
         this.loading = false
         if(!e.response){
-          this.$Message.warning({content:"执行异常",duration:8})
+          this.$Message.warning({content:this.$t('unitEditor.result_3'),duration:8})
           return
         }
         if (e.response.data.error_code){
-          this.$Message.warning({content:`执行异常 code:${e.response.data.error_code} detail:${e.response.data.description}`,duration:6})
-        }else this.$Message.warning({content:"执行异常",duration:8})
+          this.$Message.warning({content:this.$t('unitEditor.result_3')+` code:${e.response.data.error_code} detail:${e.response.data.description}`,duration:6})
+        }else this.$Message.warning({content:this.$t('unitEditor.result_3'),duration:8})
       }
     },
     closeUnitEditor(save) {
@@ -305,13 +305,13 @@ export default {
     validateRequireMessage() {
       if (this.curFile === null) {
         this.$Message.error({
-          content: '请先完成所有截图和选区，二次修改时需要点击一下之前截图',
+          content: this.$t('unitEditor.notices_1'),
           duration: 5,
           closable: true
         })
       } else if (this.deviceInfo === null) {
         this.$Message.error({
-          content: '请先选取设备',
+          content: this.$t('unitEditor.notices_2'),
           duration: 5,
           closable: true
         })
@@ -343,12 +343,12 @@ export default {
             data: data
           })
           this.$Message.info({
-            content: `需要特征点数量${response.data.required},现有特征点数量${response.data.sample},匹配结果${response.data.message}`,
+            content: this.$t('unitEditor.notices_3')+`${response.data.required},`+this.$t('unitEditor.notices_4')+response.data.sample+','+this.$t('unitEditor.notices_5')+response.data.message,
             duration: 10,
             closable: true
           })
         } catch (e) {
-          this.$Message.error(`请检查是否缺少选区文件 ${e}`)
+          this.$Message.error(this.$t('unitEditor.notices_6')+e)
         }
       }
     },
@@ -368,7 +368,7 @@ export default {
             this.testIconResponseData = response.data
             this.openTestResultModal = true
             if (functionName === "icon_test_position"){
-              let content = `首选识别点位权重: ${response.data.key_point_one} 备选识别点位权重: ${response.data.key_point_two}`
+              let content = this.$t('unitEditor.notices_7')+response.data.key_point_one+ this.$t('unitEditor.notices_8')+response.data.key_point_two
               this.$Message.info({
                 content,
                 duration: 5
@@ -377,7 +377,7 @@ export default {
           }
         } catch (e) {
 
-          this.$Message.error(`请检查是否缺少选区文件 ${e}`)
+          this.$Message.error(this.$t('unitEditor.notices_6')` ${e}`)
         }
       }
     },
@@ -405,7 +405,7 @@ export default {
           this.testOcrResponseData = response.data
         } catch (e) {
           console.log(e)
-          this.$Message.error("测试文字异常")
+          this.$Message.error(this.$t('unitEditor.notices_9'))
         }
       }
     },
