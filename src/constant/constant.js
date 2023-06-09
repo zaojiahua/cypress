@@ -1,3 +1,5 @@
+const lang = sessionStorage.getItem("lang")
+console.log(lang)
 export default {
   STAR: new Set([
     'IMGTOOL',
@@ -28,30 +30,30 @@ export default {
     'jobResourceFileWithDefaultValue'
   ]),
   WILL_TOUCH_NAME: {
-    'outputFile': '文件名称',
-    'outputPicture': '图片名称',
-    'outputVideo': '视频名称'
+    'outputFile': lang ==='zh' ? '文件名称':'File name',
+    'outputPicture': lang ==='zh' ? '图片名称':'Picture name',
+    'outputVideo': lang ==='zh' ? '视频名称':'Video name'
   },
   JOB_DEFAULT_CONFIG: {
     finalResultKey: null, // 默认没有结果unit ,格式为 "NorBlockKey,UnitKey"
     byProductsName: [
-      {'title': '文件名称', 'key': 'outputFile', 'children': []},
-      {'title': '图片名称', 'key': 'outputPicture', 'children': []},
-      {'title': '视频名称', 'key': 'outputVideo', 'children': []}
+      {'title': lang ==='zh' ? '文件名称':'File name', 'key': 'outputFile', 'children': []},
+      {'title': lang ==='zh' ? '图片名称':'Picture name', 'key': 'outputPicture', 'children': []},
+      {'title': lang ==='zh' ? '视频名称':'Video name', 'key': 'outputVideo', 'children': []}
     ]
   },
   ITEM_DESC: {
-    'jobResourceFile': '图片配置文件',
-    'jobResourceFileWithDefaultValue': '带有默认值的图片配置文件',
-    'jobResourcePicture': '参考标准图片',
-    'inputPicture': '输入图片名称',
-    'outputPicture': '输出图片名称',
-    'inputVideo': '输入视频名称',
-    'outputVideo': '输出视频名称',
-    'inputFile': '输入文件名称',
-    'outputFile': '输出文件名称',
-    'uxInput': '手动输入参数',
-    'picInput': '从图片选取坐标点'
+    'jobResourceFile': lang ==='zh' ? '图片配置文件':'Picture configuration file',
+    'jobResourceFileWithDefaultValue': lang ==='zh' ? '带有默认值的图片配置文件':'Picture profile with default values',
+    'jobResourcePicture': lang ==='zh' ? '参考标准图片':'Reference standard picture',
+    'inputPicture': lang ==='zh' ? '输入图片名称':'Input  picture name.',
+    'outputPicture': lang ==='zh' ? '输出图片名称':'Output picture name',
+    'inputVideo': lang ==='zh' ? '输入视频名称':'Input video name',
+    'outputVideo':lang ==='zh' ?  '输出视频名称':'Output video name',
+    'inputFile': lang ==='zh' ? '输入文件名称':'Input file name',
+    'outputFile': lang ==='zh' ? '输出文件名称':'Output file name',
+    'uxInput': lang ==='zh' ? '手动输入参数':'Manually enter parameters',
+    'picInput': lang ==='zh' ? '从图片选取坐标点':'Select coordinate points from the picture'
   },
   SHOW_INPUT: new Set([
     'outputPicture',
@@ -302,11 +304,11 @@ export default {
 
   },
   UNIT_GROUP_DICT:{
-    "3":"旋转机械臂",
-    "4":"龙门架机械臂",
-    "5":"摄像头",
-    "6":"usb通断",
-    "7":"双指",
+    "3":lang ==='zh' ? "旋转机械臂":"Rotating manipulator",
+    "4":lang ==='zh' ? "龙门架机械臂":"Gantry manipulator",
+    "5":lang ==='zh' ? "摄像头":"camera",
+    "6":lang ==='zh' ? "usb通断":"Usb on-off",
+    "7":lang ==='zh' ? "双指":"Double finger",
   }
 }
 

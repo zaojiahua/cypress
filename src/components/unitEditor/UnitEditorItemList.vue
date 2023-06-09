@@ -8,7 +8,7 @@
     <!-- extra -->
     <div slot="extra">
       <div v-show="rotateChoice" style="float: left;margin-right: 10px">
-        <Select v-model="rotateChoice" style="width:65px" size="small" :placeholder="$t('unitEditor.bar_1')" @on-select="handleRotateChoice">
+        <Select v-model="rotateChoice" style="width:70px" size="small" :placeholder="$t('unitEditor.bar_1')" @on-select="handleRotateChoice">
           <Option value="0">0</Option>
           <Option value="90">90</Option>
           <Option value="180">180</Option>
@@ -17,7 +17,7 @@
       </div>
       <div v-show="tGuard&&isShowTGuard" style="float: left;margin-right: 10px">
         <span>T-Guard </span>
-        <Switch false-color="#ff4949" v-model="tGuardToggle" @on-change="handleTGuard">
+        <Switch false-color="#ff4949" v-model="tGuardToggle" @on-change="handleTGuard" size="large">
           <span slot="open">{{$t('unitEditor.switch_1')}}</span>
           <span slot="close">{{$t('unitEditor.switch_2')}}</span>
         </Switch>
@@ -124,8 +124,11 @@ export default {
     isShowTGuard(){
       return this.jobInfo.job_type !== 'ComboJob';
     },
-    tGuardToggle(){
-      return this.tGuard === 1
+    tGuardToggle:{
+      get () {
+        return this.tGuard === 1
+      },
+      set (val) { /* 取消报错 */ }
     },
     saveSwitch(){
       if (!this.unitData.unitMsg) return

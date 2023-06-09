@@ -136,7 +136,7 @@ export default {
   },
   jobEdit:{
     enterTips_1:"Please enter a job name.",
-    btn_1:"Jon details",
+    btn_1:"Job details",
     btn_2:"View dependent files",
     tips_1:"Are you sure you want to replace the current edit with a copy?",
     tips_2:"The replacement content includes operation flow chart, dependency files and details of jobs, and it is irreversible.",
@@ -150,7 +150,7 @@ export default {
     tips_3:"Cannot specify result Block for Inner job.",
     tips_4:"Please select a device first.",
     tips_5:"Please make sure you are connected to the same wifi.",
-    tips_6:"The current job has the following errors.",
+    tips_6:"The job has the following errors.",
     tips_7:"Save as a draft",
     tips_8:"Cannot specify result unit for Inner job.",
     tips_9:"The Inner Job does not support nesting yet.",

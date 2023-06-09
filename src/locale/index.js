@@ -20,7 +20,7 @@ if(sessionStorage.lang === undefined
   sessionStorage.setItem('lang', localStorage.getItem('lang'))
 }
 
-// Vue.locale = () => {};   // ivew组件国际化不可缺少的部分===cypress不能加这句话，否则this.$modal.confirm报错
+Vue.locale = () => {};   // ivew组件国际化不可缺少的部分===>cypress引入i18n要在iview样式之前
 const messages = {
   'zh': Object.assign(iview_zhlocale, zhlocale),
   'en': Object.assign(iview_enlocale, enlocale),

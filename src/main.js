@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
+import i18n  from "./locale"
 // import store from './store'
 import store from './store/index'
 import './plugins/iview.js'
@@ -8,7 +9,6 @@ import { MOCK } from './config'
 import lodash from 'lodash'
 import md5 from 'js-md5'
 import VueBus from 'vue-bus'
-import i18n  from "./locale"
 
 Vue.use(VueBus)
 Vue.use(i18n)
