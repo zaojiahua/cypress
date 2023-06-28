@@ -63,6 +63,8 @@ export default {
   saveResFile: () => `${reefPrefix}job_upload_multi_res_file/`,
   getResFile: (id) => `${reefPrefix}job_flow/${id}/?fields=${joinFilter(resFileFilter)}`,
   unit: () => `${reefPrefix}unit/`,
+  unit_en: () => `${reefPrefix}unit_en/`,
   handleUnit: (id) => `${reefPrefix}unit/${id}/`,
+  handleUnit_en: (id) => `${reefPrefix}unit_en/${id}/`,
   token: (token) => `${reefPrefix}token/?fields=${joinFilter(tokenUserFilter)}&key=${token}`
 }

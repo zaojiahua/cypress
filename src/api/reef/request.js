@@ -215,10 +215,25 @@ const getJobUnitsBodyDict = (_params) => {
   })
 }
 
+const getJobUnitsBodyDict_en = (_params) => {
+  return axios.request({
+    url: url.unit_en(),
+    params: _params,
+  })
+}
+
 const updateJobUnitTemplate = (id, data) => {
   return axios.request({
     method: 'patch',
     url: url.handleUnit(id),
+    data
+  })
+}
+
+const updateJobUnitTemplate_en = (id, data) => {
+  return axios.request({
+    method: 'patch',
+    url: url.handleUnit_en(id),
     data
   })
 }
@@ -231,6 +246,13 @@ const createNewUnitTemplate = (data) => {
   })
 }
 
+const createNewUnitTemplate_en = (data) => {
+  return axios.request({
+    method: 'post',
+    url: url.unit_en(),
+    data
+  })
+}
 
 const updateFlowWithFlowId = (id, data) => {
   return axios.request({
@@ -302,6 +324,12 @@ const deleteUnitTemplate = (id) => {
   })
 }
 
+const deleteUnitTemplate_en = (id) => {
+  return axios.request({
+    method: 'delete',
+    url: url.handleUnit_en(id)
+  })
+}
 
 const getUserInfoByToken = (token) => {
   return axios.request({
@@ -361,9 +389,13 @@ export {
   getJobResFilesList,
   getJobResFile,
   getJobUnitsBodyDict,
+  getJobUnitsBodyDict_en,
   updateJobUnitTemplate,
+  updateJobUnitTemplate_en,
   createNewUnitTemplate,
+  createNewUnitTemplate_en,
   deleteUnitTemplate,
+  deleteUnitTemplate_en,
   getUserInfoByToken,
   updateFlowWithFlowId,
   deleteFlowWithFlowId,

@@ -29,7 +29,7 @@
 <script>
 import { isJsonString, insertAfterCursor } from 'lib/tools.js'
 
-import { updateJobUnitTemplate, createNewUnitTemplate } from 'api/reef/request'
+import { updateJobUnitTemplate, createNewUnitTemplate, updateJobUnitTemplate_en, createNewUnitTemplate_en } from '../api/reef/request'
 
 import { mapState } from 'vuex'
 
@@ -109,7 +109,13 @@ export default {
         unit_content: JSON.parse(this.currentUnitTemplateContent),
         type: this.currentUnitType
       }
-      createNewUnitTemplate(unitInfo).then((res) => { // 保存新建的unit模板并更新ui显示
+      let request
+      if(lang==='zh'){
+        request = createNewUnitTemplate(unitInfo)
+      }else {
+        request = createNewUnitTemplate_en(unitInfo)
+      }
+      request.then((res) => { // 保存新建的unit模板并更新ui显示
         if (res.status === 201) {
           this.$Message.success({
             background: true,
@@ -136,8 +142,15 @@ export default {
           type: this.currentUnitType
         }
         try {
-          let { status } = await updateJobUnitTemplate(this.unitTemplateId, unitInfo)
-          if (status === 200) {
+          let result
+          if(lang==="zh"){
+            let { status } = await updateJobUnitTemplate(this.unitTemplateId, unitInfo)
+            result = status
+          }else {
+            let { status } = await updateJobUnitTemplate_en(this.unitTemplateId, unitInfo)
+            result = status
+          }
+          if (result === 200) {
             this.$Message.success({
               background: true,
               content: this.$t('jobResFile.notices_4')

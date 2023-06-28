@@ -28,7 +28,7 @@ export default {
   name: 'login',
   data () {
     return {
-      lang: sessionStorage.getItem("lang") ||  'zh',
+      lang: localStorage.getItem("lang") ||  'zh',
       username: '',
       password: '',
       keepLogin: false
@@ -58,8 +58,13 @@ export default {
             localStorage.setItem('token', sessionStorage.token)
           }
         localStorage.setItem('lang', this.lang)
+        sessionStorage.setItem('lang', this.lang)
+        this.$i18n.locale = this.lang
         this.$router.push('/')
         this.$Message.success(this.$t('login.successMsg'));
+        setTimeout(function (){
+          location.reload()
+        },100)
       }).catch(error => {
         let errorMsg = ''
         if (error.response.status === 400) {

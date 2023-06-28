@@ -72,7 +72,7 @@ import CONST from 'constant/constant'
 import unitTemplateEditor from '_c/unitTemplateEditor'
 import UnitEditor from '_c/unitEditor/UnitEditor.vue'
 import { innerDiagramInit, innerPaletteInit } from '../views/JobEditorGoInit'
-import { getJobUnitsBodyDict, deleteUnitTemplate } from 'api/reef/request'
+import { getJobUnitsBodyDict, deleteUnitTemplate, getJobUnitsBodyDict_en, deleteUnitTemplate_en } from 'api/reef/request'
 import { blockFlowValidation } from '../core/validation/finalValidation/block'
 
 export default {
@@ -94,8 +94,8 @@ export default {
       innerDiagram: null,
       finalResKey: null,
       unitTemplateType: '', // 左侧显示的unit模板分类
-      defaultUnitTemplateType: '基础操作', // 默认显示的unit模板类, 当某个种类下的unit被全部删除完时会用到
-      defaultUnitTemplateType_bk: '常用', // 默认显示的unit模板类, 当某个种类下的unit被全部删除完时会用到
+      defaultUnitTemplateType: sessionStorage.getItem("lang") ==='zh' ? '基础操作':'Basic operations', // 默认显示的unit模板类, 当某个种类下的unit被全部删除完时会用到
+      defaultUnitTemplateType_bk:sessionStorage.getItem("lang") ==='zh' ? '常用':'Common',// 默认显示的unit模板类, 当某个种类下的unit被全部删除完时会用到
       curNormalData: {},
       /*
         curNormalData 结构:
@@ -297,9 +297,17 @@ export default {
       }else
         cb_type = this.jobInfo.cabinet_type ? this.jobInfo.cabinet_type:  'Tcab_1'
       let group = CONST.UNIT_MAPPING_DICT[cb_type]
-      getJobUnitsBodyDict(
-        {"unit_group__in": 'ReefList[' + group.join('{%,%}') + ']'}
-      ).then(({status, data: {unit}}) => {
+      let request
+      if(sessionStorage.getItem("lang")==='zh'){
+        request = getJobUnitsBodyDict(
+          {"unit_group__in": 'ReefList[' + group.join('{%,%}') + ']'}
+        )
+      }else {
+        request = getJobUnitsBodyDict_en(
+          {"unit_group__in": 'ReefList[' + group.join('{%,%}') + ']'}
+        )
+      }
+      request.then(({status, data: {unit}}) => {
         if (status === 200) {
           let unitLists = {}
           unit.forEach((val, idx) => {
@@ -330,9 +338,17 @@ export default {
       let group = CONST.UNIT_MAPPING_DICT[cb_type]
       if(this.unit_group&&this.unit_group.length>0)
         group = group.concat(this.unit_group)
-      getJobUnitsBodyDict(
-        {"unit_group__in": 'ReefList[' + group.join('{%,%}') + ']'}
-      ).then(({status, data: {unit}}) => {
+      let request
+      if(sessionStorage.getItem("lang")==='zh'){
+        request = getJobUnitsBodyDict(
+          {"unit_group__in": 'ReefList[' + group.join('{%,%}') + ']'}
+        )
+      }else {
+        request = getJobUnitsBodyDict_en(
+          {"unit_group__in": 'ReefList[' + group.join('{%,%}') + ']'}
+        )
+      }
+      request.then(({status, data: {unit}}) => {
         if (status === 200) {
           let unitLists = {}
           unit.forEach((val, idx) => {
@@ -363,8 +379,15 @@ export default {
         okText: this.$t('normal.tips_6'),
         cancelText: this.$t('normal.tips_7'),
         onOk: async () => {
-          let { status } = await deleteUnitTemplate(this.unitTemplateId)
-          if (status === 204) {
+          let result
+          if(sessionStorage.getItem("lang")==="zh"){
+            let { status } = await deleteUnitTemplate(this.unitTemplateId)
+            result = status
+          }else {
+            let { status } = await deleteUnitTemplate_en(this.unitTemplateId)
+            result = status
+          }
+          if (result === 204) {
             this.$Message.success({ background: true, content: this.$t('public.delSuccess') })
             setTimeout(() => { this.updateUnitLists(this.unitTemplateType) }, 300) // 延时获取更新后的模板信息
           } else {

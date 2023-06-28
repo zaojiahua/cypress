@@ -381,8 +381,8 @@ export default {
   },
   normal:{
     menu_1:"unit type",
-    menu_2:"Not unit unit",
-    menu_3:"unit unit",
+    menu_2:"Not result unit",
+    menu_3:"Result unit",
     menu_4:"Running carrier",
     menu_5:"SubsidiaryDevice 1",
     menu_6:"SubsidiaryDevice 2",

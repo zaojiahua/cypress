@@ -246,7 +246,7 @@ export default {
     switch_5:"按下算法",
     switch_6:"按下压感",
     switch_7:"抬起压感",
-    btn_edit:"编辑",
+    btn_edit:"编辑",//createOrUpdateUnitTemplate({id:this.unitTemplateId,content:unitInfo,language:lang}
     save_ok:"保存成功",
     selDev:"选取设备",
     selPic:"获取截图",
