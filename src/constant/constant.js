@@ -30,14 +30,14 @@ export default {
     'jobResourceFileWithDefaultValue'
   ]),
   WILL_TOUCH_NAME: {
-    'outputFile': lang ==='zh' ? '文件名称':'File name1',
+    'outputFile': lang ==='zh' ? '文件名称':'File name',
     'outputPicture': lang ==='zh' ? '图片名称':'Picture name',
     'outputVideo': lang ==='zh' ? '视频名称':'Video name'
   },
   JOB_DEFAULT_CONFIG: {
     finalResultKey: null, // 默认没有结果unit ,格式为 "NorBlockKey,UnitKey"
     byProductsName: [
-      {'title': lang ==='zh' ? '文件名称':'File name2', 'key': 'outputFile', 'children': []},
+      {'title': lang ==='zh' ? '文件名称':'File name', 'key': 'outputFile', 'children': []},
       {'title': lang ==='zh' ? '图片名称':'Picture name', 'key': 'outputPicture', 'children': []},
       {'title': lang ==='zh' ? '视频名称':'Video name', 'key': 'outputVideo', 'children': []}
     ]
